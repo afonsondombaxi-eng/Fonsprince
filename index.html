@@ -281,9 +281,6 @@ const IconSnowflake = p => React.createElement(Icon, p, React.createElement("pat
 const IconFlame = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.5-1.5-2-1.5-4 0-1 1-2 1-2s3 2 3 6a5 5 0 0 1-10 0c0-3 2-4 2-7 0-1.5 1-3 1-3s1 4 1.5 6.5z"
 }));
-const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
-  d: "M15 18l-6-6 6-6"
-}));
 const IconMore = p => React.createElement(Icon, p, React.createElement("circle", {
   cx: "12",
   cy: "5",
@@ -302,6 +299,9 @@ const IconMore = p => React.createElement(Icon, p, React.createElement("circle",
   r: "1.5",
   fill: "currentColor",
   stroke: "none"
+}));
+const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M15 18l-6-6 6-6"
 }));
 const BANKS = ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Outro"];
 const CURRENCIES = ["Kz", "USD", "EUR"];
@@ -1800,7 +1800,15 @@ function FinanceApp() {
       boxShadow: isMobile ? "none" : "0 12px 40px rgba(16,32,60,0.08)",
       position: "relative"
     }
-  }, React.createElement(Watermark, null), !isMobile && React.createElement("div", {
+  }, React.createElement(Watermark, null), React.createElement("input", {
+    ref: fileInputRef,
+    type: "file",
+    accept: "application/json",
+    style: {
+      display: "none"
+    },
+    onChange: handleImportFileSelected
+  }), !isMobile && React.createElement("div", {
     style: {
       width: sidebarCollapsed ? 64 : 210,
       flexShrink: 0,
@@ -1983,15 +1991,7 @@ function FinanceApp() {
     }
   }, React.createElement(IconUpload, {
     size: 13
-  }), " ", !sidebarCollapsed && "Importar dados"), React.createElement("input", {
-    ref: fileInputRef,
-    type: "file",
-    accept: "application/json",
-    style: {
-      display: "none"
-    },
-    onChange: handleImportFileSelected
-  }), importError && !sidebarCollapsed && React.createElement("div", {
+  }), " ", !sidebarCollapsed && "Importar dados"), importError && !sidebarCollapsed && React.createElement("div", {
     style: {
       fontSize: 10.5,
       color: "#E8A9A0"
@@ -2411,7 +2411,79 @@ function FinanceApp() {
     style: {
       color: tab === t.id ? "var(--gold)" : "var(--slate)"
     }
-  }), t.label)))), showAccountModal && React.createElement(AccountModal, {
+  }), t.label)), React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      marginTop: 6,
+      paddingTop: 12,
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, "Dados"), React.createElement("button", {
+    onClick: () => {
+      exportAllData();
+      setShowMoreSheet(false);
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconDownload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Exportar dados"), React.createElement("button", {
+    onClick: () => {
+      setShowMoreSheet(false);
+      fileInputRef.current && fileInputRef.current.click();
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconUpload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Importar dados"), importError && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--rust)"
+    }
+  }, importError)))), showAccountModal && React.createElement(AccountModal, {
     initial: editingAccount,
     onClose: () => {
       setShowAccountModal(false);
