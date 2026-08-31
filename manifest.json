@@ -1,0 +1,15 @@
+{
+  "name": "Fonsprince — Controlo Financeiro",
+  "short_name": "Fonsprince",
+  "description": "Controlo financeiro pessoal e familiar: contas, movimentos, orçamento, dívidas, câmbio, previsão e planeamento.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E7E9ED",
+  "theme_color": "#1B1F27",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
