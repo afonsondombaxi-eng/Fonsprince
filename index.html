@@ -31,15 +31,20 @@
   #root { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: #C9C7BB; border-radius: 4px; }
-  @media (max-width: 768px) {
-    #root { padding: 0; align-items: stretch; justify-content: stretch; }
-    .resp-grid-2col, .resp-grid-3col { grid-template-columns: 1fr !important; }
-    input, select, textarea { font-size: 16px !important; }
-  }
   @media print {
     body * { visibility: hidden; }
     #printable-report, #printable-report * { visibility: visible; }
     #printable-report { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+  }
+  .clickable-card { transition: box-shadow 0.15s ease, transform 0.1s ease, border-color 0.15s ease; }
+  .clickable-card:active { box-shadow: 0 2px 8px rgba(16,24,40,0.1); border-color: var(--gold); }
+  @media (hover: hover) {
+    .clickable-card:hover { box-shadow: 0 4px 14px rgba(16,24,40,0.09); border-color: var(--gold); transform: translateY(-1px); }
+  }
+  @media (max-width: 768px) {
+    #root { padding: 0; align-items: stretch; justify-content: stretch; }
+    .resp-grid-2col, .resp-grid-3col { grid-template-columns: 1fr !important; }
+    input, select, textarea { font-size: 16px !important; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -281,6 +286,9 @@ const IconSnowflake = p => React.createElement(Icon, p, React.createElement("pat
 const IconFlame = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.5-1.5-2-1.5-4 0-1 1-2 1-2s3 2 3 6a5 5 0 0 1-10 0c0-3 2-4 2-7 0-1.5 1-3 1-3s1 4 1.5 6.5z"
 }));
+const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M15 18l-6-6 6-6"
+}));
 const IconMore = p => React.createElement(Icon, p, React.createElement("circle", {
   cx: "12",
   cy: "5",
@@ -299,9 +307,6 @@ const IconMore = p => React.createElement(Icon, p, React.createElement("circle",
   r: "1.5",
   fill: "currentColor",
   stroke: "none"
-}));
-const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
-  d: "M15 18l-6-6 6-6"
 }));
 const BANKS = ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Outro"];
 const CURRENCIES = ["Kz", "USD", "EUR"];
@@ -335,6 +340,30 @@ function fmt(amount, currency = "Kz") {
     maximumFractionDigits: 2
   });
   return currency === "Kz" ? `${s} Kz` : `${currency} ${s}`;
+}
+function fmtCompact(amount, currency = "Kz") {
+  const n = Number(amount) || 0;
+  const abs = Math.abs(n);
+  let s;
+  if (abs >= 1e9) s = (n / 1e9).toLocaleString("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }) + " mM";else if (abs >= 1e6) s = (n / 1e6).toLocaleString("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }) + " M";else s = n.toLocaleString("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  return currency === "Kz" ? `${s} Kz` : `${currency} ${s}`;
+}
+function monthShortLabel(monthKeyStr) {
+  const d = new Date(monthKeyStr + "-02");
+  const s = d.toLocaleDateString("pt-PT", {
+    month: "short",
+    year: "numeric"
+  });
+  return s.charAt(0).toUpperCase() + s.slice(1).replace(".", "");
 }
 function seal(name) {
   const words = name.replace(/—.*/, "").trim().split(" ");
@@ -377,11 +406,36 @@ function monthlyHistory(transactions, count) {
     };
   });
 }
-function availableBalance(sub, transactions) {
-  const today = todayISO();
+function consolidatedBalanceHistory(accounts, transactions, exchangeRates, count) {
+  count = count || 12;
+  const now = new Date();
+  const rows = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const mKey = d.toISOString().slice(0, 7);
+    const asOf = i === 0 ? todayISO() : lastDayOfMonth(mKey);
+    let total = 0;
+    for (const a of accounts) {
+      const bal = accountTotal(a, transactions, asOf);
+      const kz = toKz(bal, a.currency, exchangeRates);
+      if (kz !== null) total += kz;
+    }
+    const label = new Date(mKey + "-02").toLocaleDateString("pt-PT", {
+      month: "short"
+    }).replace(".", "");
+    rows.push({
+      month: mKey,
+      label,
+      value: total
+    });
+  }
+  return rows;
+}
+function availableBalance(sub, transactions, asOfDate) {
+  const cutoff = asOfDate || todayISO();
   let total = Number(sub.openingBalance) || 0;
   for (const t of transactions) {
-    if (t.date > today) continue;
+    if (t.date > cutoff) continue;
     if (t.kind === "transferencia") {
       if (t.fromSubBalanceId === sub.id) total -= Number(t.amount);
       if (t.toSubBalanceId === sub.id) total += Number(t.amount);
@@ -390,6 +444,10 @@ function availableBalance(sub, transactions) {
     }
   }
   return total;
+}
+function lastDayOfMonth(monthKeyStr) {
+  const parts = monthKeyStr.split("-").map(Number);
+  return new Date(parts[0], parts[1], 0).toISOString().slice(0, 10);
 }
 function accruedInterest(sub, principal) {
   if (!sub.interestRate || !sub.startDate) return 0;
@@ -402,8 +460,8 @@ function annualProjectedInterest(sub, principal) {
   if (!sub.interestRate) return 0;
   return Number(principal) * (Number(sub.interestRate) / 100);
 }
-function accountTotal(account, transactions) {
-  return (account.subBalances || []).reduce((s, sb) => s + availableBalance(sb, transactions), 0);
+function accountTotal(account, transactions, asOfDate) {
+  return (account.subBalances || []).reduce((s, sb) => s + availableBalance(sb, transactions, asOfDate), 0);
 }
 function typeBreakdown(account, transactions) {
   const map = {
@@ -642,12 +700,12 @@ function goalMonthlySavingsNeeded(goal) {
   if (months === null) return null;
   return remaining / Math.max(months, 1);
 }
-function liquidAssetsKz(accounts, transactions, exchangeRates) {
+function liquidAssetsKz(accounts, transactions, exchangeRates, asOfDate) {
   let total = 0;
   for (const a of accounts) {
     for (const sb of a.subBalances || []) {
       if (sb.type === "À ordem" || sb.type === "Poupança") {
-        const bal = availableBalance(sb, transactions);
+        const bal = availableBalance(sb, transactions, asOfDate);
         const kz = toKz(bal, a.currency, exchangeRates);
         if (kz !== null) total += kz;
       }
@@ -879,15 +937,19 @@ function NavItem({
 }
 function Card({
   children,
-  style
+  style,
+  onClick
 }) {
   return React.createElement("div", {
+    onClick: onClick,
+    className: onClick ? "clickable-card" : undefined,
     style: {
       background: "var(--card)",
       border: "1px solid var(--line)",
       boxShadow: "0 1px 2px rgba(16,24,40,0.03)",
       borderRadius: 8,
       padding: 18,
+      cursor: onClick ? "pointer" : "default",
       ...style
     }
   }, children);
@@ -895,8 +957,12 @@ function Card({
 function StatCard({
   label,
   value,
+  rawValue,
+  currency = "Kz",
   sub,
-  tone = "ink"
+  tone = "ink",
+  big,
+  onClick
 }) {
   const colors = {
     ink: "var(--ink)",
@@ -904,10 +970,19 @@ function StatCard({
     rust: "var(--rust)",
     gold: "var(--gold)"
   };
+  const displayValue = rawValue !== undefined ? fmtCompact(rawValue, currency) : value;
+  const fullValue = rawValue !== undefined ? fmt(rawValue, currency) : undefined;
   return React.createElement(Card, {
+    onClick: onClick,
     style: {
       flex: 1,
-      minWidth: 180
+      minWidth: big ? 200 : 180
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
     }
   }, React.createElement("div", {
     style: {
@@ -917,22 +992,198 @@ function StatCard({
       letterSpacing: 0.5,
       textTransform: "uppercase"
     }
-  }, label), React.createElement("div", {
+  }, label), onClick && React.createElement("span", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)"
+    }
+  }, "›")), React.createElement("div", {
+    title: fullValue,
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 23,
-      fontWeight: 600,
+      fontSize: big ? 27 : 23,
+      fontWeight: 700,
       color: colors[tone],
       marginTop: 9,
-      fontVariantNumeric: "tabular-nums"
+      fontVariantNumeric: "tabular-nums",
+      cursor: fullValue ? "help" : "default"
     }
-  }, value), sub && React.createElement("div", {
+  }, displayValue), sub && React.createElement("div", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       marginTop: 5
     }
   }, sub));
+}
+function TrendBadge({
+  current,
+  previous,
+  previousLabel,
+  invert
+}) {
+  if (previous === null || previous === undefined) return null;
+  if (!previous && !current) return null;
+  const diff = current - previous;
+  if (!previous) {
+    return React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "var(--slate)",
+        marginTop: 5
+      }
+    }, "novo (sem dados de ", previousLabel, ")");
+  }
+  const pct = diff / Math.abs(previous) * 100;
+  const arrow = pct > 0.5 ? "▲" : pct < -0.5 ? "▼" : "•";
+  const good = invert ? pct <= 0.5 : pct >= -0.5;
+  const color = Math.abs(pct) < 0.5 ? "var(--slate)" : good ? "var(--emerald)" : "var(--rust)";
+  return React.createElement("div", {
+    style: {
+      marginTop: 5,
+      display: "flex",
+      flexDirection: "column",
+      gap: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color,
+      fontWeight: 700
+    }
+  }, arrow, " ", pct > 0 ? "+" : "", pct.toFixed(1), "%"), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, diff >= 0 ? "+" : "", fmtCompact(diff), " vs ", previousLabel));
+}
+function ConsolidatedTrendChart({
+  data
+}) {
+  const width = 640,
+    height = 220,
+    padding = 36;
+  const values = data.map(d => d.value);
+  const minVal = Math.min(0, ...values);
+  const maxVal = Math.max(1, ...values);
+  const range = maxVal - minVal || 1;
+  const n = data.length;
+  const stepX = (width - padding * 2) / Math.max(n - 1, 1);
+  const toY = v => height - padding - (v - minVal) / range * (height - padding * 2);
+  const pathD = data.map((d, i) => `${i === 0 ? "M" : "L"} ${padding + i * stepX} ${toY(d.value)}`).join(" ");
+  const areaD = `${pathD} L ${padding + (n - 1) * stepX} ${height - padding} L ${padding} ${height - padding} Z`;
+  return React.createElement("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    style: {
+      width: "100%",
+      height: "auto",
+      display: "block"
+    }
+  }, React.createElement("path", {
+    d: areaD,
+    fill: "var(--gold)",
+    opacity: "0.1"
+  }), React.createElement("path", {
+    d: pathD,
+    fill: "none",
+    stroke: "var(--gold)",
+    strokeWidth: "2.5"
+  }), data.map((d, i) => React.createElement("circle", {
+    key: i,
+    cx: padding + i * stepX,
+    cy: toY(d.value),
+    r: "3",
+    fill: "var(--gold)"
+  })), data.map((d, i) => React.createElement("text", {
+    key: i,
+    x: padding + i * stepX,
+    y: height - padding + 16,
+    textAnchor: "middle",
+    fontSize: "9.5",
+    fill: "var(--slate)",
+    fontFamily: "Inter, sans-serif",
+    style: {
+      textTransform: "capitalize"
+    }
+  }, d.label)));
+}
+function MultiCurrencyCard({
+  balancesByCurrency,
+  onClick
+}) {
+  const entries = Object.entries(balancesByCurrency);
+  return React.createElement(Card, {
+    onClick: onClick,
+    style: {
+      flex: 1,
+      minWidth: 190
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      fontWeight: 500,
+      letterSpacing: 0.5,
+      textTransform: "uppercase",
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, React.createElement("span", null, "💰"), " Saldos Disponíveis"), onClick && React.createElement("span", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)"
+    }
+  }, "›")), entries.length === 0 ? React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      marginTop: 10
+    }
+  }, "Nenhuma conta cadastrada") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 7,
+      marginTop: 10
+    }
+  }, entries.map(([cur, val]) => React.createElement("div", {
+    key: cur,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "baseline",
+      gap: 10
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      fontWeight: 600
+    }
+  }, cur), React.createElement("span", {
+    title: fmt(val, cur),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 15,
+      color: "var(--ink)",
+      cursor: "help"
+    }
+  }, fmtCompact(val, cur))))), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 10
+    }
+  }, "Atualizado ao dia de hoje"));
 }
 function Field({
   label,
@@ -1236,7 +1487,8 @@ function MonthlyBarChart({
   }));
 }
 function CategoryDonut({
-  data
+  data,
+  currency = "Kz"
 }) {
   const total = data.reduce((s, d) => s + d.value, 0);
   if (total <= 0) return null;
@@ -1298,7 +1550,7 @@ function CategoryDonut({
     fontWeight: "700",
     fill: "var(--ink)",
     fontFamily: "'IBM Plex Mono', monospace"
-  }, fmt(total).replace(" Kz", ""))), React.createElement("div", {
+  }, fmt(total, currency).replace(` ${currency}`, "").replace(currency + " ", ""))), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -1330,7 +1582,7 @@ function CategoryDonut({
       fontFamily: "'IBM Plex Mono', monospace",
       fontWeight: 600
     }
-  }, fmt(d.value)), React.createElement("span", {
+  }, fmt(d.value, currency)), React.createElement("span", {
     style: {
       color: "var(--slate)"
     }
@@ -2157,7 +2409,8 @@ function FinanceApp() {
     prevTotalReceitas: prevTotalReceitas,
     prevTotalDespesas: prevTotalDespesas,
     prevSpentByCategory: prevSpentByCategory,
-    categories: budgetIncome.categories
+    categories: budgetIncome.categories,
+    onNavigate: setTab
   }), tab === "accounts" && React.createElement(AccountsTab, {
     accounts: accounts,
     transactions: transactions,
@@ -2630,16 +2883,11 @@ function Overview({
   prevTotalReceitas,
   prevTotalDespesas,
   prevSpentByCategory,
-  categories
+  categories,
+  onNavigate
 }) {
   const saldo = totalReceitas - totalDespesas;
   const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
-  const hasMultipleCurrencies = otherCurrencies.length > 0 && Object.keys(balancesByCurrency).length > 1;
-  const missingRates = otherCurrencies.some(c => toKz(1, c, exchangeRates) === null);
-  const consolidatedKz = hasMultipleCurrencies ? Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
-    const converted = toKz(val, cur, exchangeRates);
-    return sum + (converted === null ? 0 : converted);
-  }, 0) : null;
   const familyBreakdown = useMemo(() => {
     const map = {};
     for (const t of transactions) {
@@ -2669,56 +2917,151 @@ function Overview({
     return map;
   }, [debts, debtPayments]);
   const overdueDebts = debts.filter(d => debtStatus(d, debtPayments) === "Vencida");
+  const prevMonthKeyForOverview = previousMonthKey(month);
+  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyForOverview);
+  const prevMonthLabel = monthShortLabel(prevMonthKeyForOverview);
+  const missingRatesAll = otherCurrencies.some(c => toKz(1, c, exchangeRates) === null);
+  const consolidatedKzNow = Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
+    const converted = toKz(val, cur, exchangeRates);
+    return sum + (converted === null ? 0 : converted);
+  }, 0);
+  const balancesByCurrencyPrev = useMemo(() => {
+    const map = {};
+    for (const a of accounts) map[a.currency] = (map[a.currency] || 0) + accountTotal(a, transactions, prevMonthEndDate);
+    return map;
+  }, [accounts, transactions, prevMonthEndDate]);
+  const consolidatedKzPrev = Object.entries(balancesByCurrencyPrev).reduce((sum, [cur, val]) => {
+    const converted = toKz(val, cur, exchangeRates);
+    return sum + (converted === null ? 0 : converted);
+  }, 0);
+  const liquidKzNow = liquidAssetsKz(accounts, transactions, exchangeRates);
+  const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
+  const netResultPrev = prevTotalReceitas - prevTotalDespesas;
+  const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, 12), [accounts, transactions, exchangeRates]);
   return React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: 22
     }
-  }, React.createElement("div", {
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 10
+    }
+  }, "Dashboard executivo"), React.createElement("div", {
     style: {
       display: "flex",
       gap: 14,
       flexWrap: "wrap"
     }
-  }, Object.keys(balancesByCurrency).length === 0 ? React.createElement(StatCard, {
-    label: "Saldo disponível",
-    value: fmt(0),
-    sub: "Nenhuma conta cadastrada"
-  }) : Object.entries(balancesByCurrency).map(([cur, val]) => React.createElement(StatCard, {
-    key: cur,
-    label: `Saldo disponível (${cur})`,
-    value: fmt(val, cur),
+  }, React.createElement(StatCard, {
+    label: "Património Total",
+    rawValue: consolidatedKzNow,
     tone: "ink",
-    sub: "Atualizado ao dia de hoje"
-  })), hasMultipleCurrencies && React.createElement(StatCard, {
-    label: "Saldo consolidado (Kz)",
-    value: missingRates ? "—" : fmt(consolidatedKz),
-    tone: "gold",
-    sub: missingRates ? "Defina as taxas de câmbio" : "Segundo taxas de câmbio definidas"
+    big: true,
+    onClick: () => onNavigate("planning"),
+    sub: missingRatesAll ? "Defina as taxas de câmbio para incluir todas as moedas" : React.createElement(TrendBadge, {
+      current: consolidatedKzNow,
+      previous: consolidatedKzPrev,
+      previousLabel: prevMonthLabel,
+      invert: false
+    })
   }), React.createElement(StatCard, {
-    label: "Receitas do mês",
-    value: fmt(totalReceitas),
+    label: "Resultado do Mês",
+    rawValue: saldo,
+    tone: saldo >= 0 ? "emerald" : "rust",
+    big: true,
+    onClick: () => onNavigate("transactions"),
+    sub: React.createElement(TrendBadge, {
+      current: saldo,
+      previous: netResultPrev,
+      previousLabel: prevMonthLabel,
+      invert: false
+    })
+  }), React.createElement(StatCard, {
+    label: "Juros Acumulados",
+    rawValue: interestSummary.accruedTotal,
+    tone: "gold",
+    big: true,
+    onClick: () => onNavigate("planning"),
+    sub: interestSummary.rows.length > 0 ? `${interestSummary.rows.length} saldo(s) a render juro` : "Sem saldos com juro definido"
+  }), React.createElement(StatCard, {
+    label: "Liquidez",
+    rawValue: liquidKzNow,
+    tone: "ink",
+    big: true,
+    onClick: () => onNavigate("accounts"),
+    sub: liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : "À ordem + poupança"
+  }))), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, "Evolução do Saldo Consolidado"), React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "4px 0 14px"
+    }
+  }, "Últimos 12 meses, convertido para Kz segundo as taxas de câmbio definidas."), React.createElement(ConsolidatedTrendChart, {
+    data: balanceTrend12m
+  })), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 10
+    }
+  }, "Detalhe"), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 14,
+      flexWrap: "wrap"
+    }
+  }, React.createElement(MultiCurrencyCard, {
+    balancesByCurrency: balancesByCurrency,
+    onClick: () => onNavigate("accounts")
+  }), React.createElement(StatCard, {
+    label: "Receitas",
+    rawValue: totalReceitas,
     tone: "emerald",
-    sub: React.createElement(React.Fragment, null, "Previsto: ", fmt(expectedIncome), React.createElement("br", null), React.createElement(DeltaBadge, {
+    onClick: () => onNavigate("transactions"),
+    sub: React.createElement(DeltaBadge, {
       current: totalReceitas,
       previous: prevTotalReceitas,
       invert: false
-    }))
+    })
   }), React.createElement(StatCard, {
-    label: "Despesas do mês",
-    value: fmt(totalDespesas),
+    label: "Despesas",
+    rawValue: totalDespesas,
     tone: "rust",
+    onClick: () => onNavigate("transactions"),
     sub: React.createElement(DeltaBadge, {
       current: totalDespesas,
       previous: prevTotalDespesas,
       invert: true
     })
   }), React.createElement(StatCard, {
-    label: "Resultado do mês",
-    value: fmt(saldo),
-    tone: saldo >= 0 ? "emerald" : "rust"
-  })), React.createElement(Card, null, React.createElement("div", {
+    label: "Resultado",
+    rawValue: saldo,
+    tone: saldo >= 0 ? "emerald" : "rust",
+    onClick: () => onNavigate("transactions"),
+    sub: "Receitas − Despesas"
+  }), React.createElement(StatCard, {
+    label: "Fluxo de Caixa",
+    rawValue: saldo,
+    tone: saldo >= 0 ? "emerald" : "rust",
+    onClick: () => onNavigate("forecast"),
+    sub: `Previsto: ${fmt(expectedIncome)}`
+  }))), React.createElement(Card, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -2765,10 +3108,14 @@ function Overview({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 16
+      gap: 24
     }
   }, Object.entries(splitByCurrency).map(([cur, breakdown]) => {
-    const total = SUB_TYPES.reduce((s, t) => s + breakdown[t], 0);
+    const donutData = SUB_TYPES.filter(t => breakdown[t] > 0).map(t => ({
+      name: t,
+      value: breakdown[t],
+      color: t === "À ordem" ? "#1B1F27" : t === "Poupança" ? "#12A150" : "#0F6CBD"
+    }));
     return React.createElement("div", {
       key: cur
     }, React.createElement("div", {
@@ -2776,43 +3123,17 @@ function Overview({
         fontSize: 12,
         color: "var(--slate)",
         fontWeight: 600,
-        marginBottom: 6
+        marginBottom: 10
       }
-    }, cur), React.createElement(SplitBar, {
-      breakdown: breakdown,
-      total: total
-    }), React.createElement("div", {
+    }, cur), donutData.length > 0 ? React.createElement(CategoryDonut, {
+      data: donutData,
+      currency: cur
+    }) : React.createElement("p", {
       style: {
-        display: "flex",
-        gap: 18,
-        marginTop: 8,
-        flexWrap: "wrap"
-      }
-    }, SUB_TYPES.map(t => React.createElement("div", {
-      key: t,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        fontSize: 12.5
-      }
-    }, React.createElement("span", {
-      style: {
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: t === "À ordem" ? "var(--ink)" : t === "Poupança" ? "var(--emerald)" : "var(--gold)"
-      }
-    }), React.createElement("span", {
-      style: {
+        fontSize: 13,
         color: "var(--slate)"
       }
-    }, t, ":"), React.createElement("span", {
-      style: {
-        fontFamily: "'IBM Plex Mono', monospace",
-        fontWeight: 600
-      }
-    }, fmt(breakdown[t], cur))))));
+    }, "Sem saldo nesta moeda."));
   }))), interestSummary.rows.length > 0 && React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
