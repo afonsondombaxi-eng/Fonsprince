@@ -289,6 +289,32 @@ const IconFlame = p => React.createElement(Icon, p, React.createElement("path", 
 const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M15 18l-6-6 6-6"
 }));
+const IconLock = p => React.createElement(Icon, p, React.createElement("rect", {
+  x: "3",
+  y: "11",
+  width: "18",
+  height: "11",
+  rx: "2"
+}), React.createElement("path", {
+  d: "M7 11V7a5 5 0 0 1 10 0v4"
+}));
+const IconSearch = p => React.createElement(Icon, p, React.createElement("circle", {
+  cx: "11",
+  cy: "11",
+  r: "8"
+}), React.createElement("path", {
+  d: "M21 21l-4.35-4.35"
+}));
+const IconMoon = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+}));
+const IconSun = p => React.createElement(Icon, p, React.createElement("circle", {
+  cx: "12",
+  cy: "12",
+  r: "5"
+}), React.createElement("path", {
+  d: "M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+}));
 const IconMore = p => React.createElement(Icon, p, React.createElement("circle", {
   cx: "12",
   cy: "5",
@@ -311,8 +337,8 @@ const IconMore = p => React.createElement(Icon, p, React.createElement("circle",
 const BANKS = ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Outro"];
 const CURRENCIES = ["Kz", "USD", "EUR"];
 const SUB_TYPES = ["À ordem", "Poupança", "Investimento"];
-const EXPENSE_CATEGORIES = ["Alimentação", "Transporte", "Habitação", "Contas Fixas", "Salários de Funcionários", "Pagamento de Dívidas", "Saúde", "Educação", "Lazer", "Vestuário", "Outros"];
-const CATEGORY_COLORS = ["#12A150", "#B8873A", "#1B1F27", "#68707C", "#D13438", "#8A4F7D", "#3E7CB1", "#7B5EA7", "#D97B29", "#C77DA6", "#8C8C74"];
+const EXPENSE_CATEGORIES = ["Alimentação", "Transporte", "Combustíveis", "Habitação", "Contas Fixas", "Comunicação", "Salários de Funcionários", "Pagamento de Dívidas", "Empréstimos a Terceiros", "Saúde", "Educação", "Lazer", "Vestuário", "Outros"];
+const CATEGORY_COLORS = ["#12A150", "#B8873A", "#E08E45", "#1B1F27", "#68707C", "#4C9EE8", "#D13438", "#8A4F7D", "#A85C3C", "#3E7CB1", "#7B5EA7", "#D97B29", "#C77DA6", "#8C8C74"];
 function categoryColor(cat) {
   const i = EXPENSE_CATEGORIES.indexOf(cat);
   return CATEGORY_COLORS[i >= 0 ? i % CATEGORY_COLORS.length : CATEGORY_COLORS.length - 1];
@@ -1268,6 +1294,273 @@ function Modal({
     size: 18
   }))), children));
 }
+function ConfirmDialog({
+  message,
+  detail,
+  onCancel,
+  onConfirm
+}) {
+  return React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16,32,60,0.45)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 60,
+      padding: 16
+    },
+    onClick: onCancel
+  }, React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: "var(--card)",
+      borderRadius: 8,
+      padding: 22,
+      width: "100%",
+      maxWidth: 380,
+      boxShadow: "0 20px 60px rgba(16,32,60,0.3)"
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 17,
+      fontWeight: 700,
+      color: "var(--ink)",
+      margin: "0 0 8px"
+    }
+  }, message), detail && React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: "0 0 18px"
+    }
+  }, detail), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginTop: detail ? 0 : 18
+    }
+  }, React.createElement(GhostButton, {
+    onClick: onCancel,
+    style: {
+      flex: 1
+    }
+  }, "Cancelar"), React.createElement(PrimaryButton, {
+    onClick: onConfirm,
+    style: {
+      flex: 1,
+      background: "var(--rust)"
+    }
+  }, "Remover"))));
+}
+function PinSetupModal({
+  currentPin,
+  onClose,
+  onSave,
+  onRemove
+}) {
+  const [step, setStep] = useState(currentPin ? "manage" : "create");
+  const [value, setValue] = useState("");
+  const [confirmValue, setConfirmValue] = useState("");
+  const [removeCheck, setRemoveCheck] = useState("");
+  const [error, setError] = useState("");
+  function handleCreateNext() {
+    if (value.length < 4) {
+      setError("O PIN deve ter pelo menos 4 dígitos.");
+      return;
+    }
+    setError("");
+    setStep("confirm");
+  }
+  function handleConfirm() {
+    if (confirmValue !== value) {
+      setError("Os PINs não coincidem. Tente novamente.");
+      setValue("");
+      setConfirmValue("");
+      setStep("create");
+      return;
+    }
+    onSave(value);
+  }
+  function handleRemove() {
+    if (removeCheck !== currentPin) {
+      setError("PIN incorreto.");
+      return;
+    }
+    onRemove();
+  }
+  return React.createElement(Modal, {
+    title: "Segurança",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, step === "manage" && React.createElement(React.Fragment, null, React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Esta app já tem um PIN definido, pedido sempre que a abrir. Isto é um dissuasor simples (os dados continuam guardados sem encriptação no aparelho) — não substitui o bloqueio de ecrã do seu telemóvel/computador."), React.createElement(GhostButton, {
+    onClick: () => {
+      setStep("create");
+      setValue("");
+      setError("");
+    }
+  }, "Alterar PIN"), React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      paddingTop: 14,
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Confirme o PIN atual para remover"
+  }, React.createElement("input", {
+    type: "password",
+    inputMode: "numeric",
+    style: inputStyle,
+    value: removeCheck,
+    onChange: e => setRemoveCheck(e.target.value),
+    placeholder: "••••"
+  })), error && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)"
+    }
+  }, error), React.createElement(PrimaryButton, {
+    onClick: handleRemove,
+    style: {
+      background: "var(--rust)"
+    }
+  }, "Remover PIN"))), step === "create" && React.createElement(React.Fragment, null, React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Defina um PIN de 4 a 6 dígitos, pedido sempre que abrir a app."), React.createElement(Field, {
+    label: "Novo PIN"
+  }, React.createElement("input", {
+    type: "password",
+    inputMode: "numeric",
+    maxLength: 6,
+    style: inputStyle,
+    value: value,
+    onChange: e => setValue(e.target.value.replace(/\D/g, "")),
+    placeholder: "••••"
+  })), error && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)"
+    }
+  }, error), React.createElement(PrimaryButton, {
+    onClick: handleCreateNext
+  }, "Continuar")), step === "confirm" && React.createElement(React.Fragment, null, React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Confirme o PIN."), React.createElement(Field, {
+    label: "Repita o PIN"
+  }, React.createElement("input", {
+    type: "password",
+    inputMode: "numeric",
+    maxLength: 6,
+    style: inputStyle,
+    value: confirmValue,
+    onChange: e => setConfirmValue(e.target.value.replace(/\D/g, "")),
+    placeholder: "••••"
+  })), error && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)"
+    }
+  }, error), React.createElement(PrimaryButton, {
+    onClick: handleConfirm
+  }, "Guardar PIN"))));
+}
+function LockScreen({
+  pin,
+  onUnlock
+}) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState(false);
+  function handleSubmit() {
+    if (value === pin) {
+      onUnlock();
+    } else {
+      setError(true);
+      setValue("");
+    }
+  }
+  return React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "#1B1F27",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 18,
+      zIndex: 100,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    }
+  }, React.createElement(IconLock, {
+    size: 30,
+    style: {
+      color: "#fff"
+    }
+  }), React.createElement("div", {
+    style: {
+      color: "#fff",
+      fontSize: 17,
+      fontWeight: 600
+    }
+  }, "Fonsprince bloqueado"), React.createElement("input", {
+    type: "password",
+    inputMode: "numeric",
+    maxLength: 6,
+    autoFocus: true,
+    value: value,
+    onChange: e => {
+      setError(false);
+      setValue(e.target.value.replace(/\D/g, ""));
+    },
+    onKeyDown: e => e.key === "Enter" && handleSubmit(),
+    placeholder: "PIN",
+    style: {
+      width: 160,
+      textAlign: "center",
+      fontSize: 20,
+      letterSpacing: 6,
+      padding: "10px 12px",
+      borderRadius: 8,
+      border: error ? "1.5px solid var(--rust)" : "1px solid rgba(255,255,255,0.25)",
+      background: "rgba(255,255,255,0.06)",
+      color: "#fff",
+      outline: "none"
+    }
+  }), error && React.createElement("div", {
+    style: {
+      color: "#E8A9A0",
+      fontSize: 12.5
+    }
+  }, "PIN incorreto."), React.createElement(PrimaryButton, {
+    onClick: handleSubmit,
+    style: {
+      background: "#0F6CBD"
+    }
+  }, "Entrar"));
+}
 function PrimaryButton({
   children,
   onClick,
@@ -1693,6 +1986,18 @@ function FinanceApp() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+  const [confirmAction, setConfirmAction] = useState(null);
+  function askConfirm(message, onConfirm, detail) {
+    setConfirmAction({
+      message,
+      detail,
+      onConfirm
+    });
+  }
+  const [pin, setPin] = useState(() => loadKey("app-pin", null));
+  const [unlocked, setUnlocked] = useState(false);
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
   const [accounts, setAccounts] = useState(() => loadKey("accounts", []));
   const [transactions, setTransactions] = useState(() => loadKey("transactions", []));
   const [budgetIncome, setBudgetIncome] = useState(() => loadKey("budget-and-income", {
@@ -1740,6 +2045,8 @@ function FinanceApp() {
   useEffect(() => saveKey("exchange-rates", exchangeRates), [exchangeRates]);
   useEffect(() => saveKey("expense-shortcuts", expenseShortcuts), [expenseShortcuts]);
   useEffect(() => saveKey("sidebar-collapsed", sidebarCollapsed), [sidebarCollapsed]);
+  useEffect(() => saveKey("app-pin", pin), [pin]);
+  useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
   const monthTx = useMemo(() => transactions.filter(t => monthKey(t.date) === month), [transactions, month]);
   const monthExpenses = useMemo(() => monthTx.filter(t => t.kind === "despesa"), [monthTx]);
   const monthReceitas = useMemo(() => monthTx.filter(t => t.kind === "receita"), [monthTx]);
@@ -2028,16 +2335,23 @@ function FinanceApp() {
       description: shortcut.name
     });
   }
+  if (pin && !unlocked) {
+    return React.createElement(LockScreen, {
+      pin: pin,
+      onUnlock: () => setUnlocked(true)
+    });
+  }
   return React.createElement("div", {
     style: {
-      "--ink": "#1B1F27",
-      "--slate": "#68707C",
-      "--paper": "#F4F5F7",
-      "--card": "#FFFFFF",
-      "--line": "#E3E5E9",
-      "--emerald": "#12A150",
-      "--rust": "#D13438",
-      "--gold": "#0F6CBD",
+      "--ink": darkMode ? "#EDEEF0" : "#1B1F27",
+      "--slate": darkMode ? "#9AA1AC" : "#68707C",
+      "--paper": darkMode ? "#14161B" : "#F4F5F7",
+      "--card": darkMode ? "#1E2128" : "#FFFFFF",
+      "--line": darkMode ? "#2C2F37" : "#E3E5E9",
+      "--emerald": darkMode ? "#2FBE73" : "#12A150",
+      "--rust": darkMode ? "#E5595C" : "#D13438",
+      "--gold": darkMode ? "#4C9EE8" : "#0F6CBD",
+      "--sidebar": darkMode ? "#0D0F13" : "#1B1F27",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
       width: "100%",
@@ -2064,7 +2378,7 @@ function FinanceApp() {
     style: {
       width: sidebarCollapsed ? 64 : 210,
       flexShrink: 0,
-      background: "var(--ink)",
+      background: "var(--sidebar)",
       padding: sidebarCollapsed ? "22px 8px" : "22px 12px",
       display: "flex",
       flexDirection: "column",
@@ -2317,7 +2631,24 @@ function FinanceApp() {
     }
   }, React.createElement(IconBell, {
     size: 17
+  })), React.createElement("button", {
+    onClick: () => setDarkMode(d => !d),
+    title: darkMode ? "Modo claro" : "Modo escuro",
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "var(--slate)",
+      padding: 4,
+      display: "flex"
+    }
+  }, darkMode ? React.createElement(IconSun, {
+    size: 17
+  }) : React.createElement(IconMoon, {
+    size: 17
   })), React.createElement("div", {
+    onClick: () => setShowPinSetup(true),
+    title: "Segurança",
     style: {
       width: 28,
       height: 28,
@@ -2330,7 +2661,8 @@ function FinanceApp() {
       fontSize: 11.5,
       fontWeight: 600,
       fontFamily: "Inter, sans-serif",
-      flexShrink: 0
+      flexShrink: 0,
+      cursor: "pointer"
     }
   }, "AN"))), React.createElement("div", {
     style: {
@@ -2423,14 +2755,14 @@ function FinanceApp() {
       setEditingAccount(acc);
       setShowAccountModal(true);
     },
-    onRemove: removeAccount
+    onRemove: id => askConfirm("Remover esta conta?", () => removeAccount(id), "Isto também vai desassociar quaisquer despesas fixas, dívidas ou atalhos ligados a esta conta.")
   }), tab === "transactions" && React.createElement(TransactionsTab, {
     transactions: monthTx,
     accounts: accounts,
     shortcuts: expenseShortcuts,
     onAdd: () => setShowTxModal(true),
     onTransfer: () => setShowTransferModal(true),
-    onRemove: removeTx,
+    onRemove: id => askConfirm("Remover este movimento?", () => removeTx(id)),
     onQuickAdd: quickAddExpense,
     onManageShortcuts: () => setShowShortcutsModal(true)
   }), tab === "budget" && React.createElement(BudgetTab, {
@@ -2460,7 +2792,7 @@ function FinanceApp() {
       setEditingRecurring(r);
       setShowRecurringModal(true);
     },
-    onRemoveRecurring: removeRecurring,
+    onRemoveRecurring: id => askConfirm("Remover esta despesa fixa?", () => removeRecurring(id)),
     onMarkPaid: r => markRecurringPaid(r, month)
   }), tab === "goals" && React.createElement(GoalsTab, {
     goals: goals,
@@ -2472,7 +2804,7 @@ function FinanceApp() {
       setEditingGoal(g);
       setShowGoalModal(true);
     },
-    onRemove: removeGoal,
+    onRemove: id => askConfirm("Remover esta meta?", () => removeGoal(id), "O histórico de contribuições também será perdido."),
     onContribute: g => setContribGoal(g)
   }), tab === "debts" && React.createElement(DebtsTab, {
     debts: debts,
@@ -2485,7 +2817,7 @@ function FinanceApp() {
       setEditingDebt(d);
       setShowDebtModal(true);
     },
-    onRemove: removeDebt,
+    onRemove: id => askConfirm("Remover esta dívida?", () => removeDebt(id), "O histórico de pagamentos também será perdido."),
     onPay: d => setPayingDebt(d)
   }), tab === "exchange" && React.createElement(ExchangeTab, {
     rates: exchangeRates,
@@ -2532,7 +2864,7 @@ function FinanceApp() {
       bottom: 0,
       left: 0,
       right: 0,
-      background: "var(--ink)",
+      background: "var(--sidebar)",
       display: "flex",
       alignItems: "stretch",
       minHeight: 60,
@@ -2850,7 +3182,7 @@ function FinanceApp() {
       setEditingShortcut(s);
       setShowShortcutFormModal(true);
     },
-    onRemove: removeShortcut
+    onRemove: id => askConfirm("Remover este atalho?", () => removeShortcut(id))
   }), showShortcutFormModal && React.createElement(ShortcutFormModal, {
     initial: editingShortcut,
     accounts: accounts,
@@ -2862,6 +3194,26 @@ function FinanceApp() {
       if (editingShortcut) updateShortcut(editingShortcut.id, s);else addShortcut(s);
       setShowShortcutFormModal(false);
       setEditingShortcut(null);
+    }
+  }), confirmAction && React.createElement(ConfirmDialog, {
+    message: confirmAction.message,
+    detail: confirmAction.detail,
+    onCancel: () => setConfirmAction(null),
+    onConfirm: () => {
+      confirmAction.onConfirm();
+      setConfirmAction(null);
+    }
+  }), showPinSetup && React.createElement(PinSetupModal, {
+    currentPin: pin,
+    onClose: () => setShowPinSetup(false),
+    onSave: newPin => {
+      setPin(newPin);
+      setUnlocked(true);
+      setShowPinSetup(false);
+    },
+    onRemove: () => {
+      setPin(null);
+      setShowPinSetup(false);
     }
   }));
 }
@@ -3891,6 +4243,24 @@ function TransactionsTab({
   onQuickAdd,
   onManageShortcuts
 }) {
+  const [search, setSearch] = useState("");
+  const [filterAccount, setFilterAccount] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const allCategories = useMemo(() => {
+    const set = new Set();
+    transactions.forEach(t => t.category && set.add(t.category));
+    return Array.from(set).sort();
+  }, [transactions]);
+  const filteredTransactions = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return transactions.filter(t => {
+      if (filterAccount && t.accountId !== filterAccount && t.fromAccountId !== filterAccount && t.toAccountId !== filterAccount) return false;
+      if (filterCategory && t.category !== filterCategory) return false;
+      if (q && !`${t.description || ""} ${t.category || ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [transactions, search, filterAccount, filterCategory]);
+  const hasActiveFilters = search !== "" || filterAccount !== "" || filterCategory !== "";
   return React.createElement("div", null, React.createElement("div", {
     style: {
       display: "flex",
@@ -3989,7 +4359,76 @@ function TransactionsTab({
       marginTop: -10,
       marginBottom: 14
     }
-  }, "Adicione primeiro uma conta bancária na aba Contas."), React.createElement(Card, {
+  }, "Adicione primeiro uma conta bancária na aba Contas."), transactions.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginBottom: 14,
+      flexWrap: "wrap",
+      alignItems: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "relative",
+      flex: "1 1 200px",
+      minWidth: 180
+    }
+  }, React.createElement(IconSearch, {
+    size: 14,
+    style: {
+      position: "absolute",
+      left: 10,
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "var(--slate)"
+    }
+  }), React.createElement("input", {
+    value: search,
+    onChange: e => setSearch(e.target.value),
+    placeholder: "Procurar por descrição ou categoria…",
+    style: {
+      ...inputStyle,
+      width: "100%",
+      paddingLeft: 32
+    }
+  })), React.createElement("select", {
+    value: filterAccount,
+    onChange: e => setFilterAccount(e.target.value),
+    style: {
+      ...inputStyle,
+      minWidth: 160
+    }
+  }, React.createElement("option", {
+    value: ""
+  }, "Todas as contas"), accounts.map(a => React.createElement("option", {
+    key: a.id,
+    value: a.id
+  }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`))), React.createElement("select", {
+    value: filterCategory,
+    onChange: e => setFilterCategory(e.target.value),
+    style: {
+      ...inputStyle,
+      minWidth: 150
+    }
+  }, React.createElement("option", {
+    value: ""
+  }, "Todas as categorias"), allCategories.map(c => React.createElement("option", {
+    key: c
+  }, c))), hasActiveFilters && React.createElement("button", {
+    onClick: () => {
+      setSearch("");
+      setFilterAccount("");
+      setFilterCategory("");
+    },
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      fontSize: 12.5,
+      cursor: "pointer",
+      textDecoration: "underline"
+    }
+  }, "Limpar filtros")), React.createElement(Card, {
     style: {
       padding: 0
     }
@@ -4000,7 +4439,14 @@ function TransactionsTab({
       padding: 20,
       margin: 0
     }
-  }, "Nenhum movimento este mês.") : React.createElement("table", {
+  }, "Nenhum movimento este mês.") : filteredTransactions.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      padding: 20,
+      margin: 0
+    }
+  }, "Nenhum movimento corresponde aos filtros.") : React.createElement("table", {
     style: {
       width: "100%",
       borderCollapse: "collapse",
@@ -4038,7 +4484,7 @@ function TransactionsTab({
     style: {
       padding: "12px 16px"
     }
-  }))), React.createElement("tbody", null, [...transactions].sort((a, b) => a.date < b.date ? 1 : -1).map(t => {
+  }))), React.createElement("tbody", null, [...filteredTransactions].sort((a, b) => a.date < b.date ? 1 : -1).map(t => {
     if (t.kind === "transferencia") {
       const fromAcc = accounts.find(a => a.id === t.fromAccountId);
       const fromSub = fromAcc && fromAcc.subBalances && fromAcc.subBalances.find(s => s.id === t.fromSubBalanceId);
