@@ -432,7 +432,7 @@ function monthlyHistory(transactions, count) {
     };
   });
 }
-function consolidatedBalanceHistory(accounts, transactions, exchangeRates, count) {
+function consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, count) {
   count = count || 12;
   const now = new Date();
   const rows = [];
@@ -443,7 +443,7 @@ function consolidatedBalanceHistory(accounts, transactions, exchangeRates, count
     let total = 0;
     for (const a of accounts) {
       const bal = accountTotal(a, transactions, asOf);
-      const kz = toKz(bal, a.currency, exchangeRates);
+      const kz = toKzAsOf(bal, a.currency, rateHistory, exchangeRates, asOf);
       if (kz !== null) total += kz;
     }
     const label = new Date(mKey + "-02").toLocaleDateString("pt-PT", {
@@ -536,6 +536,15 @@ function toKz(amount, currency, rates) {
   if (currency === "USD") return rates.usdRate ? Number(amount) * Number(rates.usdRate) : null;
   if (currency === "EUR") return rates.eurRate ? Number(amount) * Number(rates.eurRate) : null;
   return null;
+}
+function rateAsOf(rateHistory, currentRates, asOfDate) {
+  if (!rateHistory || rateHistory.length === 0) return currentRates;
+  const upToDate = rateHistory.filter(h => h.date <= asOfDate);
+  if (upToDate.length > 0) return upToDate[upToDate.length - 1];
+  return rateHistory[0];
+}
+function toKzAsOf(amount, currency, rateHistory, currentRates, asOfDate) {
+  return toKz(amount, currency, rateAsOf(rateHistory, currentRates, asOfDate));
 }
 async function fetchBnaRates() {
   const controller = new AbortController();
@@ -846,7 +855,8 @@ function buildAlerts(opts) {
     categories,
     debts,
     debtPayments,
-    goals
+    goals,
+    lastExportDate
   } = opts;
   const alerts = [];
   const in5days = new Date();
@@ -903,6 +913,20 @@ function buildAlerts(opts) {
         text: `Ainda não contribuiu para a meta "${g.name}" este mês.`
       });
     }
+  }
+  if (lastExportDate) {
+    const daysSince = Math.floor((new Date(todayISO()) - new Date(lastExportDate)) / (1000 * 60 * 60 * 24));
+    if (daysSince > 21) {
+      alerts.push({
+        severity: "gold",
+        text: `Já não exporta os dados há ${daysSince} dias — considere fazer uma cópia de segurança.`
+      });
+    }
+  } else if (transactions.length > 5) {
+    alerts.push({
+      severity: "gold",
+      text: "Ainda não fez nenhuma exportação de dados — considere guardar uma cópia de segurança."
+    });
   }
   return alerts;
 }
@@ -1998,6 +2022,32 @@ function FinanceApp() {
   const [unlocked, setUnlocked] = useState(false);
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
+  const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [lastExportDate, setLastExportDate] = useState(() => loadKey("last-export-date", null));
+  const [rateHistory, setRateHistory] = useState(() => loadKey("exchange-rate-history", []));
+  const expenseCategories = useMemo(() => [...EXPENSE_CATEGORIES, ...customCategories], [customCategories]);
+  function addCustomCategory(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if ([...EXPENSE_CATEGORIES, ...customCategories].some(c => c.toLowerCase() === trimmed.toLowerCase())) return;
+    setCustomCategories(c => [...c, trimmed]);
+  }
+  function removeCustomCategory(name) {
+    setCustomCategories(c => c.filter(x => x !== name));
+  }
+  function updateExchangeRates(newRates) {
+    setExchangeRates(newRates);
+    const today = todayISO();
+    setRateHistory(hist => {
+      const withoutToday = hist.filter(h => h.date !== today);
+      return [...withoutToday, {
+        date: today,
+        usdRate: newRates.usdRate,
+        eurRate: newRates.eurRate
+      }].sort((a, b) => a.date < b.date ? -1 : 1);
+    });
+  }
   const [accounts, setAccounts] = useState(() => loadKey("accounts", []));
   const [transactions, setTransactions] = useState(() => loadKey("transactions", []));
   const [budgetIncome, setBudgetIncome] = useState(() => loadKey("budget-and-income", {
@@ -2047,6 +2097,9 @@ function FinanceApp() {
   useEffect(() => saveKey("sidebar-collapsed", sidebarCollapsed), [sidebarCollapsed]);
   useEffect(() => saveKey("app-pin", pin), [pin]);
   useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
+  useEffect(() => saveKey("custom-categories", customCategories), [customCategories]);
+  useEffect(() => saveKey("last-export-date", lastExportDate), [lastExportDate]);
+  useEffect(() => saveKey("exchange-rate-history", rateHistory), [rateHistory]);
   const monthTx = useMemo(() => transactions.filter(t => monthKey(t.date) === month), [transactions, month]);
   const monthExpenses = useMemo(() => monthTx.filter(t => t.kind === "despesa"), [monthTx]);
   const monthReceitas = useMemo(() => monthTx.filter(t => t.kind === "receita"), [monthTx]);
@@ -2268,9 +2321,55 @@ function FinanceApp() {
       debtPayments,
       recurringExpenses,
       exchangeRates,
-      expenseShortcuts
+      expenseShortcuts,
+      customCategories,
+      rateHistory
     };
     downloadJson(payload, `ledger-backup-${todayISO()}.json`);
+    setLastExportDate(todayISO());
+  }
+  function exportTransactionsCSV() {
+    const header = ["Data", "Tipo", "Conta", "Saldo", "Categoria", "Descrição", "Membro", "Valor", "Moeda"];
+    const rows = [...transactions].sort((a, b) => a.date < b.date ? -1 : 1).map(t => {
+      const kindLabel = {
+        despesa: "Despesa",
+        receita: "Receita",
+        transferencia: "Transferência"
+      }[t.kind] || t.kind;
+      let accountLabel = "";
+      let subLabel = "";
+      let currency = "Kz";
+      if (t.kind === "transferencia") {
+        const fromAcc = accounts.find(a => a.id === t.fromAccountId);
+        const toAcc = accounts.find(a => a.id === t.toAccountId);
+        accountLabel = `${fromAcc ? fromAcc.bank.replace(/—.*/, "").trim() : "?"} → ${toAcc ? toAcc.bank.replace(/—.*/, "").trim() : "?"}`;
+        currency = fromAcc && fromAcc.currency || "Kz";
+      } else {
+        const acc = accounts.find(a => a.id === t.accountId);
+        const sub = acc && acc.subBalances && acc.subBalances.find(s => s.id === t.subBalanceId);
+        accountLabel = acc ? acc.bank.replace(/—.*/, "").trim() : "";
+        subLabel = sub ? sub.label || sub.type : "";
+        currency = acc && acc.currency || "Kz";
+      }
+      return [t.date, kindLabel, accountLabel, subLabel, t.category || "", t.description || "", t.member || "", Number(t.amount).toFixed(2), currency];
+    });
+    const csvEscape = v => {
+      const s = String(v == null ? "" : v);
+      return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [header, ...rows].map(row => row.map(csvEscape).join(";")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `movimentos-${todayISO()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setLastExportDate(todayISO());
   }
   function handleImportFileSelected(e) {
     const file = e.target.files[0];
@@ -2307,6 +2406,8 @@ function FinanceApp() {
       source: null
     });
     setExpenseShortcuts(data.expenseShortcuts || []);
+    setCustomCategories(data.customCategories || []);
+    setRateHistory(data.rateHistory || []);
     setPendingImport(null);
   }
   function addShortcut(s) {
@@ -2737,6 +2838,7 @@ function FinanceApp() {
     debts: debts,
     debtPayments: debtPayments,
     exchangeRates: exchangeRates,
+    rateHistory: rateHistory,
     spentByCategory: spentByCategory,
     prevTotalReceitas: prevTotalReceitas,
     prevTotalDespesas: prevTotalDespesas,
@@ -2764,7 +2866,8 @@ function FinanceApp() {
     onTransfer: () => setShowTransferModal(true),
     onRemove: id => askConfirm("Remover este movimento?", () => removeTx(id)),
     onQuickAdd: quickAddExpense,
-    onManageShortcuts: () => setShowShortcutsModal(true)
+    onManageShortcuts: () => setShowShortcutsModal(true),
+    onExportCSV: exportTransactionsCSV
   }), tab === "budget" && React.createElement(BudgetTab, {
     categories: budgetIncome.categories,
     spentByCategory: spentByCategory,
@@ -2793,7 +2896,9 @@ function FinanceApp() {
       setShowRecurringModal(true);
     },
     onRemoveRecurring: id => askConfirm("Remover esta despesa fixa?", () => removeRecurring(id)),
-    onMarkPaid: r => markRecurringPaid(r, month)
+    onMarkPaid: r => markRecurringPaid(r, month),
+    expenseCategories: expenseCategories,
+    onManageCategories: () => setShowCategoryManager(true)
   }), tab === "goals" && React.createElement(GoalsTab, {
     goals: goals,
     onAdd: () => {
@@ -2821,7 +2926,7 @@ function FinanceApp() {
     onPay: d => setPayingDebt(d)
   }), tab === "exchange" && React.createElement(ExchangeTab, {
     rates: exchangeRates,
-    onSave: setExchangeRates
+    onSave: updateExchangeRates
   }), tab === "forecast" && React.createElement(ForecastTab, {
     balancesByCurrency: balancesByCurrency,
     expectedIncome: expectedIncome,
@@ -2857,7 +2962,8 @@ function FinanceApp() {
     categories: budgetIncome.categories,
     debts: debts,
     debtPayments: debtPayments,
-    goals: goals
+    goals: goals,
+    lastExportDate: lastExportDate
   }))), isMobile && React.createElement("div", {
     style: {
       position: "fixed",
@@ -3040,6 +3146,31 @@ function FinanceApp() {
     }
   }), " Exportar dados"), React.createElement("button", {
     onClick: () => {
+      exportTransactionsCSV();
+      setShowMoreSheet(false);
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconDownload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Exportar movimentos (CSV)"), React.createElement("button", {
+    onClick: () => {
       setShowMoreSheet(false);
       fileInputRef.current && fileInputRef.current.click();
     },
@@ -3082,6 +3213,7 @@ function FinanceApp() {
   }), showTxModal && React.createElement(TxModal, {
     accounts: accounts,
     transactions: transactions,
+    expenseCategories: expenseCategories,
     onClose: () => setShowTxModal(false),
     onSave: tx => {
       addTx(tx);
@@ -3138,6 +3270,7 @@ function FinanceApp() {
     initial: editingRecurring,
     defaultIsStaff: recurringDefaultIsStaff,
     accounts: accounts,
+    expenseCategories: expenseCategories,
     onClose: () => {
       setShowRecurringModal(false);
       setEditingRecurring(null);
@@ -3186,6 +3319,7 @@ function FinanceApp() {
   }), showShortcutFormModal && React.createElement(ShortcutFormModal, {
     initial: editingShortcut,
     accounts: accounts,
+    expenseCategories: expenseCategories,
     onClose: () => {
       setShowShortcutFormModal(false);
       setEditingShortcut(null);
@@ -3215,6 +3349,12 @@ function FinanceApp() {
       setPin(null);
       setShowPinSetup(false);
     }
+  }), showCategoryManager && React.createElement(CategoryManagerModal, {
+    builtIn: EXPENSE_CATEGORIES,
+    custom: customCategories,
+    onAdd: addCustomCategory,
+    onRemove: name => askConfirm(`Remover a categoria "${name}"?`, () => removeCustomCategory(name), "Os movimentos já registados com esta categoria mantêm-se, só deixa de aparecer como opção para novos movimentos."),
+    onClose: () => setShowCategoryManager(false)
   }));
 }
 function Overview({
@@ -3231,6 +3371,7 @@ function Overview({
   debts,
   debtPayments,
   exchangeRates,
+  rateHistory,
   spentByCategory,
   prevTotalReceitas,
   prevTotalDespesas,
@@ -3283,13 +3424,13 @@ function Overview({
     return map;
   }, [accounts, transactions, prevMonthEndDate]);
   const consolidatedKzPrev = Object.entries(balancesByCurrencyPrev).reduce((sum, [cur, val]) => {
-    const converted = toKz(val, cur, exchangeRates);
+    const converted = toKzAsOf(val, cur, rateHistory, exchangeRates, prevMonthEndDate);
     return sum + (converted === null ? 0 : converted);
   }, 0);
   const liquidKzNow = liquidAssetsKz(accounts, transactions, exchangeRates);
   const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
   const netResultPrev = prevTotalReceitas - prevTotalDespesas;
-  const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, 12), [accounts, transactions, exchangeRates]);
+  const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, 12), [accounts, transactions, exchangeRates, rateHistory]);
   return React.createElement("div", {
     style: {
       display: "flex",
@@ -4241,7 +4382,8 @@ function TransactionsTab({
   onTransfer,
   onRemove,
   onQuickAdd,
-  onManageShortcuts
+  onManageShortcuts,
+  onExportCSV
 }) {
   const [search, setSearch] = useState("");
   const [filterAccount, setFilterAccount] = useState("");
@@ -4277,7 +4419,12 @@ function TransactionsTab({
     disabled: accounts.length < 1
   }, React.createElement(IconTransfer, {
     size: 14
-  }), " Transferir entre contas")), accounts.length > 0 && React.createElement("div", {
+  }), " Transferir entre contas"), React.createElement(GhostButton, {
+    onClick: onExportCSV,
+    disabled: transactions.length === 0
+  }, React.createElement(IconDownload, {
+    size: 14
+  }), " Exportar CSV")), accounts.length > 0 && React.createElement("div", {
     style: {
       marginBottom: 18
     }
@@ -4611,6 +4758,7 @@ function TransactionsTab({
 function TxModal({
   accounts,
   transactions,
+  expenseCategories,
   onClose,
   onSave
 }) {
@@ -4681,7 +4829,7 @@ function TxModal({
     style: inputStyle,
     value: category,
     onChange: e => setCategory(e.target.value)
-  }, (kind === "despesa" ? EXPENSE_CATEGORIES : INCOME_TYPES).map(c => React.createElement("option", {
+  }, (kind === "despesa" ? expenseCategories : INCOME_TYPES).map(c => React.createElement("option", {
     key: c
   }, c)))), React.createElement("div", {
     style: {
@@ -5492,7 +5640,8 @@ function AlertsTab({
   categories,
   debts,
   debtPayments,
-  goals
+  goals,
+  lastExportDate
 }) {
   const alerts = useMemo(() => buildAlerts({
     recurringExpenses,
@@ -5502,8 +5651,9 @@ function AlertsTab({
     categories,
     debts,
     debtPayments,
-    goals
-  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals]);
+    goals,
+    lastExportDate
+  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate]);
   return React.createElement("div", null, alerts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
@@ -5757,7 +5907,9 @@ function BudgetTab({
   onAddStaff,
   onEditRecurring,
   onRemoveRecurring,
-  onMarkPaid
+  onMarkPaid,
+  expenseCategories,
+  onManageCategories
 }) {
   const [newIncomeType, setNewIncomeType] = useState(INCOME_TYPES[0]);
   const [newIncomeLabel, setNewIncomeLabel] = useState("");
@@ -5884,7 +6036,13 @@ function BudgetTab({
       gridTemplateColumns: "1.2fr 1fr",
       gap: 18
     }
-  }, React.createElement(Card, null, React.createElement("h3", {
+  }, React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start"
+    }
+  }, React.createElement("div", null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -5896,13 +6054,24 @@ function BudgetTab({
       fontSize: 12.5,
       margin: "0 0 16px"
     }
-  }, "Defina um limite mensal para acompanhar cada categoria de despesa."), React.createElement("div", {
+  }, "Defina um limite mensal para acompanhar cada categoria de despesa.")), React.createElement("button", {
+    onClick: onManageCategories,
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      fontSize: 12,
+      cursor: "pointer",
+      textDecoration: "underline",
+      whiteSpace: "nowrap"
+    }
+  }, "Gerir categorias")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: 14
     }
-  }, EXPENSE_CATEGORIES.map(cat => {
+  }, expenseCategories.map(cat => {
     const limit = categories[cat] || "";
     const spent = spentByCategory[cat] || 0;
     const pct = limit ? spent / Number(limit) * 100 : 0;
@@ -6774,6 +6943,7 @@ function RecurringModal({
   initial,
   defaultIsStaff,
   accounts,
+  expenseCategories,
   onClose,
   onSave
 }) {
@@ -6872,7 +7042,7 @@ function RecurringModal({
     style: inputStyle,
     value: category,
     onChange: e => setCategory(e.target.value)
-  }, EXPENSE_CATEGORIES.map(c => React.createElement("option", {
+  }, expenseCategories.map(c => React.createElement("option", {
     key: c
   }, c)))), React.createElement("div", {
     style: {
@@ -6931,6 +7101,134 @@ function RecurringModal({
     disabled: !canSave,
     onClick: handleSave
   }, isEditing ? "Guardar alterações" : isStaff ? "Guardar funcionário" : "Guardar despesa fixa")));
+}
+function CategoryManagerModal({
+  builtIn,
+  custom,
+  onAdd,
+  onRemove,
+  onClose
+}) {
+  const [newName, setNewName] = useState("");
+  return React.createElement(Modal, {
+    title: "Gerir categorias",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "As categorias fixas não podem ser removidas. As categorias que criar aparecem em Movimentos, Orçamento e Atalhos."), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: newName,
+    onChange: e => setNewName(e.target.value),
+    placeholder: "Nome da nova categoria",
+    onKeyDown: e => {
+      if (e.key === "Enter" && newName.trim()) {
+        onAdd(newName);
+        setNewName("");
+      }
+    }
+  }), React.createElement(PrimaryButton, {
+    onClick: () => {
+      if (newName.trim()) {
+        onAdd(newName);
+        setNewName("");
+      }
+    }
+  }, React.createElement(IconPlus, {
+    size: 14
+  }), " Adicionar")), React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      paddingTop: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      marginBottom: 8
+    }
+  }, "As suas categorias"), custom.length === 0 ? React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Ainda não criou nenhuma categoria personalizada.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, custom.map(c => React.createElement("div", {
+    key: c,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "7px 10px",
+      border: "1px solid var(--line)",
+      borderRadius: 7
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 13.5
+    }
+  }, c), React.createElement("button", {
+    onClick: () => onRemove(c),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconTrash, {
+    size: 14
+  })))))), React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      paddingTop: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      marginBottom: 8
+    }
+  }, "Categorias fixas"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, builtIn.map(c => React.createElement("span", {
+    key: c,
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      background: "var(--paper)",
+      padding: "4px 10px",
+      borderRadius: 20
+    }
+  }, c))))));
 }
 function ShortcutsManagerModal({
   shortcuts,
@@ -7030,6 +7328,7 @@ function ShortcutsManagerModal({
 function ShortcutFormModal({
   initial,
   accounts,
+  expenseCategories,
   onClose,
   onSave
 }) {
@@ -7096,7 +7395,7 @@ function ShortcutFormModal({
     style: inputStyle,
     value: category,
     onChange: e => setCategory(e.target.value)
-  }, EXPENSE_CATEGORIES.map(c => React.createElement("option", {
+  }, expenseCategories.map(c => React.createElement("option", {
     key: c
   }, c)))), React.createElement(Field, {
     label: "Valor"
