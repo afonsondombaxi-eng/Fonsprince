@@ -391,6 +391,120 @@ function monthShortLabel(monthKeyStr) {
   });
   return s.charAt(0).toUpperCase() + s.slice(1).replace(".", "");
 }
+function portfolioRiskProfile(breakdown) {
+  const total = SUB_TYPES.reduce((s, t) => s + breakdown[t], 0);
+  if (total <= 0) return null;
+  const aOrdemPct = breakdown["À ordem"] / total * 100;
+  const investPct = breakdown["Investimento"] / total * 100;
+  if (aOrdemPct > 50) {
+    return {
+      emoji: "🟡",
+      label: "Excesso de dinheiro parado",
+      detail: "Grande parte do saldo está à ordem, sem render juro. Considere mover parte para poupança ou investimento."
+    };
+  }
+  if (investPct >= 40) {
+    return {
+      emoji: "🟠",
+      label: "Perfil Arrojado",
+      detail: "Boa parte do património está em investimento, sujeito a maior risco e potencial retorno."
+    };
+  }
+  if (investPct >= 15) {
+    return {
+      emoji: "🔵",
+      label: "Perfil Moderado",
+      detail: "Equilíbrio razoável entre liquidez e crescimento."
+    };
+  }
+  return {
+    emoji: "🟢",
+    label: "Perfil Conservador",
+    detail: "Maioria do património em liquidez imediata ou baixo risco."
+  };
+}
+function buildInsights(opts) {
+  const {
+    accounts,
+    transactions,
+    exchangeRates,
+    consolidatedKzNow,
+    consolidatedKzPrev,
+    familyBreakdown
+  } = opts;
+  const insights = [];
+  if (consolidatedKzPrev !== 0) {
+    const pct = (consolidatedKzNow - consolidatedKzPrev) / Math.abs(consolidatedKzPrev) * 100;
+    if (Math.abs(pct) >= 1) {
+      insights.push({
+        icon: "📈",
+        text: `Património ${pct >= 0 ? "cresceu" : "caiu"} ${Math.abs(pct).toFixed(0)}% face ao mês anterior.`
+      });
+    }
+  }
+  const byBank = {};
+  for (const a of accounts) {
+    const bankName = a.bank.replace(/—.*/, "").trim();
+    const total = accountTotal(a, transactions);
+    const kz = toKz(total, a.currency, exchangeRates);
+    byBank[bankName] = (byBank[bankName] || 0) + (kz === null ? 0 : kz);
+  }
+  const bankEntries = Object.entries(byBank);
+  const bankTotalSum = bankEntries.reduce((s, [, v]) => s + v, 0);
+  if (bankEntries.length > 1 && bankTotalSum > 0) {
+    const top = bankEntries.reduce((a, b) => b[1] > a[1] ? b : a);
+    const share = top[1] / bankTotalSum * 100;
+    if (share >= 40) insights.push({
+      icon: "🏦",
+      text: `${top[0]} representa ${share.toFixed(0)}% dos ativos.`
+    });
+  }
+  const byType = {
+    "À ordem": 0,
+    "Poupança": 0,
+    "Investimento": 0
+  };
+  for (const a of accounts) {
+    const breakdown = typeBreakdown(a, transactions);
+    for (const t of SUB_TYPES) {
+      const kz = toKz(breakdown[t], a.currency, exchangeRates);
+      if (kz !== null) byType[t] += kz;
+    }
+  }
+  const typeTotalSum = SUB_TYPES.reduce((s, t) => s + byType[t], 0);
+  if (typeTotalSum > 0) {
+    const domType = SUB_TYPES.reduce((a, b) => byType[b] > byType[a] ? b : a);
+    const domShare = byType[domType] / typeTotalSum * 100;
+    if (domShare >= 60) insights.push({
+      icon: "⚠️",
+      text: `Elevada concentração em ${domType.toLowerCase()} (${domShare.toFixed(0)}%).`
+    });
+  }
+  let monthlyInterest = 0;
+  for (const a of accounts) {
+    for (const sb of a.subBalances || []) {
+      if (sb.interestRate) {
+        const principal = availableBalance(sb, transactions);
+        const kz = toKz(principal * (Number(sb.interestRate) / 100 / 12), a.currency, exchangeRates);
+        if (kz !== null) monthlyInterest += kz;
+      }
+    }
+  }
+  if (monthlyInterest > 0) insights.push({
+    icon: "💰",
+    text: `Juros estimados este mês: ${fmt(monthlyInterest)}.`
+  });
+  if (familyBreakdown.length > 0) {
+    const total = familyBreakdown.reduce((s, [, v]) => s + v, 0);
+    const topM = familyBreakdown[0];
+    const share = total > 0 ? topM[1] / total * 100 : 0;
+    if (share > 0) insights.push({
+      icon: "👤",
+      text: `${topM[0]} representa ${share.toFixed(0)}% das despesas do mês.`
+    });
+  }
+  return insights;
+}
 function seal(name) {
   const words = name.replace(/—.*/, "").trim().split(" ");
   return words.slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -431,6 +545,37 @@ function monthlyHistory(transactions, count) {
       despesas
     };
   });
+}
+function memberMonthlyHistory(transactions, count) {
+  count = count || 6;
+  const now = new Date();
+  const months = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.toISOString().slice(0, 7));
+  }
+  const members = Array.from(new Set(transactions.map(t => t.member).filter(Boolean))).sort();
+  const rows = months.map(m => {
+    const label = new Date(m + "-02").toLocaleDateString("pt-PT", {
+      month: "short"
+    }).replace(".", "");
+    const byMember = {};
+    for (const member of members) byMember[member] = 0;
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === m) {
+        byMember[t.member] = (byMember[t.member] || 0) + Number(t.amount);
+      }
+    }
+    return {
+      month: m,
+      label,
+      byMember
+    };
+  });
+  return {
+    rows,
+    members
+  };
 }
 function consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, count) {
   count = count || 12;
@@ -791,6 +936,41 @@ function financialHealthMetrics(opts) {
     debtRatio
   };
 }
+function computeFinancialHealthScore(opts) {
+  const {
+    savingsRate,
+    emergencyMonths,
+    debtRatio,
+    investSharePct,
+    patrimonioTrendPct
+  } = opts;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const sLiquidez = emergencyMonths !== null ? clamp(emergencyMonths / 6 * 20, 0, 20) : 10;
+  const sPoupanca = savingsRate !== null ? clamp(savingsRate / 25 * 20, 0, 20) : 10;
+  const sEndividamento = debtRatio !== null ? clamp(20 - debtRatio / 60 * 20, 0, 20) : 10;
+  const sInvestimento = investSharePct !== null ? clamp(investSharePct / 20 * 20, 0, 20) : 10;
+  const sEvolucao = patrimonioTrendPct !== null ? clamp(10 + patrimonioTrendPct, 0, 20) : 10;
+  const total = Math.round(sLiquidez + sPoupanca + sEndividamento + sInvestimento + sEvolucao);
+  return {
+    total,
+    factors: [{
+      name: "Liquidez",
+      value: sLiquidez
+    }, {
+      name: "Poupança",
+      value: sPoupanca
+    }, {
+      name: "Endividamento",
+      value: sEndividamento
+    }, {
+      name: "Investimentos",
+      value: sInvestimento
+    }, {
+      name: "Evolução patrimonial",
+      value: sEvolucao
+    }]
+  };
+}
 function simulateDebtPayoff(debts, debtPayments, monthlyBudget, strategy) {
   let items = debts.filter(d => d.type === "A pagar").map(d => ({
     id: d.id,
@@ -856,7 +1036,8 @@ function buildAlerts(opts) {
     debts,
     debtPayments,
     goals,
-    lastExportDate
+    lastExportDate,
+    memberLimits
   } = opts;
   const alerts = [];
   const in5days = new Date();
@@ -894,6 +1075,24 @@ function buildAlerts(opts) {
         severity: "rust",
         text: `A categoria "${cat}" já ultrapassou o limite mensal (${fmt(val)} de ${fmt(limit)}).`
       });
+    }
+  }
+  if (memberLimits) {
+    const memberSpend = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
+        memberSpend[t.member] = (memberSpend[t.member] || 0) + Number(t.amount);
+      }
+    }
+    for (const [member, limitRaw] of Object.entries(memberLimits)) {
+      const limit = Number(limitRaw) || 0;
+      const spent = memberSpend[member] || 0;
+      if (limit > 0 && spent > limit) {
+        alerts.push({
+          severity: "rust",
+          text: `${member} já ultrapassou o orçamento mensal (${fmt(spent)} de ${fmt(limit)}).`
+        });
+      }
     }
   }
   for (const d of debts) {
@@ -984,6 +1183,37 @@ function NavItem({
       flexShrink: 0
     }
   }), !collapsed && label);
+}
+function NavSection({
+  label,
+  collapsed,
+  children
+}) {
+  return React.createElement("div", {
+    style: {
+      marginTop: collapsed ? 10 : 16
+    }
+  }, !collapsed ? React.createElement("div", {
+    style: {
+      padding: "0 12px 6px",
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.7,
+      textTransform: "uppercase",
+      color: "rgba(255,255,255,0.32)"
+    }
+  }, label) : React.createElement("div", {
+    style: {
+      borderTop: "1px solid rgba(255,255,255,0.08)",
+      margin: "0 8px 8px"
+    }
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 2
+    }
+  }, children));
 }
 function Card({
   children,
@@ -1108,6 +1338,59 @@ function TrendBadge({
     }
   }, diff >= 0 ? "+" : "", fmtCompact(diff), " vs ", previousLabel));
 }
+function ScoreRing({
+  score,
+  size
+}) {
+  size = size || 110;
+  const r = (size - 14) / 2,
+    cx = size / 2,
+    cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+  const dash = Math.max(0, Math.min(100, score)) / 100 * circumference;
+  const color = score >= 80 ? "var(--emerald)" : score >= 60 ? "var(--gold)" : score >= 40 ? "#D97B29" : "var(--rust)";
+  return React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: `0 0 ${size} ${size}`,
+    style: {
+      flexShrink: 0
+    }
+  }, React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: r,
+    fill: "none",
+    stroke: "var(--line)",
+    strokeWidth: "10"
+  }), React.createElement("g", {
+    transform: `rotate(-90 ${cx} ${cy})`
+  }, React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: r,
+    fill: "none",
+    stroke: color,
+    strokeWidth: "10",
+    strokeDasharray: `${dash} ${circumference - dash}`,
+    strokeLinecap: "round"
+  })), React.createElement("text", {
+    x: cx,
+    y: cy - 2,
+    textAnchor: "middle",
+    fontSize: "24",
+    fontWeight: "700",
+    fill: "var(--ink)",
+    fontFamily: "'IBM Plex Mono', monospace"
+  }, score), React.createElement("text", {
+    x: cx,
+    y: cy + 17,
+    textAnchor: "middle",
+    fontSize: "11",
+    fill: "var(--slate)",
+    fontFamily: "Inter, sans-serif"
+  }, "/100"));
+}
 function ConsolidatedTrendChart({
   data
 }) {
@@ -1157,6 +1440,81 @@ function ConsolidatedTrendChart({
       textTransform: "capitalize"
     }
   }, d.label)));
+}
+function MemberTrendChart({
+  rows,
+  members
+}) {
+  const width = 640,
+    height = 240,
+    padding = 40;
+  const allValues = rows.flatMap(r => members.map(m => r.byMember[m] || 0));
+  const maxVal = Math.max(1, ...allValues);
+  const n = rows.length;
+  const stepX = (width - padding * 2) / Math.max(n - 1, 1);
+  const toY = v => height - padding - v / maxVal * (height - padding * 2);
+  return React.createElement("div", null, React.createElement("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    style: {
+      width: "100%",
+      height: "auto",
+      display: "block"
+    }
+  }, members.map((member, mi) => {
+    const color = CATEGORY_COLORS[mi % CATEGORY_COLORS.length];
+    const pathD = rows.map((r, i) => `${i === 0 ? "M" : "L"} ${padding + i * stepX} ${toY(r.byMember[member] || 0)}`).join(" ");
+    return React.createElement("g", {
+      key: member
+    }, React.createElement("path", {
+      d: pathD,
+      fill: "none",
+      stroke: color,
+      strokeWidth: "2"
+    }), rows.map((r, i) => React.createElement("circle", {
+      key: i,
+      cx: padding + i * stepX,
+      cy: toY(r.byMember[member] || 0),
+      r: "2.5",
+      fill: color
+    })));
+  }), rows.map((r, i) => React.createElement("text", {
+    key: i,
+    x: padding + i * stepX,
+    y: height - padding + 16,
+    textAnchor: "middle",
+    fontSize: "9.5",
+    fill: "var(--slate)",
+    fontFamily: "Inter, sans-serif",
+    style: {
+      textTransform: "capitalize"
+    }
+  }, r.label))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 14,
+      flexWrap: "wrap",
+      marginTop: 12
+    }
+  }, members.map((member, mi) => React.createElement("div", {
+    key: member,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 12
+    }
+  }, React.createElement("span", {
+    style: {
+      width: 9,
+      height: 9,
+      borderRadius: "50%",
+      background: CATEGORY_COLORS[mi % CATEGORY_COLORS.length]
+    }
+  }), React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, member)))));
 }
 function MultiCurrencyCard({
   balancesByCurrency,
@@ -2052,7 +2410,8 @@ function FinanceApp() {
   const [transactions, setTransactions] = useState(() => loadKey("transactions", []));
   const [budgetIncome, setBudgetIncome] = useState(() => loadKey("budget-and-income", {
     categories: {},
-    income: []
+    income: [],
+    memberLimits: {}
   }));
   const [goals, setGoals] = useState(() => loadKey("goals", []));
   const [debts, setDebts] = useState(() => loadKey("debts", []));
@@ -2070,6 +2429,7 @@ function FinanceApp() {
   const [editingAccount, setEditingAccount] = useState(null);
   const [showTxModal, setShowTxModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [editingTx, setEditingTx] = useState(null);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
   const [contribGoal, setContribGoal] = useState(null);
@@ -2189,6 +2549,12 @@ function FinanceApp() {
       id: uid()
     }]);
   }
+  function updateTx(id, patch) {
+    setTransactions(t => t.map(x => x.id === id ? {
+      ...x,
+      ...patch
+    } : x));
+  }
   function removeTx(id) {
     setTransactions(t => t.filter(x => x.id !== id));
   }
@@ -2198,6 +2564,15 @@ function FinanceApp() {
       categories: {
         ...b.categories,
         [cat]: limit
+      }
+    }));
+  }
+  function setMemberLimit(member, limit) {
+    setBudgetIncome(b => ({
+      ...b,
+      memberLimits: {
+        ...(b.memberLimits || {}),
+        [member]: limit
       }
     }));
   }
@@ -2371,6 +2746,70 @@ function FinanceApp() {
     URL.revokeObjectURL(url);
     setLastExportDate(todayISO());
   }
+  function exportAccountsCSV() {
+    const header = ["Banco", "Conta", "Moeda", "Saldo", "Saldo (Kz)", "Tipos"];
+    const rows = accounts.map(a => {
+      const total = accountTotal(a, transactions);
+      const kz = toKz(total, a.currency, exchangeRates);
+      const types = Array.from(new Set((a.subBalances || []).map(sb => sb.type))).join(" / ");
+      return [a.bank.replace(/—.*/, "").trim(), a.nickname || "", a.currency, Number(total).toFixed(2), kz !== null ? Number(kz).toFixed(2) : "", types];
+    });
+    const csvEscape = v => {
+      const s = String(v == null ? "" : v);
+      return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [header, ...rows].map(row => row.map(csvEscape).join(";")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `contas-${todayISO()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setLastExportDate(todayISO());
+  }
+  function printAccountsSummary() {
+    const byBank = {};
+    for (const a of accounts) {
+      const bankName = a.bank.replace(/—.*/, "").trim();
+      const total = accountTotal(a, transactions);
+      const kz = toKz(total, a.currency, exchangeRates);
+      byBank[bankName] = (byBank[bankName] || 0) + (kz === null ? 0 : kz);
+    }
+    const bankRows = Object.entries(byBank).sort((a, b) => b[1] - a[1]).map(([bank, kz]) => `<tr><td>${bank}</td><td style="text-align:right">${fmt(kz)}</td></tr>`).join("");
+    const accountRows = accounts.map(a => {
+      const total = accountTotal(a, transactions);
+      return `<tr><td>${a.bank.replace(/—.*/, "").trim()}${a.nickname ? ` — ${a.nickname}` : ""}</td><td>${a.currency}</td><td style="text-align:right">${fmt(total, a.currency)}</td></tr>`;
+    }).join("");
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>Consolidado de Contas — Fonsprince</title>
+      <style>
+        body{font-family:Arial,Helvetica,sans-serif;padding:32px;color:#1B1F27;}
+        h1{font-size:20px;margin-bottom:4px;}
+        p{color:#68707C;font-size:12px;margin-top:0;}
+        table{width:100%;border-collapse:collapse;margin-top:16px;}
+        th,td{padding:8px 10px;border-bottom:1px solid #E3E5E9;font-size:13px;text-align:left;}
+        th{font-size:11px;text-transform:uppercase;color:#68707C;}
+        h2{font-size:14px;margin-top:26px;}
+      </style></head><body>
+      <h1>Fonsprince — Consolidado de Contas</h1>
+      <p>Gerado em ${new Date().toLocaleDateString("pt-PT")}</p>
+      <h2>Por banco</h2>
+      <table><thead><tr><th>Banco</th><th style="text-align:right">Saldo (Kz)</th></tr></thead><tbody>${bankRows}</tbody></table>
+      <h2>Todas as contas</h2>
+      <table><thead><tr><th>Conta</th><th>Moeda</th><th style="text-align:right">Saldo</th></tr></thead><tbody>${accountRows}</tbody></table>
+      </body></html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
+  }
   function handleImportFileSelected(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -2393,7 +2832,8 @@ function FinanceApp() {
     setTransactions(data.transactions || []);
     setBudgetIncome(data.budgetIncome || {
       categories: {},
-      income: []
+      income: [],
+      memberLimits: {}
     });
     setGoals(data.goals || []);
     setDebts(data.debts || []);
@@ -2486,6 +2926,7 @@ function FinanceApp() {
       gap: 4,
       position: "relative",
       zIndex: 1,
+      overflowY: "auto",
       transition: "width 0.18s ease, padding 0.18s ease"
     }
   }, React.createElement("div", {
@@ -2542,13 +2983,19 @@ function FinanceApp() {
       transform: sidebarCollapsed ? "rotate(180deg)" : "none",
       transition: "transform 0.18s"
     }
-  })), React.createElement(NavItem, {
+  })), React.createElement(NavSection, {
+    label: "Dashboard",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
     icon: IconDashboard,
     label: "Visão Geral",
     active: tab === "overview",
     onClick: () => setTab("overview"),
     collapsed: sidebarCollapsed
-  }), React.createElement(NavItem, {
+  })), React.createElement(NavSection, {
+    label: "Gestão Financeira",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
     icon: IconBank,
     label: "Contas",
     active: tab === "accounts",
@@ -2566,13 +3013,31 @@ function FinanceApp() {
     active: tab === "budget",
     onClick: () => setTab("budget"),
     collapsed: sidebarCollapsed
-  }), React.createElement(NavItem, {
+  })), React.createElement(NavSection, {
+    label: "Planeamento",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
     icon: IconTarget,
     label: "Metas de Poupança",
     active: tab === "goals",
     onClick: () => setTab("goals"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
+    icon: IconCompass,
+    label: "Planeamento",
+    active: tab === "planning",
+    onClick: () => setTab("planning"),
+    collapsed: sidebarCollapsed
+  }), React.createElement(NavItem, {
+    icon: IconTrendingUp,
+    label: "Previsão",
+    active: tab === "forecast",
+    onClick: () => setTab("forecast"),
+    collapsed: sidebarCollapsed
+  })), React.createElement(NavSection, {
+    label: "Financiamento",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
     icon: IconCreditCard,
     label: "Dívidas",
     active: tab === "debts",
@@ -2584,23 +3049,14 @@ function FinanceApp() {
     active: tab === "exchange",
     onClick: () => setTab("exchange"),
     collapsed: sidebarCollapsed
-  }), React.createElement(NavItem, {
-    icon: IconTrendingUp,
-    label: "Previsão",
-    active: tab === "forecast",
-    onClick: () => setTab("forecast"),
+  })), React.createElement(NavSection, {
+    label: "Relatórios",
     collapsed: sidebarCollapsed
-  }), React.createElement(NavItem, {
+  }, React.createElement(NavItem, {
     icon: IconFileText,
     label: "Relatório",
     active: tab === "report",
     onClick: () => setTab("report"),
-    collapsed: sidebarCollapsed
-  }), React.createElement(NavItem, {
-    icon: IconCompass,
-    label: "Planeamento",
-    active: tab === "planning",
-    onClick: () => setTab("planning"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconBell,
@@ -2608,7 +3064,7 @@ function FinanceApp() {
     active: tab === "alerts",
     onClick: () => setTab("alerts"),
     collapsed: sidebarCollapsed
-  }), React.createElement("div", {
+  })), React.createElement("div", {
     style: {
       marginTop: "auto",
       padding: sidebarCollapsed ? "12px 0" : "12px",
@@ -2849,6 +3305,10 @@ function FinanceApp() {
     accounts: accounts,
     transactions: transactions,
     exchangeRates: exchangeRates,
+    debts: debts,
+    debtPayments: debtPayments,
+    recurringExpenses: recurringExpenses,
+    month: month,
     onAdd: () => {
       setEditingAccount(null);
       setShowAccountModal(true);
@@ -2857,13 +3317,19 @@ function FinanceApp() {
       setEditingAccount(acc);
       setShowAccountModal(true);
     },
-    onRemove: id => askConfirm("Remover esta conta?", () => removeAccount(id), "Isto também vai desassociar quaisquer despesas fixas, dívidas ou atalhos ligados a esta conta.")
+    onRemove: id => askConfirm("Remover esta conta?", () => removeAccount(id), "Isto também vai desassociar quaisquer despesas fixas, dívidas ou atalhos ligados a esta conta."),
+    onExportExcel: exportAccountsCSV,
+    onExportPDF: printAccountsSummary
   }), tab === "transactions" && React.createElement(TransactionsTab, {
     transactions: monthTx,
     accounts: accounts,
     shortcuts: expenseShortcuts,
     onAdd: () => setShowTxModal(true),
     onTransfer: () => setShowTransferModal(true),
+    onEdit: t => {
+      setEditingTx(t);
+      if (t.kind === "transferencia") setShowTransferModal(true);else setShowTxModal(true);
+    },
     onRemove: id => askConfirm("Remover este movimento?", () => removeTx(id)),
     onQuickAdd: quickAddExpense,
     onManageShortcuts: () => setShowShortcutsModal(true),
@@ -2898,7 +3364,9 @@ function FinanceApp() {
     onRemoveRecurring: id => askConfirm("Remover esta despesa fixa?", () => removeRecurring(id)),
     onMarkPaid: r => markRecurringPaid(r, month),
     expenseCategories: expenseCategories,
-    onManageCategories: () => setShowCategoryManager(true)
+    onManageCategories: () => setShowCategoryManager(true),
+    memberLimits: budgetIncome.memberLimits,
+    onSetMemberLimit: setMemberLimit
   }), tab === "goals" && React.createElement(GoalsTab, {
     goals: goals,
     onAdd: () => {
@@ -2963,7 +3431,8 @@ function FinanceApp() {
     debts: debts,
     debtPayments: debtPayments,
     goals: goals,
-    lastExportDate: lastExportDate
+    lastExportDate: lastExportDate,
+    memberLimits: budgetIncome.memberLimits
   }))), isMobile && React.createElement("div", {
     style: {
       position: "fixed",
@@ -3211,21 +3680,31 @@ function FinanceApp() {
       setEditingAccount(null);
     }
   }), showTxModal && React.createElement(TxModal, {
+    initial: editingTx && editingTx.kind !== "transferencia" ? editingTx : null,
     accounts: accounts,
     transactions: transactions,
     expenseCategories: expenseCategories,
-    onClose: () => setShowTxModal(false),
-    onSave: tx => {
-      addTx(tx);
+    onClose: () => {
       setShowTxModal(false);
+      setEditingTx(null);
+    },
+    onSave: tx => {
+      if (editingTx) updateTx(editingTx.id, tx);else addTx(tx);
+      setShowTxModal(false);
+      setEditingTx(null);
     }
   }), showTransferModal && React.createElement(TransferModal, {
+    initial: editingTx && editingTx.kind === "transferencia" ? editingTx : null,
     accounts: accounts,
     transactions: transactions,
-    onClose: () => setShowTransferModal(false),
-    onSave: tx => {
-      addTx(tx);
+    onClose: () => {
       setShowTransferModal(false);
+      setEditingTx(null);
+    },
+    onSave: tx => {
+      if (editingTx) updateTx(editingTx.id, tx);else addTx(tx);
+      setShowTransferModal(false);
+      setEditingTx(null);
     }
   }), showGoalModal && React.createElement(GoalModal, {
     initial: editingGoal,
@@ -3381,6 +3860,9 @@ function Overview({
 }) {
   const saldo = totalReceitas - totalDespesas;
   const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
+  const prevMonthKeyForOverview = previousMonthKey(month);
+  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyForOverview);
+  const prevMonthLabel = monthShortLabel(prevMonthKeyForOverview);
   const familyBreakdown = useMemo(() => {
     const map = {};
     for (const t of transactions) {
@@ -3390,6 +3872,15 @@ function Overview({
     }
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [transactions, month]);
+  const familyBreakdownPrevMap = useMemo(() => {
+    const map = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === prevMonthKeyForOverview) {
+        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      }
+    }
+    return map;
+  }, [transactions, prevMonthKeyForOverview]);
   const monthlyData = useMemo(() => monthlyHistory(transactions, 6), [transactions]);
   const categoryChartData = useMemo(() => Object.entries(spentByCategory).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({
     name,
@@ -3410,9 +3901,6 @@ function Overview({
     return map;
   }, [debts, debtPayments]);
   const overdueDebts = debts.filter(d => debtStatus(d, debtPayments) === "Vencida");
-  const prevMonthKeyForOverview = previousMonthKey(month);
-  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyForOverview);
-  const prevMonthLabel = monthShortLabel(prevMonthKeyForOverview);
   const missingRatesAll = otherCurrencies.some(c => toKz(1, c, exchangeRates) === null);
   const consolidatedKzNow = Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
     const converted = toKz(val, cur, exchangeRates);
@@ -3431,6 +3919,15 @@ function Overview({
   const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
   const netResultPrev = prevTotalReceitas - prevTotalDespesas;
   const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, 12), [accounts, transactions, exchangeRates, rateHistory]);
+  const insights = useMemo(() => buildInsights({
+    accounts,
+    transactions,
+    exchangeRates,
+    consolidatedKzNow,
+    consolidatedKzPrev,
+    familyBreakdown
+  }), [accounts, transactions, exchangeRates, consolidatedKzNow, consolidatedKzPrev, familyBreakdown]);
+  const memberTrend = useMemo(() => memberMonthlyHistory(transactions, 6), [transactions]);
   return React.createElement("div", {
     style: {
       display: "flex",
@@ -3490,7 +3987,39 @@ function Overview({
     big: true,
     onClick: () => onNavigate("accounts"),
     sub: liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : "À ordem + poupança"
-  }))), React.createElement(Card, null, React.createElement("h3", {
+  }))), insights.length > 0 && React.createElement(Card, {
+    style: {
+      background: "linear-gradient(135deg, #1B1F27 0%, #262B35 100%)",
+      border: "none"
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 12px",
+      color: "#fff"
+    }
+  }, "Insights automáticos"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, insights.map((ins, i) => React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 10,
+      fontSize: 13,
+      color: "rgba(255,255,255,0.9)"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 15,
+      flexShrink: 0
+    }
+  }, ins.icon), React.createElement("span", null, ins.text))))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -3601,14 +4130,19 @@ function Overview({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 24
+      gap: 28
     }
   }, Object.entries(splitByCurrency).map(([cur, breakdown]) => {
+    const total = SUB_TYPES.reduce((s, t) => s + breakdown[t], 0);
     const donutData = SUB_TYPES.filter(t => breakdown[t] > 0).map(t => ({
-      name: t,
+      name: t === "À ordem" ? "Liquidez Imediata" : t === "Poupança" ? "Baixo Risco" : "Médio/Alto Risco",
       value: breakdown[t],
       color: t === "À ordem" ? "#1B1F27" : t === "Poupança" ? "#12A150" : "#0F6CBD"
     }));
+    const profile = portfolioRiskProfile(breakdown);
+    const prevVal = balancesByCurrencyPrev[cur] || 0;
+    const diff = total - prevVal;
+    const pct = prevVal !== 0 ? diff / Math.abs(prevVal) * 100 : null;
     return React.createElement("div", {
       key: cur
     }, React.createElement("div", {
@@ -3618,10 +4152,57 @@ function Overview({
         fontWeight: 600,
         marginBottom: 10
       }
-    }, cur), donutData.length > 0 ? React.createElement(CategoryDonut, {
+    }, cur), donutData.length > 0 ? React.createElement(React.Fragment, null, React.createElement(CategoryDonut, {
       data: donutData,
       currency: cur
-    }) : React.createElement("p", {
+    }), profile && React.createElement("div", {
+      style: {
+        marginTop: 12,
+        padding: "9px 12px",
+        borderRadius: 8,
+        background: "var(--paper)",
+        fontSize: 12.5,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2
+      }
+    }, React.createElement("span", {
+      style: {
+        fontWeight: 700,
+        color: "var(--ink)"
+      }
+    }, profile.emoji, " ", profile.label), React.createElement("span", {
+      style: {
+        color: "var(--slate)"
+      }
+    }, profile.detail)), React.createElement("div", {
+      style: {
+        marginTop: 12,
+        borderTop: "1px solid var(--line)",
+        paddingTop: 10,
+        fontSize: 12.5,
+        color: "var(--slate)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 2
+      }
+    }, React.createElement("div", null, prevMonthLabel, ": ", React.createElement("strong", {
+      style: {
+        color: "var(--ink)",
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, fmt(prevVal, cur))), React.createElement("div", null, monthShortLabel(month), ": ", React.createElement("strong", {
+      style: {
+        color: "var(--ink)",
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, fmt(total, cur))), pct !== null && React.createElement("div", {
+      style: {
+        color: pct >= 0 ? "var(--emerald)" : "var(--rust)",
+        fontWeight: 700,
+        marginTop: 2
+      }
+    }, pct >= 0 ? "▲" : "▼", " ", pct >= 0 ? "+" : "", pct.toFixed(1), "%"))) : React.createElement("p", {
       style: {
         fontSize: 13,
         color: "var(--slate)"
@@ -3886,41 +4467,138 @@ function Overview({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 10
+      gap: 12
     }
-  }, familyBreakdown.map(([member, val]) => {
+  }, (() => {
     const total = familyBreakdown.reduce((s, [, v]) => s + v, 0);
-    const pct = total > 0 ? val / total * 100 : 0;
+    const medals = ["🥇", "🥈", "🥉"];
+    return familyBreakdown.map(([member, val], i) => {
+      const pct = total > 0 ? val / total * 100 : 0;
+      const prevVal = familyBreakdownPrevMap[member] || 0;
+      const diff = val - prevVal;
+      const trendPct = prevVal > 0 ? diff / prevVal * 100 : null;
+      return React.createElement("div", {
+        key: member
+      }, React.createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          fontSize: 13,
+          marginBottom: 4
+        }
+      }, React.createElement("span", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 6
+        }
+      }, medals[i] ? React.createElement("span", null, medals[i]) : React.createElement(IconUsers, {
+        size: 13,
+        style: {
+          color: "var(--slate)"
+        }
+      }), " ", member), React.createElement("span", {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          gap: 8
+        }
+      }, trendPct !== null && React.createElement("span", {
+        style: {
+          fontSize: 11,
+          fontWeight: 700,
+          color: trendPct <= 0 ? "var(--emerald)" : "var(--rust)"
+        }
+      }, trendPct >= 0 ? "▲" : "▼", " ", trendPct >= 0 ? "+" : "", trendPct.toFixed(0), "%"), React.createElement("span", {
+        style: {
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontWeight: 600
+        }
+      }, fmt(val), " ", React.createElement("span", {
+        style: {
+          color: "var(--slate)",
+          fontWeight: 500
+        }
+      }, "(", pct.toFixed(0), "%)")))), React.createElement(ProgressBar, {
+        pct: pct,
+        tone: "gold"
+      }));
+    });
+  })()), familyBreakdown.length > 1 && (() => {
+    const total = familyBreakdown.reduce((s, [, v]) => s + v, 0);
+    const top = familyBreakdown[0];
+    const bottom = familyBreakdown[familyBreakdown.length - 1];
+    const topPct = total > 0 ? top[1] / total * 100 : 0;
+    const bottomPct = total > 0 ? bottom[1] / total * 100 : 0;
+    const catEntries = Object.entries(spentByCategory).filter(([, v]) => v > 0);
+    const topCat = catEntries.length > 0 ? catEntries.reduce((a, b) => b[1] > a[1] ? b : a) : null;
+    const catTotal = catEntries.reduce((s, [, v]) => s + v, 0);
     return React.createElement("div", {
-      key: member
-    }, React.createElement("div", {
       style: {
+        marginTop: 16,
+        paddingTop: 14,
+        borderTop: "1px solid var(--line)",
         display: "flex",
-        justifyContent: "space-between",
-        fontSize: 13,
-        marginBottom: 4
+        flexDirection: "column",
+        gap: 8,
+        fontSize: 12.5
       }
-    }, React.createElement("span", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 6
-      }
-    }, React.createElement(IconUsers, {
-      size: 13,
+    }, React.createElement("div", null, React.createElement("span", {
       style: {
         color: "var(--slate)"
       }
-    }), " ", member), React.createElement("span", {
+    }, "Maior responsável pelas despesas: "), React.createElement("strong", null, top[0], " (", topPct.toFixed(0), "%)")), topCat && React.createElement("div", null, React.createElement("span", {
       style: {
-        fontFamily: "'IBM Plex Mono', monospace",
-        fontWeight: 600
+        color: "var(--slate)"
       }
-    }, fmt(val))), React.createElement(ProgressBar, {
-      pct: pct,
-      tone: "gold"
-    }));
-  }))));
+    }, "Categoria dominante: "), React.createElement("strong", null, topCat[0], " (", catTotal > 0 ? (topCat[1] / catTotal * 100).toFixed(0) : 0, "%)")), React.createElement("div", null, React.createElement("span", {
+      style: {
+        color: "var(--slate)"
+      }
+    }, "Menor utilização: "), React.createElement("strong", null, bottom[0], " (", bottomPct.toFixed(0), "%)")));
+  })()), memberTrend.members.length > 0 && React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, "Evolução mensal por membro"), React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "4px 0 14px"
+    }
+  }, "Despesas por pessoa, últimos 6 meses — ajuda a perceber quem está a aumentar ou reduzir gastos."), React.createElement(MemberTrendChart, {
+    rows: memberTrend.rows,
+    members: memberTrend.members
+  })));
+}
+const TYPE_BADGE = {
+  "À ordem": "🟢",
+  "Poupança": "🟠",
+  "Investimento": "🔵"
+};
+function lastMovementForAccount(account, transactions) {
+  const subIds = new Set((account.subBalances || []).map(sb => sb.id));
+  const related = transactions.filter(t => subIds.has(t.subBalanceId) || t.fromAccountId === account.id || t.toAccountId === account.id);
+  if (related.length === 0) return null;
+  const sorted = [...related].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  const t = sorted[0];
+  let signedAmount, label;
+  if (t.kind === "transferencia") {
+    const isOutgoing = t.fromAccountId === account.id;
+    signedAmount = isOutgoing ? -Number(t.amount) : Number(t.amount);
+    label = isOutgoing ? "Transferência enviada" : "Transferência recebida";
+  } else {
+    signedAmount = t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
+    label = t.description || t.category || (t.kind === "receita" ? "Receita" : "Despesa");
+  }
+  return {
+    date: t.date,
+    label,
+    signedAmount
+  };
 }
 function AccountCard({
   account,
@@ -3934,6 +4612,22 @@ function AccountCard({
   const breakdown = typeBreakdown(account, transactions);
   const hasInterest = (account.subBalances || []).some(sb => sb.interestRate);
   const kzEquivalent = account.currency !== "Kz" && exchangeRates ? toKz(total, account.currency, exchangeRates) : null;
+  const presentTypes = Array.from(new Set((account.subBalances || []).map(sb => sb.type)));
+  const now = new Date();
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
+  const prevMonthEndDate = prevMonthDate.toISOString().slice(0, 10);
+  const prevTotal = accountTotal(account, transactions, prevMonthEndDate);
+  const diff = total - prevTotal;
+  const pct = prevTotal !== 0 ? diff / Math.abs(prevTotal) * 100 : null;
+  const prevMonthNameFull = prevMonthDate.toLocaleDateString("pt-PT", {
+    month: "long"
+  });
+  const prevMonthLabelFull = prevMonthNameFull.charAt(0).toUpperCase() + prevMonthNameFull.slice(1);
+  const interestSubs = (account.subBalances || []).filter(sb => sb.interestRate);
+  const totalAccrued = interestSubs.reduce((s, sb) => s + accruedInterest(sb, availableBalance(sb, transactions)), 0);
+  const totalPrincipal = interestSubs.reduce((s, sb) => s + availableBalance(sb, transactions), 0);
+  const weightedRate = totalPrincipal > 0 ? interestSubs.reduce((s, sb) => s + Number(sb.interestRate) * availableBalance(sb, transactions), 0) / totalPrincipal : null;
+  const lastMovement = !compact ? lastMovementForAccount(account, transactions) : null;
   return React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
@@ -3972,7 +4666,23 @@ function AccountCard({
       color: "var(--slate)",
       marginTop: 2
     }
-  }, account.nickname)), React.createElement("div", {
+  }, account.nickname), presentTypes.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      marginTop: 5,
+      flexWrap: "wrap"
+    }
+  }, presentTypes.map(t => React.createElement("span", {
+    key: t,
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      background: "var(--paper)",
+      padding: "2px 7px",
+      borderRadius: 20
+    }
+  }, TYPE_BADGE[t], " ", t)))), React.createElement("div", {
     style: {
       width: 34,
       height: 34,
@@ -3989,14 +4699,35 @@ function AccountCard({
     }
   }, seal(account.bank))), React.createElement("div", {
     style: {
+      display: "flex",
+      alignItems: "baseline",
+      gap: 10,
+      marginTop: 14,
+      flexWrap: "wrap"
+    }
+  }, React.createElement("div", {
+    style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 20,
       fontWeight: 600,
-      marginTop: 14,
       color: "var(--ink)",
       fontVariantNumeric: "tabular-nums"
     }
-  }, fmt(total, account.currency)), kzEquivalent !== null && React.createElement("div", {
+  }, fmt(total, account.currency)), !compact && pct !== null && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      fontWeight: 700,
+      color: pct >= 0 ? "var(--emerald)" : "var(--rust)",
+      display: "flex",
+      alignItems: "center",
+      gap: 3
+    }
+  }, pct >= 0 ? "▲" : "▼", " ", pct >= 0 ? "+" : "", pct.toFixed(0), "% ", React.createElement("span", {
+    style: {
+      color: "var(--slate)",
+      fontWeight: 500
+    }
+  }, "vs ", prevMonthLabelFull))), kzEquivalent !== null && React.createElement("div", {
     style: {
       fontSize: 11.5,
       color: "var(--slate)",
@@ -4032,27 +4763,91 @@ function AccountCard({
     style: {
       marginTop: 12,
       paddingTop: 10,
+      borderTop: "1px solid var(--line)",
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.3
+    }
+  }, "Juros acumulados"), React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 700,
+      color: "var(--gold)",
+      fontFamily: "'IBM Plex Mono', monospace",
+      marginTop: 2
+    }
+  }, "+", fmt(totalAccrued, account.currency))), weightedRate !== null && React.createElement("div", {
+    style: {
+      textAlign: "right"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.3
+    }
+  }, "Rentabilidade"), React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 700,
+      color: "var(--ink)",
+      marginTop: 2
+    }
+  }, weightedRate.toFixed(1), "% a.a."))), lastMovement && React.createElement("div", {
+    style: {
+      marginTop: 12,
+      paddingTop: 10,
       borderTop: "1px solid var(--line)"
     }
-  }, (account.subBalances || []).filter(sb => sb.interestRate).map(sb => {
-    const principal = availableBalance(sb, transactions);
-    return React.createElement("div", {
-      key: sb.id,
-      style: {
-        fontSize: 11.5,
-        color: "var(--slate)",
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: 3
-      }
-    }, React.createElement("span", null, sb.label || sb.type, " · ", sb.interestRate, "% a.a."), React.createElement("span", {
-      style: {
-        color: "var(--gold)",
-        fontFamily: "'IBM Plex Mono', monospace",
-        fontWeight: 600
-      }
-    }, "+", fmt(accruedInterest(sb, principal), account.currency)));
-  })), !compact && (onRemove || onEdit) && React.createElement("div", {
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.3,
+      marginBottom: 4
+    }
+  }, "Último movimento"), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8
+    }
+  }, React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)"
+    }
+  }, new Date(lastMovement.date + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--ink)",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, lastMovement.label)), React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: lastMovement.signedAmount >= 0 ? "var(--emerald)" : "var(--rust)",
+      flexShrink: 0
+    }
+  }, lastMovement.signedAmount >= 0 ? "+" : "", fmt(lastMovement.signedAmount, account.currency)))), !compact && (onRemove || onEdit) && React.createElement("div", {
     style: {
       position: "absolute",
       top: 12,
@@ -4090,37 +4885,227 @@ function AccountsTab({
   accounts,
   transactions,
   exchangeRates,
+  debts,
+  debtPayments,
+  recurringExpenses,
+  month,
   onAdd,
   onEdit,
-  onRemove
+  onRemove,
+  onExportExcel,
+  onExportPDF
 }) {
-  return React.createElement("div", null, React.createElement(PrimaryButton, {
-    onClick: onAdd,
-    style: {
-      marginBottom: 18
+  const [search, setSearch] = useState("");
+  const [quickFilter, setQuickFilter] = useState("Todos");
+  const [sortBy, setSortBy] = useState("saldo");
+  const byBank = accounts.length ? Object.entries(accounts.reduce((map, a) => {
+    const bankName = a.bank.replace(/—.*/, "").trim();
+    const total = accountTotal(a, transactions);
+    const kz = toKz(total, a.currency, exchangeRates);
+    map[bankName] = (map[bankName] || 0) + (kz === null ? 0 : kz);
+    return map;
+  }, {})).sort((a, b) => b[1] - a[1]) : [];
+  const bankTotal = byBank.reduce((s, [, v]) => s + v, 0);
+  function accountHasAlert(a) {
+    const overdueDebt = (debts || []).some(d => d.accountId === a.id && debtStatus(d, debtPayments || []) === "Vencida");
+    const overdueRecurring = (recurringExpenses || []).some(r => r.accountId === a.id && month && recurringStatus(r, month, transactions) === "Vencida");
+    return overdueDebt || overdueRecurring;
+  }
+  const filteredAccounts = accounts.filter(a => {
+    const q = search.trim().toLowerCase();
+    if (q && !`${a.bank} ${a.nickname || ""}`.toLowerCase().includes(q)) return false;
+    if (quickFilter === "Todos") return true;
+    if (["Kz", "USD", "EUR"].includes(quickFilter)) return a.currency === quickFilter;
+    return (a.subBalances || []).some(sb => sb.type === quickFilter);
+  });
+  const sortedAccounts = [...filteredAccounts].sort((a, b) => {
+    if (sortBy === "saldo") {
+      const kzA = toKz(accountTotal(a, transactions), a.currency, exchangeRates) || 0;
+      const kzB = toKz(accountTotal(b, transactions), b.currency, exchangeRates) || 0;
+      return kzB - kzA;
     }
+    if (sortBy === "recente") {
+      const lastA = lastMovementForAccount(a, transactions);
+      const lastB = lastMovementForAccount(b, transactions);
+      if (!lastA && !lastB) return 0;
+      if (!lastA) return 1;
+      if (!lastB) return -1;
+      return lastA.date < lastB.date ? 1 : -1;
+    }
+    if (sortBy === "alertas") {
+      return (accountHasAlert(b) ? 1 : 0) - (accountHasAlert(a) ? 1 : 0);
+    }
+    return 0;
+  });
+  const currenciesPresent = Array.from(new Set(accounts.map(a => a.currency)));
+  const quickFilters = ["Todos", ...currenciesPresent, "À ordem", "Poupança", "Investimento"];
+  return React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginBottom: 18,
+      flexWrap: "wrap"
+    }
+  }, React.createElement(PrimaryButton, {
+    onClick: onAdd
   }, React.createElement(IconPlus, {
     size: 15
-  }), " Adicionar conta"), accounts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+  }), " Adicionar conta"), accounts.length > 0 && React.createElement(React.Fragment, null, React.createElement(GhostButton, {
+    onClick: onExportExcel
+  }, React.createElement(IconDownload, {
+    size: 14
+  }), " Exportar Excel"), React.createElement(GhostButton, {
+    onClick: onExportPDF
+  }, React.createElement(IconFileText, {
+    size: 14
+  }), " Exportar PDF"))), accounts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 14,
       margin: 0
     }
-  }, "Ainda não tem contas cadastradas. Adicione o seu primeiro banco comercial para começar.")) : React.createElement("div", {
+  }, "Ainda não tem contas cadastradas. Adicione o seu primeiro banco comercial para começar.")) : React.createElement(React.Fragment, null, byBank.length > 1 && React.createElement(Card, {
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 12px"
+    }
+  }, "Consolidado por banco"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, byBank.map(([bank, kz]) => {
+    const share = bankTotal > 0 ? kz / bankTotal * 100 : 0;
+    return React.createElement("div", {
+      key: bank
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 13,
+        marginBottom: 3
+      }
+    }, React.createElement("span", {
+      style: {
+        fontWeight: 600
+      }
+    }, bank), React.createElement("span", {
+      title: fmt(kz),
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontWeight: 700,
+        cursor: "help"
+      }
+    }, fmtCompact(kz), " ", React.createElement("span", {
+      style: {
+        color: "var(--slate)",
+        fontWeight: 500
+      }
+    }, "(", share.toFixed(0), "%)"))), React.createElement("div", {
+      style: {
+        height: 5,
+        borderRadius: 3,
+        background: "var(--paper)",
+        overflow: "hidden"
+      }
+    }, React.createElement("div", {
+      style: {
+        height: "100%",
+        width: `${share}%`,
+        background: "var(--gold)"
+      }
+    })));
+  }))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginBottom: 14,
+      flexWrap: "wrap",
+      alignItems: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "relative",
+      flex: "1 1 200px",
+      minWidth: 180
+    }
+  }, React.createElement(IconSearch, {
+    size: 14,
+    style: {
+      position: "absolute",
+      left: 10,
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "var(--slate)"
+    }
+  }), React.createElement("input", {
+    value: search,
+    onChange: e => setSearch(e.target.value),
+    placeholder: "Procurar conta…",
+    style: {
+      ...inputStyle,
+      width: "100%",
+      paddingLeft: 32
+    }
+  })), React.createElement("select", {
+    value: sortBy,
+    onChange: e => setSortBy(e.target.value),
+    style: {
+      ...inputStyle,
+      minWidth: 170
+    }
+  }, React.createElement("option", {
+    value: "saldo"
+  }, "Ordenar: maior saldo"), React.createElement("option", {
+    value: "recente"
+  }, "Ordenar: movimentação recente"), React.createElement("option", {
+    value: "alertas"
+  }, "Ordenar: alertas primeiro"))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      marginBottom: 16,
+      flexWrap: "wrap"
+    }
+  }, quickFilters.map(f => React.createElement("button", {
+    key: f,
+    onClick: () => setQuickFilter(f),
+    style: {
+      padding: "5px 12px",
+      borderRadius: 20,
+      border: `1px solid ${quickFilter === f ? "var(--gold)" : "var(--line)"}`,
+      background: quickFilter === f ? "#EEF3FB" : "#fff",
+      color: quickFilter === f ? "var(--gold)" : "var(--slate)",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, f))), sortedAccounts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Nenhuma conta corresponde à pesquisa/filtro.")) : React.createElement("div", {
     style: {
       display: "flex",
       gap: 16,
       flexWrap: "wrap"
     }
-  }, accounts.map(a => React.createElement(AccountCard, {
+  }, sortedAccounts.map(a => React.createElement(AccountCard, {
     key: a.id,
     account: a,
     transactions: transactions,
     exchangeRates: exchangeRates,
     onRemove: onRemove,
     onEdit: onEdit
-  }))));
+  })))));
 }
 function emptySubBalance(type = "À ordem") {
   return {
@@ -4380,6 +5365,7 @@ function TransactionsTab({
   shortcuts,
   onAdd,
   onTransfer,
+  onEdit,
   onRemove,
   onQuickAdd,
   onManageShortcuts,
@@ -4689,7 +5675,22 @@ function TransactionsTab({
         style: {
           padding: "10px 16px"
         }
+      }, React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 4
+        }
       }, React.createElement("button", {
+        onClick: () => onEdit(t),
+        style: {
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "var(--slate)"
+        }
+      }, React.createElement(IconPencil, {
+        size: 14
+      })), React.createElement("button", {
         onClick: () => onRemove(t.id),
         style: {
           background: "none",
@@ -4699,7 +5700,7 @@ function TransactionsTab({
         }
       }, React.createElement(IconTrash, {
         size: 14
-      }))));
+      })))));
     }
     const acc = accounts.find(a => a.id === t.accountId);
     const sub = acc && acc.subBalances && acc.subBalances.find(s => s.id === t.subBalanceId);
@@ -4742,7 +5743,22 @@ function TransactionsTab({
       style: {
         padding: "10px 16px"
       }
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 4
+      }
     }, React.createElement("button", {
+      onClick: () => onEdit(t),
+      style: {
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "var(--slate)"
+      }
+    }, React.createElement(IconPencil, {
+      size: 14
+    })), React.createElement("button", {
       onClick: () => onRemove(t.id),
       style: {
         background: "none",
@@ -4752,32 +5768,34 @@ function TransactionsTab({
       }
     }, React.createElement(IconTrash, {
       size: 14
-    }))));
+    })))));
   })))));
 }
 function TxModal({
+  initial,
   accounts,
   transactions,
   expenseCategories,
   onClose,
   onSave
 }) {
-  const [kind, setKind] = useState("despesa");
-  const [accountId, setAccountId] = useState(accounts[0] ? accounts[0].id : "");
+  const isEditing = !!initial;
+  const [kind, setKind] = useState(initial && initial.kind || "despesa");
+  const [accountId, setAccountId] = useState(initial && initial.accountId || (accounts[0] ? accounts[0].id : ""));
   const currentAccount = accounts.find(a => a.id === accountId);
-  const [subBalanceId, setSubBalanceId] = useState(currentAccount && currentAccount.subBalances && currentAccount.subBalances[0] ? currentAccount.subBalances[0].id : "");
-  const [category, setCategory] = useState(EXPENSE_CATEGORIES[0]);
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(todayISO());
-  const [description, setDescription] = useState("");
-  const [member, setMember] = useState("");
+  const [subBalanceId, setSubBalanceId] = useState(initial && initial.subBalanceId || (currentAccount && currentAccount.subBalances && currentAccount.subBalances[0] ? currentAccount.subBalances[0].id : ""));
+  const [category, setCategory] = useState(initial && initial.category || EXPENSE_CATEGORIES[0]);
+  const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
+  const [date, setDate] = useState(initial && initial.date || todayISO());
+  const [description, setDescription] = useState(initial && initial.description || "");
+  const [member, setMember] = useState(initial && initial.member || "");
   function handleAccountChange(id) {
     setAccountId(id);
     const acc = accounts.find(a => a.id === id);
     setSubBalanceId(acc && acc.subBalances && acc.subBalances[0] ? acc.subBalances[0].id : "");
   }
   return React.createElement(Modal, {
-    title: "Novo movimento",
+    title: isEditing ? "Editar movimento" : "Novo movimento",
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -4883,23 +5901,25 @@ function TxModal({
       description,
       member: member.trim() || null
     })
-  }, "Guardar movimento")));
+  }, isEditing ? "Guardar alterações" : "Guardar movimento")));
 }
 function TransferModal({
+  initial,
   accounts,
   transactions,
   onClose,
   onSave
 }) {
-  const [fromAccountId, setFromAccountId] = useState(accounts[0] ? accounts[0].id : "");
+  const isEditing = !!initial;
+  const [fromAccountId, setFromAccountId] = useState(initial && initial.fromAccountId || (accounts[0] ? accounts[0].id : ""));
   const fromAccount = accounts.find(a => a.id === fromAccountId);
-  const [fromSubId, setFromSubId] = useState(fromAccount && fromAccount.subBalances && fromAccount.subBalances[0] ? fromAccount.subBalances[0].id : "");
-  const [toAccountId, setToAccountId] = useState(accounts[0] ? accounts[0].id : "");
+  const [fromSubId, setFromSubId] = useState(initial && initial.fromSubBalanceId || (fromAccount && fromAccount.subBalances && fromAccount.subBalances[0] ? fromAccount.subBalances[0].id : ""));
+  const [toAccountId, setToAccountId] = useState(initial && initial.toAccountId || (accounts[0] ? accounts[0].id : ""));
   const toAccount = accounts.find(a => a.id === toAccountId);
-  const [toSubId, setToSubId] = useState(toAccount && toAccount.subBalances && toAccount.subBalances[1] ? toAccount.subBalances[1].id : toAccount && toAccount.subBalances && toAccount.subBalances[0] ? toAccount.subBalances[0].id : "");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(todayISO());
-  const [description, setDescription] = useState("");
+  const [toSubId, setToSubId] = useState(initial && initial.toSubBalanceId || (toAccount && toAccount.subBalances && toAccount.subBalances[1] ? toAccount.subBalances[1].id : toAccount && toAccount.subBalances && toAccount.subBalances[0] ? toAccount.subBalances[0].id : ""));
+  const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
+  const [date, setDate] = useState(initial && initial.date || todayISO());
+  const [description, setDescription] = useState(initial && initial.description || "");
   function handleFromAccountChange(id) {
     setFromAccountId(id);
     const acc = accounts.find(a => a.id === id);
@@ -4926,7 +5946,7 @@ function TransferModal({
     });
   }
   return React.createElement(Modal, {
-    title: "Transferir entre contas",
+    title: isEditing ? "Editar transferência" : "Transferir entre contas",
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -5069,7 +6089,7 @@ function TransferModal({
   }, "Não conta como receita nem despesa — apenas move o dinheiro entre os saldos."), React.createElement(PrimaryButton, {
     disabled: !canSave,
     onClick: handleSave
-  }, "Transferir")));
+  }, isEditing ? "Guardar alterações" : "Transferir")));
 }
 function ExchangeTab({
   rates,
@@ -5337,6 +6357,38 @@ function PlanningTab({
     liquidKz,
     totalDebtKz
   });
+  let investKz = 0,
+    totalAssetsKz = 0;
+  for (const a of accounts) {
+    const breakdown = typeBreakdown(a, transactions);
+    const investAmt = breakdown["Investimento"] || 0;
+    const totalAmt = SUB_TYPES.reduce((s, t) => s + breakdown[t], 0);
+    const investKzAmt = toKz(investAmt, a.currency, exchangeRates);
+    const totalKzAmt = toKz(totalAmt, a.currency, exchangeRates);
+    if (investKzAmt !== null) investKz += investKzAmt;
+    if (totalKzAmt !== null) totalAssetsKz += totalKzAmt;
+  }
+  const investSharePct = totalAssetsKz > 0 ? investKz / totalAssetsKz * 100 : null;
+  const nowForTrend = new Date();
+  const prevMonthDateForTrend = new Date(nowForTrend.getFullYear(), nowForTrend.getMonth(), 0);
+  const prevMonthEndDateForTrend = prevMonthDateForTrend.toISOString().slice(0, 10);
+  let assetsPrevKz = 0;
+  for (const a of accounts) {
+    const bal = accountTotal(a, transactions, prevMonthEndDateForTrend);
+    const kz = toKz(bal, a.currency, exchangeRates);
+    if (kz !== null) assetsPrevKz += kz;
+  }
+  const netWorthPrevApprox = assetsPrevKz - totalDebtKz;
+  const patrimonioTrendPct = netWorthPrevApprox !== 0 ? (currentNetWorth - netWorthPrevApprox) / Math.abs(netWorthPrevApprox) * 100 : null;
+  const healthScore = computeFinancialHealthScore({
+    savingsRate,
+    emergencyMonths,
+    debtRatio,
+    investSharePct,
+    patrimonioTrendPct
+  });
+  const scoreLabel = healthScore.total >= 80 ? "Excelente" : healthScore.total >= 60 ? "Boa" : healthScore.total >= 40 ? "Razoável" : "Requer atenção";
+  const scoreTone = healthScore.total >= 80 ? "emerald" : healthScore.total >= 60 ? "gold" : healthScore.total >= 40 ? "gold" : "rust";
   const investBalances = [];
   for (const a of accounts) {
     for (const sb of a.subBalances || []) {
@@ -5408,6 +6460,63 @@ function PlanningTab({
       gap: 18
     }
   }, React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 17,
+      margin: "0 0 14px"
+    }
+  }, "Saúde Financeira"), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 24,
+      alignItems: "center",
+      flexWrap: "wrap"
+    }
+  }, React.createElement(ScoreRing, {
+    score: healthScore.total
+  }), React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 220
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 700,
+      color: `var(--${scoreTone})`
+    }
+  }, scoreLabel), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: "4px 0 12px"
+    }
+  }, "Combina liquidez, taxa de poupança, endividamento, peso de investimentos e evolução do património — 20 pontos cada."), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 7
+    }
+  }, healthScore.factors.map(f => React.createElement("div", {
+    key: f.name
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginBottom: 2
+    }
+  }, React.createElement("span", null, f.name), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: "var(--ink)"
+    }
+  }, Math.round(f.value), "/20")), React.createElement(ProgressBar, {
+    pct: f.value / 20 * 100,
+    tone: f.value >= 14 ? "emerald" : f.value >= 8 ? "gold" : "rust"
+  }))))))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -5641,7 +6750,8 @@ function AlertsTab({
   debts,
   debtPayments,
   goals,
-  lastExportDate
+  lastExportDate,
+  memberLimits
 }) {
   const alerts = useMemo(() => buildAlerts({
     recurringExpenses,
@@ -5652,8 +6762,9 @@ function AlertsTab({
     debts,
     debtPayments,
     goals,
-    lastExportDate
-  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate]);
+    lastExportDate,
+    memberLimits
+  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate, memberLimits]);
   return React.createElement("div", null, alerts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
@@ -5909,7 +7020,9 @@ function BudgetTab({
   onRemoveRecurring,
   onMarkPaid,
   expenseCategories,
-  onManageCategories
+  onManageCategories,
+  memberLimits,
+  onSetMemberLimit
 }) {
   const [newIncomeType, setNewIncomeType] = useState(INCOME_TYPES[0]);
   const [newIncomeLabel, setNewIncomeLabel] = useState("");
@@ -6238,7 +7351,81 @@ function BudgetTab({
     style: {
       color: "var(--emerald)"
     }
-  }, fmt(totalReceitas))))));
+  }, fmt(totalReceitas))))), (() => {
+    const allMembers = Array.from(new Set([...transactions.map(t => t.member).filter(Boolean), ...Object.keys(memberLimits || {})])).sort();
+    if (allMembers.length === 0) return null;
+    return React.createElement(Card, null, React.createElement("h3", {
+      style: {
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: 16,
+        margin: "0 0 4px"
+      }
+    }, "Orçamento por membro"), React.createElement("p", {
+      style: {
+        color: "var(--slate)",
+        fontSize: 12.5,
+        margin: "0 0 16px"
+      }
+    }, "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento."), React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 14
+      }
+    }, allMembers.map(member => {
+      const limit = (memberLimits || {})[member] || "";
+      const spent = transactions.filter(t => t.kind === "despesa" && t.member === member && monthKey(t.date) === month).reduce((s, t) => s + Number(t.amount), 0);
+      const pct = limit ? spent / Number(limit) * 100 : 0;
+      return React.createElement("div", {
+        key: member
+      }, React.createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10
+        }
+      }, React.createElement("span", {
+        style: {
+          fontSize: 13.5,
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 6
+        }
+      }, React.createElement(IconUsers, {
+        size: 13,
+        style: {
+          color: "var(--slate)"
+        }
+      }), " ", member), React.createElement("input", {
+        type: "number",
+        placeholder: "Limite",
+        value: limit,
+        onChange: e => onSetMemberLimit(member, e.target.value),
+        style: {
+          ...inputStyle,
+          width: 100,
+          padding: "6px 8px",
+          fontSize: 13
+        }
+      })), limit !== "" && React.createElement("div", {
+        style: {
+          marginTop: 6
+        }
+      }, React.createElement(ProgressBar, {
+        pct: pct,
+        tone: pct > 100 ? "rust" : "emerald"
+      }), React.createElement("div", {
+        style: {
+          fontSize: 11.5,
+          color: "var(--slate)",
+          marginTop: 3,
+          fontFamily: "'IBM Plex Mono', monospace"
+        }
+      }, fmt(spent), " / ", fmt(Number(limit)), " (", pct.toFixed(0), "%)")));
+    })));
+  })());
 }
 function GoalsTab({
   goals,
