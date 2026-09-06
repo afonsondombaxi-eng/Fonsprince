@@ -1737,13 +1737,95 @@ function ConfirmDialog({
     }
   }, "Remover"))));
 }
+async function isBiometricAvailable() {
+  if (!window.PublicKeyCredential || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+  try {
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch {
+    return false;
+  }
+}
+function randomBytes(n) {
+  const arr = new Uint8Array(n);
+  crypto.getRandomValues(arr);
+  return arr;
+}
+function bufToBase64(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+function base64ToBuf(b64) {
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+async function registerBiometric() {
+  const cred = await navigator.credentials.create({
+    publicKey: {
+      challenge: randomBytes(32),
+      rp: {
+        name: "Fonsprince"
+      },
+      user: {
+        id: randomBytes(16),
+        name: "utilizador",
+        displayName: "Fonsprince"
+      },
+      pubKeyCredParams: [{
+        type: "public-key",
+        alg: -7
+      }, {
+        type: "public-key",
+        alg: -257
+      }],
+      authenticatorSelection: {
+        authenticatorAttachment: "platform",
+        userVerification: "required"
+      },
+      timeout: 60000
+    }
+  });
+  return bufToBase64(cred.rawId);
+}
+async function verifyBiometric(credentialIdB64) {
+  const assertion = await navigator.credentials.get({
+    publicKey: {
+      challenge: randomBytes(32),
+      allowCredentials: [{
+        id: base64ToBuf(credentialIdB64),
+        type: "public-key"
+      }],
+      userVerification: "required",
+      timeout: 60000
+    }
+  });
+  return !!assertion;
+}
 function PinSetupModal({
   currentPin,
   onClose,
   onSave,
-  onRemove
+  onRemove,
+  biometricCredentialId,
+  onEnableBiometric,
+  onDisableBiometric
 }) {
   const [step, setStep] = useState(currentPin ? "manage" : "create");
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
+  const [bioError, setBioError] = useState("");
+  useEffect(() => {
+    isBiometricAvailable().then(setBioAvailable);
+  }, []);
+  async function handleEnableBiometric() {
+    setBioError("");
+    setBioBusy(true);
+    try {
+      const credentialId = await registerBiometric();
+      onEnableBiometric(credentialId);
+    } catch (err) {
+      setBioError("Não foi possível configurar. Verifique se o Face ID/Touch ID está ativado no aparelho e tente novamente.");
+    } finally {
+      setBioBusy(false);
+    }
+  }
   const [value, setValue] = useState("");
   const [confirmValue, setConfirmValue] = useState("");
   const [removeCheck, setRemoveCheck] = useState("");
@@ -1782,7 +1864,56 @@ function PinSetupModal({
       flexDirection: "column",
       gap: 14
     }
-  }, step === "manage" && React.createElement(React.Fragment, null, React.createElement("p", {
+  }, bioAvailable && React.createElement("div", {
+    style: {
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "var(--paper)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, "Face ID / Touch ID"), biometricCredentialId && React.createElement("span", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--emerald)",
+      fontWeight: 700
+    }
+  }, "✓ Ativado")), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Usa o sensor biométrico deste aparelho para desbloquear a app. Fica guardado só neste aparelho — noutro terá de o ativar de novo."), bioError && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--rust)"
+    }
+  }, bioError), biometricCredentialId ? React.createElement(GhostButton, {
+    onClick: onDisableBiometric,
+    style: {
+      fontSize: 12.5
+    }
+  }, "Desativar") : React.createElement(PrimaryButton, {
+    onClick: handleEnableBiometric,
+    disabled: bioBusy,
+    style: {
+      fontSize: 12.5
+    }
+  }, bioBusy ? "A configurar…" : "Ativar Face ID / Touch ID")), step === "manage" && React.createElement(React.Fragment, null, React.createElement("p", {
     style: {
       fontSize: 13,
       color: "var(--slate)",
@@ -1871,10 +2002,32 @@ function PinSetupModal({
 }
 function LockScreen({
   pin,
+  biometricCredentialId,
   onUnlock
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
+  const [bioFailed, setBioFailed] = useState(false);
+  const triedAuto = useRef(false);
+  async function tryBiometric() {
+    setBioBusy(true);
+    setBioFailed(false);
+    try {
+      const ok = await verifyBiometric(biometricCredentialId);
+      if (ok) onUnlock();else setBioFailed(true);
+    } catch {
+      setBioFailed(true);
+    } finally {
+      setBioBusy(false);
+    }
+  }
+  useEffect(() => {
+    if (biometricCredentialId && !triedAuto.current) {
+      triedAuto.current = true;
+      tryBiometric();
+    }
+  }, [biometricCredentialId]);
   function handleSubmit() {
     if (value === pin) {
       onUnlock();
@@ -1907,11 +2060,27 @@ function LockScreen({
       fontSize: 17,
       fontWeight: 600
     }
-  }, "Fonsprince bloqueado"), React.createElement("input", {
+  }, "Fonsprince bloqueado"), biometricCredentialId && React.createElement(React.Fragment, null, React.createElement(PrimaryButton, {
+    onClick: tryBiometric,
+    disabled: bioBusy,
+    style: {
+      background: "#0F6CBD"
+    }
+  }, bioBusy ? "A verificar…" : "🔓 Desbloquear com Face ID / Touch ID"), bioFailed && React.createElement("div", {
+    style: {
+      color: "#E8A9A0",
+      fontSize: 12.5
+    }
+  }, "Não foi possível confirmar. Tente novamente ou use o PIN."), pin && React.createElement("div", {
+    style: {
+      color: "rgba(255,255,255,0.4)",
+      fontSize: 12
+    }
+  }, "— ou —")), pin && React.createElement(React.Fragment, null, React.createElement("input", {
     type: "password",
     inputMode: "numeric",
     maxLength: 6,
-    autoFocus: true,
+    autoFocus: !biometricCredentialId,
     value: value,
     onChange: e => {
       setError(false);
@@ -1941,7 +2110,7 @@ function LockScreen({
     style: {
       background: "#0F6CBD"
     }
-  }, "Entrar"));
+  }, "Entrar")));
 }
 function PrimaryButton({
   children,
@@ -2377,6 +2546,7 @@ function FinanceApp() {
     });
   }
   const [pin, setPin] = useState(() => loadKey("app-pin", null));
+  const [biometricCredentialId, setBiometricCredentialId] = useState(() => loadKey("biometric-credential-id", null));
   const [unlocked, setUnlocked] = useState(false);
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
@@ -2413,6 +2583,7 @@ function FinanceApp() {
     income: [],
     memberLimits: {}
   }));
+  const knownMembers = useMemo(() => Array.from(new Set([...transactions.map(t => t.member).filter(Boolean), ...Object.keys(budgetIncome.memberLimits || {})])).sort(), [transactions, budgetIncome.memberLimits]);
   const [goals, setGoals] = useState(() => loadKey("goals", []));
   const [debts, setDebts] = useState(() => loadKey("debts", []));
   const [debtPayments, setDebtPayments] = useState(() => loadKey("debt-payments", []));
@@ -2456,6 +2627,7 @@ function FinanceApp() {
   useEffect(() => saveKey("expense-shortcuts", expenseShortcuts), [expenseShortcuts]);
   useEffect(() => saveKey("sidebar-collapsed", sidebarCollapsed), [sidebarCollapsed]);
   useEffect(() => saveKey("app-pin", pin), [pin]);
+  useEffect(() => saveKey("biometric-credential-id", biometricCredentialId), [biometricCredentialId]);
   useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
   useEffect(() => saveKey("custom-categories", customCategories), [customCategories]);
   useEffect(() => saveKey("last-export-date", lastExportDate), [lastExportDate]);
@@ -2876,9 +3048,10 @@ function FinanceApp() {
       description: shortcut.name
     });
   }
-  if (pin && !unlocked) {
+  if ((pin || biometricCredentialId) && !unlocked) {
     return React.createElement(LockScreen, {
       pin: pin,
+      biometricCredentialId: biometricCredentialId,
       onUnlock: () => setUnlocked(true)
     });
   }
@@ -3515,37 +3688,69 @@ function FinanceApp() {
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 8
+      gap: 4
     }
   }, [{
-    id: "budget",
-    label: "Orçamento Mensal",
-    icon: IconWallet
+    group: "Gestão Financeira",
+    items: [{
+      id: "budget",
+      label: "Orçamento Mensal",
+      icon: IconWallet
+    }]
   }, {
-    id: "goals",
-    label: "Metas de Poupança",
-    icon: IconTarget
+    group: "Planeamento",
+    items: [{
+      id: "goals",
+      label: "Metas de Poupança",
+      icon: IconTarget
+    }, {
+      id: "planning",
+      label: "Planeamento Financeiro",
+      icon: IconCompass
+    }, {
+      id: "forecast",
+      label: "Previsão de Fluxo de Caixa",
+      icon: IconTrendingUp
+    }]
   }, {
-    id: "exchange",
-    label: "Câmbio",
-    icon: IconRepeat
+    group: "Financiamento",
+    items: [{
+      id: "exchange",
+      label: "Câmbio",
+      icon: IconRepeat
+    }]
   }, {
-    id: "forecast",
-    label: "Previsão de Fluxo de Caixa",
-    icon: IconTrendingUp
-  }, {
-    id: "report",
-    label: "Relatório Mensal",
-    icon: IconFileText
-  }, {
-    id: "planning",
-    label: "Planeamento Financeiro",
-    icon: IconCompass
-  }, {
-    id: "alerts",
-    label: "Central de Alertas",
-    icon: IconBell
-  }].map(t => React.createElement("button", {
+    group: "Relatórios",
+    items: [{
+      id: "report",
+      label: "Relatório Mensal",
+      icon: IconFileText
+    }, {
+      id: "alerts",
+      label: "Central de Alertas",
+      icon: IconBell
+    }]
+  }].map(section => React.createElement("div", {
+    key: section.group,
+    style: {
+      marginBottom: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      padding: "6px 2px 6px"
+    }
+  }, section.group), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, section.items.map(t => React.createElement("button", {
     key: t.id,
     onClick: () => {
       setTab(t.id);
@@ -3571,10 +3776,10 @@ function FinanceApp() {
     style: {
       color: tab === t.id ? "var(--gold)" : "var(--slate)"
     }
-  }), t.label)), React.createElement("div", {
+  }), t.label))))), React.createElement("div", {
     style: {
       borderTop: "1px solid var(--line)",
-      marginTop: 6,
+      marginTop: 2,
       paddingTop: 12,
       display: "flex",
       flexDirection: "column",
@@ -3582,11 +3787,11 @@ function FinanceApp() {
     }
   }, React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 10.5,
       color: "var(--slate)",
-      fontWeight: 600,
+      fontWeight: 700,
       textTransform: "uppercase",
-      letterSpacing: 0.4
+      letterSpacing: 0.5
     }
   }, "Dados"), React.createElement("button", {
     onClick: () => {
@@ -3684,6 +3889,7 @@ function FinanceApp() {
     accounts: accounts,
     transactions: transactions,
     expenseCategories: expenseCategories,
+    members: knownMembers,
     onClose: () => {
       setShowTxModal(false);
       setEditingTx(null);
@@ -3827,7 +4033,13 @@ function FinanceApp() {
     onRemove: () => {
       setPin(null);
       setShowPinSetup(false);
-    }
+    },
+    biometricCredentialId: biometricCredentialId,
+    onEnableBiometric: credId => {
+      setBiometricCredentialId(credId);
+      setUnlocked(true);
+    },
+    onDisableBiometric: () => setBiometricCredentialId(null)
   }), showCategoryManager && React.createElement(CategoryManagerModal, {
     builtIn: EXPENSE_CATEGORIES,
     custom: customCategories,
@@ -5776,6 +5988,7 @@ function TxModal({
   accounts,
   transactions,
   expenseCategories,
+  members,
   onClose,
   onSave
 }) {
@@ -5882,8 +6095,14 @@ function TxModal({
     style: inputStyle,
     value: member,
     onChange: e => setMember(e.target.value),
-    placeholder: "ex: Marido, Esposa, Filho"
-  })), React.createElement("p", {
+    placeholder: "ex: Afonso, Casa, Cozinha",
+    list: "member-suggestions"
+  }), React.createElement("datalist", {
+    id: "member-suggestions"
+  }, (members || []).map(m => React.createElement("option", {
+    key: m,
+    value: m
+  })))), React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
