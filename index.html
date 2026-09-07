@@ -2,13 +2,13 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8" />
-<title>Fonsprince — Controlo Financeiro Pessoal</title>
+<title>Fonsprince One — Controlo Financeiro Pessoal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<meta name="theme-color" content="#1B1F27" />
+<meta name="theme-color" content="#0F1E42" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Fonsprince" />
+<meta name="apple-mobile-web-app-title" content="Fonsprince One" />
 <meta name="format-detection" content="telephone=no" />
 <link rel="manifest" href="./manifest.json" />
 <link rel="icon" href="./icon-192.png" />
@@ -315,6 +315,24 @@ const IconSun = p => React.createElement(Icon, p, React.createElement("circle", 
 }), React.createElement("path", {
   d: "M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
 }));
+const IconPieChart = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M21.21 15.89A10 10 0 1 1 8 2.83"
+}), React.createElement("path", {
+  d: "M22 12A10 10 0 0 0 12 2v10z"
+}));
+const IconActivity = p => React.createElement(Icon, p, React.createElement("polyline", {
+  points: "22 12 18 12 15 21 9 3 6 12 2 12"
+}));
+const IconWrench = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+}));
+const IconSettings = p => React.createElement(Icon, p, React.createElement("circle", {
+  cx: "12",
+  cy: "12",
+  r: "3"
+}), React.createElement("path", {
+  d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+}));
 const IconMore = p => React.createElement(Icon, p, React.createElement("circle", {
   cx: "12",
   cy: "5",
@@ -334,6 +352,7 @@ const IconMore = p => React.createElement(Icon, p, React.createElement("circle",
   fill: "currentColor",
   stroke: "none"
 }));
+const LOGO_DATA_URI = "data:image/png;base64,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";
 const BANKS = ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Outro"];
 const CURRENCIES = ["Kz", "USD", "EUR"];
 const SUB_TYPES = ["À ordem", "Poupança", "Investimento"];
@@ -663,6 +682,79 @@ function debtStatus(debt, payments) {
   if (debt.dueDate && debt.dueDate < todayISO()) return "Vencida";
   return "Em dia";
 }
+function billingCycleForDate(dateStr, closingDay) {
+  const d = new Date(dateStr + "T00:00:00");
+  let year = d.getFullYear();
+  let month = d.getMonth();
+  if (d.getDate() > closingDay) {
+    month += 1;
+    if (month > 11) {
+      month = 0;
+      year += 1;
+    }
+  }
+  return `${year}-${String(month + 1).padStart(2, "0")}`;
+}
+function addMonthsToKey(monthKeyStr, n) {
+  const [y, m] = monthKeyStr.split("-").map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function purchaseInstallments(purchase, closingDay) {
+  const firstCycle = billingCycleForDate(purchase.date, closingDay);
+  const n = Math.max(1, Number(purchase.installments) || 1);
+  const base = Math.floor(Number(purchase.totalAmount) / n * 100) / 100;
+  const rows = [];
+  let accounted = 0;
+  for (let i = 0; i < n; i++) {
+    const isLast = i === n - 1;
+    const amount = isLast ? Number((Number(purchase.totalAmount) - accounted).toFixed(2)) : base;
+    accounted += amount;
+    rows.push({
+      month: addMonthsToKey(firstCycle, i),
+      amount,
+      installmentLabel: n > 1 ? `${i + 1}/${n}` : null
+    });
+  }
+  return rows;
+}
+function statementTotal(cardId, cycleMonth, purchases, closingDay) {
+  let total = 0;
+  for (const p of purchases.filter(p => p.cardId === cardId)) {
+    for (const row of purchaseInstallments(p, closingDay)) {
+      if (row.month === cycleMonth) total += row.amount;
+    }
+  }
+  return total;
+}
+function statementPaid(cardId, cycleMonth, payments) {
+  return payments.filter(pay => pay.cardId === cardId && pay.cycleMonth === cycleMonth).reduce((s, pay) => s + Number(pay.amount), 0);
+}
+function statementBalance(cardId, cycleMonth, purchases, payments, closingDay) {
+  return statementTotal(cardId, cycleMonth, purchases, closingDay) - statementPaid(cardId, cycleMonth, payments);
+}
+function creditCardUsedAmount(card, purchases, payments) {
+  let used = 0;
+  const seenMonths = new Set();
+  for (const p of purchases.filter(p => p.cardId === card.id)) {
+    for (const row of purchaseInstallments(p, card.closingDay)) {
+      seenMonths.add(row.month);
+    }
+  }
+  for (const month of seenMonths) {
+    const bal = statementBalance(card.id, month, purchases, payments, card.closingDay);
+    if (bal > 0) used += bal;
+  }
+  return used;
+}
+function creditCardDueDateForCycle(card, cycleMonth) {
+  const dueDay = String(card.dueDay).padStart(2, "0");
+  let dueMonth = cycleMonth;
+  if (Number(card.dueDay) < Number(card.closingDay)) {
+    dueMonth = addMonthsToKey(cycleMonth, 1);
+  }
+  return `${dueMonth}-${dueDay}`;
+}
 function recurringDueDateForMonth(rec, month) {
   const day = String(rec.dueDay).padStart(2, "0");
   return `${month}-${day}`;
@@ -806,10 +898,9 @@ function buildReportHtml(data) {
   const goalRows = goals.map(g => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${g.name}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(g.current)} / ${fmt(g.target)}</td></tr>`).join("");
   return `
     <div style="font-family: 'Segoe UI', Calibri, Arial, sans-serif; color:#1B1F27; max-width:760px; margin:0 auto; position:relative;">
-      <div style="position:absolute; top:38%; left:-10%; width:120%; text-align:center; transform:rotate(-30deg); opacity:0.08; font-size:52px; font-weight:bold; color:#1B1F27; pointer-events:none; z-index:0; white-space:nowrap;">Afonso Ndombaxi</div>
       <div style="position:relative; z-index:1;">
       <div style="text-align:center; border-bottom:3px solid #1B1F27; padding-bottom:16px; margin-bottom:24px;">
-        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">Relatório Financeiro — Fonsprince</h1>
+        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">Relatório Financeiro — Fonsprince One</h1>
         <p style="margin:6px 0 0; color:#68707C; font-size:13px;">${monthLabelFull(month)} · Gerado em ${generatedAt}</p>
       </div>
       <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Resumo do mês</h2>
@@ -833,7 +924,7 @@ function buildReportHtml(data) {
       </table>
       ${activeDebts.length ? `<h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Dívidas em aberto</h2><table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${debtRows}</table>` : ""}
       ${goals.length ? `<h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Metas de poupança</h2><table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${goalRows}</table>` : ""}
-      <p style="margin-top:32px; font-size:11px; color:#68707C; text-align:center;">Gerado automaticamente pelo Fonsprince — Afonso Ndombaxi.</p>
+      <p style="margin-top:32px; font-size:11px; color:#68707C; text-align:center;">Gerado automaticamente pelo Fonsprince One — Afonso Ndombaxi.</p>
       </div>
     </div>
   `;
@@ -970,6 +1061,64 @@ function computeFinancialHealthScore(opts) {
       value: sEvolucao
     }]
   };
+}
+function computeHealthScoreForApp(opts) {
+  const {
+    accounts,
+    transactions,
+    balancesByCurrency,
+    exchangeRates,
+    debts,
+    debtPayments,
+    recurringExpenses,
+    expectedIncome
+  } = opts;
+  const monthlyFixed = monthlyFixedTotal(recurringExpenses);
+  const avgVariable = averageVariableExpense(transactions, 3);
+  const currentNetWorth = netWorthKz(balancesByCurrency, debts, debtPayments, exchangeRates);
+  const liquidKz = liquidAssetsKz(accounts, transactions, exchangeRates);
+  const totalDebtKz = debts.filter(d => d.type === "A pagar").reduce((s, d) => s + (toKz(Math.max(debtBalance(d, debtPayments), 0), d.currency, exchangeRates) || 0), 0);
+  const {
+    savingsRate,
+    emergencyMonths,
+    debtRatio
+  } = financialHealthMetrics({
+    expectedIncome,
+    monthlyFixed,
+    avgVariable,
+    liquidKz,
+    totalDebtKz
+  });
+  let investKz = 0,
+    totalAssetsKz = 0;
+  for (const a of accounts) {
+    const breakdown = typeBreakdown(a, transactions);
+    const investAmt = breakdown["Investimento"] || 0;
+    const totalAmt = SUB_TYPES.reduce((s, t) => s + breakdown[t], 0);
+    const investKzAmt = toKz(investAmt, a.currency, exchangeRates);
+    const totalKzAmt = toKz(totalAmt, a.currency, exchangeRates);
+    if (investKzAmt !== null) investKz += investKzAmt;
+    if (totalKzAmt !== null) totalAssetsKz += totalKzAmt;
+  }
+  const investSharePct = totalAssetsKz > 0 ? investKz / totalAssetsKz * 100 : null;
+  const nowForTrend = new Date();
+  const prevMonthDateForTrend = new Date(nowForTrend.getFullYear(), nowForTrend.getMonth(), 0);
+  const prevMonthEndDateForTrend = prevMonthDateForTrend.toISOString().slice(0, 10);
+  let assetsPrevKz = 0;
+  for (const a of accounts) {
+    const bal = accountTotal(a, transactions, prevMonthEndDateForTrend);
+    const kz = toKz(bal, a.currency, exchangeRates);
+    if (kz !== null) assetsPrevKz += kz;
+  }
+  const netWorthPrevApprox = assetsPrevKz - totalDebtKz;
+  const patrimonioTrendPct = netWorthPrevApprox !== 0 ? (currentNetWorth - netWorthPrevApprox) / Math.abs(netWorthPrevApprox) * 100 : null;
+  return computeFinancialHealthScore({
+    savingsRate,
+    emergencyMonths,
+    debtRatio,
+    investSharePct,
+    patrimonioTrendPct
+  });
 }
 function simulateDebtPayoff(debts, debtPayments, monthlyBudget, strategy) {
   let items = debts.filter(d => d.type === "A pagar").map(d => ({
@@ -1128,6 +1277,103 @@ function buildAlerts(opts) {
     });
   }
   return alerts;
+}
+function isNotificationSupported() {
+  return typeof window !== "undefined" && "Notification" in window;
+}
+function requestNotificationPermission() {
+  if (!isNotificationSupported()) return Promise.resolve("unsupported");
+  return Notification.requestPermission();
+}
+function sendLocalNotification(title, body) {
+  if (!isNotificationSupported() || Notification.permission !== "granted") return;
+  try {
+    new Notification(title, {
+      body,
+      icon: "./icon-192.png"
+    });
+  } catch {}
+}
+function getNotifiedTodaySet() {
+  try {
+    const raw = localStorage.getItem("ledger:notified-today");
+    if (!raw) return {
+      date: todayISO(),
+      keys: []
+    };
+    const parsed = JSON.parse(raw);
+    if (parsed.date !== todayISO()) return {
+      date: todayISO(),
+      keys: []
+    };
+    return parsed;
+  } catch {
+    return {
+      date: todayISO(),
+      keys: []
+    };
+  }
+}
+function markNotified(key) {
+  const state = getNotifiedTodaySet();
+  if (!state.keys.includes(key)) {
+    state.keys.push(key);
+    try {
+      localStorage.setItem("ledger:notified-today", JSON.stringify(state));
+    } catch {}
+  }
+}
+function wasNotifiedToday(key) {
+  return getNotifiedTodaySet().keys.includes(key);
+}
+function checkDueSoonAndNotify(opts) {
+  const {
+    recurringExpenses,
+    transactions,
+    month,
+    debts,
+    debtPayments,
+    creditCards,
+    cardPurchases,
+    cardPayments
+  } = opts;
+  const today = todayISO();
+  const in3days = new Date();
+  in3days.setDate(in3days.getDate() + 3);
+  const in3daysStr = in3days.toISOString().slice(0, 10);
+  for (const rec of recurringExpenses) {
+    if (recurringStatus(rec, month, transactions) === "Paga") continue;
+    const due = recurringDueDateForMonth(rec, month);
+    if (due >= today && due <= in3daysStr) {
+      const key = `recurring-${rec.id}-${month}`;
+      if (!wasNotifiedToday(key)) {
+        sendLocalNotification("Despesa fixa a vencer", `${rec.name} — ${fmt(rec.amount)} vence a ${new Date(due + "T00:00:00").toLocaleDateString("pt-PT")}.`);
+        markNotified(key);
+      }
+    }
+  }
+  for (const d of debts) {
+    if (d.type !== "A pagar" || debtStatus(d, debtPayments) === "Quitada") continue;
+    if (d.dueDate && d.dueDate >= today && d.dueDate <= in3daysStr) {
+      const key = `debt-${d.id}`;
+      if (!wasNotifiedToday(key)) {
+        sendLocalNotification("Dívida a vencer", `${d.creditor} vence a ${new Date(d.dueDate + "T00:00:00").toLocaleDateString("pt-PT")}.`);
+        markNotified(key);
+      }
+    }
+  }
+  for (const card of creditCards || []) {
+    const cycle = billingCycleForDate(today, card.closingDay);
+    const due = creditCardDueDateForCycle(card, cycle);
+    const balance = statementBalance(card.id, cycle, cardPurchases || [], cardPayments || [], card.closingDay);
+    if (balance > 0.005 && due >= today && due <= in3daysStr) {
+      const key = `card-${card.id}-${cycle}`;
+      if (!wasNotifiedToday(key)) {
+        sendLocalNotification("Fatura a vencer", `Cartão ${card.bank.replace(/—.*/, "").trim()} — ${fmt(balance, card.currency)} vence a ${new Date(due + "T00:00:00").toLocaleDateString("pt-PT")}.`);
+        markNotified(key);
+      }
+    }
+  }
 }
 const STORE_PREFIX = "ledger:";
 function loadKey(key, fallback) {
@@ -1676,6 +1922,92 @@ function Modal({
     size: 18
   }))), children));
 }
+function OnboardingModal({
+  onClose,
+  onStart
+}) {
+  const steps = [{
+    icon: "🏦",
+    title: "Crie a sua primeira conta",
+    text: "Adicione um banco, com À ordem, Poupança ou Investimento — pode ter várias moedas."
+  }, {
+    icon: "🧾",
+    title: "Registe um movimento",
+    text: "Cada despesa ou receita fica ligada a uma conta, com categoria e, se quiser, um membro da família."
+  }, {
+    icon: "📊",
+    title: "Defina o seu orçamento",
+    text: "Limites por categoria, fontes de rendimento, e orçamento por membro — tudo em Orçamento."
+  }, {
+    icon: "📈",
+    title: "Explore os relatórios",
+    text: "Score Financeiro, insights automáticos, relatório mensal e anual — tudo gerado a partir dos seus dados."
+  }];
+  return React.createElement(Modal, {
+    title: "Bem-vindo ao Fonsprince One",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 16
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Um controlo financeiro pessoal completo, feito à sua medida. Aqui estão os primeiros passos:"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, steps.map((s, i) => React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      gap: 12,
+      alignItems: "flex-start"
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 32,
+      height: 32,
+      borderRadius: "50%",
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 15,
+      flexShrink: 0
+    }
+  }, s.icon), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, s.title), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginTop: 2
+    }
+  }, s.text))))), React.createElement(PrimaryButton, {
+    onClick: onStart
+  }, "Começar — criar a primeira conta"), React.createElement("button", {
+    onClick: onClose,
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      fontSize: 12.5,
+      cursor: "pointer",
+      textDecoration: "underline"
+    }
+  }, "Saltar por agora")));
+}
 function ConfirmDialog({
   message,
   detail,
@@ -1761,12 +2093,12 @@ async function registerBiometric() {
     publicKey: {
       challenge: randomBytes(32),
       rp: {
-        name: "Fonsprince"
+        name: "Fonsprince One"
       },
       user: {
         id: randomBytes(16),
         name: "utilizador",
-        displayName: "Fonsprince"
+        displayName: "Fonsprince One"
       },
       pubKeyCredParams: [{
         type: "public-key",
@@ -2040,7 +2372,7 @@ function LockScreen({
     style: {
       position: "fixed",
       inset: 0,
-      background: "#1B1F27",
+      background: "#0F1E42",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
@@ -2064,7 +2396,7 @@ function LockScreen({
     onClick: tryBiometric,
     disabled: bioBusy,
     style: {
-      background: "#0F6CBD"
+      background: "#B8823C"
     }
   }, bioBusy ? "A verificar…" : "🔓 Desbloquear com Face ID / Touch ID"), bioFailed && React.createElement("div", {
     style: {
@@ -2108,7 +2440,7 @@ function LockScreen({
   }, "PIN incorreto."), React.createElement(PrimaryButton, {
     onClick: handleSubmit,
     style: {
-      background: "#0F6CBD"
+      background: "#B8823C"
     }
   }, "Entrar")));
 }
@@ -2192,37 +2524,21 @@ function ProgressBar({
     }
   }));
 }
-function Watermark() {
-  return React.createElement("svg", {
+function LogoIcon({
+  size
+}) {
+  size = size || 20;
+  return React.createElement("img", {
+    src: LOGO_DATA_URI,
+    width: size,
+    height: size,
+    alt: "Fonsprince One",
     style: {
-      position: "absolute",
-      inset: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      zIndex: 0
-    },
-    xmlns: "http://www.w3.org/2000/svg",
-    "aria-hidden": "true"
-  }, React.createElement("defs", null, React.createElement("pattern", {
-    id: "fonsprince-watermark",
-    patternUnits: "userSpaceOnUse",
-    width: "340",
-    height: "170",
-    patternTransform: "rotate(-28)"
-  }, React.createElement("text", {
-    x: "0",
-    y: "90",
-    fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    fontSize: "19",
-    fontWeight: "600",
-    fill: "var(--ink)",
-    opacity: "0.05"
-  }, "Afonso Ndombaxi"))), React.createElement("rect", {
-    width: "100%",
-    height: "100%",
-    fill: "url(#fonsprince-watermark)"
-  }));
+      flexShrink: 0,
+      display: "block",
+      borderRadius: size * 0.22
+    }
+  });
 }
 function DeltaBadge({
   current,
@@ -2550,6 +2866,8 @@ function FinanceApp() {
   const [unlocked, setUnlocked] = useState(false);
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
+  const [onboardingDismissed, setOnboardingDismissed] = useState(() => loadKey("onboarding-dismissed", false));
   const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [lastExportDate, setLastExportDate] = useState(() => loadKey("last-export-date", null));
@@ -2587,6 +2905,9 @@ function FinanceApp() {
   const [goals, setGoals] = useState(() => loadKey("goals", []));
   const [debts, setDebts] = useState(() => loadKey("debts", []));
   const [debtPayments, setDebtPayments] = useState(() => loadKey("debt-payments", []));
+  const [creditCards, setCreditCards] = useState(() => loadKey("credit-cards", []));
+  const [cardPurchases, setCardPurchases] = useState(() => loadKey("card-purchases", []));
+  const [cardPayments, setCardPayments] = useState(() => loadKey("card-payments", []));
   const [recurringExpenses, setRecurringExpenses] = useState(() => loadKey("recurring-expenses", []));
   const [exchangeRates, setExchangeRates] = useState(() => loadKey("exchange-rates", {
     usdRate: null,
@@ -2607,6 +2928,11 @@ function FinanceApp() {
   const [showDebtModal, setShowDebtModal] = useState(false);
   const [editingDebt, setEditingDebt] = useState(null);
   const [payingDebt, setPayingDebt] = useState(null);
+  const [showCreditCardModal, setShowCreditCardModal] = useState(false);
+  const [editingCreditCard, setEditingCreditCard] = useState(null);
+  const [showCardPurchaseModal, setShowCardPurchaseModal] = useState(false);
+  const [purchaseCard, setPurchaseCard] = useState(null);
+  const [payingStatement, setPayingStatement] = useState(null);
   const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [editingRecurring, setEditingRecurring] = useState(null);
   const [recurringDefaultIsStaff, setRecurringDefaultIsStaff] = useState(false);
@@ -2622,6 +2948,9 @@ function FinanceApp() {
   useEffect(() => saveKey("goals", goals), [goals]);
   useEffect(() => saveKey("debts", debts), [debts]);
   useEffect(() => saveKey("debt-payments", debtPayments), [debtPayments]);
+  useEffect(() => saveKey("credit-cards", creditCards), [creditCards]);
+  useEffect(() => saveKey("card-purchases", cardPurchases), [cardPurchases]);
+  useEffect(() => saveKey("card-payments", cardPayments), [cardPayments]);
   useEffect(() => saveKey("recurring-expenses", recurringExpenses), [recurringExpenses]);
   useEffect(() => saveKey("exchange-rates", exchangeRates), [exchangeRates]);
   useEffect(() => saveKey("expense-shortcuts", expenseShortcuts), [expenseShortcuts]);
@@ -2629,6 +2958,21 @@ function FinanceApp() {
   useEffect(() => saveKey("app-pin", pin), [pin]);
   useEffect(() => saveKey("biometric-credential-id", biometricCredentialId), [biometricCredentialId]);
   useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
+  useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
+  useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
+  useEffect(() => {
+    if (!notificationsEnabled) return;
+    checkDueSoonAndNotify({
+      recurringExpenses,
+      transactions,
+      month,
+      debts,
+      debtPayments,
+      creditCards,
+      cardPurchases,
+      cardPayments
+    });
+  }, [notificationsEnabled, recurringExpenses, transactions, month, debts, debtPayments, creditCards, cardPurchases, cardPayments]);
   useEffect(() => saveKey("custom-categories", customCategories), [customCategories]);
   useEffect(() => saveKey("last-export-date", lastExportDate), [lastExportDate]);
   useEffect(() => saveKey("exchange-rate-history", rateHistory), [rateHistory]);
@@ -2830,6 +3174,57 @@ function FinanceApp() {
       });
     }
   }
+  function addCreditCard(card) {
+    setCreditCards(cs => [...cs, {
+      ...card,
+      id: uid()
+    }]);
+  }
+  function updateCreditCard(id, card) {
+    setCreditCards(cs => cs.map(x => x.id === id ? {
+      ...x,
+      ...card
+    } : x));
+  }
+  function removeCreditCard(id) {
+    setCreditCards(cs => cs.filter(x => x.id !== id));
+    setCardPurchases(ps => ps.filter(p => p.cardId !== id));
+    setCardPayments(ps => ps.filter(p => p.cardId !== id));
+  }
+  function addCardPurchase(purchase) {
+    setCardPurchases(ps => [...ps, {
+      ...purchase,
+      id: uid()
+    }]);
+  }
+  function updateCardPurchase(id, purchase) {
+    setCardPurchases(ps => ps.map(x => x.id === id ? {
+      ...x,
+      ...purchase
+    } : x));
+  }
+  function removeCardPurchase(id) {
+    setCardPurchases(ps => ps.filter(x => x.id !== id));
+  }
+  function registerCardPayment(card, cycleMonth, payment) {
+    setCardPayments(ps => [...ps, {
+      ...payment,
+      id: uid(),
+      cardId: card.id,
+      cycleMonth
+    }]);
+    if (payment.accountId && payment.subBalanceId) {
+      addTx({
+        kind: "despesa",
+        accountId: payment.accountId,
+        subBalanceId: payment.subBalanceId,
+        category: "Pagamento de Dívidas",
+        amount: Number(payment.amount),
+        date: payment.date,
+        description: `Fatura ${card.bank.replace(/—.*/, "").trim()} — ${monthShortLabel(cycleMonth)}`
+      });
+    }
+  }
   function addRecurring(rec) {
     setRecurringExpenses(rs => [...rs, {
       ...rec,
@@ -2866,6 +3261,9 @@ function FinanceApp() {
       goals,
       debts,
       debtPayments,
+      creditCards,
+      cardPurchases,
+      cardPayments,
       recurringExpenses,
       exchangeRates,
       expenseShortcuts,
@@ -2970,7 +3368,7 @@ function FinanceApp() {
         th{font-size:11px;text-transform:uppercase;color:#68707C;}
         h2{font-size:14px;margin-top:26px;}
       </style></head><body>
-      <h1>Fonsprince — Consolidado de Contas</h1>
+      <h1>Fonsprince One — Consolidado de Contas</h1>
       <p>Gerado em ${new Date().toLocaleDateString("pt-PT")}</p>
       <h2>Por banco</h2>
       <table><thead><tr><th>Banco</th><th style="text-align:right">Saldo (Kz)</th></tr></thead><tbody>${bankRows}</tbody></table>
@@ -3010,6 +3408,9 @@ function FinanceApp() {
     setGoals(data.goals || []);
     setDebts(data.debts || []);
     setDebtPayments(data.debtPayments || []);
+    setCreditCards(data.creditCards || []);
+    setCardPurchases(data.cardPurchases || []);
+    setCardPayments(data.cardPayments || []);
     setRecurringExpenses(data.recurringExpenses || []);
     setExchangeRates(data.exchangeRates || {
       usdRate: null,
@@ -3057,15 +3458,15 @@ function FinanceApp() {
   }
   return React.createElement("div", {
     style: {
-      "--ink": darkMode ? "#EDEEF0" : "#1B1F27",
-      "--slate": darkMode ? "#9AA1AC" : "#68707C",
-      "--paper": darkMode ? "#14161B" : "#F4F5F7",
-      "--card": darkMode ? "#1E2128" : "#FFFFFF",
-      "--line": darkMode ? "#2C2F37" : "#E3E5E9",
+      "--ink": darkMode ? "#EDEEF0" : "#16274D",
+      "--slate": darkMode ? "#9AA7BC" : "#5C6B87",
+      "--paper": darkMode ? "#0F1524" : "#F4F6FA",
+      "--card": darkMode ? "#1A2338" : "#FFFFFF",
+      "--line": darkMode ? "#2A3550" : "#E1E5EE",
       "--emerald": darkMode ? "#2FBE73" : "#12A150",
       "--rust": darkMode ? "#E5595C" : "#D13438",
-      "--gold": darkMode ? "#4C9EE8" : "#0F6CBD",
-      "--sidebar": darkMode ? "#0D0F13" : "#1B1F27",
+      "--gold": darkMode ? "#E0A855" : "#B8823C",
+      "--sidebar": darkMode ? "#0A0F1E" : "#0F1E42",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
       width: "100%",
@@ -3080,7 +3481,7 @@ function FinanceApp() {
       boxShadow: isMobile ? "none" : "0 12px 40px rgba(16,32,60,0.08)",
       position: "relative"
     }
-  }, React.createElement(Watermark, null), React.createElement("input", {
+  }, React.createElement("input", {
     ref: fileInputRef,
     type: "file",
     accept: "application/json",
@@ -3110,11 +3511,8 @@ function FinanceApp() {
       justifyContent: sidebarCollapsed ? "center" : "space-between",
       gap: 8
     }
-  }, sidebarCollapsed ? React.createElement(IconBank, {
-    size: 20,
-    style: {
-      color: "#fff"
-    }
+  }, sidebarCollapsed ? React.createElement(LogoIcon, {
+    size: 26
   }) : React.createElement("div", {
     style: {
       display: "flex",
@@ -3122,21 +3520,24 @@ function FinanceApp() {
       gap: 8,
       overflow: "hidden"
     }
-  }, React.createElement(IconBank, {
-    size: 20,
-    style: {
-      color: "#fff",
-      flexShrink: 0
-    }
+  }, React.createElement(LogoIcon, {
+    size: 26
   }), React.createElement("span", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 17,
-      fontWeight: 600,
-      color: "#fff",
+      fontSize: 16,
+      fontWeight: 700,
       whiteSpace: "nowrap"
     }
-  }, "Fonsprince"))), React.createElement("button", {
+  }, React.createElement("span", {
+    style: {
+      color: "#fff"
+    }
+  }, "Fonsprince"), " ", React.createElement("span", {
+    style: {
+      color: "#E4B054"
+    }
+  }, "One")))), React.createElement("button", {
     onClick: () => setSidebarCollapsed(c => !c),
     title: sidebarCollapsed ? "Expandir menu" : "Recolher menu",
     style: {
@@ -3166,7 +3567,7 @@ function FinanceApp() {
     onClick: () => setTab("overview"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
-    label: "Gestão Financeira",
+    label: "💰 Finanças",
     collapsed: sidebarCollapsed
   }, React.createElement(NavItem, {
     icon: IconBank,
@@ -3176,7 +3577,7 @@ function FinanceApp() {
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconReceipt,
-    label: "Movimentos",
+    label: "Transações",
     active: tab === "transactions",
     onClick: () => setTab("transactions"),
     collapsed: sidebarCollapsed
@@ -3187,11 +3588,11 @@ function FinanceApp() {
     onClick: () => setTab("budget"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
-    label: "Planeamento",
+    label: "🎯 Planeamento",
     collapsed: sidebarCollapsed
   }, React.createElement(NavItem, {
     icon: IconTarget,
-    label: "Metas de Poupança",
+    label: "Metas",
     active: tab === "goals",
     onClick: () => setTab("goals"),
     collapsed: sidebarCollapsed
@@ -3201,41 +3602,98 @@ function FinanceApp() {
     active: tab === "planning",
     onClick: () => setTab("planning"),
     collapsed: sidebarCollapsed
-  }), React.createElement(NavItem, {
-    icon: IconTrendingUp,
-    label: "Previsão",
-    active: tab === "forecast",
-    onClick: () => setTab("forecast"),
-    collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
-    label: "Financiamento",
+    label: "🏦 Financiamento",
     collapsed: sidebarCollapsed
   }, React.createElement(NavItem, {
     icon: IconCreditCard,
-    label: "Dívidas",
+    label: "Empréstimos",
     active: tab === "debts",
     onClick: () => setTab("debts"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
+    icon: IconBanknote,
+    label: "Cartões",
+    active: tab === "cards",
+    onClick: () => setTab("cards"),
+    collapsed: sidebarCollapsed
+  })), React.createElement(NavSection, {
+    label: "💱 Tesouraria",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
     icon: IconRepeat,
     label: "Câmbio",
     active: tab === "exchange",
     onClick: () => setTab("exchange"),
     collapsed: sidebarCollapsed
+  }), React.createElement(NavItem, {
+    icon: IconTrendingUp,
+    label: "Fluxo de Caixa",
+    active: tab === "forecast",
+    onClick: () => setTab("forecast"),
+    collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
-    label: "Relatórios",
+    label: "📈 Investimentos",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
+    icon: IconPieChart,
+    label: "Investimentos",
+    active: tab === "investments",
+    onClick: () => setTab("investments"),
+    collapsed: sidebarCollapsed
+  })), React.createElement(NavSection, {
+    label: "📊 Relatórios",
     collapsed: sidebarCollapsed
   }, React.createElement(NavItem, {
     icon: IconFileText,
-    label: "Relatório",
+    label: "Financeiros",
     active: tab === "report",
     onClick: () => setTab("report"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
+    icon: IconActivity,
+    label: "KPI's",
+    active: tab === "kpis",
+    onClick: () => setTab("kpis"),
+    collapsed: sidebarCollapsed
+  }), React.createElement(NavItem, {
+    icon: IconDownload,
+    label: "Exportações",
+    active: tab === "exports",
+    onClick: () => setTab("exports"),
+    collapsed: sidebarCollapsed
+  })), React.createElement(NavSection, {
+    label: "🔔 Alertas",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
     icon: IconBell,
     label: "Alertas",
     active: tab === "alerts",
     onClick: () => setTab("alerts"),
+    collapsed: sidebarCollapsed
+  })), React.createElement(NavSection, {
+    label: "🛠 Ferramentas",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
+    icon: IconWrench,
+    label: "Categorias",
+    active: false,
+    onClick: () => setShowCategoryManager(true),
+    collapsed: sidebarCollapsed
+  }), React.createElement(NavItem, {
+    icon: IconZap,
+    label: "Atalhos",
+    active: false,
+    onClick: () => setShowShortcutsModal(true),
+    collapsed: sidebarCollapsed
+  })), React.createElement(NavSection, {
+    label: "⚙ Definições",
+    collapsed: sidebarCollapsed
+  }, React.createElement(NavItem, {
+    icon: IconSettings,
+    label: "Definições",
+    active: tab === "settings",
+    onClick: () => setTab("settings"),
     collapsed: sidebarCollapsed
   })), React.createElement("div", {
     style: {
@@ -3321,7 +3779,7 @@ function FinanceApp() {
       fontSize: 12.5,
       color: "var(--slate)"
     }
-  }, !isMobile && React.createElement("span", null, "Fonsprince"), !isMobile && React.createElement("span", {
+  }, !isMobile && React.createElement("span", null, "Fonsprince One"), !isMobile && React.createElement("span", {
     style: {
       color: "var(--line)"
     }
@@ -3333,15 +3791,21 @@ function FinanceApp() {
   }, {
     overview: "Visão Geral",
     accounts: "Contas Bancárias",
-    transactions: "Movimentos",
+    transactions: "Transações",
     budget: "Orçamento Mensal",
     goals: "Metas de Poupança",
-    debts: "Dívidas",
-    exchange: "Câmbio",
-    forecast: "Previsão de Fluxo de Caixa",
-    report: "Relatório Mensal",
     planning: "Planeamento Financeiro",
-    alerts: "Central de Alertas"
+    debts: "Empréstimos",
+    cards: "Cartões",
+    exchange: "Câmbio",
+    forecast: "Fluxo de Caixa",
+    investments: "Investimentos",
+    report: "Relatório Financeiro",
+    kpis: "KPI's",
+    exports: "Exportações",
+    alerts: "Central de Alertas",
+    tools: "Ferramentas",
+    settings: "Definições"
   }[tab])), React.createElement("div", {
     style: {
       display: "flex",
@@ -3419,15 +3883,21 @@ function FinanceApp() {
   }, {
     overview: "Visão Geral",
     accounts: "Contas Bancárias",
-    transactions: "Movimentos",
+    transactions: "Transações",
     budget: "Orçamento Mensal",
     goals: "Metas de Poupança",
-    debts: "Dívidas",
-    exchange: "Câmbio",
-    forecast: "Previsão de Fluxo de Caixa",
-    report: "Relatório Mensal",
     planning: "Planeamento Financeiro",
-    alerts: "Central de Alertas"
+    debts: "Empréstimos",
+    cards: "Cartões",
+    exchange: "Câmbio",
+    forecast: "Fluxo de Caixa",
+    investments: "Investimentos",
+    report: "Relatório Financeiro",
+    kpis: "KPI's",
+    exports: "Exportações",
+    alerts: "Central de Alertas",
+    tools: "Ferramentas",
+    settings: "Definições"
   }[tab]), React.createElement("p", {
     style: {
       color: "var(--slate)",
@@ -3440,12 +3910,18 @@ function FinanceApp() {
     transactions: "Receitas e despesas registadas.",
     budget: "Limites por categoria e fontes de rendimento.",
     goals: "Objetivos de poupança e o seu progresso.",
-    debts: "Dívidas a pagar ou a receber, com juros e pagamentos.",
-    exchange: "Taxas de câmbio de referência (USD e EUR face ao Kwanza).",
-    forecast: "Projeção do saldo com base nas receitas e despesas fixas previstas.",
-    report: "Resumo do mês pronto para imprimir, guardar em PDF ou partilhar.",
     planning: "Património líquido, saúde financeira e simulações.",
-    alerts: "Avisos automáticos sobre contas, orçamento, dívidas e metas."
+    debts: "Empréstimos a pagar ou a receber, com juros e pagamentos.",
+    cards: "Faturas, parcelas e limite dos seus cartões de crédito.",
+    exchange: "Taxas de câmbio de referência (USD e EUR face ao Kwanza).",
+    forecast: "Projeção do fluxo de caixa com base nas receitas e despesas fixas previstas.",
+    investments: "Carteira, rendimentos e desempenho dos seus investimentos.",
+    report: "Resumo do mês pronto para imprimir, guardar em PDF ou partilhar.",
+    kpis: "Score Financeiro e indicadores automáticos sobre a sua situação.",
+    exports: "Exporte os seus dados em CSV, Excel, PDF ou como cópia de segurança.",
+    alerts: "Avisos automáticos sobre contas, orçamento, dívidas e metas.",
+    tools: "Atalhos para gerir categorias e atalhos de despesa.",
+    settings: "Segurança, aparência e notificações da app."
   }[tab])), (tab === "overview" || tab === "transactions" || tab === "budget" || tab === "report" || tab === "alerts") && React.createElement(Field, {
     label: "Mês"
   }, React.createElement("input", {
@@ -3565,6 +4041,30 @@ function FinanceApp() {
     },
     onRemove: id => askConfirm("Remover esta dívida?", () => removeDebt(id), "O histórico de pagamentos também será perdido."),
     onPay: d => setPayingDebt(d)
+  }), tab === "cards" && React.createElement(CreditCardsTab, {
+    creditCards: creditCards,
+    cardPurchases: cardPurchases,
+    cardPayments: cardPayments,
+    accounts: accounts,
+    expenseCategories: expenseCategories,
+    onAdd: () => {
+      setEditingCreditCard(null);
+      setShowCreditCardModal(true);
+    },
+    onEdit: c => {
+      setEditingCreditCard(c);
+      setShowCreditCardModal(true);
+    },
+    onRemove: id => askConfirm("Remover este cartão?", () => removeCreditCard(id), "Todas as compras e pagamentos associados também serão removidos."),
+    onAddPurchase: card => {
+      setPurchaseCard(card);
+      setShowCardPurchaseModal(true);
+    },
+    onPayStatement: (card, cycleMonth, statementAmount) => setPayingStatement({
+      card,
+      cycleMonth,
+      statementAmount
+    })
   }), tab === "exchange" && React.createElement(ExchangeTab, {
     rates: exchangeRates,
     onSave: updateExchangeRates
@@ -3606,6 +4106,30 @@ function FinanceApp() {
     goals: goals,
     lastExportDate: lastExportDate,
     memberLimits: budgetIncome.memberLimits
+  }), tab === "investments" && React.createElement(InvestmentsTab, null), tab === "exports" && React.createElement(ExportsTab, {
+    onExportTransactionsCSV: exportTransactionsCSV,
+    onExportAccountsCSV: exportAccountsCSV,
+    onExportAccountsPDF: printAccountsSummary,
+    onExportBackup: exportAllData,
+    onImport: () => fileInputRef.current && fileInputRef.current.click()
+  }), tab === "kpis" && React.createElement(KPIsTab, {
+    accounts: accounts,
+    transactions: transactions,
+    exchangeRates: exchangeRates,
+    rateHistory: rateHistory,
+    debts: debts,
+    debtPayments: debtPayments,
+    recurringExpenses: recurringExpenses,
+    expectedIncome: expectedIncome,
+    month: month
+  }), tab === "settings" && React.createElement(SettingsTab, {
+    darkMode: darkMode,
+    onToggleDarkMode: () => setDarkMode(d => !d),
+    pin: pin,
+    biometricCredentialId: biometricCredentialId,
+    onOpenSecurity: () => setShowPinSetup(true),
+    notificationsEnabled: notificationsEnabled,
+    onToggleNotifications: setNotificationsEnabled
   }))), isMobile && React.createElement("div", {
     style: {
       position: "fixed",
@@ -3630,11 +4154,11 @@ function FinanceApp() {
     icon: IconBank
   }, {
     id: "transactions",
-    label: "Movimentos",
+    label: "Transações",
     icon: IconReceipt
   }, {
     id: "debts",
-    label: "Dívidas",
+    label: "Empréstimos",
     icon: IconCreditCard
   }].map(t => React.createElement("button", {
     key: t.id,
@@ -3672,7 +4196,7 @@ function FinanceApp() {
       justifyContent: "center",
       gap: 3,
       padding: "9px 0",
-      color: ["budget", "goals", "exchange", "forecast", "report", "planning", "alerts"].includes(tab) ? "var(--gold)" : "rgba(255,255,255,0.6)"
+      color: ["budget", "goals", "planning", "cards", "exchange", "forecast", "investments", "report", "kpis", "exports", "tools", "settings"].includes(tab) ? "var(--gold)" : "rgba(255,255,255,0.6)"
     }
   }, React.createElement(IconMore, {
     size: 19
@@ -3691,44 +4215,88 @@ function FinanceApp() {
       gap: 4
     }
   }, [{
-    group: "Gestão Financeira",
+    group: "💰 Finanças",
     items: [{
       id: "budget",
-      label: "Orçamento Mensal",
+      label: "Orçamento",
       icon: IconWallet
     }]
   }, {
-    group: "Planeamento",
+    group: "🎯 Planeamento",
     items: [{
       id: "goals",
-      label: "Metas de Poupança",
+      label: "Metas",
       icon: IconTarget
     }, {
       id: "planning",
-      label: "Planeamento Financeiro",
+      label: "Planeamento",
       icon: IconCompass
-    }, {
-      id: "forecast",
-      label: "Previsão de Fluxo de Caixa",
-      icon: IconTrendingUp
     }]
   }, {
-    group: "Financiamento",
+    group: "🏦 Financiamento",
+    items: [{
+      id: "cards",
+      label: "Cartões",
+      icon: IconBanknote
+    }]
+  }, {
+    group: "💱 Tesouraria",
     items: [{
       id: "exchange",
       label: "Câmbio",
       icon: IconRepeat
+    }, {
+      id: "forecast",
+      label: "Fluxo de Caixa",
+      icon: IconTrendingUp
     }]
   }, {
-    group: "Relatórios",
+    group: "📈 Investimentos",
+    items: [{
+      id: "investments",
+      label: "Investimentos",
+      icon: IconPieChart
+    }]
+  }, {
+    group: "📊 Relatórios",
     items: [{
       id: "report",
-      label: "Relatório Mensal",
+      label: "Financeiros",
       icon: IconFileText
     }, {
-      id: "alerts",
-      label: "Central de Alertas",
-      icon: IconBell
+      id: "kpis",
+      label: "KPI's",
+      icon: IconActivity
+    }, {
+      id: "exports",
+      label: "Exportações",
+      icon: IconDownload
+    }]
+  }, {
+    group: "🛠 Ferramentas",
+    items: [{
+      id: "__categories",
+      label: "Categorias",
+      icon: IconSettings,
+      onClick: () => {
+        setShowCategoryManager(true);
+        setShowMoreSheet(false);
+      }
+    }, {
+      id: "__shortcuts",
+      label: "Atalhos",
+      icon: IconZap,
+      onClick: () => {
+        setShowShortcutsModal(true);
+        setShowMoreSheet(false);
+      }
+    }]
+  }, {
+    group: "⚙ Definições",
+    items: [{
+      id: "settings",
+      label: "Definições",
+      icon: IconSettings
     }]
   }].map(section => React.createElement("div", {
     key: section.group,
@@ -3752,10 +4320,10 @@ function FinanceApp() {
     }
   }, section.items.map(t => React.createElement("button", {
     key: t.id,
-    onClick: () => {
+    onClick: t.onClick || (() => {
       setTab(t.id);
       setShowMoreSheet(false);
-    },
+    }),
     style: {
       display: "flex",
       alignItems: "center",
@@ -3951,6 +4519,39 @@ function FinanceApp() {
       confirmDebtPayment(payingDebt, payment);
       setPayingDebt(null);
     }
+  }), showCreditCardModal && React.createElement(CreditCardModal, {
+    initial: editingCreditCard,
+    onClose: () => {
+      setShowCreditCardModal(false);
+      setEditingCreditCard(null);
+    },
+    onSave: card => {
+      if (editingCreditCard) updateCreditCard(editingCreditCard.id, card);else addCreditCard(card);
+      setShowCreditCardModal(false);
+      setEditingCreditCard(null);
+    }
+  }), showCardPurchaseModal && purchaseCard && React.createElement(CardPurchaseModal, {
+    card: purchaseCard,
+    expenseCategories: expenseCategories,
+    onClose: () => {
+      setShowCardPurchaseModal(false);
+      setPurchaseCard(null);
+    },
+    onSave: purchase => {
+      addCardPurchase(purchase);
+      setShowCardPurchaseModal(false);
+      setPurchaseCard(null);
+    }
+  }), payingStatement && React.createElement(CardPaymentModal, {
+    card: payingStatement.card,
+    cycleMonth: payingStatement.cycleMonth,
+    statementAmount: payingStatement.statementAmount,
+    accounts: accounts,
+    onClose: () => setPayingStatement(null),
+    onSave: payment => {
+      registerCardPayment(payingStatement.card, payingStatement.cycleMonth, payment);
+      setPayingStatement(null);
+    }
   }), showRecurringModal && React.createElement(RecurringModal, {
     initial: editingRecurring,
     defaultIsStaff: recurringDefaultIsStaff,
@@ -4013,6 +4614,13 @@ function FinanceApp() {
       if (editingShortcut) updateShortcut(editingShortcut.id, s);else addShortcut(s);
       setShowShortcutFormModal(false);
       setEditingShortcut(null);
+    }
+  }), !onboardingDismissed && accounts.length === 0 && !showAccountModal && React.createElement(OnboardingModal, {
+    onClose: () => setOnboardingDismissed(true),
+    onStart: () => {
+      setOnboardingDismissed(true);
+      setEditingAccount(null);
+      setShowAccountModal(true);
     }
   }), confirmAction && React.createElement(ConfirmDialog, {
     message: confirmAction.message,
@@ -4349,7 +4957,7 @@ function Overview({
     const donutData = SUB_TYPES.filter(t => breakdown[t] > 0).map(t => ({
       name: t === "À ordem" ? "Liquidez Imediata" : t === "Poupança" ? "Baixo Risco" : "Médio/Alto Risco",
       value: breakdown[t],
-      color: t === "À ordem" ? "#1B1F27" : t === "Poupança" ? "#12A150" : "#0F6CBD"
+      color: t === "À ordem" ? "#16274D" : t === "Poupança" ? "#12A150" : "#B8823C"
     }));
     const profile = portfolioRiskProfile(breakdown);
     const prevVal = balancesByCurrencyPrev[cur] || 0;
@@ -7020,6 +7628,507 @@ function AlertsTab({
     }
   }, a.text)))));
 }
+function InvestmentsTab() {
+  const items = [{
+    title: "Carteira",
+    text: "Todos os seus investimentos num só sítio — ações, fundos, imóveis ou outros ativos, com o valor atual de cada um."
+  }, {
+    title: "Rendimentos",
+    text: "Dividendos, juros e mais-valias recebidas, agrupados por investimento e por período."
+  }, {
+    title: "Performance",
+    text: "Retorno de cada investimento ao longo do tempo, comparado com o custo de aquisição."
+  }];
+  return React.createElement("div", null, React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 42,
+      height: 42,
+      borderRadius: 10,
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, React.createElement(IconPieChart, {
+    size: 20,
+    style: {
+      color: "var(--gold)"
+    }
+  })), React.createElement("div", null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: 0
+    }
+  }, "Investimentos — em breve"), React.createElement("p", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      margin: "2px 0 0"
+    }
+  }, "Esta área está planeada para uma próxima sessão."))), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      marginTop: 8
+    }
+  }, items.map(item => React.createElement("div", {
+    key: item.title,
+    style: {
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "var(--paper)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600,
+      marginBottom: 3
+    }
+  }, item.title), React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)"
+    }
+  }, item.text))))));
+}
+function ExportsTab({
+  onExportTransactionsCSV,
+  onExportAccountsCSV,
+  onExportAccountsPDF,
+  onExportBackup,
+  onImport
+}) {
+  const items = [{
+    icon: IconReceipt,
+    title: "Movimentos (CSV)",
+    text: "Todos os movimentos registados, um por linha — abre em Excel.",
+    action: onExportTransactionsCSV,
+    cta: "Exportar"
+  }, {
+    icon: IconBank,
+    title: "Contas (Excel)",
+    text: "Consolidado das suas contas bancárias, por banco e por conta.",
+    action: onExportAccountsCSV,
+    cta: "Exportar"
+  }, {
+    icon: IconPrinter,
+    title: "Contas (PDF)",
+    text: "Resumo de contas pronto a imprimir ou guardar como PDF.",
+    action: onExportAccountsPDF,
+    cta: "Exportar"
+  }, {
+    icon: IconDownload,
+    title: "Cópia de segurança completa",
+    text: "Todos os dados da app num único ficheiro — para guardar ou transferir para outro aparelho.",
+    action: onExportBackup,
+    cta: "Exportar"
+  }, {
+    icon: IconUpload,
+    title: "Importar dados",
+    text: "Restaura uma cópia de segurança exportada anteriormente por esta app.",
+    action: onImport,
+    cta: "Importar"
+  }];
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, items.map(item => React.createElement(Card, {
+    key: item.title
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 38,
+      height: 38,
+      borderRadius: 9,
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, React.createElement(item.icon, {
+    size: 17,
+    style: {
+      color: "var(--gold)"
+    }
+  })), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, item.title), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, item.text))), React.createElement(PrimaryButton, {
+    onClick: item.action,
+    style: {
+      flexShrink: 0
+    }
+  }, item.cta)))));
+}
+function KPIsTab({
+  accounts,
+  transactions,
+  exchangeRates,
+  rateHistory,
+  debts,
+  debtPayments,
+  recurringExpenses,
+  expectedIncome,
+  month
+}) {
+  const balancesByCurrency = {};
+  for (const a of accounts) balancesByCurrency[a.currency] = (balancesByCurrency[a.currency] || 0) + accountTotal(a, transactions);
+  const healthScore = computeHealthScoreForApp({
+    accounts,
+    transactions,
+    balancesByCurrency,
+    exchangeRates,
+    debts,
+    debtPayments,
+    recurringExpenses,
+    expectedIncome
+  });
+  const scoreLabel = healthScore.total >= 80 ? "Excelente" : healthScore.total >= 60 ? "Boa" : healthScore.total >= 40 ? "Razoável" : "Requer atenção";
+  const scoreTone = healthScore.total >= 80 ? "emerald" : healthScore.total >= 60 ? "gold" : healthScore.total >= 40 ? "gold" : "rust";
+  const consolidatedKzNow = Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
+    const kz = toKz(val, cur, exchangeRates);
+    return sum + (kz === null ? 0 : kz);
+  }, 0);
+  const prevMonthKeyX = previousMonthKey(month);
+  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyX);
+  const balancesByCurrencyPrev = {};
+  for (const a of accounts) balancesByCurrencyPrev[a.currency] = (balancesByCurrencyPrev[a.currency] || 0) + accountTotal(a, transactions, prevMonthEndDate);
+  const consolidatedKzPrev = Object.entries(balancesByCurrencyPrev).reduce((sum, [cur, val]) => {
+    const kz = toKzAsOf(val, cur, rateHistory, exchangeRates, prevMonthEndDate);
+    return sum + (kz === null ? 0 : kz);
+  }, 0);
+  const familyBreakdown = (() => {
+    const map = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) map[t.member] = (map[t.member] || 0) + Number(t.amount);
+    }
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  })();
+  const insights = buildInsights({
+    accounts,
+    transactions,
+    exchangeRates,
+    consolidatedKzNow,
+    consolidatedKzPrev,
+    familyBreakdown
+  });
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 18
+    }
+  }, React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 17,
+      margin: "0 0 14px"
+    }
+  }, "Saúde Financeira"), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 24,
+      alignItems: "center",
+      flexWrap: "wrap"
+    }
+  }, React.createElement(ScoreRing, {
+    score: healthScore.total
+  }), React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 220
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 700,
+      color: `var(--${scoreTone})`
+    }
+  }, scoreLabel), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 7,
+      marginTop: 10
+    }
+  }, healthScore.factors.map(f => React.createElement("div", {
+    key: f.name
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginBottom: 2
+    }
+  }, React.createElement("span", null, f.name), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: "var(--ink)"
+    }
+  }, Math.round(f.value), "/20")), React.createElement(ProgressBar, {
+    pct: f.value / 20 * 100,
+    tone: f.value >= 14 ? "emerald" : f.value >= 8 ? "gold" : "rust"
+  }))))))), insights.length > 0 && React.createElement(Card, {
+    style: {
+      background: "linear-gradient(135deg, var(--sidebar) 0%, #1E3560 100%)",
+      border: "none"
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 12px",
+      color: "#fff"
+    }
+  }, "Insights automáticos"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, insights.map((ins, i) => React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 10,
+      fontSize: 13,
+      color: "rgba(255,255,255,0.9)"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 15,
+      flexShrink: 0
+    }
+  }, ins.icon), React.createElement("span", null, ins.text))))));
+}
+function SettingsTab({
+  darkMode,
+  onToggleDarkMode,
+  pin,
+  biometricCredentialId,
+  onOpenSecurity,
+  notificationsEnabled,
+  onToggleNotifications
+}) {
+  const [permission, setPermission] = useState(isNotificationSupported() ? Notification.permission : "unsupported");
+  async function handleToggleNotifications() {
+    if (notificationsEnabled) {
+      onToggleNotifications(false);
+      return;
+    }
+    const result = await requestNotificationPermission();
+    setPermission(result);
+    if (result === "granted") onToggleNotifications(true);
+  }
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 4px"
+    }
+  }, "Aparência"), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 10
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, "Modo escuro"), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, "Alterna entre o tema claro e escuro da app.")), React.createElement(GhostButton, {
+    onClick: onToggleDarkMode
+  }, darkMode ? "Desativar" : "Ativar"))), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 4px"
+    }
+  }, "Segurança"), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 10
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, "PIN e Face ID / Touch ID"), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, pin || biometricCredentialId ? "Bloqueio ativado ao abrir a app." : "Nenhum bloqueio definido ainda.")), React.createElement(GhostButton, {
+    onClick: onOpenSecurity
+  }, "Gerir"))), isNotificationSupported() && React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 4px"
+    }
+  }, "Notificações"), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      maxWidth: 380
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, "Lembretes no aparelho"), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, "Avisa 3 dias antes de uma despesa fixa, dívida ou fatura de cartão vencer. Só funciona enquanto a app está aberta ou foi aberta recentemente."), permission === "denied" && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--rust)",
+      marginTop: 4
+    }
+  }, "Bloqueado nas definições do navegador.")), notificationsEnabled ? React.createElement(GhostButton, {
+    onClick: handleToggleNotifications
+  }, "Desativar") : React.createElement(PrimaryButton, {
+    onClick: handleToggleNotifications,
+    disabled: permission === "denied"
+  }, "Ativar"))));
+}
+function buildAnnualReportHtml(data) {
+  const {
+    year,
+    transactions,
+    accounts
+  } = data;
+  const yearTx = transactions.filter(t => t.date.startsWith(year));
+  const totalReceitas = yearTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
+  const totalDespesas = yearTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0);
+  const saldo = totalReceitas - totalDespesas;
+  const generatedAt = new Date().toLocaleDateString("pt-PT");
+  const byCategory = {};
+  for (const t of yearTx) {
+    if (t.kind !== "despesa") continue;
+    byCategory[t.category] = (byCategory[t.category] || 0) + Number(t.amount);
+  }
+  const categoryRows = Object.keys(byCategory).length ? Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem despesas registadas.</td></tr>`;
+  const byIncomeCategory = {};
+  for (const t of yearTx) {
+    if (t.kind !== "receita") continue;
+    byIncomeCategory[t.category || "Outros"] = (byIncomeCategory[t.category || "Outros"] || 0) + Number(t.amount);
+  }
+  const incomeRows = Object.keys(byIncomeCategory).length ? Object.entries(byIncomeCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem receitas registadas.</td></tr>`;
+  const monthlyRows = [];
+  for (let m = 1; m <= 12; m++) {
+    const mKey = `${year}-${String(m).padStart(2, "0")}`;
+    const mTx = yearTx.filter(t => t.date.startsWith(mKey));
+    const r = mTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
+    const d = mTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0);
+    monthlyRows.push(`<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${monthShortLabel(mKey)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; color:#12A150;">${fmt(r)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; color:#D13438;">${fmt(d)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; font-weight:bold;">${fmt(r - d)}</td></tr>`);
+  }
+  const yearEndDate = `${year}-12-31`;
+  const accountRows = accounts.length ? accounts.map(a => {
+    const total = accountTotal(a, transactions, yearEndDate < todayISO() ? yearEndDate : undefined);
+    return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${a.bank.replace(/—.*/, "").trim()}${a.nickname ? " — " + a.nickname : ""}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(total, a.currency)}</td></tr>`;
+  }).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem contas cadastradas.</td></tr>`;
+  return `
+    <div style="font-family: 'Segoe UI', Calibri, Arial, sans-serif; color:#1B1F27; max-width:760px; margin:0 auto; position:relative;">
+      <div style="position:relative; z-index:1;">
+      <div style="text-align:center; border-bottom:3px solid #1B1F27; padding-bottom:16px; margin-bottom:24px;">
+        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">Relatório Anual — Fonsprince One</h1>
+        <p style="margin:6px 0 0; color:#68707C; font-size:13px;">Ano de ${year} · Gerado em ${generatedAt}</p>
+      </div>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Resumo do ano</h2>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
+        <tr><td style="padding:6px 0;">Receitas totais</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
+        <tr><td style="padding:6px 0;">Despesas totais</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
+        <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">Resultado líquido do ano</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
+      </table>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Evolução mensal</h2>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Mês</th><th style="padding:6px 8px; text-align:right;">Receitas</th><th style="padding:6px 8px; text-align:right;">Despesas</th><th style="padding:6px 8px; text-align:right;">Resultado</th></tr>
+        ${monthlyRows.join("")}
+      </table>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Receitas por categoria</h2>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Categoria</th><th style="padding:6px 8px; text-align:right;">Total</th></tr>
+        ${incomeRows}
+      </table>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Despesas por categoria</h2>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Categoria</th><th style="padding:6px 8px; text-align:right;">Total</th></tr>
+        ${categoryRows}
+      </table>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Saldos de contas em 31/12/${year}</h2>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
+        ${accountRows}
+      </table>
+      <p style="font-size:11px; color:#68707C; margin-top:26px; border-top:1px solid #E3E5E9; padding-top:10px;">
+        Este relatório é um resumo informativo preparado a partir dos dados registados na app. Para efeitos fiscais (ex: declaração de IRT),
+        confirme sempre os valores com os extratos oficiais dos bancos e outros documentos de suporte. Juros bancários não estão incluídos
+        neste resumo — consulte o extrato do banco para esse valor.
+      </p>
+      </div>
+    </div>
+  `;
+}
 function ReportTab({
   month,
   accounts,
@@ -7034,7 +8143,14 @@ function ReportTab({
   totalDespesas,
   balancesByCurrency
 }) {
-  const reportHtml = useMemo(() => buildReportHtml({
+  const [reportMode, setReportMode] = useState("mensal");
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const availableYears = useMemo(() => {
+    const years = new Set(transactions.map(t => t.date.slice(0, 4)));
+    years.add(String(new Date().getFullYear()));
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [transactions]);
+  const reportHtml = useMemo(() => reportMode === "mensal" ? buildReportHtml({
     month,
     accounts,
     transactions,
@@ -7047,8 +8163,52 @@ function ReportTab({
     totalReceitas,
     totalDespesas,
     balancesByCurrency
-  }), [month, accounts, transactions, spentByCategory, categories, recurringExpenses, debts, debtPayments, goals, totalReceitas, totalDespesas, balancesByCurrency]);
+  }) : buildAnnualReportHtml({
+    year,
+    transactions,
+    accounts
+  }), [reportMode, year, month, accounts, transactions, spentByCategory, categories, recurringExpenses, debts, debtPayments, goals, totalReceitas, totalDespesas, balancesByCurrency]);
   return React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 14
+    }
+  }, React.createElement("button", {
+    onClick: () => setReportMode("mensal"),
+    style: {
+      padding: "6px 14px",
+      borderRadius: 20,
+      border: `1px solid ${reportMode === "mensal" ? "var(--gold)" : "var(--line)"}`,
+      background: reportMode === "mensal" ? "#EEF3FB" : "#fff",
+      color: reportMode === "mensal" ? "var(--gold)" : "var(--slate)",
+      fontSize: 12.5,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, "Mensal"), React.createElement("button", {
+    onClick: () => setReportMode("anual"),
+    style: {
+      padding: "6px 14px",
+      borderRadius: 20,
+      border: `1px solid ${reportMode === "anual" ? "var(--gold)" : "var(--line)"}`,
+      background: reportMode === "anual" ? "#EEF3FB" : "#fff",
+      color: reportMode === "anual" ? "var(--gold)" : "var(--slate)",
+      fontSize: 12.5,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, "Anual / Fiscal"), reportMode === "anual" && React.createElement("select", {
+    value: year,
+    onChange: e => setYear(e.target.value),
+    style: {
+      ...inputStyle,
+      width: 100,
+      padding: "5px 8px"
+    }
+  }, availableYears.map(y => React.createElement("option", {
+    key: y
+  }, y)))), React.createElement("div", {
     style: {
       display: "flex",
       gap: 10,
@@ -7060,7 +8220,7 @@ function ReportTab({
   }, React.createElement(IconPrinter, {
     size: 14
   }), " Guardar como PDF / Imprimir"), React.createElement(GhostButton, {
-    onClick: () => downloadWordReport(reportHtml, `relatorio-${month}.doc`)
+    onClick: () => downloadWordReport(reportHtml, `relatorio-${reportMode === "mensal" ? month : year}.doc`)
   }, React.createElement(IconFileText, {
     size: 14
   }), " Descarregar Word")), React.createElement("p", {
@@ -8265,6 +9425,542 @@ function DebtModal({
     disabled: !canSave,
     onClick: handleSave
   }, isEditing ? "Guardar alterações" : "Guardar dívida")));
+}
+function CreditCardModal({
+  initial,
+  onClose,
+  onSave
+}) {
+  const isEditing = !!initial;
+  const [bank, setBank] = useState(initial?.bank || BANKS[0]);
+  const [nickname, setNickname] = useState(initial?.nickname || "");
+  const [currency, setCurrency] = useState(initial?.currency || "Kz");
+  const [limit, setLimit] = useState(initial ? String(initial.limit) : "");
+  const [closingDay, setClosingDay] = useState(initial ? String(initial.closingDay) : "20");
+  const [dueDay, setDueDay] = useState(initial ? String(initial.dueDay) : "5");
+  const canSave = bank && limit !== "" && Number(limit) > 0 && Number(closingDay) >= 1 && Number(closingDay) <= 31 && Number(dueDay) >= 1 && Number(dueDay) <= 31;
+  return React.createElement(Modal, {
+    title: isEditing ? "Editar cartão de crédito" : "Novo cartão de crédito",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement(Field, {
+    label: "Banco"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: bank,
+    onChange: e => setBank(e.target.value)
+  }, BANKS.map(b => React.createElement("option", {
+    key: b
+  }, b)))), React.createElement(Field, {
+    label: "Apelido (opcional)"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: nickname,
+    onChange: e => setNickname(e.target.value),
+    placeholder: "ex: Cartão Gold"
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Moeda",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: currency,
+    onChange: e => setCurrency(e.target.value)
+  }, React.createElement("option", {
+    value: "Kz"
+  }, "Kz"), React.createElement("option", {
+    value: "USD"
+  }, "USD"), React.createElement("option", {
+    value: "EUR"
+  }, "EUR"))), React.createElement(Field, {
+    label: "Limite de crédito",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: limit,
+    onChange: e => setLimit(e.target.value),
+    placeholder: "0.00"
+  }))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Dia de fecho da fatura",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "31",
+    style: inputStyle,
+    value: closingDay,
+    onChange: e => setClosingDay(e.target.value)
+  })), React.createElement(Field, {
+    label: "Dia de vencimento",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "31",
+    style: inputStyle,
+    value: dueDay,
+    onChange: e => setDueDay(e.target.value)
+  }))), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Compras feitas até ao dia de fecho entram na fatura desse mês; depois disso, entram na fatura seguinte."), React.createElement(PrimaryButton, {
+    disabled: !canSave,
+    onClick: () => onSave({
+      bank,
+      nickname,
+      currency,
+      limit: Number(limit),
+      closingDay: Number(closingDay),
+      dueDay: Number(dueDay)
+    })
+  }, isEditing ? "Guardar alterações" : "Adicionar cartão")));
+}
+function CardPurchaseModal({
+  card,
+  initial,
+  expenseCategories,
+  onClose,
+  onSave
+}) {
+  const isEditing = !!initial;
+  const [description, setDescription] = useState(initial?.description || "");
+  const [category, setCategory] = useState(initial?.category || EXPENSE_CATEGORIES[0]);
+  const [totalAmount, setTotalAmount] = useState(initial ? String(initial.totalAmount) : "");
+  const [installments, setInstallments] = useState(initial ? String(initial.installments) : "1");
+  const [date, setDate] = useState(initial?.date || todayISO());
+  const [member, setMember] = useState(initial?.member || "");
+  const canSave = description.trim() && totalAmount !== "" && Number(totalAmount) > 0 && Number(installments) >= 1;
+  const preview = canSave ? purchaseInstallments({
+    date,
+    totalAmount: Number(totalAmount),
+    installments: Number(installments)
+  }, card.closingDay) : [];
+  return React.createElement(Modal, {
+    title: isEditing ? "Editar compra" : "Nova compra no cartão",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement(Field, {
+    label: "Descrição"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: description,
+    onChange: e => setDescription(e.target.value),
+    placeholder: "ex: Supermercado"
+  })), React.createElement(Field, {
+    label: "Categoria"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: category,
+    onChange: e => setCategory(e.target.value)
+  }, expenseCategories.map(c => React.createElement("option", {
+    key: c
+  }, c)))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Valor total",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: totalAmount,
+    onChange: e => setTotalAmount(e.target.value),
+    placeholder: "0.00"
+  })), React.createElement(Field, {
+    label: "Nº de parcelas",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "48",
+    style: inputStyle,
+    value: installments,
+    onChange: e => setInstallments(e.target.value)
+  }))), React.createElement(Field, {
+    label: "Data da compra"
+  }, React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: date,
+    onChange: e => setDate(e.target.value)
+  })), React.createElement(Field, {
+    label: "Membro da família (opcional)"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: member,
+    onChange: e => setMember(e.target.value),
+    placeholder: "ex: Afonso"
+  })), preview.length > 0 && React.createElement("div", {
+    style: {
+      padding: "10px 12px",
+      borderRadius: 8,
+      background: "var(--paper)",
+      fontSize: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      fontWeight: 600,
+      marginBottom: 6
+    }
+  }, "Distribuição pelas faturas:"), preview.map((row, i) => React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      color: "var(--slate)"
+    }
+  }, React.createElement("span", null, monthShortLabel(row.month), " ", row.installmentLabel && `(${row.installmentLabel})`), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(row.amount, card.currency))))), React.createElement(PrimaryButton, {
+    disabled: !canSave,
+    onClick: () => onSave({
+      cardId: card.id,
+      description: description.trim(),
+      category,
+      totalAmount: Number(totalAmount),
+      installments: Number(installments),
+      date,
+      member: member.trim() || null
+    })
+  }, isEditing ? "Guardar alterações" : "Adicionar compra")));
+}
+function CardPaymentModal({
+  card,
+  cycleMonth,
+  statementAmount,
+  accounts,
+  onClose,
+  onSave
+}) {
+  const [amount, setAmount] = useState(String(Math.max(statementAmount, 0).toFixed(2)));
+  const [date, setDate] = useState(todayISO());
+  const [accountId, setAccountId] = useState(accounts[0]?.id || "");
+  const linkedAccount = accounts.find(a => a.id === accountId);
+  const [subBalanceId, setSubBalanceId] = useState(linkedAccount?.subBalances?.[0]?.id || "");
+  function handleAccountChange(id) {
+    setAccountId(id);
+    const acc = accounts.find(a => a.id === id);
+    setSubBalanceId(acc?.subBalances?.[0]?.id || "");
+  }
+  return React.createElement(Modal, {
+    title: `Pagar fatura — ${monthShortLabel(cycleMonth)}`,
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Valor da fatura: ", React.createElement("strong", {
+    style: {
+      color: "var(--ink)"
+    }
+  }, fmt(statementAmount, card.currency))), React.createElement(Field, {
+    label: "Valor a pagar"
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: amount,
+    onChange: e => setAmount(e.target.value)
+  })), React.createElement(Field, {
+    label: "Data"
+  }, React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: date,
+    onChange: e => setDate(e.target.value)
+  })), React.createElement(Field, {
+    label: "Pagar a partir de (opcional)"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: accountId,
+    onChange: e => handleAccountChange(e.target.value)
+  }, React.createElement("option", {
+    value: ""
+  }, "— sem conta associada —"), accounts.map(a => React.createElement("option", {
+    key: a.id,
+    value: a.id
+  }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`)))), linkedAccount && React.createElement(Field, {
+    label: "Saldo"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: subBalanceId,
+    onChange: e => setSubBalanceId(e.target.value)
+  }, (linkedAccount.subBalances || []).map(sb => React.createElement("option", {
+    key: sb.id,
+    value: sb.id
+  }, sb.label || sb.type)))), React.createElement(PrimaryButton, {
+    disabled: amount === "" || Number(amount) <= 0,
+    onClick: () => onSave({
+      amount: Number(amount),
+      date,
+      accountId: accountId || null,
+      subBalanceId: accountId ? subBalanceId : null
+    })
+  }, "Confirmar pagamento")));
+}
+function CreditCardCard({
+  card,
+  purchases,
+  payments,
+  onEdit,
+  onRemove,
+  onAddPurchase,
+  onPayStatement
+}) {
+  const used = creditCardUsedAmount(card, purchases, payments);
+  const available = Number(card.limit) - used;
+  const usedPct = card.limit > 0 ? used / Number(card.limit) * 100 : 0;
+  const currentCycle = billingCycleForDate(todayISO(), card.closingDay);
+  const currentStatementTotal = statementTotal(card.id, currentCycle, purchases, card.closingDay);
+  const currentStatementBalance = statementBalance(card.id, currentCycle, purchases, payments, card.closingDay);
+  const dueDate = creditCardDueDateForCycle(card, currentCycle);
+  const cardPurchasesForCard = purchases.filter(p => p.cardId === card.id).sort((a, b) => a.date < b.date ? 1 : -1);
+  return React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 600
+    }
+  }, card.bank.replace(/—.*/, "").trim()), card.nickname && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, card.nickname)), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4
+    }
+  }, React.createElement("button", {
+    onClick: () => onEdit(card),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconPencil, {
+    size: 15
+  })), React.createElement("button", {
+    onClick: () => onRemove(card.id),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconTrash, {
+    size: 15
+  })))), React.createElement("div", {
+    style: {
+      marginTop: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 12,
+      color: "var(--slate)",
+      marginBottom: 4
+    }
+  }, React.createElement("span", null, "Limite usado"), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(used, card.currency), " / ", fmt(card.limit, card.currency))), React.createElement(ProgressBar, {
+    pct: usedPct,
+    tone: usedPct > 90 ? "rust" : usedPct > 70 ? "gold" : "emerald"
+  }), React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginTop: 4
+    }
+  }, "Disponível: ", fmt(Math.max(available, 0), card.currency))), React.createElement("div", {
+    style: {
+      marginTop: 14,
+      padding: "10px 12px",
+      borderRadius: 8,
+      background: "var(--paper)"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 12.5
+    }
+  }, React.createElement("span", null, "Fatura atual (", monthShortLabel(currentCycle), ")"), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700
+    }
+  }, fmt(currentStatementTotal, card.currency))), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 2
+    }
+  }, "Vencimento: ", new Date(dueDate + "T00:00:00").toLocaleDateString("pt-PT")), currentStatementBalance > 0.005 && React.createElement(GhostButton, {
+    onClick: () => onPayStatement(card, currentCycle, currentStatementBalance),
+    style: {
+      marginTop: 8,
+      width: "100%"
+    }
+  }, "Pagar fatura")), React.createElement("div", {
+    style: {
+      marginTop: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 12.5,
+      fontWeight: 600
+    }
+  }, "Compras recentes"), React.createElement("button", {
+    onClick: () => onAddPurchase(card),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "+ Nova compra")), cardPurchasesForCard.length === 0 ? React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Nenhuma compra registada.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, cardPurchasesForCard.slice(0, 5).map(p => React.createElement("div", {
+    key: p.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 12
+    }
+  }, React.createElement("span", {
+    style: {
+      color: "var(--ink)"
+    }
+  }, p.description, " ", p.installments > 1 && React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, "(", p.installments, "x)")), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: "var(--slate)"
+    }
+  }, fmt(p.totalAmount, card.currency)))))));
+}
+function CreditCardsTab({
+  creditCards,
+  cardPurchases,
+  cardPayments,
+  accounts,
+  expenseCategories,
+  onAdd,
+  onEdit,
+  onRemove,
+  onAddPurchase,
+  onPayStatement
+}) {
+  return React.createElement("div", null, React.createElement(PrimaryButton, {
+    onClick: onAdd,
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(IconPlus, {
+    size: 15
+  }), " Adicionar cartão de crédito"), creditCards.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Ainda não tem cartões de crédito registados. Adicione o primeiro para começar a acompanhar faturas e parcelas.")) : React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 16
+    }
+  }, creditCards.map(card => React.createElement(CreditCardCard, {
+    key: card.id,
+    card: card,
+    purchases: cardPurchases,
+    payments: cardPayments,
+    onEdit: onEdit,
+    onRemove: onRemove,
+    onAddPurchase: onAddPurchase,
+    onPayStatement: onPayStatement
+  }))));
 }
 function DebtPaymentModal({
   debt,
