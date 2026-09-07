@@ -755,6 +755,315 @@ function creditCardDueDateForCycle(card, cycleMonth) {
   }
   return `${dueMonth}-${dueDay}`;
 }
+const BOND_TYPES = ["OT-NR", "OT-TXC", "OT-ME", "Obrigação Corporativa"];
+function addMonthsClampedDate(date, months) {
+  const day = date.getDate();
+  const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+  const daysInTargetMonth = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(day, daysInTargetMonth));
+  return target;
+}
+function generateBondCouponSchedule(dataCompraStr, dataVencimentoStr, valorNominal, taxaCupao, periodicidadeMeses) {
+  const dataCompra = new Date(dataCompraStr + "T00:00:00");
+  const dataVencimento = new Date(dataVencimentoStr + "T00:00:00");
+  if (periodicidadeMeses <= 0 || taxaCupao <= 0) {
+    return [{
+      id: uid(),
+      data: dataVencimentoStr,
+      valor: valorNominal,
+      recebido: false
+    }];
+  }
+  const schedule = [];
+  const valorCupao = Math.round(valorNominal * taxaCupao * (periodicidadeMeses / 12) * 100) / 100;
+  let current = new Date(dataCompra.getTime());
+  while (true) {
+    current = addMonthsClampedDate(current, periodicidadeMeses);
+    if (current >= dataVencimento) break;
+    schedule.push({
+      id: uid(),
+      data: current.toISOString().slice(0, 10),
+      valor: valorCupao,
+      recebido: false
+    });
+  }
+  schedule.push({
+    id: uid(),
+    data: dataVencimentoStr,
+    valor: Math.round((valorCupao + valorNominal) * 100) / 100,
+    recebido: false
+  });
+  return schedule;
+}
+function bondCouponsRecebidos(bond) {
+  return (bond.coupons || []).reduce((s, c) => s + (c.recebido ? Number(c.valor) : 0), 0);
+}
+function bondGanhoPerda(bond) {
+  return (Number(bond.valor_atual) || 0) + bondCouponsRecebidos(bond) - (Number(bond.valor_investido) || 0);
+}
+function bondGanhoPerdaPct(bond) {
+  return bond.valor_investido ? bondGanhoPerda(bond) / Number(bond.valor_investido) : 0;
+}
+function bondNextCoupon(bond) {
+  const today = todayISO();
+  const pending = (bond.coupons || []).filter(c => !c.recebido).sort((a, b) => a.data < b.data ? -1 : 1);
+  return pending.find(c => c.data >= today) || pending[0] || null;
+}
+const EQUITY_SUGGESTIONS = ["BAI", "BFA", "UNITEL", "ENSA", "BODIVA"];
+function equityDividendosTotal(eq) {
+  return (eq.dividends || []).reduce((s, d) => s + Number(d.valor), 0);
+}
+function equityGanhoCapital(eq) {
+  return ((Number(eq.preco_atual) || 0) - (Number(eq.preco_medio) || 0)) * (Number(eq.quantidade) || 0);
+}
+function equityYieldOnCost(eq) {
+  const custo = (Number(eq.preco_medio) || 0) * (Number(eq.quantidade) || 0);
+  return custo === 0 ? 0 : equityDividendosTotal(eq) / custo;
+}
+function equityValorAtual(eq) {
+  return (Number(eq.preco_atual) || 0) * (Number(eq.quantidade) || 0);
+}
+const FUND_TYPES = ["Fundo Aberto", "Fundo Fechado"];
+function fundValorAtual(f) {
+  return (Number(f.unidades) || 0) * (Number(f.valor_up_atual) || 0);
+}
+function fundValorInvestido(f) {
+  return (Number(f.unidades) || 0) * (Number(f.valor_up_compra) || 0);
+}
+function fundRentabilidade(f) {
+  return f.valor_up_compra ? (Number(f.valor_up_atual) - Number(f.valor_up_compra)) / Number(f.valor_up_compra) : 0;
+}
+function fundResgatado(f) {
+  return (f.redemptions || []).reduce((s, r) => s + Number(r.valor), 0);
+}
+const EVENT_TYPES = ["Pagamento de Cupão", "Dividendo", "Vencimento", "Resgate", "Outro"];
+function investmentUpcomingEvents(daysWindow, events, bonds) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const limit = new Date(today.getTime() + daysWindow * 86400000);
+  const out = [];
+  for (const e of events) {
+    out.push({
+      id: e.id,
+      tipo: e.tipo,
+      descricao: e.descricao,
+      data: e.data,
+      valorEsperado: Number(e.valor_esperado) || 0,
+      ativo: e.ativo_relacionado || "",
+      status: e.status || "pendente",
+      manual: true
+    });
+  }
+  for (const b of bonds) {
+    for (const c of b.coupons || []) {
+      const cd = new Date(c.data + "T00:00:00");
+      if (cd >= today && cd <= limit && !c.recebido) {
+        const isVenc = c.data === b.data_vencimento;
+        out.push({
+          id: c.id,
+          tipo: isVenc ? "Vencimento" : "Pagamento de Cupão",
+          descricao: (isVenc ? "Vencimento " : "Cupão ") + b.codigo,
+          data: c.data,
+          valorEsperado: c.valor,
+          ativo: b.codigo,
+          status: "pendente",
+          manual: false,
+          bondId: b.id
+        });
+      }
+    }
+  }
+  out.sort((a, b) => a.data < b.data ? -1 : 1);
+  return out;
+}
+function investROI(investido, atual, rendimentos) {
+  rendimentos = rendimentos || 0;
+  if (!investido) return 0;
+  return (atual + rendimentos - investido) / investido;
+}
+function investAnnualizedReturn(roiValue, dias) {
+  if (dias <= 0) return 0;
+  return Math.pow(1 + roiValue, 365 / dias) - 1;
+}
+function investXIRR(cashflows, guess) {
+  guess = guess || 0.1;
+  if (!cashflows || cashflows.length < 2) return null;
+  const t0 = cashflows.reduce((m, cf) => cf.date < m ? cf.date : m, cashflows[0].date);
+  const yrs = d => (d - t0) / (1000 * 60 * 60 * 24 * 365);
+  const npv = rate => cashflows.reduce((s, cf) => s + cf.amount / Math.pow(1 + rate, yrs(cf.date)), 0);
+  const dnpv = rate => cashflows.reduce((s, cf) => s + -yrs(cf.date) * cf.amount / Math.pow(1 + rate, yrs(cf.date) + 1), 0);
+  let rate = guess;
+  for (let i = 0; i < 100; i++) {
+    const f = npv(rate),
+      df = dnpv(rate);
+    if (Math.abs(df) < 1e-12) break;
+    const nr = rate - f / df;
+    if (!isFinite(nr) || nr <= -0.999) break;
+    if (Math.abs(nr - rate) < 1e-7) return nr;
+    rate = nr;
+  }
+  let lo = -0.9,
+    hi = 10.0,
+    fLo = npv(lo),
+    fHi = npv(hi);
+  if (fLo * fHi > 0) return isFinite(rate) ? rate : null;
+  for (let j = 0; j < 200; j++) {
+    const mid = (lo + hi) / 2,
+      fMid = npv(mid);
+    if (Math.abs(fMid) < 1e-6) return mid;
+    if (fLo * fMid < 0) hi = mid;else {
+      lo = mid;
+      fLo = fMid;
+    }
+  }
+  return (lo + hi) / 2;
+}
+function investMacaulayDuration(cashflows, yieldRate) {
+  if (yieldRate <= -1) return 0;
+  let pvTotal = 0,
+    weighted = 0;
+  cashflows.forEach(item => {
+    const pv = item.cf / Math.pow(1 + yieldRate, item.t);
+    pvTotal += pv;
+    weighted += item.t * pv;
+  });
+  return pvTotal === 0 ? 0 : weighted / pvTotal;
+}
+function investSharpeRatio(returns, riskFree) {
+  if (!returns || returns.length < 2) return null;
+  const n = returns.length;
+  const excess = returns.map(r => r - riskFree / n);
+  const mean = excess.reduce((a, b) => a + b, 0) / n;
+  const variance = excess.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+  const std = Math.sqrt(variance);
+  if (std === 0) return null;
+  return mean / std * Math.sqrt(n);
+}
+function investHistoricalVaR(returns, confidence) {
+  confidence = confidence === undefined ? 0.95 : confidence;
+  if (!returns || !returns.length) return null;
+  const sorted = returns.slice().sort((a, b) => a - b);
+  const idx = (1 - confidence) * (sorted.length - 1);
+  const lo = Math.floor(idx),
+    hi = Math.ceil(idx),
+    w = idx - lo;
+  const value = sorted[lo] + (sorted[hi] - sorted[lo]) * w;
+  return value < 0 ? -value : 0;
+}
+function investRealReturn(nominal, inflation) {
+  return (1 + nominal) / (1 + inflation) - 1;
+}
+function fmtPercent(value) {
+  if (value === null || value === undefined || isNaN(value)) return "—";
+  return `${(value * 100).toFixed(1)}%`;
+}
+function investFiscalSummary(bonds, equities, taxaCupoes, taxaDividendos, taxaMaisValias) {
+  const cupoes = bonds.reduce((sum, b) => sum + bondCouponsRecebidos(b), 0);
+  const dividendos = equities.reduce((sum, e) => sum + equityDividendosTotal(e), 0);
+  const maisValias = equities.reduce((sum, e) => {
+    const g = equityGanhoCapital(e);
+    return sum + (g > 0 ? g : 0);
+  }, 0);
+  const impCupoes = cupoes * taxaCupoes,
+    impDiv = dividendos * taxaDividendos,
+    impMV = maisValias * taxaMaisValias;
+  return {
+    cupoes,
+    impCupoes,
+    dividendos,
+    impDiv,
+    maisValias,
+    impMV,
+    total: impCupoes + impDiv + impMV
+  };
+}
+function portfolioTotals(bonds, equities, funds) {
+  let totalInvestido = 0,
+    totalAtual = 0,
+    rendimentos = 0;
+  bonds.forEach(b => {
+    totalInvestido += Number(b.valor_investido) || 0;
+    totalAtual += Number(b.valor_atual) || 0;
+    rendimentos += bondCouponsRecebidos(b);
+  });
+  equities.forEach(e => {
+    totalInvestido += (Number(e.preco_medio) || 0) * (Number(e.quantidade) || 0);
+    totalAtual += equityValorAtual(e);
+    rendimentos += equityDividendosTotal(e);
+  });
+  funds.forEach(f => {
+    totalInvestido += (Number(f.unidades) || 0) * (Number(f.valor_up_compra) || 0);
+    totalAtual += fundValorAtual(f);
+  });
+  return {
+    totalInvestido,
+    totalAtual,
+    rendimentos,
+    ganhoPerda: totalAtual + rendimentos - totalInvestido
+  };
+}
+function portfolioIndicators(bonds, equities, funds, taxaLivreRisco, taxaInflacao) {
+  const totals = portfolioTotals(bonds, equities, funds);
+  const roiTotal = investROI(totals.totalInvestido, totals.totalAtual, totals.rendimentos);
+  const purchaseDates = bonds.map(b => new Date(b.data_compra + "T00:00:00"));
+  const dias = purchaseDates.length ? Math.max((new Date() - new Date(Math.min.apply(null, purchaseDates))) / 86400000, 1) : 365;
+  const rentAnualizada = investAnnualizedReturn(roiTotal, dias);
+  const cashflows = [];
+  bonds.forEach(b => {
+    cashflows.push({
+      date: new Date(b.data_compra + "T00:00:00"),
+      amount: -(Number(b.valor_investido) || 0)
+    });
+    (b.coupons || []).forEach(c => {
+      if (c.recebido) cashflows.push({
+        date: new Date(c.data + "T00:00:00"),
+        amount: Number(c.valor)
+      });
+    });
+  });
+  if (bonds.length) cashflows.push({
+    date: new Date(),
+    amount: bonds.reduce((s, b) => s + (Number(b.valor_atual) || 0), 0)
+  });
+  const tir = cashflows.length >= 2 ? investXIRR(cashflows) : null;
+  const pesoTotal = bonds.reduce((s, b) => s + (Number(b.valor_atual) || 0), 0) || 1;
+  let durationPonderada = 0;
+  bonds.forEach(b => {
+    const durCfs = (b.coupons || []).map(c => {
+      const t = (new Date(c.data + "T00:00:00") - new Date(b.data_compra + "T00:00:00")) / (1000 * 60 * 60 * 24 * 365);
+      return t > 0 ? {
+        t,
+        cf: Number(c.valor)
+      } : null;
+    }).filter(Boolean);
+    const d = investMacaulayDuration(durCfs, b.yield_compra || 0.01);
+    durationPonderada += d * ((Number(b.valor_atual) || 0) / pesoTotal);
+  });
+  const retornos = [];
+  bonds.forEach(b => {
+    if (b.valor_investido) retornos.push((Number(b.valor_atual) - Number(b.valor_investido)) / Number(b.valor_investido));
+  });
+  equities.forEach(e => {
+    const custo = (Number(e.preco_medio) || 0) * (Number(e.quantidade) || 0);
+    if (custo) retornos.push((equityValorAtual(e) - custo) / custo);
+  });
+  funds.forEach(f => {
+    if (f.valor_up_compra) retornos.push((Number(f.valor_up_atual) - Number(f.valor_up_compra)) / Number(f.valor_up_compra));
+  });
+  const sharpe = investSharpeRatio(retornos, taxaLivreRisco);
+  const var95 = investHistoricalVaR(retornos, 0.95);
+  const retornoReal = investRealReturn(rentAnualizada, taxaInflacao);
+  return {
+    roi: roiTotal,
+    rentAnualizada,
+    tir,
+    durationPonderada,
+    sharpe,
+    var95,
+    retornoReal,
+    totals
+  };
+}
 function recurringDueDateForMonth(rec, month) {
   const day = String(rec.dueDay).padStart(2, "0");
   return `${month}-${day}`;
@@ -1335,7 +1644,9 @@ function checkDueSoonAndNotify(opts) {
     debtPayments,
     creditCards,
     cardPurchases,
-    cardPayments
+    cardPayments,
+    bonds,
+    investmentEvents
   } = opts;
   const today = todayISO();
   const in3days = new Date();
@@ -1372,6 +1683,25 @@ function checkDueSoonAndNotify(opts) {
         sendLocalNotification("Fatura a vencer", `Cartão ${card.bank.replace(/—.*/, "").trim()} — ${fmt(balance, card.currency)} vence a ${new Date(due + "T00:00:00").toLocaleDateString("pt-PT")}.`);
         markNotified(key);
       }
+    }
+  }
+  for (const b of bonds || []) {
+    for (const c of b.coupons || []) {
+      if (c.recebido || c.data < today || c.data > in3daysStr) continue;
+      const key = `bond-coupon-${c.id}`;
+      if (!wasNotifiedToday(key)) {
+        const isVenc = c.data === b.data_vencimento;
+        sendLocalNotification(isVenc ? "Obrigação a vencer" : "Cupão a receber", `${b.codigo} — ${fmt(c.valor, b.moeda)} em ${new Date(c.data + "T00:00:00").toLocaleDateString("pt-PT")}.`);
+        markNotified(key);
+      }
+    }
+  }
+  for (const e of investmentEvents || []) {
+    if (e.status === "concluído" || e.data < today || e.data > in3daysStr) continue;
+    const key = `investment-event-${e.id}`;
+    if (!wasNotifiedToday(key)) {
+      sendLocalNotification(e.tipo, `${e.descricao} — ${fmt(Number(e.valor_esperado) || 0)} em ${new Date(e.data + "T00:00:00").toLocaleDateString("pt-PT")}.`);
+      markNotified(key);
     }
   }
 }
@@ -2908,6 +3238,15 @@ function FinanceApp() {
   const [creditCards, setCreditCards] = useState(() => loadKey("credit-cards", []));
   const [cardPurchases, setCardPurchases] = useState(() => loadKey("card-purchases", []));
   const [cardPayments, setCardPayments] = useState(() => loadKey("card-payments", []));
+  const [bonds, setBonds] = useState(() => loadKey("bonds", []));
+  const [equities, setEquities] = useState(() => loadKey("equities", []));
+  const [funds, setFunds] = useState(() => loadKey("funds", []));
+  const [investmentEvents, setInvestmentEvents] = useState(() => loadKey("investment-events", []));
+  const [taxaLivreRisco, setTaxaLivreRisco] = useState(() => loadKey("taxa-livre-risco", 0.19));
+  const [taxaInflacao, setTaxaInflacao] = useState(() => loadKey("taxa-inflacao", 0.18));
+  const [taxaImpostoCupoes, setTaxaImpostoCupoes] = useState(() => loadKey("taxa-imposto-cupoes", 0.1));
+  const [taxaImpostoDividendos, setTaxaImpostoDividendos] = useState(() => loadKey("taxa-imposto-dividendos", 0.1));
+  const [taxaImpostoMaisValias, setTaxaImpostoMaisValias] = useState(() => loadKey("taxa-imposto-mais-valias", 0.1));
   const [recurringExpenses, setRecurringExpenses] = useState(() => loadKey("recurring-expenses", []));
   const [exchangeRates, setExchangeRates] = useState(() => loadKey("exchange-rates", {
     usdRate: null,
@@ -2933,6 +3272,13 @@ function FinanceApp() {
   const [showCardPurchaseModal, setShowCardPurchaseModal] = useState(false);
   const [purchaseCard, setPurchaseCard] = useState(null);
   const [payingStatement, setPayingStatement] = useState(null);
+  const [showBondModal, setShowBondModal] = useState(false);
+  const [editingBond, setEditingBond] = useState(null);
+  const [showEquityModal, setShowEquityModal] = useState(false);
+  const [editingEquity, setEditingEquity] = useState(null);
+  const [showFundModal, setShowFundModal] = useState(false);
+  const [editingFund, setEditingFund] = useState(null);
+  const [showEventModal, setShowEventModal] = useState(false);
   const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [editingRecurring, setEditingRecurring] = useState(null);
   const [recurringDefaultIsStaff, setRecurringDefaultIsStaff] = useState(false);
@@ -2951,6 +3297,15 @@ function FinanceApp() {
   useEffect(() => saveKey("credit-cards", creditCards), [creditCards]);
   useEffect(() => saveKey("card-purchases", cardPurchases), [cardPurchases]);
   useEffect(() => saveKey("card-payments", cardPayments), [cardPayments]);
+  useEffect(() => saveKey("bonds", bonds), [bonds]);
+  useEffect(() => saveKey("equities", equities), [equities]);
+  useEffect(() => saveKey("funds", funds), [funds]);
+  useEffect(() => saveKey("investment-events", investmentEvents), [investmentEvents]);
+  useEffect(() => saveKey("taxa-livre-risco", taxaLivreRisco), [taxaLivreRisco]);
+  useEffect(() => saveKey("taxa-inflacao", taxaInflacao), [taxaInflacao]);
+  useEffect(() => saveKey("taxa-imposto-cupoes", taxaImpostoCupoes), [taxaImpostoCupoes]);
+  useEffect(() => saveKey("taxa-imposto-dividendos", taxaImpostoDividendos), [taxaImpostoDividendos]);
+  useEffect(() => saveKey("taxa-imposto-mais-valias", taxaImpostoMaisValias), [taxaImpostoMaisValias]);
   useEffect(() => saveKey("recurring-expenses", recurringExpenses), [recurringExpenses]);
   useEffect(() => saveKey("exchange-rates", exchangeRates), [exchangeRates]);
   useEffect(() => saveKey("expense-shortcuts", expenseShortcuts), [expenseShortcuts]);
@@ -2970,9 +3325,11 @@ function FinanceApp() {
       debtPayments,
       creditCards,
       cardPurchases,
-      cardPayments
+      cardPayments,
+      bonds,
+      investmentEvents
     });
-  }, [notificationsEnabled, recurringExpenses, transactions, month, debts, debtPayments, creditCards, cardPurchases, cardPayments]);
+  }, [notificationsEnabled, recurringExpenses, transactions, month, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, investmentEvents]);
   useEffect(() => saveKey("custom-categories", customCategories), [customCategories]);
   useEffect(() => saveKey("last-export-date", lastExportDate), [lastExportDate]);
   useEffect(() => saveKey("exchange-rate-history", rateHistory), [rateHistory]);
@@ -3225,6 +3582,138 @@ function FinanceApp() {
       });
     }
   }
+  function addBond(bond) {
+    const coupons = generateBondCouponSchedule(bond.data_compra, bond.data_vencimento, Number(bond.valor_nominal), Number(bond.taxa_cupao), Number(bond.periodicidade_meses) || 6);
+    setBonds(bs => [...bs, {
+      ...bond,
+      id: uid(),
+      valor_atual: Number(bond.valor_investido),
+      coupons
+    }]);
+  }
+  function updateBond(id, bond) {
+    setBonds(bs => bs.map(b => b.id === id ? {
+      ...b,
+      ...bond
+    } : b));
+  }
+  function removeBond(id) {
+    setBonds(bs => bs.filter(b => b.id !== id));
+  }
+  function markBondCouponReceived(bondId, couponId) {
+    setBonds(bs => bs.map(b => b.id === bondId ? {
+      ...b,
+      coupons: b.coupons.map(c => c.id === couponId ? {
+        ...c,
+        recebido: true
+      } : c)
+    } : b));
+  }
+  function updateBondCurrentValue(bondId, newValue) {
+    setBonds(bs => bs.map(b => b.id === bondId ? {
+      ...b,
+      valor_atual: Number(newValue)
+    } : b));
+  }
+  function addEquity(eq) {
+    setEquities(es => [...es, {
+      ...eq,
+      id: uid(),
+      dividends: []
+    }]);
+  }
+  function updateEquity(id, eq) {
+    setEquities(es => es.map(e => e.id === id ? {
+      ...e,
+      ...eq
+    } : e));
+  }
+  function removeEquity(id) {
+    setEquities(es => es.filter(e => e.id !== id));
+  }
+  function updateEquityCurrentPrice(id, newPrice) {
+    setEquities(es => es.map(e => e.id === id ? {
+      ...e,
+      preco_atual: Number(newPrice)
+    } : e));
+  }
+  function addEquityDividend(equityId, dividend) {
+    setEquities(es => es.map(e => e.id === equityId ? {
+      ...e,
+      dividends: [...(e.dividends || []), {
+        ...dividend,
+        id: uid()
+      }]
+    } : e));
+  }
+  function updateEquityDividend(equityId, dividendId, dividend) {
+    setEquities(es => es.map(e => e.id === equityId ? {
+      ...e,
+      dividends: e.dividends.map(d => d.id === dividendId ? {
+        ...d,
+        ...dividend
+      } : d)
+    } : e));
+  }
+  function removeEquityDividend(equityId, dividendId) {
+    setEquities(es => es.map(e => e.id === equityId ? {
+      ...e,
+      dividends: e.dividends.filter(d => d.id !== dividendId)
+    } : e));
+  }
+  function addFund(fund) {
+    setFunds(fs => [...fs, {
+      ...fund,
+      id: uid(),
+      redemptions: []
+    }]);
+  }
+  function updateFund(id, fund) {
+    setFunds(fs => fs.map(f => f.id === id ? {
+      ...f,
+      ...fund
+    } : f));
+  }
+  function removeFund(id) {
+    setFunds(fs => fs.filter(f => f.id !== id));
+  }
+  function updateFundUpValue(id, newValue) {
+    setFunds(fs => fs.map(f => f.id === id ? {
+      ...f,
+      valor_up_atual: Number(newValue)
+    } : f));
+  }
+  function addFundRedemption(fundId, redemption) {
+    setFunds(fs => fs.map(f => f.id === fundId ? {
+      ...f,
+      redemptions: [...(f.redemptions || []), {
+        ...redemption,
+        id: uid()
+      }]
+    } : f));
+  }
+  function removeFundRedemption(fundId, redemptionId) {
+    setFunds(fs => fs.map(f => f.id === fundId ? {
+      ...f,
+      redemptions: f.redemptions.filter(r => r.id !== redemptionId)
+    } : f));
+  }
+  function addInvestmentEvent(event) {
+    setInvestmentEvents(es => [...es, {
+      ...event,
+      id: uid(),
+      status: "pendente"
+    }]);
+  }
+  function completeInvestmentEvent(id) {
+    setInvestmentEvents(es => es.map(e => e.id === id ? {
+      ...e,
+      status: "concluído"
+    } : e));
+  }
+  function removeInvestmentEvent(id) {
+    setInvestmentEvents(es => es.filter(e => e.id !== id));
+  }
   function addRecurring(rec) {
     setRecurringExpenses(rs => [...rs, {
       ...rec,
@@ -3264,6 +3753,10 @@ function FinanceApp() {
       creditCards,
       cardPurchases,
       cardPayments,
+      bonds,
+      equities,
+      funds,
+      investmentEvents,
       recurringExpenses,
       exchangeRates,
       expenseShortcuts,
@@ -3411,6 +3904,10 @@ function FinanceApp() {
     setCreditCards(data.creditCards || []);
     setCardPurchases(data.cardPurchases || []);
     setCardPayments(data.cardPayments || []);
+    setBonds(data.bonds || []);
+    setEquities(data.equities || []);
+    setFunds(data.funds || []);
+    setInvestmentEvents(data.investmentEvents || []);
     setRecurringExpenses(data.recurringExpenses || []);
     setExchangeRates(data.exchangeRates || {
       usdRate: null,
@@ -4085,7 +4582,12 @@ function FinanceApp() {
     goals: goals,
     totalReceitas: totalReceitas,
     totalDespesas: totalDespesas,
-    balancesByCurrency: balancesByCurrency
+    balancesByCurrency: balancesByCurrency,
+    bonds: bonds,
+    equities: equities,
+    taxaImpostoCupoes: taxaImpostoCupoes,
+    taxaImpostoDividendos: taxaImpostoDividendos,
+    taxaImpostoMaisValias: taxaImpostoMaisValias
   }), tab === "planning" && React.createElement(PlanningTab, {
     accounts: accounts,
     transactions: transactions,
@@ -4106,7 +4608,65 @@ function FinanceApp() {
     goals: goals,
     lastExportDate: lastExportDate,
     memberLimits: budgetIncome.memberLimits
-  }), tab === "investments" && React.createElement(InvestmentsTab, null), tab === "exports" && React.createElement(ExportsTab, {
+  }), tab === "investments" && React.createElement(InvestmentsTab, {
+    bonds: bonds,
+    onAddBond: () => {
+      setEditingBond(null);
+      setShowBondModal(true);
+    },
+    onEditBond: b => {
+      setEditingBond(b);
+      setShowBondModal(true);
+    },
+    onRemoveBond: id => askConfirm("Remover esta obrigação?", () => removeBond(id), "O calendário de cupões associado também será removido."),
+    onMarkCouponReceived: markBondCouponReceived,
+    onUpdateBondCurrentValue: updateBondCurrentValue,
+    equities: equities,
+    onAddEquity: () => {
+      setEditingEquity(null);
+      setShowEquityModal(true);
+    },
+    onEditEquity: e => {
+      setEditingEquity(e);
+      setShowEquityModal(true);
+    },
+    onRemoveEquity: id => askConfirm("Remover esta posição?", () => removeEquity(id), "O histórico de dividendos associado também será removido."),
+    onUpdateEquityPrice: updateEquityCurrentPrice,
+    onAddEquityDividend: addEquityDividend,
+    onEditEquityDividend: updateEquityDividend,
+    onRemoveEquityDividend: removeEquityDividend,
+    funds: funds,
+    onAddFund: () => {
+      setEditingFund(null);
+      setShowFundModal(true);
+    },
+    onEditFund: f => {
+      setEditingFund(f);
+      setShowFundModal(true);
+    },
+    onRemoveFund: id => askConfirm("Remover este fundo?", () => removeFund(id), "O histórico de resgates associado também será removido."),
+    onUpdateFundUpValue: updateFundUpValue,
+    onAddFundRedemption: addFundRedemption,
+    onRemoveFundRedemption: removeFundRedemption,
+    investmentEvents: investmentEvents,
+    onAddEvent: () => setShowEventModal(true),
+    onCompleteEvent: completeInvestmentEvent,
+    onRemoveEvent: removeInvestmentEvent,
+    taxaLivreRisco: taxaLivreRisco,
+    taxaInflacao: taxaInflacao,
+    onUpdateRates: (risco, inflacao) => {
+      setTaxaLivreRisco(risco);
+      setTaxaInflacao(inflacao);
+    },
+    taxaImpostoCupoes: taxaImpostoCupoes,
+    taxaImpostoDividendos: taxaImpostoDividendos,
+    taxaImpostoMaisValias: taxaImpostoMaisValias,
+    onUpdateFiscalRates: (cupoes, dividendos, maisValias) => {
+      setTaxaImpostoCupoes(cupoes);
+      setTaxaImpostoDividendos(dividendos);
+      setTaxaImpostoMaisValias(maisValias);
+    }
+  }), tab === "exports" && React.createElement(ExportsTab, {
     onExportTransactionsCSV: exportTransactionsCSV,
     onExportAccountsCSV: exportAccountsCSV,
     onExportAccountsPDF: printAccountsSummary,
@@ -4551,6 +5111,45 @@ function FinanceApp() {
     onSave: payment => {
       registerCardPayment(payingStatement.card, payingStatement.cycleMonth, payment);
       setPayingStatement(null);
+    }
+  }), showBondModal && React.createElement(BondModal, {
+    initial: editingBond,
+    onClose: () => {
+      setShowBondModal(false);
+      setEditingBond(null);
+    },
+    onSave: bond => {
+      if (editingBond) updateBond(editingBond.id, bond);else addBond(bond);
+      setShowBondModal(false);
+      setEditingBond(null);
+    }
+  }), showEquityModal && React.createElement(EquityModal, {
+    initial: editingEquity,
+    onClose: () => {
+      setShowEquityModal(false);
+      setEditingEquity(null);
+    },
+    onSave: equity => {
+      if (editingEquity) updateEquity(editingEquity.id, equity);else addEquity(equity);
+      setShowEquityModal(false);
+      setEditingEquity(null);
+    }
+  }), showFundModal && React.createElement(FundModal, {
+    initial: editingFund,
+    onClose: () => {
+      setShowFundModal(false);
+      setEditingFund(null);
+    },
+    onSave: fund => {
+      if (editingFund) updateFund(editingFund.id, fund);else addFund(fund);
+      setShowFundModal(false);
+      setEditingFund(null);
+    }
+  }), showEventModal && React.createElement(EventModal, {
+    onClose: () => setShowEventModal(false),
+    onSave: event => {
+      addInvestmentEvent(event);
+      setShowEventModal(false);
     }
   }), showRecurringModal && React.createElement(RecurringModal, {
     initial: editingRecurring,
@@ -7628,78 +8227,2094 @@ function AlertsTab({
     }
   }, a.text)))));
 }
-function InvestmentsTab() {
-  const items = [{
-    title: "Carteira",
-    text: "Todos os seus investimentos num só sítio — ações, fundos, imóveis ou outros ativos, com o valor atual de cada um."
-  }, {
-    title: "Rendimentos",
-    text: "Dividendos, juros e mais-valias recebidas, agrupados por investimento e por período."
-  }, {
-    title: "Performance",
-    text: "Retorno de cada investimento ao longo do tempo, comparado com o custo de aquisição."
-  }];
-  return React.createElement("div", null, React.createElement(Card, null, React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      marginBottom: 14
-    }
+function BondModal({
+  initial,
+  onClose,
+  onSave
+}) {
+  const isEditing = !!initial;
+  const [tipo, setTipo] = useState(initial?.tipo || BOND_TYPES[0]);
+  const [codigo, setCodigo] = useState(initial?.codigo || "");
+  const [emitente, setEmitente] = useState(initial?.emitente || "");
+  const [moeda, setMoeda] = useState(initial?.moeda || "Kz");
+  const [dataCompra, setDataCompra] = useState(initial?.data_compra || todayISO());
+  const [dataVencimento, setDataVencimento] = useState(initial?.data_vencimento || "");
+  const [valorInvestido, setValorInvestido] = useState(initial ? String(initial.valor_investido) : "");
+  const [valorNominal, setValorNominal] = useState(initial ? String(initial.valor_nominal) : "");
+  const [taxaCupao, setTaxaCupao] = useState(initial ? String(initial.taxa_cupao * 100) : "");
+  const [periodicidade, setPeriodicidade] = useState(initial ? String(initial.periodicidade_meses) : "6");
+  const [yieldCompra, setYieldCompra] = useState(initial ? String((initial.yield_compra || 0) * 100) : "");
+  const [notas, setNotas] = useState(initial?.notas || "");
+  const canSave = codigo.trim() && dataCompra && dataVencimento && valorInvestido !== "" && valorNominal !== "" && taxaCupao !== "";
+  function handleSave() {
+    onSave({
+      tipo,
+      codigo: codigo.trim(),
+      emitente: emitente.trim(),
+      moeda,
+      data_compra: dataCompra,
+      data_vencimento: dataVencimento,
+      valor_investido: Number(valorInvestido),
+      valor_nominal: Number(valorNominal),
+      taxa_cupao: Number(taxaCupao) / 100,
+      periodicidade_meses: Number(periodicidade) || 6,
+      yield_compra: yieldCompra === "" ? 0 : Number(yieldCompra) / 100,
+      notas: notas.trim()
+    });
+  }
+  return React.createElement(Modal, {
+    title: isEditing ? "Editar obrigação" : "Nova obrigação",
+    onClose: onClose
   }, React.createElement("div", {
-    style: {
-      width: 42,
-      height: 42,
-      borderRadius: 10,
-      background: "var(--paper)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, React.createElement(IconPieChart, {
-    size: 20,
-    style: {
-      color: "var(--gold)"
-    }
-  })), React.createElement("div", null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: 0
-    }
-  }, "Investimentos — em breve"), React.createElement("p", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--slate)",
-      margin: "2px 0 0"
-    }
-  }, "Esta área está planeada para uma próxima sessão."))), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 12,
-      marginTop: 8
+      gap: 14
     }
-  }, items.map(item => React.createElement("div", {
-    key: item.title,
+  }, React.createElement(Field, {
+    label: "Tipo"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: tipo,
+    onChange: e => setTipo(e.target.value)
+  }, BOND_TYPES.map(t => React.createElement("option", {
+    key: t
+  }, t)))), React.createElement("div", {
     style: {
-      padding: "12px 14px",
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Código",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: codigo,
+    onChange: e => setCodigo(e.target.value)
+  })), React.createElement(Field, {
+    label: "Emitente (opcional)",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: emitente,
+    onChange: e => setEmitente(e.target.value)
+  }))), React.createElement(Field, {
+    label: "Moeda"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: moeda,
+    onChange: e => setMoeda(e.target.value)
+  }, React.createElement("option", {
+    value: "Kz"
+  }, "Kz"), React.createElement("option", {
+    value: "USD"
+  }, "USD"), React.createElement("option", {
+    value: "EUR"
+  }, "EUR"))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Data de compra",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: dataCompra,
+    onChange: e => setDataCompra(e.target.value)
+  })), React.createElement(Field, {
+    label: "Data de vencimento",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: dataVencimento,
+    onChange: e => setDataVencimento(e.target.value)
+  }))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Valor investido",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: valorInvestido,
+    onChange: e => setValorInvestido(e.target.value)
+  })), React.createElement(Field, {
+    label: "Valor nominal",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: valorNominal,
+    onChange: e => setValorNominal(e.target.value)
+  }))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Taxa de cupão (% anual)",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.01",
+    style: inputStyle,
+    value: taxaCupao,
+    onChange: e => setTaxaCupao(e.target.value)
+  })), React.createElement(Field, {
+    label: "Periodicidade (meses)",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: periodicidade,
+    onChange: e => setPeriodicidade(e.target.value)
+  }))), React.createElement(Field, {
+    label: "Yield na compra (%, opcional)"
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.01",
+    style: inputStyle,
+    value: yieldCompra,
+    onChange: e => setYieldCompra(e.target.value)
+  })), React.createElement(Field, {
+    label: "Notas (opcional)"
+  }, React.createElement("textarea", {
+    style: {
+      ...inputStyle,
+      minHeight: 60
+    },
+    value: notas,
+    onChange: e => setNotas(e.target.value)
+  })), isEditing && React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Alterar a data de compra, vencimento, valor nominal, taxa de cupão ou periodicidade não recalcula o calendário de cupões já gerado."), React.createElement(PrimaryButton, {
+    disabled: !canSave,
+    onClick: handleSave
+  }, isEditing ? "Guardar alterações" : "Adicionar obrigação")));
+}
+function BondCard({
+  bond,
+  expanded,
+  onToggleExpand,
+  onEdit,
+  onRemove,
+  onMarkCouponReceived,
+  onUpdateCurrentValue
+}) {
+  const ganho = bondGanhoPerda(bond);
+  const ganhoPct = bondGanhoPerdaPct(bond);
+  const cuponsRecebidos = bondCouponsRecebidos(bond);
+  const proximoCupao = bondNextCoupon(bond);
+  const [editingValue, setEditingValue] = useState(false);
+  const [newValue, setNewValue] = useState(String(bond.valor_atual));
+  return React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 600
+    }
+  }, bond.codigo), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, bond.tipo, bond.emitente && ` — ${bond.emitente}`, " · vence ", new Date(bond.data_vencimento + "T00:00:00").toLocaleDateString("pt-PT"))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4
+    }
+  }, React.createElement("button", {
+    onClick: () => onEdit(bond),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconPencil, {
+    size: 15
+  })), React.createElement("button", {
+    onClick: () => onRemove(bond.id),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconTrash, {
+    size: 15
+  })))), React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginTop: 14
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor investido"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(bond.valor_investido, bond.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor atual"), editingValue ? React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      alignItems: "center"
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      padding: "4px 6px",
+      fontSize: 12,
+      width: 100
+    },
+    value: newValue,
+    onChange: e => setNewValue(e.target.value)
+  }), React.createElement("button", {
+    onClick: () => {
+      onUpdateCurrentValue(bond.id, newValue);
+      setEditingValue(false);
+    },
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 700
+    }
+  }, "OK")) : React.createElement("div", {
+    onClick: () => setEditingValue(true),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      cursor: "pointer",
+      textDecoration: "underline dotted"
+    },
+    title: "Clique para atualizar"
+  }, fmt(bond.valor_atual, bond.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Cupões recebidos"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(cuponsRecebidos, bond.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Ganho/Perda"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: ganho >= 0 ? "var(--emerald)" : "var(--rust)"
+    }
+  }, fmt(ganho, bond.moeda), " (", (ganhoPct * 100).toFixed(1), "%)"))), proximoCupao && React.createElement("div", {
+    style: {
+      marginTop: 12,
+      padding: "8px 12px",
       borderRadius: 8,
-      border: "1px solid var(--line)",
-      background: "var(--paper)"
+      background: "var(--paper)",
+      fontSize: 12
+    }
+  }, "Próximo cupão: ", new Date(proximoCupao.data + "T00:00:00").toLocaleDateString("pt-PT"), " — ", fmt(proximoCupao.valor, bond.moeda)), React.createElement("button", {
+    onClick: () => onToggleExpand(bond.id),
+    style: {
+      marginTop: 10,
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, expanded ? "Ocultar calendário de cupões" : `Ver calendário de cupões (${(bond.coupons || []).length})`), expanded && React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, (bond.coupons || []).map(c => React.createElement("div", {
+    key: c.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 12,
+      padding: "6px 8px",
+      borderRadius: 6,
+      background: c.recebido ? "#EAF6EE" : "var(--paper)"
+    }
+  }, React.createElement("span", null, new Date(c.data + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(c.valor, bond.moeda)), c.recebido ? React.createElement("span", {
+    style: {
+      color: "var(--emerald)",
+      fontWeight: 600
+    }
+  }, "Recebido") : React.createElement("button", {
+    onClick: () => onMarkCouponReceived(bond.id, c.id),
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "Marcar recebido")))));
+}
+function BondsTab({
+  bonds,
+  onAdd,
+  onEdit,
+  onRemove,
+  onMarkCouponReceived,
+  onUpdateCurrentValue
+}) {
+  const [expandedId, setExpandedId] = useState(null);
+  const totals = bonds.reduce((acc, b) => {
+    acc.investido += Number(b.valor_investido) || 0;
+    acc.atual += Number(b.valor_atual) || 0;
+    acc.cupoes += bondCouponsRecebidos(b);
+    return acc;
+  }, {
+    investido: 0,
+    atual: 0,
+    cupoes: 0
+  });
+  return React.createElement("div", null, bonds.length > 0 && React.createElement("div", {
+    className: "resp-grid-3col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 12,
+      marginBottom: 18
+    }
+  }, React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Total investido"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totals.investido))), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor atual"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totals.atual))), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Cupões recebidos"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: "var(--emerald)"
+    }
+  }, fmt(totals.cupoes)))), React.createElement(PrimaryButton, {
+    onClick: onAdd,
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(IconPlus, {
+    size: 15
+  }), " Adicionar obrigação"), bonds.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Ainda não tem obrigações registadas.")) : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, bonds.map(b => React.createElement(BondCard, {
+    key: b.id,
+    bond: b,
+    expanded: expandedId === b.id,
+    onToggleExpand: id => setExpandedId(expandedId === id ? null : id),
+    onEdit: onEdit,
+    onRemove: onRemove,
+    onMarkCouponReceived: onMarkCouponReceived,
+    onUpdateCurrentValue: onUpdateCurrentValue
+  }))));
+}
+function EquityModal({
+  initial,
+  onClose,
+  onSave
+}) {
+  const isEditing = !!initial;
+  const [ticker, setTicker] = useState(initial?.ticker || "");
+  const [nome, setNome] = useState(initial?.nome || "");
+  const [moeda, setMoeda] = useState(initial?.moeda || "Kz");
+  const [quantidade, setQuantidade] = useState(initial ? String(initial.quantidade) : "");
+  const [precoMedio, setPrecoMedio] = useState(initial ? String(initial.preco_medio) : "");
+  const [precoAtual, setPrecoAtual] = useState(initial ? String(initial.preco_atual) : "");
+  const [notas, setNotas] = useState(initial?.notas || "");
+  const canSave = ticker.trim() && quantidade !== "" && precoMedio !== "" && precoAtual !== "";
+  function handleSave() {
+    onSave({
+      ticker: ticker.trim().toUpperCase(),
+      nome: nome.trim(),
+      moeda,
+      quantidade: Number(quantidade),
+      preco_medio: Number(precoMedio),
+      preco_atual: Number(precoAtual),
+      notas: notas.trim()
+    });
+  }
+  return React.createElement(Modal, {
+    title: isEditing ? "Editar posição" : "Nova posição em ações",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement(Field, {
+    label: "Ticker"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: ticker,
+    onChange: e => setTicker(e.target.value),
+    placeholder: "ex: BAI",
+    list: "equity-suggestions"
+  }), React.createElement("datalist", {
+    id: "equity-suggestions"
+  }, EQUITY_SUGGESTIONS.map(s => React.createElement("option", {
+    key: s,
+    value: s
+  })))), React.createElement(Field, {
+    label: "Nome (opcional)"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: nome,
+    onChange: e => setNome(e.target.value)
+  })), React.createElement(Field, {
+    label: "Moeda"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: moeda,
+    onChange: e => setMoeda(e.target.value)
+  }, React.createElement("option", {
+    value: "Kz"
+  }, "Kz"), React.createElement("option", {
+    value: "USD"
+  }, "USD"), React.createElement("option", {
+    value: "EUR"
+  }, "EUR"))), React.createElement(Field, {
+    label: "Quantidade"
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.0001",
+    style: inputStyle,
+    value: quantidade,
+    onChange: e => setQuantidade(e.target.value)
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Preço médio",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: precoMedio,
+    onChange: e => setPrecoMedio(e.target.value)
+  })), React.createElement(Field, {
+    label: "Preço atual",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: precoAtual,
+    onChange: e => setPrecoAtual(e.target.value)
+  }))), React.createElement(Field, {
+    label: "Notas (opcional)"
+  }, React.createElement("textarea", {
+    style: {
+      ...inputStyle,
+      minHeight: 60
+    },
+    value: notas,
+    onChange: e => setNotas(e.target.value)
+  })), React.createElement(PrimaryButton, {
+    disabled: !canSave,
+    onClick: handleSave
+  }, isEditing ? "Guardar alterações" : "Adicionar posição")));
+}
+function EquityCard({
+  equity,
+  expanded,
+  onToggleExpand,
+  onEdit,
+  onRemove,
+  onUpdatePrice,
+  onAddDividend,
+  onEditDividend,
+  onRemoveDividend
+}) {
+  const ganho = equityGanhoCapital(equity);
+  const dividendos = equityDividendosTotal(equity);
+  const yoc = equityYieldOnCost(equity);
+  const valorAtual = equityValorAtual(equity);
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [newPrice, setNewPrice] = useState(String(equity.preco_atual));
+  const [newDivDate, setNewDivDate] = useState(todayISO());
+  const [newDivValue, setNewDivValue] = useState("");
+  const [editingDivId, setEditingDivId] = useState(null);
+  const [editDivDate, setEditDivDate] = useState("");
+  const [editDivValue, setEditDivValue] = useState("");
+  const sortedDividends = (equity.dividends || []).slice().sort((a, b) => a.data < b.data ? 1 : -1);
+  return React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 600
+    }
+  }, equity.ticker, " ", equity.nome && React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      fontWeight: 400
+    }
+  }, "(", equity.nome, ")")), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, fmt(equity.quantidade, "").trim(), " unidades")), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4
+    }
+  }, React.createElement("button", {
+    onClick: () => onEdit(equity),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconPencil, {
+    size: 15
+  })), React.createElement("button", {
+    onClick: () => onRemove(equity.id),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconTrash, {
+    size: 15
+  })))), React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginTop: 14
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Preço médio"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(equity.preco_medio, equity.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Preço atual"), editingPrice ? React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      alignItems: "center"
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      padding: "4px 6px",
+      fontSize: 12,
+      width: 100
+    },
+    value: newPrice,
+    onChange: e => setNewPrice(e.target.value)
+  }), React.createElement("button", {
+    onClick: () => {
+      onUpdatePrice(equity.id, newPrice);
+      setEditingPrice(false);
+    },
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 700
+    }
+  }, "OK")) : React.createElement("div", {
+    onClick: () => setEditingPrice(true),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      cursor: "pointer",
+      textDecoration: "underline dotted"
+    },
+    title: "Clique para atualizar"
+  }, fmt(equity.preco_atual, equity.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor atual"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(valorAtual, equity.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Ganho de capital"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: ganho >= 0 ? "var(--emerald)" : "var(--rust)"
+    }
+  }, fmt(ganho, equity.moeda)))), React.createElement("div", {
+    style: {
+      marginTop: 12,
+      padding: "8px 12px",
+      borderRadius: 8,
+      background: "var(--paper)",
+      fontSize: 12,
+      display: "flex",
+      justifyContent: "space-between"
+    }
+  }, React.createElement("span", null, "Dividendos recebidos: ", fmt(dividendos, equity.moeda)), React.createElement("span", null, "Yield on Cost: ", (yoc * 100).toFixed(2), "%")), React.createElement("button", {
+    onClick: () => onToggleExpand(equity.id),
+    style: {
+      marginTop: 10,
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, expanded ? "Ocultar dividendos" : `Ver dividendos (${(equity.dividends || []).length})`), expanded && React.createElement("div", {
+    style: {
+      marginTop: 10
     }
   }, React.createElement("div", {
     style: {
-      fontSize: 13.5,
-      fontWeight: 600,
-      marginBottom: 3
+      display: "flex",
+      gap: 6,
+      marginBottom: 10,
+      alignItems: "flex-end"
     }
-  }, item.title), React.createElement("div", {
+  }, React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      marginBottom: 2
+    }
+  }, "Data"), React.createElement("input", {
+    type: "date",
+    style: {
+      ...inputStyle,
+      padding: "5px 7px",
+      fontSize: 12
+    },
+    value: newDivDate,
+    onChange: e => setNewDivDate(e.target.value)
+  })), React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      marginBottom: 2
+    }
+  }, "Valor"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      padding: "5px 7px",
+      fontSize: 12
+    },
+    value: newDivValue,
+    onChange: e => setNewDivValue(e.target.value)
+  })), React.createElement("button", {
+    onClick: () => {
+      if (!newDivDate || newDivValue === "") return;
+      onAddDividend(equity.id, {
+        data: newDivDate,
+        valor: Number(newDivValue)
+      });
+      setNewDivValue("");
+    },
+    style: {
+      padding: "7px 12px",
+      borderRadius: 6,
+      border: "none",
+      background: "var(--gold)",
+      color: "#fff",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, "Registar")), sortedDividends.length === 0 ? React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Sem dividendos registados ainda.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, sortedDividends.map(d => editingDivId === d.id ? React.createElement("div", {
+    key: d.id,
+    style: {
+      display: "flex",
+      gap: 6,
+      alignItems: "center",
+      padding: "6px 8px",
+      borderRadius: 6,
+      background: "var(--paper)"
+    }
+  }, React.createElement("input", {
+    type: "date",
+    style: {
+      ...inputStyle,
+      padding: "4px 6px",
+      fontSize: 12,
+      flex: 1
+    },
+    value: editDivDate,
+    onChange: e => setEditDivDate(e.target.value)
+  }), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      padding: "4px 6px",
+      fontSize: 12,
+      flex: 1
+    },
+    value: editDivValue,
+    onChange: e => setEditDivValue(e.target.value)
+  }), React.createElement("button", {
+    onClick: () => {
+      onEditDividend(equity.id, d.id, {
+        data: editDivDate,
+        valor: Number(editDivValue)
+      });
+      setEditingDivId(null);
+    },
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 700
+    }
+  }, "OK"), React.createElement("button", {
+    onClick: () => setEditingDivId(null),
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      background: "none",
+      border: "none",
+      cursor: "pointer"
+    }
+  }, "Cancelar")) : React.createElement("div", {
+    key: d.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 12,
+      padding: "6px 8px",
+      borderRadius: 6,
+      background: "var(--paper)"
+    }
+  }, React.createElement("span", null, new Date(d.data + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(d.valor, equity.moeda)), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement("button", {
+    onClick: () => {
+      setEditingDivId(d.id);
+      setEditDivDate(d.data);
+      setEditDivValue(String(d.valor));
+    },
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "Editar"), React.createElement("button", {
+    onClick: () => onRemoveDividend(equity.id, d.id),
+    style: {
+      fontSize: 11,
+      color: "var(--rust)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "Remover")))))));
+}
+function EquitiesTab({
+  equities,
+  onAdd,
+  onEdit,
+  onRemove,
+  onUpdatePrice,
+  onAddDividend,
+  onEditDividend,
+  onRemoveDividend
+}) {
+  const [expandedId, setExpandedId] = useState(null);
+  const totals = equities.reduce((acc, e) => {
+    acc.valorAtual += equityValorAtual(e);
+    acc.ganho += equityGanhoCapital(e);
+    acc.dividendos += equityDividendosTotal(e);
+    return acc;
+  }, {
+    valorAtual: 0,
+    ganho: 0,
+    dividendos: 0
+  });
+  return React.createElement("div", null, equities.length > 0 && React.createElement("div", {
+    className: "resp-grid-3col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 12,
+      marginBottom: 18
+    }
+  }, React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
       color: "var(--slate)"
     }
-  }, item.text))))));
+  }, "Valor atual"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totals.valorAtual))), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Ganho de capital"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: totals.ganho >= 0 ? "var(--emerald)" : "var(--rust)"
+    }
+  }, fmt(totals.ganho))), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Dividendos recebidos"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: "var(--emerald)"
+    }
+  }, fmt(totals.dividendos)))), React.createElement(PrimaryButton, {
+    onClick: onAdd,
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(IconPlus, {
+    size: 15
+  }), " Adicionar posição"), equities.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Ainda não tem ações registadas.")) : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, equities.map(e => React.createElement(EquityCard, {
+    key: e.id,
+    equity: e,
+    expanded: expandedId === e.id,
+    onToggleExpand: id => setExpandedId(expandedId === id ? null : id),
+    onEdit: onEdit,
+    onRemove: onRemove,
+    onUpdatePrice: onUpdatePrice,
+    onAddDividend: onAddDividend,
+    onEditDividend: onEditDividend,
+    onRemoveDividend: onRemoveDividend
+  }))));
+}
+function FundModal({
+  initial,
+  onClose,
+  onSave
+}) {
+  const isEditing = !!initial;
+  const [tipo, setTipo] = useState(initial?.tipo || FUND_TYPES[0]);
+  const [nome, setNome] = useState(initial?.nome || "");
+  const [moeda, setMoeda] = useState(initial?.moeda || "Kz");
+  const [dataAplicacao, setDataAplicacao] = useState(initial?.data_aplicacao || todayISO());
+  const [unidades, setUnidades] = useState(initial ? String(initial.unidades) : "");
+  const [valorUpCompra, setValorUpCompra] = useState(initial ? String(initial.valor_up_compra) : "");
+  const [valorUpAtual, setValorUpAtual] = useState(initial ? String(initial.valor_up_atual) : "");
+  const [notas, setNotas] = useState(initial?.notas || "");
+  const canSave = nome.trim() && dataAplicacao && unidades !== "" && valorUpCompra !== "" && valorUpAtual !== "";
+  function handleSave() {
+    onSave({
+      tipo,
+      nome: nome.trim(),
+      moeda,
+      data_aplicacao: dataAplicacao,
+      unidades: Number(unidades),
+      valor_up_compra: Number(valorUpCompra),
+      valor_up_atual: Number(valorUpAtual),
+      notas: notas.trim()
+    });
+  }
+  return React.createElement(Modal, {
+    title: isEditing ? "Editar fundo" : "Nova aplicação em fundo",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement(Field, {
+    label: "Tipo"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: tipo,
+    onChange: e => setTipo(e.target.value)
+  }, FUND_TYPES.map(t => React.createElement("option", {
+    key: t
+  }, t)))), React.createElement(Field, {
+    label: "Nome do fundo"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: nome,
+    onChange: e => setNome(e.target.value)
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Moeda",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: moeda,
+    onChange: e => setMoeda(e.target.value)
+  }, React.createElement("option", {
+    value: "Kz"
+  }, "Kz"), React.createElement("option", {
+    value: "USD"
+  }, "USD"), React.createElement("option", {
+    value: "EUR"
+  }, "EUR"))), React.createElement(Field, {
+    label: "Data de aplicação",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: dataAplicacao,
+    onChange: e => setDataAplicacao(e.target.value)
+  }))), React.createElement(Field, {
+    label: "Unidades adquiridas (UP)"
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.0001",
+    style: inputStyle,
+    value: unidades,
+    onChange: e => setUnidades(e.target.value)
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Valor da UP na compra",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.0001",
+    style: inputStyle,
+    value: valorUpCompra,
+    onChange: e => setValorUpCompra(e.target.value)
+  })), React.createElement(Field, {
+    label: "Valor da UP atual",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.0001",
+    style: inputStyle,
+    value: valorUpAtual,
+    onChange: e => setValorUpAtual(e.target.value)
+  }))), React.createElement(Field, {
+    label: "Notas (opcional)"
+  }, React.createElement("textarea", {
+    style: {
+      ...inputStyle,
+      minHeight: 60
+    },
+    value: notas,
+    onChange: e => setNotas(e.target.value)
+  })), React.createElement(PrimaryButton, {
+    disabled: !canSave,
+    onClick: handleSave
+  }, isEditing ? "Guardar alterações" : "Adicionar fundo")));
+}
+function FundCard({
+  fund,
+  expanded,
+  onToggleExpand,
+  onEdit,
+  onRemove,
+  onUpdateUpValue,
+  onAddRedemption,
+  onRemoveRedemption
+}) {
+  const valorAtual = fundValorAtual(fund);
+  const valorInvestido = fundValorInvestido(fund);
+  const rentabilidade = fundRentabilidade(fund);
+  const resgatado = fundResgatado(fund);
+  const [editingValue, setEditingValue] = useState(false);
+  const [newValue, setNewValue] = useState(String(fund.valor_up_atual));
+  const [newRedDate, setNewRedDate] = useState(todayISO());
+  const [newRedValue, setNewRedValue] = useState("");
+  const sortedRedemptions = (fund.redemptions || []).slice().sort((a, b) => a.data < b.data ? 1 : -1);
+  return React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 600
+    }
+  }, fund.nome), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, fund.tipo, " · aplicado em ", new Date(fund.data_aplicacao + "T00:00:00").toLocaleDateString("pt-PT"))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4
+    }
+  }, React.createElement("button", {
+    onClick: () => onEdit(fund),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconPencil, {
+    size: 15
+  })), React.createElement("button", {
+    onClick: () => onRemove(fund.id),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    }
+  }, React.createElement(IconTrash, {
+    size: 15
+  })))), React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginTop: 14
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor investido"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(valorInvestido, fund.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor da UP atual"), editingValue ? React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      alignItems: "center"
+    }
+  }, React.createElement("input", {
+    type: "number",
+    step: "0.0001",
+    style: {
+      ...inputStyle,
+      padding: "4px 6px",
+      fontSize: 12,
+      width: 100
+    },
+    value: newValue,
+    onChange: e => setNewValue(e.target.value)
+  }), React.createElement("button", {
+    onClick: () => {
+      onUpdateUpValue(fund.id, newValue);
+      setEditingValue(false);
+    },
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 700
+    }
+  }, "OK")) : React.createElement("div", {
+    onClick: () => setEditingValue(true),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      cursor: "pointer",
+      textDecoration: "underline dotted"
+    },
+    title: "Clique para atualizar"
+  }, fmt(fund.valor_up_atual, fund.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor atual"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(valorAtual, fund.moeda))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Rentabilidade"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: rentabilidade >= 0 ? "var(--emerald)" : "var(--rust)"
+    }
+  }, (rentabilidade * 100).toFixed(1), "%"))), resgatado > 0 && React.createElement("div", {
+    style: {
+      marginTop: 12,
+      padding: "8px 12px",
+      borderRadius: 8,
+      background: "var(--paper)",
+      fontSize: 12
+    }
+  }, "Total resgatado: ", fmt(resgatado, fund.moeda)), React.createElement("button", {
+    onClick: () => onToggleExpand(fund.id),
+    style: {
+      marginTop: 10,
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, expanded ? "Ocultar resgates" : `Ver resgates (${(fund.redemptions || []).length})`), expanded && React.createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      marginBottom: 10,
+      alignItems: "flex-end"
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      marginBottom: 2
+    }
+  }, "Data"), React.createElement("input", {
+    type: "date",
+    style: {
+      ...inputStyle,
+      padding: "5px 7px",
+      fontSize: 12
+    },
+    value: newRedDate,
+    onChange: e => setNewRedDate(e.target.value)
+  })), React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      marginBottom: 2
+    }
+  }, "Valor"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      padding: "5px 7px",
+      fontSize: 12
+    },
+    value: newRedValue,
+    onChange: e => setNewRedValue(e.target.value)
+  })), React.createElement("button", {
+    onClick: () => {
+      if (!newRedDate || newRedValue === "") return;
+      onAddRedemption(fund.id, {
+        data: newRedDate,
+        valor: Number(newRedValue)
+      });
+      setNewRedValue("");
+    },
+    style: {
+      padding: "7px 12px",
+      borderRadius: 6,
+      border: "none",
+      background: "var(--gold)",
+      color: "#fff",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, "Registar")), sortedRedemptions.length === 0 ? React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Sem resgates registados ainda.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, sortedRedemptions.map(r => React.createElement("div", {
+    key: r.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 12,
+      padding: "6px 8px",
+      borderRadius: 6,
+      background: "var(--paper)"
+    }
+  }, React.createElement("span", null, new Date(r.data + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(r.valor, fund.moeda)), React.createElement("button", {
+    onClick: () => onRemoveRedemption(fund.id, r.id),
+    style: {
+      fontSize: 11,
+      color: "var(--rust)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "Remover"))))));
+}
+function FundsTab({
+  funds,
+  onAdd,
+  onEdit,
+  onRemove,
+  onUpdateUpValue,
+  onAddRedemption,
+  onRemoveRedemption
+}) {
+  const [expandedId, setExpandedId] = useState(null);
+  const totals = funds.reduce((acc, f) => {
+    acc.investido += fundValorInvestido(f);
+    acc.atual += fundValorAtual(f);
+    acc.resgatado += fundResgatado(f);
+    return acc;
+  }, {
+    investido: 0,
+    atual: 0,
+    resgatado: 0
+  });
+  return React.createElement("div", null, funds.length > 0 && React.createElement("div", {
+    className: "resp-grid-3col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 12,
+      marginBottom: 18
+    }
+  }, React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Total investido"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totals.investido))), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Valor atual"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totals.atual))), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Total resgatado"), React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: "var(--emerald)"
+    }
+  }, fmt(totals.resgatado)))), React.createElement(PrimaryButton, {
+    onClick: onAdd,
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(IconPlus, {
+    size: 15
+  }), " Adicionar fundo"), funds.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Ainda não tem fundos registados.")) : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, funds.map(f => React.createElement(FundCard, {
+    key: f.id,
+    fund: f,
+    expanded: expandedId === f.id,
+    onToggleExpand: id => setExpandedId(expandedId === id ? null : id),
+    onEdit: onEdit,
+    onRemove: onRemove,
+    onUpdateUpValue: onUpdateUpValue,
+    onAddRedemption: onAddRedemption,
+    onRemoveRedemption: onRemoveRedemption
+  }))));
+}
+function EventModal({
+  onClose,
+  onSave
+}) {
+  const [tipo, setTipo] = useState(EVENT_TYPES[0]);
+  const [data, setData] = useState(todayISO());
+  const [descricao, setDescricao] = useState("");
+  const [valorEsperado, setValorEsperado] = useState("");
+  const [ativoRelacionado, setAtivoRelacionado] = useState("");
+  const canSave = data && descricao.trim();
+  return React.createElement(Modal, {
+    title: "Novo evento",
+    onClose: onClose
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement(Field, {
+    label: "Tipo"
+  }, React.createElement("select", {
+    style: inputStyle,
+    value: tipo,
+    onChange: e => setTipo(e.target.value)
+  }, EVENT_TYPES.map(t => React.createElement("option", {
+    key: t
+  }, t)))), React.createElement(Field, {
+    label: "Data"
+  }, React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: data,
+    onChange: e => setData(e.target.value)
+  })), React.createElement(Field, {
+    label: "Descrição"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: descricao,
+    onChange: e => setDescricao(e.target.value),
+    placeholder: "ex: Dividendo esperado BAI"
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Valor esperado (opcional)",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: valorEsperado,
+    onChange: e => setValorEsperado(e.target.value)
+  })), React.createElement(Field, {
+    label: "Ativo relacionado (opcional)",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: ativoRelacionado,
+    onChange: e => setAtivoRelacionado(e.target.value)
+  }))), React.createElement(PrimaryButton, {
+    disabled: !canSave,
+    onClick: () => onSave({
+      tipo,
+      data,
+      descricao: descricao.trim(),
+      valor_esperado: valorEsperado === "" ? 0 : Number(valorEsperado),
+      ativo_relacionado: ativoRelacionado.trim()
+    })
+  }, "Adicionar evento")));
+}
+function CalendarTab({
+  bonds,
+  investmentEvents,
+  onAddEvent,
+  onCompleteEvent,
+  onRemoveEvent
+}) {
+  const allEvents = investmentUpcomingEvents(730, investmentEvents, bonds);
+  const next30 = investmentUpcomingEvents(30, investmentEvents, bonds).filter(e => e.status !== "concluído");
+  return React.createElement("div", null, React.createElement(PrimaryButton, {
+    onClick: onAddEvent,
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(IconPlus, {
+    size: 15
+  }), " Evento manual"), next30.length > 0 && React.createElement(Card, {
+    style: {
+      marginBottom: 18,
+      borderLeft: "4px solid var(--gold)"
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 12px"
+    }
+  }, "Alertas — próximos 30 dias"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, next30.map(e => React.createElement("div", {
+    key: e.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 13,
+      padding: "8px 10px",
+      borderRadius: 7,
+      background: "var(--paper)"
+    }
+  }, React.createElement("div", null, React.createElement("span", {
+    style: {
+      fontWeight: 600
+    }
+  }, e.tipo), " — ", e.descricao), React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, new Date(e.data + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(e.valorEsperado))))))), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 12px"
+    }
+  }, "Todos os eventos"), allEvents.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Sem eventos registados.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, allEvents.map(e => React.createElement("div", {
+    key: e.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 13,
+      padding: "8px 10px",
+      borderRadius: 7,
+      background: "var(--paper)"
+    }
+  }, React.createElement("div", null, React.createElement("span", {
+    style: {
+      fontWeight: 600
+    }
+  }, e.tipo), " — ", e.descricao, e.ativo && React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, " (", e.ativo, ")")), React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, new Date(e.data + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(e.valorEsperado)), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: e.status === "concluído" ? "var(--emerald)" : "var(--gold)"
+    }
+  }, e.status), e.manual && e.status !== "concluído" && React.createElement("button", {
+    onClick: () => onCompleteEvent(e.id),
+    style: {
+      fontSize: 11,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "Concluir"), e.manual && React.createElement("button", {
+    onClick: () => onRemoveEvent(e.id),
+    style: {
+      fontSize: 11,
+      color: "var(--rust)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600
+    }
+  }, "Remover")))))));
+}
+function IndicatorsTab({
+  bonds,
+  equities,
+  funds,
+  taxaLivreRisco,
+  taxaInflacao,
+  onUpdateRates,
+  taxaImpostoCupoes,
+  taxaImpostoDividendos,
+  taxaImpostoMaisValias,
+  onUpdateFiscalRates
+}) {
+  const ind = portfolioIndicators(bonds, equities, funds, taxaLivreRisco, taxaInflacao);
+  const [editingRates, setEditingRates] = useState(false);
+  const [newRisco, setNewRisco] = useState(String((taxaLivreRisco * 100).toFixed(0)));
+  const [newInflacao, setNewInflacao] = useState(String((taxaInflacao * 100).toFixed(0)));
+  const [newImpCupoes, setNewImpCupoes] = useState(String((taxaImpostoCupoes * 100).toFixed(0)));
+  const [newImpDiv, setNewImpDiv] = useState(String((taxaImpostoDividendos * 100).toFixed(0)));
+  const [newImpMV, setNewImpMV] = useState(String((taxaImpostoMaisValias * 100).toFixed(0)));
+  const hasData = bonds.length > 0 || equities.length > 0 || funds.length > 0;
+  const cards = [{
+    label: "ROI (Retorno sobre o Investimento)",
+    value: fmtPercent(ind.roi),
+    desc: "Retorno simples sobre o capital investido."
+  }, {
+    label: "Rentabilidade Anualizada",
+    value: fmtPercent(ind.rentAnualizada),
+    desc: "ROI anualizado com base no tempo decorrido."
+  }, {
+    label: "TIR da Carteira",
+    value: ind.tir !== null ? fmtPercent(ind.tir) : "Dados insuficientes",
+    desc: "Taxa Interna de Retorno considerando o calendário real de fluxos de caixa."
+  }, {
+    label: "Duration Ponderada",
+    value: ind.durationPonderada ? ind.durationPonderada.toFixed(2) + " anos" : "—",
+    desc: "Sensibilidade média da carteira de obrigações a variações de taxa de juro."
+  }, {
+    label: "Sharpe Ratio",
+    value: ind.sharpe !== null ? ind.sharpe.toFixed(2) : "Dados insuficientes",
+    desc: `Retorno ajustado ao risco (taxa livre de risco: ${fmtPercent(taxaLivreRisco)}).`
+  }, {
+    label: "VaR 95%",
+    value: ind.var95 !== null ? fmtPercent(ind.var95) : "Dados insuficientes",
+    desc: "Perda máxima esperada com 95% de confiança (histórico simples)."
+  }, {
+    label: "Rentabilidade Real (ajustada à inflação)",
+    value: fmtPercent(ind.retornoReal),
+    desc: `Fórmula de Fisher — inflação considerada: ${fmtPercent(taxaInflacao)}.`
+  }];
+  return React.createElement("div", null, !hasData ? React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, "Adicione obrigações, ações ou fundos para ver os indicadores da sua carteira.")) : React.createElement(React.Fragment, null, React.createElement(Card, {
+    style: {
+      marginBottom: 16
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      flexWrap: "wrap",
+      gap: 12
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, "Parâmetros de cálculo"), !editingRates && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginTop: 2
+    }
+  }, "Taxa livre de risco: ", fmtPercent(taxaLivreRisco), " · Inflação: ", fmtPercent(taxaInflacao), React.createElement("br", null), "Impostos — Cupões: ", fmtPercent(taxaImpostoCupoes), " · Dividendos: ", fmtPercent(taxaImpostoDividendos), " · Mais-valias: ", fmtPercent(taxaImpostoMaisValias))), editingRates ? React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      alignItems: "flex-end"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)"
+    }
+  }, "Taxa livre de risco (%)"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      width: 80,
+      padding: "5px 7px"
+    },
+    value: newRisco,
+    onChange: e => setNewRisco(e.target.value)
+  })), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)"
+    }
+  }, "Inflação (%)"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      width: 80,
+      padding: "5px 7px"
+    },
+    value: newInflacao,
+    onChange: e => setNewInflacao(e.target.value)
+  }))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)"
+    }
+  }, "Imp. Cupões (%)"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      width: 80,
+      padding: "5px 7px"
+    },
+    value: newImpCupoes,
+    onChange: e => setNewImpCupoes(e.target.value)
+  })), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)"
+    }
+  }, "Imp. Dividendos (%)"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      width: 80,
+      padding: "5px 7px"
+    },
+    value: newImpDiv,
+    onChange: e => setNewImpDiv(e.target.value)
+  })), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)"
+    }
+  }, "Imp. Mais-valias (%)"), React.createElement("input", {
+    type: "number",
+    style: {
+      ...inputStyle,
+      width: 80,
+      padding: "5px 7px"
+    },
+    value: newImpMV,
+    onChange: e => setNewImpMV(e.target.value)
+  }))), React.createElement("button", {
+    onClick: () => {
+      onUpdateRates(Number(newRisco) / 100, Number(newInflacao) / 100);
+      onUpdateFiscalRates(Number(newImpCupoes) / 100, Number(newImpDiv) / 100, Number(newImpMV) / 100);
+      setEditingRates(false);
+    },
+    style: {
+      fontSize: 12,
+      color: "var(--gold)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 700
+    }
+  }, "Guardar")) : React.createElement(GhostButton, {
+    onClick: () => setEditingRates(true)
+  }, "Editar"))), React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 14
+    }
+  }, cards.map(c => React.createElement(Card, {
+    key: c.label
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginBottom: 4
+    }
+  }, c.label), React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: "var(--ink)"
+    }
+  }, c.value), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 4
+    }
+  }, c.desc))))));
+}
+function InvestmentsTab({
+  bonds,
+  onAddBond,
+  onEditBond,
+  onRemoveBond,
+  onMarkCouponReceived,
+  onUpdateBondCurrentValue,
+  equities,
+  onAddEquity,
+  onEditEquity,
+  onRemoveEquity,
+  onUpdateEquityPrice,
+  onAddEquityDividend,
+  onEditEquityDividend,
+  onRemoveEquityDividend,
+  funds,
+  onAddFund,
+  onEditFund,
+  onRemoveFund,
+  onUpdateFundUpValue,
+  onAddFundRedemption,
+  onRemoveFundRedemption,
+  investmentEvents,
+  onAddEvent,
+  onCompleteEvent,
+  onRemoveEvent,
+  taxaLivreRisco,
+  taxaInflacao,
+  onUpdateRates,
+  taxaImpostoCupoes,
+  taxaImpostoDividendos,
+  taxaImpostoMaisValias,
+  onUpdateFiscalRates
+}) {
+  const [subTab, setSubTab] = useState("bonds");
+  const pills = [{
+    id: "bonds",
+    label: "Obrigações"
+  }, {
+    id: "equities",
+    label: "Ações"
+  }, {
+    id: "funds",
+    label: "Fundos"
+  }, {
+    id: "calendar",
+    label: "Calendário"
+  }, {
+    id: "income",
+    label: "Rendimentos"
+  }, {
+    id: "performance",
+    label: "Performance"
+  }];
+  return React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 18,
+      flexWrap: "wrap"
+    }
+  }, pills.map(p => React.createElement("button", {
+    key: p.id,
+    onClick: () => setSubTab(p.id),
+    style: {
+      padding: "6px 14px",
+      borderRadius: 20,
+      border: `1px solid ${subTab === p.id ? "var(--gold)" : "var(--line)"}`,
+      background: subTab === p.id ? "#F7EFE0" : "#fff",
+      color: subTab === p.id ? "var(--gold)" : "var(--slate)",
+      fontSize: 12.5,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, p.label))), subTab === "bonds" && React.createElement(BondsTab, {
+    bonds: bonds,
+    onAdd: onAddBond,
+    onEdit: onEditBond,
+    onRemove: onRemoveBond,
+    onMarkCouponReceived: onMarkCouponReceived,
+    onUpdateCurrentValue: onUpdateBondCurrentValue
+  }), subTab === "equities" && React.createElement(EquitiesTab, {
+    equities: equities,
+    onAdd: onAddEquity,
+    onEdit: onEditEquity,
+    onRemove: onRemoveEquity,
+    onUpdatePrice: onUpdateEquityPrice,
+    onAddDividend: onAddEquityDividend,
+    onEditDividend: onEditEquityDividend,
+    onRemoveDividend: onRemoveEquityDividend
+  }), subTab === "funds" && React.createElement(FundsTab, {
+    funds: funds,
+    onAdd: onAddFund,
+    onEdit: onEditFund,
+    onRemove: onRemoveFund,
+    onUpdateUpValue: onUpdateFundUpValue,
+    onAddRedemption: onAddFundRedemption,
+    onRemoveRedemption: onRemoveFundRedemption
+  }), subTab === "calendar" && React.createElement(CalendarTab, {
+    bonds: bonds,
+    investmentEvents: investmentEvents,
+    onAddEvent: onAddEvent,
+    onCompleteEvent: onCompleteEvent,
+    onRemoveEvent: onRemoveEvent
+  }), subTab === "performance" && React.createElement(IndicatorsTab, {
+    bonds: bonds,
+    equities: equities,
+    funds: funds,
+    taxaLivreRisco: taxaLivreRisco,
+    taxaInflacao: taxaInflacao,
+    onUpdateRates: onUpdateRates,
+    taxaImpostoCupoes: taxaImpostoCupoes,
+    taxaImpostoDividendos: taxaImpostoDividendos,
+    taxaImpostoMaisValias: taxaImpostoMaisValias,
+    onUpdateFiscalRates: onUpdateFiscalRates
+  }), subTab !== "bonds" && subTab !== "equities" && subTab !== "funds" && subTab !== "calendar" && subTab !== "performance" && React.createElement(Card, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 14,
+      margin: 0
+    }
+  }, {
+    income: "Rendimentos"
+  }[subTab], " — em breve, numa próxima etapa.")));
 }
 function ExportsTab({
   onExportTransactionsCSV,
@@ -8056,7 +10671,12 @@ function buildAnnualReportHtml(data) {
   const {
     year,
     transactions,
-    accounts
+    accounts,
+    bonds,
+    equities,
+    taxaImpostoCupoes,
+    taxaImpostoDividendos,
+    taxaImpostoMaisValias
   } = data;
   const yearTx = transactions.filter(t => t.date.startsWith(year));
   const totalReceitas = yearTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
@@ -8088,6 +10708,34 @@ function buildAnnualReportHtml(data) {
     const total = accountTotal(a, transactions, yearEndDate < todayISO() ? yearEndDate : undefined);
     return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${a.bank.replace(/—.*/, "").trim()}${a.nickname ? " — " + a.nickname : ""}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(total, a.currency)}</td></tr>`;
   }).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem contas cadastradas.</td></tr>`;
+  const yearBonds = bonds || [];
+  const yearEquities = equities || [];
+  const cuponsAno = yearBonds.reduce((sum, b) => sum + (b.coupons || []).filter(c => c.recebido && c.data.startsWith(year)).reduce((s, c) => s + Number(c.valor), 0), 0);
+  const dividendosAno = yearEquities.reduce((sum, e) => sum + (e.dividends || []).filter(d => d.data.startsWith(year)).reduce((s, d) => s + Number(d.valor), 0), 0);
+  const maisValiasNaoRealizadas = yearEquities.reduce((sum, e) => {
+    const g = equityGanhoCapital(e);
+    return sum + (g > 0 ? g : 0);
+  }, 0);
+  const taxaCupoes = taxaImpostoCupoes !== undefined ? taxaImpostoCupoes : 0.1;
+  const taxaDiv = taxaImpostoDividendos !== undefined ? taxaImpostoDividendos : 0.1;
+  const taxaMV = taxaImpostoMaisValias !== undefined ? taxaImpostoMaisValias : 0.1;
+  const impCupoes = cuponsAno * taxaCupoes;
+  const impDiv = dividendosAno * taxaDiv;
+  const impMVPotencial = maisValiasNaoRealizadas * taxaMV;
+  const hasInvestments = yearBonds.length > 0 || yearEquities.length > 0;
+  const fiscalSectionHtml = hasInvestments ? `
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Resumo Fiscal de Investimentos (estimativa)</h2>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:8px; font-size:13px;">
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Tipo</th><th style="padding:6px 8px; text-align:right;">Valor recebido em ${year}</th><th style="padding:6px 8px; text-align:right;">Taxa</th><th style="padding:6px 8px; text-align:right;">Imposto estimado</th></tr>
+        <tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">Cupões de obrigações</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(cuponsAno)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${(taxaCupoes * 100).toFixed(0)}%</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(impCupoes)}</td></tr>
+        <tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">Dividendos de ações</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(dividendosAno)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${(taxaDiv * 100).toFixed(0)}%</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(impDiv)}</td></tr>
+        <tr><td style="padding:6px 0; font-weight:bold;">Total (cupões + dividendos)</td><td></td><td></td><td style="padding:6px 0; text-align:right; font-weight:bold;">${fmt(impCupoes + impDiv)}</td></tr>
+      </table>
+      <p style="font-size:11px; color:#68707C; margin:0 0 22px;">
+        Mais-valias não realizadas em ações: ${fmt(maisValiasNaoRealizadas)} (imposto potencial de ${fmt(impMVPotencial)} a ${(taxaMV * 100).toFixed(0)}%, aplicável apenas no momento da venda — não incluído no total acima).
+        Taxas editáveis em Investimentos → Performance.
+      </p>
+    ` : "";
   return `
     <div style="font-family: 'Segoe UI', Calibri, Arial, sans-serif; color:#1B1F27; max-width:760px; margin:0 auto; position:relative;">
       <div style="position:relative; z-index:1;">
@@ -8120,6 +10768,7 @@ function buildAnnualReportHtml(data) {
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
         ${accountRows}
       </table>
+      ${fiscalSectionHtml}
       <p style="font-size:11px; color:#68707C; margin-top:26px; border-top:1px solid #E3E5E9; padding-top:10px;">
         Este relatório é um resumo informativo preparado a partir dos dados registados na app. Para efeitos fiscais (ex: declaração de IRT),
         confirme sempre os valores com os extratos oficiais dos bancos e outros documentos de suporte. Juros bancários não estão incluídos
@@ -8141,7 +10790,12 @@ function ReportTab({
   goals,
   totalReceitas,
   totalDespesas,
-  balancesByCurrency
+  balancesByCurrency,
+  bonds,
+  equities,
+  taxaImpostoCupoes,
+  taxaImpostoDividendos,
+  taxaImpostoMaisValias
 }) {
   const [reportMode, setReportMode] = useState("mensal");
   const [year, setYear] = useState(String(new Date().getFullYear()));
@@ -8166,8 +10820,13 @@ function ReportTab({
   }) : buildAnnualReportHtml({
     year,
     transactions,
-    accounts
-  }), [reportMode, year, month, accounts, transactions, spentByCategory, categories, recurringExpenses, debts, debtPayments, goals, totalReceitas, totalDespesas, balancesByCurrency]);
+    accounts,
+    bonds,
+    equities,
+    taxaImpostoCupoes,
+    taxaImpostoDividendos,
+    taxaImpostoMaisValias
+  }), [reportMode, year, month, accounts, transactions, spentByCategory, categories, recurringExpenses, debts, debtPayments, goals, totalReceitas, totalDespesas, balancesByCurrency, bonds, equities, taxaImpostoCupoes, taxaImpostoDividendos, taxaImpostoMaisValias]);
   return React.createElement("div", null, React.createElement("div", {
     style: {
       display: "flex",
