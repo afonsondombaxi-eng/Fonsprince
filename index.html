@@ -41,6 +41,10 @@
   @media (hover: hover) {
     .clickable-card:hover { box-shadow: 0 4px 14px rgba(16,24,40,0.09); border-color: var(--gold); transform: translateY(-1px); }
   }
+  @keyframes modal-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
   @media (max-width: 768px) {
     #root { padding: 0; align-items: stretch; justify-content: stretch; }
     .resp-grid-2col, .resp-grid-3col { grid-template-columns: 1fr !important; }
@@ -52,6 +56,16 @@
     .resp-table-cards td::before { content: attr(data-label); font-size: 10.5px; color: var(--slate); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; text-align: left; flex-shrink: 0; }
     .resp-table-cards td[data-label=""]::before { content: none; }
     .resp-table-cards td[data-label=""] { justify-content: flex-end; padding-top: 8px !important; margin-top: 4px; border-top: 1px dashed var(--line) !important; }
+    .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+    .modal-panel {
+      border-radius: 16px 16px 0 0 !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      max-height: 88vh !important;
+      padding: 12px 20px calc(20px + env(safe-area-inset-bottom)) !important;
+      animation: modal-slide-up 0.22s ease-out;
+    }
+    .modal-handle { display: block !important; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -2208,6 +2222,7 @@ function Modal({
   wide
 }) {
   return React.createElement("div", {
+    className: "modal-overlay",
     style: {
       position: "fixed",
       inset: 0,
@@ -2220,6 +2235,7 @@ function Modal({
     },
     onClick: onClose
   }, React.createElement("div", {
+    className: "modal-panel",
     onClick: e => e.stopPropagation(),
     style: {
       background: "var(--card)",
@@ -2232,6 +2248,16 @@ function Modal({
       boxShadow: "0 20px 60px rgba(16,32,60,0.25)"
     }
   }, React.createElement("div", {
+    className: "modal-handle",
+    style: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      background: "var(--line)",
+      margin: "0 auto 14px",
+      display: "none"
+    }
+  }), React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
