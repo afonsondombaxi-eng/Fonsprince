@@ -3231,7 +3231,6 @@ function FinanceApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => loadKey("sidebar-collapsed", true));
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth <= 768 : false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
-  const [moreSearchQuery, setMoreSearchQuery] = useState("");
   const [showFabMenu, setShowFabMenu] = useState(false);
   useEffect(() => {
     function onResize() {
@@ -4829,10 +4828,7 @@ function FinanceApp() {
       fontWeight: 600
     }
   }, t.label))), React.createElement("button", {
-    onClick: () => {
-      setShowMoreSheet(true);
-      setMoreSearchQuery("");
-    },
+    onClick: () => setShowMoreSheet(true),
     style: {
       flex: 1,
       background: "none",
@@ -4949,281 +4945,243 @@ function FinanceApp() {
     }
   }, React.createElement(IconPlus, {
     size: 26
-  })), showMoreSheet && (() => {
-    const allGroups = [{
-      group: "💰 Finanças",
-      items: [{
-        id: "budget",
-        label: "Orçamento",
-        icon: IconWallet
-      }]
+  })), showMoreSheet && React.createElement(Modal, {
+    title: "Mais opções",
+    onClose: () => setShowMoreSheet(false)
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 4
+    }
+  }, [{
+    group: "💰 Finanças",
+    items: [{
+      id: "budget",
+      label: "Orçamento",
+      icon: IconWallet
+    }]
+  }, {
+    group: "🎯 Planeamento",
+    items: [{
+      id: "goals",
+      label: "Metas",
+      icon: IconTarget
     }, {
-      group: "🎯 Planeamento",
-      items: [{
-        id: "goals",
-        label: "Metas",
-        icon: IconTarget
-      }, {
-        id: "planning",
-        label: "Planeamento",
-        icon: IconCompass
-      }]
+      id: "planning",
+      label: "Planeamento",
+      icon: IconCompass
+    }]
+  }, {
+    group: "🏦 Financiamento",
+    items: [{
+      id: "cards",
+      label: "Cartões",
+      icon: IconBanknote
+    }]
+  }, {
+    group: "💱 Tesouraria",
+    items: [{
+      id: "exchange",
+      label: "Câmbio",
+      icon: IconRepeat
     }, {
-      group: "🏦 Financiamento",
-      items: [{
-        id: "cards",
-        label: "Cartões",
-        icon: IconBanknote
-      }]
+      id: "forecast",
+      label: "Fluxo de Caixa",
+      icon: IconTrendingUp
+    }]
+  }, {
+    group: "📈 Investimentos",
+    items: [{
+      id: "investments",
+      label: "Investimentos",
+      icon: IconPieChart
+    }]
+  }, {
+    group: "📊 Relatórios",
+    items: [{
+      id: "report",
+      label: "Financeiros",
+      icon: IconFileText
     }, {
-      group: "💱 Tesouraria",
-      items: [{
-        id: "exchange",
-        label: "Câmbio",
-        icon: IconRepeat
-      }, {
-        id: "forecast",
-        label: "Fluxo de Caixa",
-        icon: IconTrendingUp
-      }]
+      id: "kpis",
+      label: "KPI's",
+      icon: IconActivity
     }, {
-      group: "📈 Investimentos",
-      items: [{
-        id: "investments",
-        label: "Investimentos",
-        icon: IconPieChart
-      }]
-    }, {
-      group: "📊 Relatórios",
-      items: [{
-        id: "report",
-        label: "Financeiros",
-        icon: IconFileText
-      }, {
-        id: "kpis",
-        label: "KPI's",
-        icon: IconActivity
-      }, {
-        id: "exports",
-        label: "Exportações",
-        icon: IconDownload
-      }]
-    }, {
-      group: "🛠 Ferramentas",
-      items: [{
-        id: "__categories",
-        label: "Categorias",
-        icon: IconSettings,
-        onClick: () => {
-          setShowCategoryManager(true);
-          setShowMoreSheet(false);
-        }
-      }, {
-        id: "__shortcuts",
-        label: "Atalhos",
-        icon: IconZap,
-        onClick: () => {
-          setShowShortcutsModal(true);
-          setShowMoreSheet(false);
-        }
-      }]
-    }, {
-      group: "⚙ Definições",
-      items: [{
-        id: "settings",
-        label: "Definições",
-        icon: IconSettings
-      }]
-    }];
-    const q = moreSearchQuery.trim().toLowerCase();
-    const filteredGroups = q ? allGroups.map(s => ({
-      ...s,
-      items: s.items.filter(t => t.label.toLowerCase().includes(q))
-    })).filter(s => s.items.length > 0) : allGroups;
-    return React.createElement(Modal, {
-      title: "Mais opções",
-      onClose: () => setShowMoreSheet(false)
-    }, React.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 4
-      }
-    }, React.createElement("div", {
-      style: {
-        position: "relative",
-        marginBottom: 10
-      }
-    }, React.createElement(IconSearch, {
-      size: 15,
-      style: {
-        position: "absolute",
-        left: 12,
-        top: "50%",
-        transform: "translateY(-50%)",
-        color: "var(--slate)"
-      }
-    }), React.createElement("input", {
-      autoFocus: true,
-      value: moreSearchQuery,
-      onChange: e => setMoreSearchQuery(e.target.value),
-      placeholder: "Procurar...",
-      style: {
-        ...inputStyle,
-        paddingLeft: 36
-      }
-    })), filteredGroups.length === 0 && React.createElement("p", {
-      style: {
-        color: "var(--slate)",
-        fontSize: 13.5,
-        textAlign: "center",
-        padding: "12px 0"
-      }
-    }, "Sem resultados para \"", moreSearchQuery, "\"."), filteredGroups.map(section => React.createElement("div", {
-      key: section.group,
-      style: {
-        marginBottom: 10
-      }
-    }, React.createElement("div", {
-      style: {
-        fontSize: 10.5,
-        color: "var(--slate)",
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: 0.5,
-        padding: "6px 2px 6px"
-      }
-    }, section.group), React.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 6
-      }
-    }, section.items.map(t => React.createElement("button", {
-      key: t.id,
-      onClick: t.onClick || (() => {
-        setTab(t.id);
-        setShowMoreSheet(false);
-      }),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "12px 14px",
-        borderRadius: 8,
-        border: "1px solid var(--line)",
-        background: tab === t.id ? "#EEF3FB" : "#fff",
-        color: "var(--ink)",
-        fontFamily: "Inter, sans-serif",
-        fontSize: 14,
-        fontWeight: 600,
-        cursor: "pointer",
-        textAlign: "left"
-      }
-    }, React.createElement(t.icon, {
-      size: 17,
-      style: {
-        color: tab === t.id ? "var(--gold)" : "var(--slate)"
-      }
-    }), t.label))))), !q && React.createElement("div", {
-      style: {
-        borderTop: "1px solid var(--line)",
-        marginTop: 2,
-        paddingTop: 12,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8
-      }
-    }, React.createElement("div", {
-      style: {
-        fontSize: 10.5,
-        color: "var(--slate)",
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: 0.5
-      }
-    }, "Dados"), React.createElement("button", {
+      id: "exports",
+      label: "Exportações",
+      icon: IconDownload
+    }]
+  }, {
+    group: "🛠 Ferramentas",
+    items: [{
+      id: "__categories",
+      label: "Categorias",
+      icon: IconSettings,
       onClick: () => {
-        exportAllData();
+        setShowCategoryManager(true);
         setShowMoreSheet(false);
-      },
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "12px 14px",
-        borderRadius: 8,
-        border: "1px solid var(--line)",
-        background: "#fff",
-        color: "var(--ink)",
-        fontFamily: "Inter, sans-serif",
-        fontSize: 14,
-        fontWeight: 600,
-        cursor: "pointer",
-        textAlign: "left"
       }
-    }, React.createElement(IconDownload, {
-      size: 17,
-      style: {
-        color: "var(--slate)"
-      }
-    }), " Exportar dados"), React.createElement("button", {
+    }, {
+      id: "__shortcuts",
+      label: "Atalhos",
+      icon: IconZap,
       onClick: () => {
-        exportTransactionsCSV();
+        setShowShortcutsModal(true);
         setShowMoreSheet(false);
-      },
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "12px 14px",
-        borderRadius: 8,
-        border: "1px solid var(--line)",
-        background: "#fff",
-        color: "var(--ink)",
-        fontFamily: "Inter, sans-serif",
-        fontSize: 14,
-        fontWeight: 600,
-        cursor: "pointer",
-        textAlign: "left"
       }
-    }, React.createElement(IconDownload, {
-      size: 17,
-      style: {
-        color: "var(--slate)"
-      }
-    }), " Exportar movimentos (CSV)"), React.createElement("button", {
-      onClick: () => {
-        setShowMoreSheet(false);
-        fileInputRef.current && fileInputRef.current.click();
-      },
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "12px 14px",
-        borderRadius: 8,
-        border: "1px solid var(--line)",
-        background: "#fff",
-        color: "var(--ink)",
-        fontFamily: "Inter, sans-serif",
-        fontSize: 14,
-        fontWeight: 600,
-        cursor: "pointer",
-        textAlign: "left"
-      }
-    }, React.createElement(IconUpload, {
-      size: 17,
-      style: {
-        color: "var(--slate)"
-      }
-    }), " Importar dados"), importError && React.createElement("div", {
-      style: {
-        fontSize: 11.5,
-        color: "var(--rust)"
-      }
-    }, importError))));
-  })(), showAccountModal && React.createElement(AccountModal, {
+    }]
+  }, {
+    group: "⚙ Definições",
+    items: [{
+      id: "settings",
+      label: "Definições",
+      icon: IconSettings
+    }]
+  }].map(section => React.createElement("div", {
+    key: section.group,
+    style: {
+      marginBottom: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      padding: "6px 2px 6px"
+    }
+  }, section.group), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, section.items.map(t => React.createElement("button", {
+    key: t.id,
+    onClick: t.onClick || (() => {
+      setTab(t.id);
+      setShowMoreSheet(false);
+    }),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: tab === t.id ? "#EEF3FB" : "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(t.icon, {
+    size: 17,
+    style: {
+      color: tab === t.id ? "var(--gold)" : "var(--slate)"
+    }
+  }), t.label))))), React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      marginTop: 2,
+      paddingTop: 12,
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5
+    }
+  }, "Dados"), React.createElement("button", {
+    onClick: () => {
+      exportAllData();
+      setShowMoreSheet(false);
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconDownload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Exportar dados"), React.createElement("button", {
+    onClick: () => {
+      exportTransactionsCSV();
+      setShowMoreSheet(false);
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconDownload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Exportar movimentos (CSV)"), React.createElement("button", {
+    onClick: () => {
+      setShowMoreSheet(false);
+      fileInputRef.current && fileInputRef.current.click();
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "#fff",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconUpload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Importar dados"), importError && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--rust)"
+    }
+  }, importError)))), showAccountModal && React.createElement(AccountModal, {
     initial: editingAccount,
     onClose: () => {
       setShowAccountModal(false);
