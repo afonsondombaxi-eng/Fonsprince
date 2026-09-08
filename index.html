@@ -2246,6 +2246,26 @@ function Modal({
   children,
   wide
 }) {
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const original = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width
+    };
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.overflow = original.overflow;
+      document.body.style.position = original.position;
+      document.body.style.top = original.top;
+      document.body.style.width = original.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
   return React.createElement("div", {
     className: "modal-overlay",
     style: {
@@ -2270,6 +2290,8 @@ function Modal({
       maxWidth: wide ? 620 : 440,
       maxHeight: "88vh",
       overflowY: "auto",
+      overscrollBehavior: "contain",
+      WebkitOverflowScrolling: "touch",
       boxShadow: "0 20px 60px rgba(16,32,60,0.25)"
     }
   }, React.createElement("div", {
@@ -2402,6 +2424,26 @@ function ConfirmDialog({
   onCancel,
   onConfirm
 }) {
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const original = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width
+    };
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.overflow = original.overflow;
+      document.body.style.position = original.position;
+      document.body.style.top = original.top;
+      document.body.style.width = original.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
   return React.createElement("div", {
     style: {
       position: "fixed",
@@ -3660,6 +3702,11 @@ function FinanceApp() {
         date: payment.date,
         description: `Fatura ${card.bank.replace(/—.*/, "").trim()} — ${monthShortLabel(cycleMonth)}`
       });
+      setCreditCards(cs => cs.map(c => c.id === card.id ? {
+        ...c,
+        lastPaymentAccountId: payment.accountId,
+        lastPaymentSubBalanceId: payment.subBalanceId
+      } : c));
     }
   }
   function addBond(bond) {
@@ -4998,118 +5045,41 @@ function FinanceApp() {
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 4
+      gap: 18
     }
-  }, [{
-    group: "💰 Finanças",
-    items: [{
-      id: "budget",
-      label: "Orçamento",
-      icon: IconWallet
-    }]
-  }, {
-    group: "🎯 Planeamento",
-    items: [{
-      id: "goals",
-      label: "Metas",
-      icon: IconTarget
-    }, {
-      id: "planning",
-      label: "Planeamento",
-      icon: IconCompass
-    }]
-  }, {
-    group: "🏦 Financiamento",
-    items: [{
-      id: "cards",
-      label: "Cartões",
-      icon: IconBanknote
-    }]
-  }, {
-    group: "💱 Tesouraria",
-    items: [{
-      id: "exchange",
-      label: "Câmbio",
-      icon: IconRepeat
-    }, {
-      id: "forecast",
-      label: "Fluxo de Caixa",
-      icon: IconTrendingUp
-    }]
-  }, {
-    group: "📈 Investimentos",
-    items: [{
-      id: "investments",
-      label: "Investimentos",
-      icon: IconPieChart
-    }]
-  }, {
-    group: "📊 Relatórios",
-    items: [{
-      id: "report",
-      label: "Financeiros",
-      icon: IconFileText
-    }, {
-      id: "kpis",
-      label: "KPI's",
-      icon: IconActivity
-    }, {
-      id: "exports",
-      label: "Exportações",
-      icon: IconDownload
-    }]
-  }, {
-    group: "🛠 Ferramentas",
-    items: [{
-      id: "__categories",
-      label: "Categorias",
-      icon: IconSettings,
-      onClick: () => {
-        setShowCategoryManager(true);
-        setShowMoreSheet(false);
-      }
-    }, {
-      id: "__shortcuts",
-      label: "Atalhos",
-      icon: IconZap,
-      onClick: () => {
-        setShowShortcutsModal(true);
-        setShowMoreSheet(false);
-      }
-    }]
-  }, {
-    group: "⚙ Definições",
-    items: [{
-      id: "settings",
-      label: "Definições",
-      icon: IconSettings
-    }]
-  }].map(section => React.createElement("div", {
-    key: section.group,
-    style: {
-      marginBottom: 10
-    }
-  }, React.createElement("div", {
+  }, React.createElement("div", null, React.createElement("div", {
     style: {
       fontSize: 10.5,
       color: "var(--slate)",
       fontWeight: 700,
       textTransform: "uppercase",
       letterSpacing: 0.5,
-      padding: "6px 2px 6px"
+      marginBottom: 8
     }
-  }, section.group), React.createElement("div", {
+  }, "Principal"), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: 6
     }
-  }, section.items.map(t => React.createElement("button", {
+  }, [{
+    id: "budget",
+    label: "Orçamento",
+    icon: IconWallet
+  }, {
+    id: "cards",
+    label: "Cartões",
+    icon: IconBanknote
+  }, {
+    id: "investments",
+    label: "Investimentos",
+    icon: IconPieChart
+  }].map(t => React.createElement("button", {
     key: t.id,
-    onClick: t.onClick || (() => {
+    onClick: () => {
       setTab(t.id);
       setShowMoreSheet(false);
-    }),
+    },
     style: {
       display: "flex",
       alignItems: "center",
@@ -5130,24 +5100,116 @@ function FinanceApp() {
     style: {
       color: tab === t.id ? "var(--gold)" : "var(--slate)"
     }
-  }), t.label))))), React.createElement("div", {
-    style: {
-      borderTop: "1px solid var(--line)",
-      marginTop: 2,
-      paddingTop: 12,
-      display: "flex",
-      flexDirection: "column",
-      gap: 8
-    }
-  }, React.createElement("div", {
+  }), t.label)))), React.createElement("div", null, React.createElement("div", {
     style: {
       fontSize: 10.5,
       color: "var(--slate)",
       fontWeight: 700,
       textTransform: "uppercase",
-      letterSpacing: 0.5
+      letterSpacing: 0.5,
+      marginBottom: 8
     }
-  }, "Dados"), React.createElement("button", {
+  }, "Atalhos"), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 8
+    }
+  }, [{
+    id: "goals",
+    label: "Metas",
+    icon: IconTarget
+  }, {
+    id: "planning",
+    label: "Planeamento",
+    icon: IconCompass
+  }, {
+    id: "exchange",
+    label: "Câmbio",
+    icon: IconRepeat
+  }, {
+    id: "forecast",
+    label: "Fluxo Caixa",
+    icon: IconTrendingUp
+  }, {
+    id: "report",
+    label: "Relatório",
+    icon: IconFileText
+  }, {
+    id: "kpis",
+    label: "KPI's",
+    icon: IconActivity
+  }, {
+    id: "exports",
+    label: "Exportações",
+    icon: IconDownload
+  }, {
+    id: "__categories",
+    label: "Categorias",
+    icon: IconSettings,
+    onClick: () => {
+      setShowCategoryManager(true);
+      setShowMoreSheet(false);
+    }
+  }, {
+    id: "__shortcuts",
+    label: "Atalhos",
+    icon: IconZap,
+    onClick: () => {
+      setShowShortcutsModal(true);
+      setShowMoreSheet(false);
+    }
+  }, {
+    id: "settings",
+    label: "Definições",
+    icon: IconSettings
+  }].map(t => React.createElement("button", {
+    key: t.id,
+    onClick: t.onClick || (() => {
+      setTab(t.id);
+      setShowMoreSheet(false);
+    }),
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      padding: "12px 4px",
+      borderRadius: 12,
+      border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
+      background: tab === t.id ? "#FBF2E4" : "#fff",
+      cursor: "pointer"
+    }
+  }, React.createElement(t.icon, {
+    size: 20,
+    style: {
+      color: tab === t.id ? "var(--gold)" : "var(--slate)"
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 10.5,
+      fontWeight: 600,
+      color: "var(--ink)",
+      textAlign: "center",
+      lineHeight: 1.2
+    }
+  }, t.label))))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 8
+    }
+  }, "Dados"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, React.createElement("button", {
     onClick: () => {
       exportAllData();
       setShowMoreSheet(false);
@@ -5227,7 +5289,7 @@ function FinanceApp() {
       fontSize: 11.5,
       color: "var(--rust)"
     }
-  }, importError)))), showAccountModal && React.createElement(AccountModal, {
+  }, importError))))), showAccountModal && React.createElement(AccountModal, {
     initial: editingAccount,
     onClose: () => {
       setShowAccountModal(false);
@@ -7789,6 +7851,27 @@ function TransactionsTab({
     })))));
   })))));
 }
+function suggestCategoryFromHistory(description, transactions, kind) {
+  const desc = description.trim().toLowerCase();
+  if (!desc) return null;
+  const relevant = transactions.filter(t => t.kind === kind && t.description && t.description.trim());
+  if (relevant.length === 0) return null;
+  const exactMatches = relevant.filter(t => t.description.trim().toLowerCase() === desc);
+  let pool = exactMatches;
+  if (pool.length === 0 && desc.length >= 3) {
+    pool = relevant.filter(t => {
+      const td = t.description.trim().toLowerCase();
+      return td.includes(desc) || desc.includes(td);
+    });
+  }
+  if (pool.length === 0) return null;
+  const freq = {};
+  pool.forEach(t => {
+    freq[t.category] = (freq[t.category] || 0) + 1;
+  });
+  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+  return sorted[0][0];
+}
 function TxModal({
   initial,
   accounts,
@@ -7808,6 +7891,18 @@ function TxModal({
   const [date, setDate] = useState(initial && initial.date || todayISO());
   const [description, setDescription] = useState(initial && initial.description || "");
   const [member, setMember] = useState(initial && initial.member || "");
+  const [categoryTouched, setCategoryTouched] = useState(isEditing);
+  const [categorySuggested, setCategorySuggested] = useState(false);
+  useEffect(() => {
+    if (categoryTouched) return;
+    const suggestion = suggestCategoryFromHistory(description, transactions, kind);
+    if (suggestion) {
+      setCategory(suggestion);
+      setCategorySuggested(true);
+    } else {
+      setCategorySuggested(false);
+    }
+  }, [description]);
   function handleAccountChange(id) {
     setAccountId(id);
     const acc = accounts.find(a => a.id === id);
@@ -7861,14 +7956,34 @@ function TxModal({
     key: sb.id,
     value: sb.id
   }, sb.label || sb.type, " — disponível: ", fmt(availableBalance(sb, transactions), currentAccount.currency))))), React.createElement(Field, {
+    label: "Descrição (opcional)"
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: description,
+    onChange: e => setDescription(e.target.value),
+    placeholder: "ex: Compras no mercado"
+  })), React.createElement(Field, {
     label: "Categoria"
   }, React.createElement("select", {
     style: inputStyle,
     value: category,
-    onChange: e => setCategory(e.target.value)
+    onChange: e => {
+      setCategory(e.target.value);
+      setCategoryTouched(true);
+      setCategorySuggested(false);
+    }
   }, (kind === "despesa" ? expenseCategories : INCOME_TYPES).map(c => React.createElement("option", {
     key: c
-  }, c)))), React.createElement("div", {
+  }, c))), categorySuggested && !categoryTouched && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--gold)",
+      marginTop: 4,
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, "💡 Sugerido a partir do histórico")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 10
@@ -7889,13 +8004,6 @@ function TxModal({
     value: date,
     onChange: e => setDate(e.target.value)
   }))), React.createElement(Field, {
-    label: "Descrição (opcional)"
-  }, React.createElement("input", {
-    style: inputStyle,
-    value: description,
-    onChange: e => setDescription(e.target.value),
-    placeholder: "ex: Compras no mercado"
-  })), React.createElement(Field, {
     label: "Membro da família (opcional)"
   }, React.createElement("input", {
     style: inputStyle,
@@ -7928,6 +8036,27 @@ function TxModal({
     })
   }, isEditing ? "Guardar alterações" : "Guardar movimento")));
 }
+function getRecentTransferPairs(transactions, accounts, limit) {
+  if (limit === undefined) limit = 3;
+  const transfers = [...transactions].filter(t => t.kind === "transferencia" && t.fromSubBalanceId && t.toSubBalanceId).sort((a, b) => a.date < b.date ? 1 : -1);
+  const seen = new Map();
+  transfers.forEach(t => {
+    const key = t.fromSubBalanceId + "|" + t.toSubBalanceId;
+    if (!seen.has(key)) {
+      seen.set(key, {
+        fromAccountId: t.fromAccountId,
+        fromSubBalanceId: t.fromSubBalanceId,
+        toAccountId: t.toAccountId,
+        toSubBalanceId: t.toSubBalanceId
+      });
+    }
+  });
+  return Array.from(seen.values()).filter(p => {
+    const fromAcc = accounts.find(a => a.id === p.fromAccountId);
+    const toAcc = accounts.find(a => a.id === p.toAccountId);
+    return fromAcc && toAcc && (fromAcc.subBalances || []).some(s => s.id === p.fromSubBalanceId) && (toAcc.subBalances || []).some(s => s.id === p.toSubBalanceId);
+  }).slice(0, limit);
+}
 function TransferModal({
   initial,
   accounts,
@@ -7945,6 +8074,13 @@ function TransferModal({
   const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
   const [date, setDate] = useState(initial && initial.date || todayISO());
   const [description, setDescription] = useState(initial && initial.description || "");
+  const recentPairs = isEditing ? [] : getRecentTransferPairs(transactions, accounts);
+  function applyPair(p) {
+    setFromAccountId(p.fromAccountId);
+    setFromSubId(p.fromSubBalanceId);
+    setToAccountId(p.toAccountId);
+    setToSubId(p.toSubBalanceId);
+  }
   function handleFromAccountChange(id) {
     setFromAccountId(id);
     const acc = accounts.find(a => a.id === id);
@@ -7979,7 +8115,50 @@ function TransferModal({
       flexDirection: "column",
       gap: 14
     }
+  }, recentPairs.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
   }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase"
+    }
+  }, "Últimas usadas"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, recentPairs.map((p, i) => {
+    const fAcc = accounts.find(a => a.id === p.fromAccountId);
+    const tAcc = accounts.find(a => a.id === p.toAccountId);
+    const fSub = (fAcc.subBalances || []).find(s => s.id === p.fromSubBalanceId);
+    const tSub = (tAcc.subBalances || []).find(s => s.id === p.toSubBalanceId);
+    const active = fromSubId === p.fromSubBalanceId && toSubId === p.toSubBalanceId;
+    return React.createElement("button", {
+      key: i,
+      onClick: () => applyPair(p),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        padding: "7px 12px",
+        borderRadius: 20,
+        border: `1px solid ${active ? "var(--gold)" : "var(--line)"}`,
+        background: active ? "#FBF2E4" : "var(--paper)",
+        fontSize: 12.5,
+        fontWeight: 600,
+        color: "var(--ink)",
+        cursor: "pointer",
+        whiteSpace: "nowrap"
+      }
+    }, fAcc.bank.replace(/—.*/, "").trim(), " (", fSub && (fSub.label || fSub.type), ") → ", tAcc.bank.replace(/—.*/, "").trim(), " (", tSub && (tSub.label || tSub.type), ")");
+  }))), React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
       borderRadius: 9,
@@ -12931,9 +13110,12 @@ function CardPaymentModal({
 }) {
   const [amount, setAmount] = useState(String(Math.max(statementAmount, 0).toFixed(2)));
   const [date, setDate] = useState(todayISO());
-  const [accountId, setAccountId] = useState(accounts[0]?.id || "");
+  const rememberedAccount = card.lastPaymentAccountId && accounts.find(a => a.id === card.lastPaymentAccountId);
+  const [accountId, setAccountId] = useState((rememberedAccount ? rememberedAccount.id : accounts[0]?.id) || "");
   const linkedAccount = accounts.find(a => a.id === accountId);
-  const [subBalanceId, setSubBalanceId] = useState(linkedAccount?.subBalances?.[0]?.id || "");
+  const rememberedSubStillValid = rememberedAccount && card.lastPaymentSubBalanceId && (rememberedAccount.subBalances || []).some(sb => sb.id === card.lastPaymentSubBalanceId);
+  const [subBalanceId, setSubBalanceId] = useState((rememberedSubStillValid ? card.lastPaymentSubBalanceId : linkedAccount?.subBalances?.[0]?.id) || "");
+  const usedRememberedAccount = !!rememberedAccount;
   function handleAccountChange(id) {
     setAccountId(id);
     const acc = accounts.find(a => a.id === id);
@@ -12983,7 +13165,16 @@ function CardPaymentModal({
   }, "— sem conta associada —"), accounts.map(a => React.createElement("option", {
     key: a.id,
     value: a.id
-  }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`)))), linkedAccount && React.createElement(Field, {
+  }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`))), usedRememberedAccount && accountId === rememberedAccount.id && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--gold)",
+      marginTop: 4,
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, "💡 Conta habitual, usada da última vez")), linkedAccount && React.createElement(Field, {
     label: "Saldo"
   }, React.createElement("select", {
     style: inputStyle,
