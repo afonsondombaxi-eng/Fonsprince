@@ -4497,7 +4497,8 @@ function FinanceApp() {
     onRemove: id => askConfirm("Remover este movimento?", () => removeTx(id)),
     onQuickAdd: quickAddExpense,
     onManageShortcuts: () => setShowShortcutsModal(true),
-    onExportCSV: exportTransactionsCSV
+    onExportCSV: exportTransactionsCSV,
+    isMobile: isMobile
   }), tab === "budget" && React.createElement(BudgetTab, {
     categories: budgetIncome.categories,
     spentByCategory: spentByCategory,
@@ -7064,6 +7065,187 @@ function AccountModal({
     onClick: handleSave
   }, isEditing ? "Guardar alterações" : "Guardar conta")));
 }
+function MobileTxCard({
+  t,
+  accounts,
+  onEdit,
+  onRemove
+}) {
+  const [dragX, setDragX] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const dragging = useRef(false);
+  const axisLocked = useRef(null);
+  function handleTouchStart(e) {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    dragging.current = true;
+    axisLocked.current = null;
+  }
+  function handleTouchMove(e) {
+    if (!dragging.current) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (axisLocked.current === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+      axisLocked.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+    if (axisLocked.current !== "x") return;
+    e.preventDefault();
+    const base = revealed ? -96 : 0;
+    let next = base + dx;
+    next = Math.max(-96, Math.min(0, next));
+    setDragX(next);
+  }
+  function handleTouchEnd() {
+    dragging.current = false;
+    if (axisLocked.current === "x") {
+      if (dragX < -48) {
+        setRevealed(true);
+        setDragX(-96);
+      } else {
+        setRevealed(false);
+        setDragX(0);
+      }
+    }
+    axisLocked.current = null;
+  }
+  const isTransfer = t.kind === "transferencia";
+  let line2, amountColor, amountPrefix;
+  if (isTransfer) {
+    const fromAcc = accounts.find(a => a.id === t.fromAccountId);
+    const toAcc = accounts.find(a => a.id === t.toAccountId);
+    line2 = `${fromAcc ? fromAcc.bank.replace(/—.*/, "").trim() : "—"} → ${toAcc ? toAcc.bank.replace(/—.*/, "").trim() : "—"}`;
+    amountColor = "var(--ink)";
+    amountPrefix = "";
+  } else {
+    const acc = accounts.find(a => a.id === t.accountId);
+    line2 = `${acc ? acc.bank.replace(/—.*/, "").trim() : "—"} · ${t.category}`;
+    amountColor = t.kind === "receita" ? "var(--emerald)" : "var(--rust)";
+    amountPrefix = t.kind === "receita" ? "+ " : "− ";
+  }
+  return React.createElement("div", {
+    style: {
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      height: "100%",
+      width: 96,
+      display: "flex"
+    }
+  }, React.createElement("button", {
+    onClick: () => {
+      onEdit(t);
+      setRevealed(false);
+      setDragX(0);
+    },
+    style: {
+      flex: 1,
+      background: "var(--gold)",
+      color: "#fff",
+      border: "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer"
+    }
+  }, React.createElement(IconPencil, {
+    size: 16
+  })), React.createElement("button", {
+    onClick: () => {
+      onRemove(t.id);
+      setRevealed(false);
+      setDragX(0);
+    },
+    style: {
+      flex: 1,
+      background: "var(--rust)",
+      color: "#fff",
+      border: "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer"
+    }
+  }, React.createElement(IconTrash, {
+    size: 16
+  }))), React.createElement("div", {
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+    style: {
+      position: "relative",
+      background: isTransfer ? "#F7F8FA" : "var(--card)",
+      transform: `translateX(${dragX}px)`,
+      transition: dragging.current ? "none" : "transform 0.2s ease",
+      padding: "12px 16px",
+      borderBottom: "1px solid var(--line)",
+      touchAction: "pan-y"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, t.date), React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      color: "var(--ink)",
+      marginTop: 2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, line2), t.description && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginTop: 2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, t.description)), React.createElement("div", {
+    style: {
+      fontSize: 14.5,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: amountColor,
+      flexShrink: 0
+    }
+  }, amountPrefix, fmt(t.amount)))));
+}
+function MobileTxList({
+  transactions,
+  accounts,
+  onEdit,
+  onRemove
+}) {
+  const sorted = [...transactions].sort((a, b) => a.date < b.date ? 1 : -1);
+  return React.createElement("div", null, sorted.map(t => React.createElement(MobileTxCard, {
+    key: t.id,
+    t: t,
+    accounts: accounts,
+    onEdit: onEdit,
+    onRemove: onRemove
+  })));
+}
 function TransactionsTab({
   transactions,
   accounts,
@@ -7074,7 +7256,8 @@ function TransactionsTab({
   onRemove,
   onQuickAdd,
   onManageShortcuts,
-  onExportCSV
+  onExportCSV,
+  isMobile
 }) {
   const [search, setSearch] = useState("");
   const [filterAccount, setFilterAccount] = useState("");
@@ -7284,7 +7467,12 @@ function TransactionsTab({
       padding: 20,
       margin: 0
     }
-  }, "Nenhum movimento corresponde aos filtros.") : React.createElement("table", {
+  }, "Nenhum movimento corresponde aos filtros.") : isMobile ? React.createElement(MobileTxList, {
+    transactions: filteredTransactions,
+    accounts: accounts,
+    onEdit: onEdit,
+    onRemove: onRemove
+  }) : React.createElement("table", {
     className: "resp-table-cards",
     style: {
       width: "100%",
