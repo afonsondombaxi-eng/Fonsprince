@@ -45,6 +45,13 @@
     #root { padding: 0; align-items: stretch; justify-content: stretch; }
     .resp-grid-2col, .resp-grid-3col { grid-template-columns: 1fr !important; }
     input, select, textarea { font-size: 16px !important; }
+    .resp-table-cards thead { display: none; }
+    .resp-table-cards, .resp-table-cards tbody, .resp-table-cards tr, .resp-table-cards td { display: block; width: 100%; }
+    .resp-table-cards tr { border: 1px solid var(--line); border-top: 1px solid var(--line) !important; border-radius: 10px; margin: 0 0 10px; padding: 10px 12px; background: var(--card); }
+    .resp-table-cards td { padding: 6px 0 !important; border: none !important; display: flex; justify-content: space-between; align-items: center; text-align: right !important; gap: 10px; }
+    .resp-table-cards td::before { content: attr(data-label); font-size: 10.5px; color: var(--slate); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; text-align: left; flex-shrink: 0; }
+    .resp-table-cards td[data-label=""]::before { content: none; }
+    .resp-table-cards td[data-label=""] { justify-content: flex-end; padding-top: 8px !important; margin-top: 4px; border-top: 1px dashed var(--line) !important; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -3176,6 +3183,7 @@ function FinanceApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => loadKey("sidebar-collapsed", true));
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth <= 768 : false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
   useEffect(() => {
     function onResize() {
       setIsMobile(window.innerWidth <= 768);
@@ -3183,6 +3191,10 @@ function FinanceApp() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+  function selectTab(t) {
+    setTab(t);
+    setSidebarCollapsed(true);
+  }
   const [confirmAction, setConfirmAction] = useState(null);
   function askConfirm(message, onConfirm, detail) {
     setConfirmAction({
@@ -4061,7 +4073,7 @@ function FinanceApp() {
     icon: IconDashboard,
     label: "Visão Geral",
     active: tab === "overview",
-    onClick: () => setTab("overview"),
+    onClick: () => selectTab("overview"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "💰 Finanças",
@@ -4070,19 +4082,19 @@ function FinanceApp() {
     icon: IconBank,
     label: "Contas",
     active: tab === "accounts",
-    onClick: () => setTab("accounts"),
+    onClick: () => selectTab("accounts"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconReceipt,
     label: "Transações",
     active: tab === "transactions",
-    onClick: () => setTab("transactions"),
+    onClick: () => selectTab("transactions"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconWallet,
     label: "Orçamento",
     active: tab === "budget",
-    onClick: () => setTab("budget"),
+    onClick: () => selectTab("budget"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "🎯 Planeamento",
@@ -4091,13 +4103,13 @@ function FinanceApp() {
     icon: IconTarget,
     label: "Metas",
     active: tab === "goals",
-    onClick: () => setTab("goals"),
+    onClick: () => selectTab("goals"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconCompass,
     label: "Planeamento",
     active: tab === "planning",
-    onClick: () => setTab("planning"),
+    onClick: () => selectTab("planning"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "🏦 Financiamento",
@@ -4106,13 +4118,13 @@ function FinanceApp() {
     icon: IconCreditCard,
     label: "Empréstimos",
     active: tab === "debts",
-    onClick: () => setTab("debts"),
+    onClick: () => selectTab("debts"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconBanknote,
     label: "Cartões",
     active: tab === "cards",
-    onClick: () => setTab("cards"),
+    onClick: () => selectTab("cards"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "💱 Tesouraria",
@@ -4121,13 +4133,13 @@ function FinanceApp() {
     icon: IconRepeat,
     label: "Câmbio",
     active: tab === "exchange",
-    onClick: () => setTab("exchange"),
+    onClick: () => selectTab("exchange"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconTrendingUp,
     label: "Fluxo de Caixa",
     active: tab === "forecast",
-    onClick: () => setTab("forecast"),
+    onClick: () => selectTab("forecast"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "📈 Investimentos",
@@ -4136,7 +4148,7 @@ function FinanceApp() {
     icon: IconPieChart,
     label: "Investimentos",
     active: tab === "investments",
-    onClick: () => setTab("investments"),
+    onClick: () => selectTab("investments"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "📊 Relatórios",
@@ -4145,19 +4157,19 @@ function FinanceApp() {
     icon: IconFileText,
     label: "Financeiros",
     active: tab === "report",
-    onClick: () => setTab("report"),
+    onClick: () => selectTab("report"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconActivity,
     label: "KPI's",
     active: tab === "kpis",
-    onClick: () => setTab("kpis"),
+    onClick: () => selectTab("kpis"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconDownload,
     label: "Exportações",
     active: tab === "exports",
-    onClick: () => setTab("exports"),
+    onClick: () => selectTab("exports"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "🔔 Alertas",
@@ -4166,7 +4178,7 @@ function FinanceApp() {
     icon: IconBell,
     label: "Alertas",
     active: tab === "alerts",
-    onClick: () => setTab("alerts"),
+    onClick: () => selectTab("alerts"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "🛠 Ferramentas",
@@ -4175,13 +4187,19 @@ function FinanceApp() {
     icon: IconWrench,
     label: "Categorias",
     active: false,
-    onClick: () => setShowCategoryManager(true),
+    onClick: () => {
+      setShowCategoryManager(true);
+      setSidebarCollapsed(true);
+    },
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconZap,
     label: "Atalhos",
     active: false,
-    onClick: () => setShowShortcutsModal(true),
+    onClick: () => {
+      setShowShortcutsModal(true);
+      setSidebarCollapsed(true);
+    },
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "⚙ Definições",
@@ -4190,7 +4208,7 @@ function FinanceApp() {
     icon: IconSettings,
     label: "Definições",
     active: tab === "settings",
-    onClick: () => setTab("settings"),
+    onClick: () => selectTab("settings"),
     collapsed: sidebarCollapsed
   })), React.createElement("div", {
     style: {
@@ -4310,7 +4328,7 @@ function FinanceApp() {
       gap: 16
     }
   }, React.createElement("button", {
-    onClick: () => setTab("alerts"),
+    onClick: () => selectTab("alerts"),
     title: "Alertas",
     style: {
       background: "none",
@@ -4765,7 +4783,103 @@ function FinanceApp() {
       fontSize: 10,
       fontWeight: 600
     }
-  }, "Mais"))), showMoreSheet && React.createElement(Modal, {
+  }, "Mais"))), isMobile && showFabMenu && React.createElement("div", {
+    onClick: () => setShowFabMenu(false),
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(15,24,45,0.28)",
+      zIndex: 32
+    }
+  }), isMobile && showFabMenu && React.createElement("div", {
+    style: {
+      position: "fixed",
+      right: 16,
+      bottom: "calc(60px + env(safe-area-inset-bottom) + 78px)",
+      zIndex: 35,
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      alignItems: "flex-end"
+    }
+  }, [{
+    label: "Nova conta",
+    icon: IconBank,
+    onClick: () => {
+      setEditingAccount(null);
+      setShowAccountModal(true);
+    }
+  }, {
+    label: "Transferência",
+    icon: IconRepeat,
+    onClick: () => setShowTransferModal(true)
+  }, {
+    label: "Nova transação",
+    icon: IconReceipt,
+    onClick: () => setShowTxModal(true)
+  }].map(a => React.createElement("button", {
+    key: a.label,
+    onClick: () => {
+      a.onClick();
+      setShowFabMenu(false);
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 9,
+      background: "var(--card)",
+      color: "var(--ink)",
+      border: "1px solid var(--line)",
+      borderRadius: 24,
+      padding: "10px 16px 10px 18px",
+      fontSize: 13.5,
+      fontWeight: 600,
+      fontFamily: "Inter, sans-serif",
+      boxShadow: "0 6px 18px rgba(16,24,40,0.18)",
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, a.label, React.createElement("span", {
+    style: {
+      width: 30,
+      height: 30,
+      borderRadius: "50%",
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, React.createElement(a.icon, {
+    size: 15,
+    style: {
+      color: "var(--gold)"
+    }
+  }))))), isMobile && React.createElement("button", {
+    onClick: () => setShowFabMenu(v => !v),
+    "aria-label": "Adicionar",
+    style: {
+      position: "fixed",
+      right: 16,
+      bottom: "calc(60px + env(safe-area-inset-bottom) + 16px)",
+      zIndex: 36,
+      width: 56,
+      height: 56,
+      borderRadius: "50%",
+      background: "var(--gold)",
+      color: "#fff",
+      border: "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      boxShadow: "0 6px 18px rgba(184,130,60,0.45)",
+      cursor: "pointer",
+      transform: showFabMenu ? "rotate(45deg)" : "rotate(0deg)",
+      transition: "transform 0.2s ease"
+    }
+  }, React.createElement(IconPlus, {
+    size: 26
+  })), showMoreSheet && React.createElement(Modal, {
     title: "Mais opções",
     onClose: () => setShowMoreSheet(false)
   }, React.createElement("div", {
@@ -6047,230 +6161,152 @@ function AccountCard({
   const totalPrincipal = interestSubs.reduce((s, sb) => s + availableBalance(sb, transactions), 0);
   const weightedRate = totalPrincipal > 0 ? interestSubs.reduce((s, sb) => s + Number(sb.interestRate) * availableBalance(sb, transactions), 0) / totalPrincipal : null;
   const lastMovement = !compact ? lastMovementForAccount(account, transactions) : null;
+  if (compact) {
+    return React.createElement("div", {
+      style: {
+        border: "1px solid var(--line)",
+        borderRadius: 8,
+        padding: 16,
+        width: 240,
+        maxWidth: 240,
+        background: "#FFFFFF",
+        position: "relative"
+      }
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start"
+      }
+    }, React.createElement("div", null, React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)",
+        fontWeight: 600,
+        textTransform: "uppercase",
+        letterSpacing: 0.3
+      }
+    }, "Saldo disponível"), React.createElement("div", {
+      style: {
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: 15,
+        fontWeight: 600,
+        marginTop: 2,
+        lineHeight: 1.25
+      }
+    }, account.bank.replace(/—.*/, "").trim()), account.nickname && React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "var(--slate)",
+        marginTop: 2
+      }
+    }, account.nickname), presentTypes.length > 0 && React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 4,
+        marginTop: 5,
+        flexWrap: "wrap"
+      }
+    }, presentTypes.map(t => React.createElement("span", {
+      key: t,
+      style: {
+        fontSize: 10.5,
+        color: "var(--slate)",
+        background: "var(--paper)",
+        padding: "2px 7px",
+        borderRadius: 20
+      }
+    }, TYPE_BADGE[t], " ", t)))), React.createElement("div", {
+      style: {
+        width: 34,
+        height: 34,
+        borderRadius: "50%",
+        border: "1.5px solid var(--gold)",
+        color: "var(--gold)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 11,
+        fontWeight: 600,
+        flexShrink: 0
+      }
+    }, seal(account.bank))), React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 10,
+        marginTop: 14,
+        flexWrap: "wrap"
+      }
+    }, React.createElement("div", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 20,
+        fontWeight: 600,
+        color: "var(--ink)",
+        fontVariantNumeric: "tabular-nums"
+      }
+    }, fmt(total, account.currency))), kzEquivalent !== null && React.createElement("div", {
+      style: {
+        fontSize: 11.5,
+        color: "var(--slate)",
+        marginTop: 2
+      }
+    }, "≈ ", fmt(kzEquivalent)), React.createElement("div", {
+      style: {
+        marginTop: 10
+      }
+    }, React.createElement(SplitBar, {
+      breakdown: breakdown,
+      total: total
+    }), React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        marginTop: 8
+      }
+    }, SUB_TYPES.filter(t => breakdown[t] !== 0).map(t => React.createElement("div", {
+      key: t,
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 11.5,
+        color: "var(--slate)"
+      }
+    }, React.createElement("span", null, t), React.createElement("span", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, fmt(breakdown[t], account.currency)))))));
+  }
+  const subTypeShortLabel = {
+    "À ordem": "À Ordem",
+    Poupança: "Poupança",
+    Investimento: "Invest."
+  };
+  const distColors = {
+    "À ordem": "var(--ink)",
+    Poupança: "var(--emerald)",
+    Investimento: "var(--gold)"
+  };
   return React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 8,
-      padding: 16,
-      width: compact ? 240 : "100%",
-      maxWidth: compact ? 240 : 380,
+      borderRadius: 12,
+      padding: 20,
+      width: "100%",
+      maxWidth: 380,
       background: "#FFFFFF",
-      position: "relative"
+      position: "relative",
+      boxShadow: "0 1px 3px rgba(16,24,40,0.05)"
     }
-  }, React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start"
-    }
-  }, React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "var(--slate)",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.3
-    }
-  }, "Saldo disponível"), React.createElement("div", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
-      fontWeight: 600,
-      marginTop: 2,
-      lineHeight: 1.25
-    }
-  }, account.bank.replace(/—.*/, "").trim()), account.nickname && React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)",
-      marginTop: 2
-    }
-  }, account.nickname), presentTypes.length > 0 && React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4,
-      marginTop: 5,
-      flexWrap: "wrap"
-    }
-  }, presentTypes.map(t => React.createElement("span", {
-    key: t,
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      background: "var(--paper)",
-      padding: "2px 7px",
-      borderRadius: 20
-    }
-  }, TYPE_BADGE[t], " ", t)))), React.createElement("div", {
-    style: {
-      width: 34,
-      height: 34,
-      borderRadius: "50%",
-      border: "1.5px solid var(--gold)",
-      color: "var(--gold)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 11,
-      fontWeight: 600,
-      flexShrink: 0
-    }
-  }, seal(account.bank))), React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "baseline",
-      gap: 10,
-      marginTop: 14,
-      flexWrap: "wrap"
-    }
-  }, React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 20,
-      fontWeight: 600,
-      color: "var(--ink)",
-      fontVariantNumeric: "tabular-nums"
-    }
-  }, fmt(total, account.currency)), !compact && pct !== null && React.createElement("div", {
-    style: {
-      fontSize: 11.5,
-      fontWeight: 700,
-      color: pct >= 0 ? "var(--emerald)" : "var(--rust)",
-      display: "flex",
-      alignItems: "center",
-      gap: 3
-    }
-  }, pct >= 0 ? "▲" : "▼", " ", pct >= 0 ? "+" : "", pct.toFixed(0), "% ", React.createElement("span", {
-    style: {
-      color: "var(--slate)",
-      fontWeight: 500
-    }
-  }, "vs ", prevMonthLabelFull))), kzEquivalent !== null && React.createElement("div", {
-    style: {
-      fontSize: 11.5,
-      color: "var(--slate)",
-      marginTop: 2
-    }
-  }, "≈ ", fmt(kzEquivalent)), React.createElement("div", {
-    style: {
-      marginTop: 10
-    }
-  }, React.createElement(SplitBar, {
-    breakdown: breakdown,
-    total: total
-  }), React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
-      marginTop: 8
-    }
-  }, SUB_TYPES.filter(t => breakdown[t] !== 0).map(t => React.createElement("div", {
-    key: t,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      fontSize: 11.5,
-      color: "var(--slate)"
-    }
-  }, React.createElement("span", null, t), React.createElement("span", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace"
-    }
-  }, fmt(breakdown[t], account.currency)))))), hasInterest && !compact && React.createElement("div", {
-    style: {
-      marginTop: 12,
-      paddingTop: 10,
-      borderTop: "1px solid var(--line)",
-      display: "flex",
-      justifyContent: "space-between",
-      gap: 10
-    }
-  }, React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      textTransform: "uppercase",
-      letterSpacing: 0.3
-    }
-  }, "Juros acumulados"), React.createElement("div", {
-    style: {
-      fontSize: 13.5,
-      fontWeight: 700,
-      color: "var(--gold)",
-      fontFamily: "'IBM Plex Mono', monospace",
-      marginTop: 2
-    }
-  }, "+", fmt(totalAccrued, account.currency))), weightedRate !== null && React.createElement("div", {
-    style: {
-      textAlign: "right"
-    }
-  }, React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      textTransform: "uppercase",
-      letterSpacing: 0.3
-    }
-  }, "Rentabilidade"), React.createElement("div", {
-    style: {
-      fontSize: 13.5,
-      fontWeight: 700,
-      color: "var(--ink)",
-      marginTop: 2
-    }
-  }, weightedRate.toFixed(1), "% a.a."))), lastMovement && React.createElement("div", {
-    style: {
-      marginTop: 12,
-      paddingTop: 10,
-      borderTop: "1px solid var(--line)"
-    }
-  }, React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      textTransform: "uppercase",
-      letterSpacing: 0.3,
-      marginBottom: 4
-    }
-  }, "Último movimento"), React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 8
-    }
-  }, React.createElement("div", {
-    style: {
-      minWidth: 0
-    }
-  }, React.createElement("div", {
-    style: {
-      fontSize: 11.5,
-      color: "var(--slate)"
-    }
-  }, new Date(lastMovement.date + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--ink)",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
-    }
-  }, lastMovement.label)), React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      fontFamily: "'IBM Plex Mono', monospace",
-      color: lastMovement.signedAmount >= 0 ? "var(--emerald)" : "var(--rust)",
-      flexShrink: 0
-    }
-  }, lastMovement.signedAmount >= 0 ? "+" : "", fmt(lastMovement.signedAmount, account.currency)))), !compact && (onRemove || onEdit) && React.createElement("div", {
+  }, (onRemove || onEdit) && React.createElement("div", {
     style: {
       position: "absolute",
-      top: 12,
-      right: 12,
+      top: 14,
+      right: 14,
       display: "flex",
       gap: 4
     }
@@ -6298,7 +6334,257 @@ function AccountCard({
     title: "Remover conta"
   }, React.createElement(IconTrash, {
     size: 15
-  }))));
+  }))), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 3,
+      paddingRight: onRemove || onEdit ? 56 : 0
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 7,
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--ink)"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, "🏦"), React.createElement("span", null, account.bank.replace(/—.*/, "").trim())), account.nickname && React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 7,
+      fontSize: 12.5,
+      color: "var(--slate)"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 13
+    }
+  }, "👤"), React.createElement("span", null, account.nickname))), React.createElement("div", {
+    style: {
+      marginTop: 16
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, "Saldo Disponível"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 26,
+      fontWeight: 700,
+      color: "var(--ink)",
+      marginTop: 4,
+      fontVariantNumeric: "tabular-nums",
+      lineHeight: 1.15
+    }
+  }, fmt(total, account.currency)), kzEquivalent !== null && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginTop: 3
+    }
+  }, "≈ ", fmt(kzEquivalent)), pct !== null && React.createElement("div", {
+    style: {
+      marginTop: 7,
+      fontSize: 12,
+      fontWeight: 700,
+      color: pct >= 0 ? "var(--emerald)" : "var(--rust)",
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, React.createElement("span", null, pct >= 0 ? "▲" : "▼"), React.createElement("span", null, pct >= 0 ? "+" : "", pct.toFixed(0), "%"), React.createElement("span", {
+    style: {
+      color: "var(--slate)",
+      fontWeight: 500
+    }
+  }, "vs ", prevMonthLabelFull))), React.createElement("div", {
+    style: {
+      marginTop: 18,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 10
+    }
+  }, "Distribuição"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      marginBottom: 12
+    }
+  }, SUB_TYPES.map((t, i) => {
+    const value = breakdown[t] || 0;
+    const p = total > 0 ? value / total * 100 : 0;
+    return React.createElement("div", {
+      key: t,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 9
+      }
+    }, React.createElement("div", {
+      style: {
+        width: 18,
+        height: 18,
+        borderRadius: "50%",
+        background: "var(--paper)",
+        color: "var(--slate)",
+        fontSize: 10,
+        fontWeight: 700,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }
+    }, i + 1), React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: "var(--ink)",
+        flex: 1
+      }
+    }, subTypeShortLabel[t]), React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        fontWeight: 700,
+        color: distColors[t],
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, p.toFixed(0), "%"));
+  })), React.createElement(SplitBar, {
+    breakdown: breakdown,
+    total: total
+  })), hasInterest && React.createElement("div", {
+    style: {
+      marginTop: 18,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 10
+    }
+  }, "Métricas"), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 20
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Juros"), React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--gold)",
+      fontFamily: "'IBM Plex Mono', monospace",
+      marginTop: 3
+    }
+  }, "+", fmt(totalAccrued, account.currency))), weightedRate !== null && React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Rentabilidade"), React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--ink)",
+      marginTop: 3
+    }
+  }, weightedRate.toFixed(1), "% a.a.")))), lastMovement && React.createElement("div", {
+    style: {
+      marginTop: 18,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 9
+    }
+  }, "Último movimento"), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--ink)",
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      overflow: "hidden"
+    }
+  }, React.createElement("span", {
+    style: {
+      flexShrink: 0
+    }
+  }, lastMovement.signedAmount >= 0 ? "✅" : "🔻"), React.createElement("span", {
+    style: {
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, lastMovement.label)), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 3
+    }
+  }, new Date(lastMovement.date + "T00:00:00").toLocaleDateString("pt-PT"))), React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: lastMovement.signedAmount >= 0 ? "var(--emerald)" : "var(--rust)",
+      flexShrink: 0
+    }
+  }, lastMovement.signedAmount >= 0 ? "+" : "", fmt(lastMovement.signedAmount, account.currency)))));
 }
 function AccountsTab({
   accounts,
@@ -6999,6 +7285,7 @@ function TransactionsTab({
       margin: 0
     }
   }, "Nenhum movimento corresponde aos filtros.") : React.createElement("table", {
+    className: "resp-table-cards",
     style: {
       width: "100%",
       borderCollapse: "collapse",
@@ -7049,11 +7336,13 @@ function TransactionsTab({
           background: "#F7F8FA"
         }
       }, React.createElement("td", {
+        "data-label": "Data",
         style: {
           padding: "10px 16px",
           color: "var(--slate)"
         }
       }, t.date), React.createElement("td", {
+        "data-label": "Movimento",
         style: {
           padding: "10px 16px"
         },
@@ -7078,11 +7367,13 @@ function TransactionsTab({
           color: "var(--slate)"
         }
       }, " (", toSub.label || toSub.type, ")"))), React.createElement("td", {
+        "data-label": "Descrição",
         style: {
           padding: "10px 16px",
           color: "var(--slate)"
         }
       }, t.description || "Transferência"), React.createElement("td", {
+        "data-label": "Valor",
         style: {
           padding: "10px 16px",
           textAlign: "right",
@@ -7091,6 +7382,7 @@ function TransactionsTab({
           fontWeight: 600
         }
       }, fmt(t.amount)), React.createElement("td", {
+        "data-label": "",
         style: {
           padding: "10px 16px"
         }
@@ -7129,11 +7421,13 @@ function TransactionsTab({
         borderTop: "1px solid var(--line)"
       }
     }, React.createElement("td", {
+      "data-label": "Data",
       style: {
         padding: "10px 16px",
         color: "var(--slate)"
       }
     }, t.date), React.createElement("td", {
+      "data-label": "Conta",
       style: {
         padding: "10px 16px"
       }
@@ -7142,15 +7436,18 @@ function TransactionsTab({
         color: "var(--slate)"
       }
     }, " · ", sub.label || sub.type)), React.createElement("td", {
+      "data-label": "Categoria",
       style: {
         padding: "10px 16px"
       }
     }, t.category), React.createElement("td", {
+      "data-label": "Descrição",
       style: {
         padding: "10px 16px",
         color: "var(--slate)"
       }
     }, t.description || "—"), React.createElement("td", {
+      "data-label": "Valor",
       style: {
         padding: "10px 16px",
         textAlign: "right",
@@ -7159,6 +7456,7 @@ function TransactionsTab({
         fontWeight: 600
       }
     }, t.kind === "receita" ? "+" : "−", " ", fmt(t.amount)), React.createElement("td", {
+      "data-label": "",
       style: {
         padding: "10px 16px"
       }
