@@ -332,6 +332,9 @@ const IconFlame = p => React.createElement(Icon, p, React.createElement("path", 
 const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M15 18l-6-6 6-6"
 }));
+const IconChevronDown = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M6 9l6 6 6-6"
+}));
 const IconLock = p => React.createElement(Icon, p, React.createElement("rect", {
   x: "3",
   y: "11",
@@ -4441,24 +4444,33 @@ function FinanceApp() {
   }, "AN"))), React.createElement("div", {
     style: {
       flex: 1,
-      padding: isMobile ? "18px 16px calc(84px + env(safe-area-inset-bottom))" : "26px 32px",
+      padding: isMobile ? "14px 16px calc(84px + env(safe-area-inset-bottom))" : "26px 32px",
       overflowY: "auto"
     }
   }, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
-      alignItems: isMobile ? "flex-start" : "flex-end",
-      marginBottom: 22,
-      flexWrap: "wrap",
+      alignItems: "center",
+      marginBottom: isMobile ? 14 : 22,
+      flexWrap: "nowrap",
       gap: 10
     }
-  }, React.createElement("div", null, React.createElement("h1", {
+  }, React.createElement("div", {
+    style: {
+      minWidth: 0,
+      flex: isMobile ? "1 1 auto" : "0 1 auto",
+      overflow: "hidden"
+    }
+  }, React.createElement("h1", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 26,
+      fontSize: isMobile ? 20 : 26,
       fontWeight: 600,
-      margin: 0
+      margin: 0,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
     }
   }, {
     overview: "Visão Geral",
@@ -4478,7 +4490,7 @@ function FinanceApp() {
     alerts: "Central de Alertas",
     tools: "Ferramentas",
     settings: "Definições"
-  }[tab]), React.createElement("p", {
+  }[tab]), !isMobile && React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5,
@@ -4502,13 +4514,47 @@ function FinanceApp() {
     alerts: "Avisos automáticos sobre contas, orçamento, dívidas e metas.",
     tools: "Atalhos para gerir categorias e atalhos de despesa.",
     settings: "Segurança, aparência e notificações da app."
-  }[tab])), (tab === "overview" || tab === "transactions" || tab === "budget" || tab === "report" || tab === "alerts") && React.createElement(Field, {
-    label: "Mês"
-  }, React.createElement("input", {
+  }[tab])), (tab === "overview" || tab === "transactions" || tab === "budget" || tab === "report" || tab === "alerts") && React.createElement("div", {
+    style: {
+      position: "relative",
+      display: "inline-flex",
+      flexShrink: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 3,
+      padding: isMobile ? "5px 8px 5px 10px" : "7px 10px 7px 12px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "var(--card)",
+      fontSize: isMobile ? 12 : 13.5,
+      fontWeight: 600,
+      color: "var(--ink)",
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, monthShortLabel(month), React.createElement(IconChevronDown, {
+    size: isMobile ? 12 : 14,
+    style: {
+      color: "var(--slate)"
+    }
+  })), React.createElement("input", {
     type: "month",
     value: month,
     onChange: e => setMonth(e.target.value),
-    style: inputStyle
+    "aria-label": "Selecionar mês",
+    style: {
+      position: "absolute",
+      inset: 0,
+      opacity: 0,
+      width: "100%",
+      height: "100%",
+      cursor: "pointer",
+      border: "none",
+      padding: 0
+    }
   }))), tab === "overview" && React.createElement(Overview, {
     accounts: accounts,
     transactions: transactions,
