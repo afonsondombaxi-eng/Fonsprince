@@ -2240,6 +2240,71 @@ const inputStyle = {
   background: "#FCFCFA",
   outline: "none"
 };
+function Toast({
+  toast,
+  onDismiss
+}) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!toast) return;
+    setVisible(false);
+    const raf = requestAnimationFrame(() => setVisible(true));
+    const hideTimer = setTimeout(() => setVisible(false), 2200);
+    const removeTimer = setTimeout(() => onDismiss(), 2550);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(hideTimer);
+      clearTimeout(removeTimer);
+    };
+  }, [toast]);
+  if (!toast) return null;
+  const palette = {
+    success: {
+      bg: "var(--emerald)",
+      icon: "✅"
+    },
+    celebrate: {
+      bg: "var(--gold)",
+      icon: "🎉"
+    },
+    info: {
+      bg: "var(--ink)",
+      icon: "💸"
+    }
+  }[toast.kind] || {
+    bg: "var(--ink)",
+    icon: "✅"
+  };
+  return React.createElement("div", {
+    style: {
+      position: "fixed",
+      left: "50%",
+      bottom: 28,
+      transform: `translateX(-50%) translateY(${visible ? 0 : 16}px) scale(${visible ? 1 : 0.92})`,
+      opacity: visible ? 1 : 0,
+      transition: "transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease",
+      background: palette.bg,
+      color: "#fff",
+      padding: "12px 20px",
+      borderRadius: 24,
+      boxShadow: "0 10px 30px rgba(16,24,40,0.28)",
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      fontSize: 13.5,
+      fontWeight: 600,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      zIndex: 200,
+      maxWidth: "90vw",
+      whiteSpace: "nowrap",
+      pointerEvents: "none"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, palette.icon), toast.message);
+}
 function Modal({
   title,
   onClose,
@@ -3313,6 +3378,21 @@ function FinanceApp() {
       onConfirm
     });
   }
+  const [toast, setToast] = useState(null);
+  function showToast(message, kind) {
+    setToast({
+      message,
+      kind,
+      id: uid()
+    });
+  }
+  function vibrate(pattern) {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(pattern);
+      } catch (e) {}
+    }
+  }
   const [pin, setPin] = useState(() => loadKey("app-pin", null));
   const [biometricCredentialId, setBiometricCredentialId] = useState(() => loadKey("biometric-credential-id", null));
   const [unlocked, setUnlocked] = useState(false);
@@ -3545,6 +3625,13 @@ function FinanceApp() {
       ...tx,
       id: uid()
     }]);
+    if (tx.kind === "receita") {
+      vibrate(30);
+      showToast("Receita registada!", "success");
+    } else if (tx.kind === "despesa") {
+      vibrate(15);
+      showToast("Despesa registada", "info");
+    }
   }
   function updateTx(id, patch) {
     setTransactions(t => t.map(x => x.id === id ? {
@@ -3606,6 +3693,19 @@ function FinanceApp() {
     } : x));
   }
   function contributeToGoal(id, amount) {
+    const g = goals.find(x => x.id === id);
+    if (g) {
+      const wasComplete = Number(g.current) >= Number(g.target);
+      const newCurrent = Number(g.current) + Number(amount);
+      const isNowComplete = newCurrent >= Number(g.target);
+      if (!wasComplete && isNowComplete) {
+        vibrate([40, 60, 40]);
+        showToast(`🎉 Meta "${g.name}" atingida!`, "celebrate");
+      } else {
+        vibrate(20);
+        showToast("Contribuição registada", "success");
+      }
+    }
     setGoals(gs => gs.map(g => g.id === id ? {
       ...g,
       current: Number(g.current) + Number(amount),
@@ -5523,6 +5623,9 @@ function FinanceApp() {
       confirmAction.onConfirm();
       setConfirmAction(null);
     }
+  }), React.createElement(Toast, {
+    toast: toast,
+    onDismiss: () => setToast(null)
   }), showPinSetup && React.createElement(PinSetupModal, {
     currentPin: pin,
     onClose: () => setShowPinSetup(false),
