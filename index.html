@@ -38,6 +38,10 @@
   }
   .clickable-card { transition: box-shadow 0.15s ease, border-color 0.15s ease; }
   .clickable-card:hover { box-shadow: 0 4px 14px rgba(16,24,40,0.09); border-color: var(--gold); }
+  @keyframes chartFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @keyframes modal-slide-up {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
@@ -6143,6 +6147,7 @@ function Overview({
   recurringExpenses
 }) {
   const [chartsTab, setChartsTab] = useState("evolution");
+  const [pressedChartTab, setPressedChartTab] = useState(null);
   const smartHome = useMemo(() => buildSmartHomeInsights({
     recurringExpenses: recurringExpenses || [],
     transactions,
@@ -6418,29 +6423,55 @@ function Overview({
     id: "members",
     label: "Membros",
     icon: IconUsers
-  }].map(t => React.createElement("button", {
-    key: t.id,
-    onClick: () => setChartsTab(t.id),
+  }].map(t => {
+    const isActive = chartsTab === t.id;
+    const isPressed = pressedChartTab === t.id;
+    return React.createElement("button", {
+      key: t.id,
+      onClick: () => setChartsTab(t.id),
+      onMouseDown: () => {
+        setPressedChartTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onMouseUp: () => setPressedChartTab(null),
+      onMouseLeave: () => setPressedChartTab(p => p === t.id ? null : p),
+      onTouchStart: () => {
+        setPressedChartTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onTouchEnd: () => setPressedChartTab(null),
+      onTouchCancel: () => setPressedChartTab(null),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "7px 12px",
+        borderRadius: 7,
+        border: "none",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: 600,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: isActive ? "var(--card)" : "transparent",
+        color: isActive ? "var(--gold)" : "var(--slate)",
+        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+        transform: isPressed ? "scale(0.91)" : "scale(1)",
+        transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
+        whiteSpace: "nowrap"
+      }
+    }, React.createElement(t.icon, {
+      size: 14
+    }), t.label);
+  })), React.createElement("div", {
+    key: chartsTab,
     style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      padding: "7px 12px",
-      borderRadius: 7,
-      border: "none",
-      cursor: "pointer",
-      fontSize: 12.5,
-      fontWeight: 600,
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      background: chartsTab === t.id ? "var(--card)" : "transparent",
-      color: chartsTab === t.id ? "var(--gold)" : "var(--slate)",
-      boxShadow: chartsTab === t.id ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
-      transition: "background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
-      whiteSpace: "nowrap"
+      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
     }
-  }, React.createElement(t.icon, {
-    size: 14
-  }), t.label))), chartsTab === "evolution" && React.createElement(React.Fragment, null, React.createElement("div", {
+  }, chartsTab === "evolution" && React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -6631,7 +6662,7 @@ function Overview({
       color: "var(--slate)",
       fontSize: 13.5
     }
-  }, "Sem despesas com membro atribuído ainda."))), interestSummary.rows.length > 0 && React.createElement(Card, null, React.createElement("h3", {
+  }, "Sem despesas com membro atribuído ainda.")))), interestSummary.rows.length > 0 && React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
