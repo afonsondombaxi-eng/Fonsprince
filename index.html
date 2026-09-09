@@ -3318,6 +3318,7 @@ function FinanceApp() {
   const [unlocked, setUnlocked] = useState(false);
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
+  const [userName, setUserName] = useState(() => loadKey("user-name", "Afonso"));
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => loadKey("onboarding-dismissed", false));
   const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
@@ -3435,6 +3436,7 @@ function FinanceApp() {
   useEffect(() => saveKey("app-pin", pin), [pin]);
   useEffect(() => saveKey("biometric-credential-id", biometricCredentialId), [biometricCredentialId]);
   useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
+  useEffect(() => saveKey("user-name", userName), [userName]);
   useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
   useEffect(() => {
@@ -4622,7 +4624,9 @@ function FinanceApp() {
     prevTotalDespesas: prevTotalDespesas,
     prevSpentByCategory: prevSpentByCategory,
     categories: budgetIncome.categories,
-    onNavigate: setTab
+    onNavigate: setTab,
+    userName: userName,
+    recurringExpenses: recurringExpenses
   }), tab === "accounts" && React.createElement(AccountsTab, {
     accounts: accounts,
     transactions: transactions,
@@ -4866,7 +4870,9 @@ function FinanceApp() {
     biometricCredentialId: biometricCredentialId,
     onOpenSecurity: () => setShowPinSetup(true),
     notificationsEnabled: notificationsEnabled,
-    onToggleNotifications: setNotificationsEnabled
+    onToggleNotifications: setNotificationsEnabled,
+    userName: userName,
+    onSetUserName: setUserName
   }))), isMobile && React.createElement("div", {
     style: {
       position: "fixed",
@@ -5543,6 +5549,147 @@ function FinanceApp() {
     onClose: () => setShowCategoryManager(false)
   }));
 }
+function buildSmartHomeInsights({
+  recurringExpenses,
+  transactions,
+  month,
+  debts,
+  debtPayments,
+  goals,
+  totalDespesas,
+  prevTotalDespesas
+}) {
+  const in5days = new Date();
+  in5days.setDate(in5days.getDate() + 5);
+  const in5daysStr = in5days.toISOString().slice(0, 10);
+  let pendingCount = 0;
+  for (const r of recurringExpenses) {
+    const status = recurringStatus(r, month, transactions);
+    const due = recurringDueDateForMonth(r, month);
+    if (status === "Vencida" || status === "Pendente" && due <= in5daysStr) pendingCount++;
+  }
+  for (const d of debts) {
+    if (debtStatus(d, debtPayments) === "Vencida") pendingCount++;
+  }
+  let spendingChangePct = null;
+  if (prevTotalDespesas > 0) {
+    spendingChangePct = (totalDespesas - prevTotalDespesas) / prevTotalDespesas * 100;
+  }
+  let nearestGoal = null;
+  for (const g of goals) {
+    const target = Number(g.target) || 0;
+    if (target <= 0) continue;
+    const pct = Number(g.current) / target * 100;
+    if (pct >= 100) continue;
+    if (!nearestGoal || pct > nearestGoal.pct) nearestGoal = {
+      name: g.name,
+      pct
+    };
+  }
+  return {
+    pendingCount,
+    spendingChangePct,
+    nearestGoal
+  };
+}
+function SmartHomeCard({
+  userName,
+  pendingCount,
+  spendingChangePct,
+  nearestGoal,
+  onNavigate
+}) {
+  const hour = new Date().getHours();
+  const greeting = hour >= 5 && hour < 12 ? "Bom dia" : hour >= 12 && hour < 18 ? "Boa tarde" : "Boa noite";
+  const hasAnyInsight = pendingCount > 0 || spendingChangePct !== null || !!nearestGoal;
+  return React.createElement(Card, {
+    style: {
+      background: "linear-gradient(135deg, var(--sidebar) 0%, #17284D 100%)",
+      color: "#fff",
+      marginBottom: 18,
+      border: "none"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 17,
+      fontWeight: 700
+    }
+  }, greeting, userName ? `, ${userName}` : "", "."), hasAnyInsight && React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "rgba(255,255,255,0.7)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, "Hoje tem"), pendingCount > 0 && React.createElement("div", {
+    style: {
+      fontSize: 13.5
+    }
+  }, "⚠️ ", pendingCount, " pagamento", pendingCount > 1 ? "s" : "", " pendente", pendingCount > 1 ? "s" : ""), spendingChangePct !== null && React.createElement("div", {
+    style: {
+      fontSize: 13.5
+    }
+  }, spendingChangePct <= 0 ? "📉" : "📈", " Gastou ", Math.abs(spendingChangePct).toFixed(0), "% ", spendingChangePct <= 0 ? "menos" : "mais", " que no mês passado"), nearestGoal && React.createElement("div", {
+    style: {
+      fontSize: 13.5
+    }
+  }, "🎯 Está ", nearestGoal.pct.toFixed(0), "% próximo da meta \"", nearestGoal.name, "\"")), hasAnyInsight && React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 14,
+      flexWrap: "wrap"
+    }
+  }, pendingCount > 0 && React.createElement("button", {
+    onClick: () => onNavigate("alerts"),
+    style: {
+      padding: "8px 14px",
+      borderRadius: 20,
+      border: "none",
+      background: "var(--gold)",
+      color: "#fff",
+      fontSize: 12.5,
+      fontWeight: 700,
+      cursor: "pointer",
+      fontFamily: "Inter, sans-serif"
+    }
+  }, "Pagar Agora"), nearestGoal && React.createElement("button", {
+    onClick: () => onNavigate("goals"),
+    style: {
+      padding: "8px 14px",
+      borderRadius: 20,
+      border: "1px solid rgba(255,255,255,0.35)",
+      background: "rgba(255,255,255,0.08)",
+      color: "#fff",
+      fontSize: 12.5,
+      fontWeight: 700,
+      cursor: "pointer",
+      fontFamily: "Inter, sans-serif"
+    }
+  }, "Ver Meta"), spendingChangePct !== null && React.createElement("button", {
+    onClick: () => onNavigate("budget"),
+    style: {
+      padding: "8px 14px",
+      borderRadius: 20,
+      border: "1px solid rgba(255,255,255,0.35)",
+      background: "rgba(255,255,255,0.08)",
+      color: "#fff",
+      fontSize: 12.5,
+      fontWeight: 700,
+      cursor: "pointer",
+      fontFamily: "Inter, sans-serif"
+    }
+  }, "Analisar Gastos")));
+}
 function Overview({
   accounts,
   transactions,
@@ -5563,8 +5710,20 @@ function Overview({
   prevTotalDespesas,
   prevSpentByCategory,
   categories,
-  onNavigate
+  onNavigate,
+  userName,
+  recurringExpenses
 }) {
+  const smartHome = useMemo(() => buildSmartHomeInsights({
+    recurringExpenses: recurringExpenses || [],
+    transactions,
+    month,
+    debts,
+    debtPayments,
+    goals,
+    totalDespesas,
+    prevTotalDespesas
+  }), [recurringExpenses, transactions, month, debts, debtPayments, goals, totalDespesas, prevTotalDespesas]);
   const saldo = totalReceitas - totalDespesas;
   const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
   const prevMonthKeyForOverview = previousMonthKey(month);
@@ -5641,7 +5800,13 @@ function Overview({
       flexDirection: "column",
       gap: 22
     }
-  }, React.createElement("div", null, React.createElement("div", {
+  }, React.createElement(SmartHomeCard, {
+    userName: userName,
+    pendingCount: smartHome.pendingCount,
+    spendingChangePct: smartHome.spendingChangePct,
+    nearestGoal: smartHome.nearestGoal,
+    onNavigate: onNavigate
+  }), React.createElement("div", null, React.createElement("div", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
@@ -11337,9 +11502,12 @@ function SettingsTab({
   biometricCredentialId,
   onOpenSecurity,
   notificationsEnabled,
-  onToggleNotifications
+  onToggleNotifications,
+  userName,
+  onSetUserName
 }) {
   const [permission, setPermission] = useState(isNotificationSupported() ? Notification.permission : "unsupported");
+  const [nameDraft, setNameDraft] = useState(userName || "");
   async function handleToggleNotifications() {
     if (notificationsEnabled) {
       onToggleNotifications(false);
@@ -11356,6 +11524,31 @@ function SettingsTab({
       gap: 14
     }
   }, React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 4px"
+    }
+  }, "Perfil"), React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      gap: 8,
+      alignItems: "flex-end"
+    }
+  }, React.createElement(Field, {
+    label: "O seu nome (usado na saudação da Visão Geral)",
+    style: {
+      flex: 1
+    }
+  }, React.createElement("input", {
+    style: inputStyle,
+    value: nameDraft,
+    onChange: e => setNameDraft(e.target.value),
+    placeholder: "ex: Afonso"
+  })), React.createElement(GhostButton, {
+    onClick: () => onSetUserName(nameDraft.trim())
+  }, "Guardar"))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 15,
