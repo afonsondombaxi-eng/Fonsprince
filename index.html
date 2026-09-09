@@ -198,6 +198,24 @@ const IconArchive = p => React.createElement(Icon, p, React.createElement("rect"
 }), React.createElement("path", {
   d: "M10 13h4"
 }));
+const IconTag = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"
+}), React.createElement("circle", {
+  cx: "7.5",
+  cy: "7.5",
+  r: "1.5",
+  fill: "currentColor",
+  stroke: "none"
+}));
+const IconBarChart3 = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M3 3v16a2 2 0 0 0 2 2h16"
+}), React.createElement("path", {
+  d: "M7 16v-4"
+}), React.createElement("path", {
+  d: "M12 16V8"
+}), React.createElement("path", {
+  d: "M17 16v-7"
+}));
 const IconPig = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M11 5a5 5 0 0 1 5 5v1h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1v1a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-1a5 5 0 0 1 5-5"
 }), React.createElement("path", {
@@ -6124,6 +6142,7 @@ function Overview({
   userName,
   recurringExpenses
 }) {
+  const [chartsTab, setChartsTab] = useState("evolution");
   const smartHome = useMemo(() => buildSmartHomeInsights({
     recurringExpenses: recurringExpenses || [],
     transactions,
@@ -6158,6 +6177,7 @@ function Overview({
     return map;
   }, [transactions, prevMonthKeyForOverview]);
   const monthlyData = useMemo(() => monthlyHistory(transactions, 6), [transactions]);
+  const monthlyDataFull = useMemo(() => monthlyHistory(transactions, 12), [transactions]);
   const categoryChartData = useMemo(() => Object.entries(spentByCategory).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({
     name,
     value,
@@ -6366,20 +6386,74 @@ function Overview({
     tone: saldo >= 0 ? "emerald" : "rust",
     onClick: () => onNavigate("forecast"),
     sub: `Previsto: ${fmt(expectedIncome)}`
-  }))), React.createElement(Card, null, React.createElement("div", {
+  }))), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 12px"
+    }
+  }, "Gráficos"), React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 10,
+      padding: 4,
+      gap: 2,
+      marginBottom: 18,
+      flexWrap: "wrap"
+    }
+  }, [{
+    id: "evolution",
+    label: "Evolução",
+    icon: IconBarChart3
+  }, {
+    id: "distribution",
+    label: "Distribuição",
+    icon: IconPieChart
+  }, {
+    id: "categories",
+    label: "Categorias",
+    icon: IconTag
+  }, {
+    id: "members",
+    label: "Membros",
+    icon: IconUsers
+  }].map(t => React.createElement("button", {
+    key: t.id,
+    onClick: () => setChartsTab(t.id),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      padding: "7px 12px",
+      borderRadius: 7,
+      border: "none",
+      cursor: "pointer",
+      fontSize: 12.5,
+      fontWeight: 600,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      background: chartsTab === t.id ? "var(--card)" : "transparent",
+      color: chartsTab === t.id ? "var(--gold)" : "var(--slate)",
+      boxShadow: chartsTab === t.id ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+      transition: "background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
+      whiteSpace: "nowrap"
+    }
+  }, React.createElement(t.icon, {
+    size: 14
+  }), t.label))), chartsTab === "evolution" && React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       marginBottom: 4
     }
-  }, React.createElement("h3", {
+  }, React.createElement("p", {
     style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
+      color: "var(--slate)",
+      fontSize: 12.5,
       margin: 0
     }
-  }, "Evolução mensal"), React.createElement("div", {
+  }, "Últimos 6 meses."), React.createElement("div", {
     style: {
       display: "flex",
       gap: 16
@@ -6390,21 +6464,13 @@ function Overview({
   }), React.createElement(LegendDot, {
     color: "var(--rust)",
     label: "Despesas"
-  }))), React.createElement("p", {
+  }))), React.createElement("div", {
     style: {
-      color: "var(--slate)",
-      fontSize: 12.5,
-      margin: "4px 0 14px"
+      marginTop: 14
     }
-  }, "Últimos 6 meses."), React.createElement(MonthlyBarChart, {
+  }, React.createElement(MonthlyBarChart, {
     data: monthlyData
-  })), React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 14px"
-    }
-  }, "Distribuição do dinheiro"), Object.keys(splitByCurrency).length === 0 ? React.createElement("p", {
+  }))), chartsTab === "distribution" && (Object.keys(splitByCurrency).length === 0 ? React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5
@@ -6500,7 +6566,72 @@ function Overview({
         color: "var(--slate)"
       }
     }, "Sem saldo nesta moeda."));
-  }))), interestSummary.rows.length > 0 && React.createElement(Card, null, React.createElement("h3", {
+  }))), chartsTab === "categories" && (Object.keys(spentByCategory).length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Ainda sem despesas registadas este mês.") : React.createElement(React.Fragment, null, React.createElement("div", {
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(CategoryDonut, {
+    data: categoryChartData
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, Object.entries(spentByCategory).map(([cat, val]) => {
+    const limit = Number(categories[cat]) || 0;
+    const pct = limit > 0 ? val / limit * 100 : 0;
+    return React.createElement("div", {
+      key: cat
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 13,
+        marginBottom: 4
+      }
+    }, React.createElement("span", null, cat), React.createElement("span", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, fmt(val), " ", limit > 0 && React.createElement("span", {
+      style: {
+        color: "var(--slate)"
+      }
+    }, "/ ", fmt(limit)))), React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "flex-end",
+        marginBottom: 4
+      }
+    }, React.createElement(DeltaBadge, {
+      current: val,
+      previous: prevSpentByCategory[cat] || 0,
+      invert: true
+    })), limit > 0 && React.createElement(ProgressBar, {
+      pct: pct,
+      tone: pct > 100 ? "rust" : "emerald"
+    }));
+  })))), chartsTab === "members" && (memberTrend.members.length > 0 ? React.createElement(React.Fragment, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "0 0 14px"
+    }
+  }, "Despesas por pessoa, últimos 6 meses — ajuda a perceber quem está a aumentar ou reduzir gastos."), React.createElement(MemberTrendChart, {
+    rows: memberTrend.rows,
+    members: memberTrend.members
+  })) : React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Sem despesas com membro atribuído ainda."))), interestSummary.rows.length > 0 && React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -6619,71 +6750,7 @@ function Overview({
       fontWeight: 600,
       color: "var(--emerald)"
     }
-  }, fmt(byType["A receber"], cur))))))), React.createElement("div", {
-    className: "resp-grid-2col",
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1.3fr 1fr",
-      gap: 18
-    }
-  }, React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 14px"
-    }
-  }, "Despesas por categoria"), Object.keys(spentByCategory).length === 0 ? React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 13.5
-    }
-  }, "Ainda sem despesas registadas este mês.") : React.createElement(React.Fragment, null, React.createElement("div", {
-    style: {
-      marginBottom: 18
-    }
-  }, React.createElement(CategoryDonut, {
-    data: categoryChartData
-  })), React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 12
-    }
-  }, Object.entries(spentByCategory).map(([cat, val]) => {
-    const limit = Number(categories[cat]) || 0;
-    const pct = limit > 0 ? val / limit * 100 : 0;
-    return React.createElement("div", {
-      key: cat
-    }, React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: 13,
-        marginBottom: 4
-      }
-    }, React.createElement("span", null, cat), React.createElement("span", {
-      style: {
-        fontFamily: "'IBM Plex Mono', monospace"
-      }
-    }, fmt(val), " ", limit > 0 && React.createElement("span", {
-      style: {
-        color: "var(--slate)"
-      }
-    }, "/ ", fmt(limit)))), React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "flex-end",
-        marginBottom: 4
-      }
-    }, React.createElement(DeltaBadge, {
-      current: val,
-      previous: prevSpentByCategory[cat] || 0,
-      invert: true
-    })), limit > 0 && React.createElement(ProgressBar, {
-      pct: pct,
-      tone: pct > 100 ? "rust" : "emerald"
-    }));
-  })))), React.createElement(Card, null, React.createElement("h3", {
+  }, fmt(byType["A receber"], cur))))))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -6720,7 +6787,7 @@ function Overview({
       pct: pct,
       tone: "gold"
     }));
-  })))), React.createElement(Card, null, React.createElement("h3", {
+  }))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -6863,22 +6930,7 @@ function Overview({
         color: "var(--slate)"
       }
     }, "Menor utilização: "), React.createElement("strong", null, bottom[0], " (", bottomPct.toFixed(0), "%)")));
-  })()), memberTrend.members.length > 0 && React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, "Evolução mensal por membro"), React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 12.5,
-      margin: "4px 0 14px"
-    }
-  }, "Despesas por pessoa, últimos 6 meses — ajuda a perceber quem está a aumentar ou reduzir gastos."), React.createElement(MemberTrendChart, {
-    rows: memberTrend.rows,
-    members: memberTrend.members
-  })));
+  })()));
 }
 const TYPE_BADGE_COLOR = {
   "À ordem": "#12A150",
@@ -12870,7 +12922,6 @@ function BudgetTab({
     expenseCategories: expenseCategories,
     isStaffRow: true
   }))))), React.createElement("div", {
-    className: "resp-grid-2col",
     style: {
       display: "grid",
       gridTemplateColumns: "1.2fr 1fr",
