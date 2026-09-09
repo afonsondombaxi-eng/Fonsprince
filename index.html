@@ -5702,96 +5702,206 @@ function SmartHomeCard({
   nearestGoal,
   onNavigate
 }) {
-  const hour = new Date().getHours();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const now = new Date();
+  const hour = now.getHours();
   const greeting = hour >= 5 && hour < 12 ? "Bom dia" : hour >= 12 && hour < 18 ? "Boa tarde" : "Boa noite";
-  const hasAnyInsight = pendingCount > 0 || spendingChangePct !== null || !!nearestGoal;
-  return React.createElement(Card, {
+  const dateLabelRaw = now.toLocaleDateString("pt-PT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  });
+  const dateLabel = dateLabelRaw.charAt(0).toUpperCase() + dateLabelRaw.slice(1);
+  const initials = (userName || "").trim().slice(0, 2).toUpperCase();
+  const rows = [];
+  if (pendingCount > 0) {
+    rows.push({
+      key: "pending",
+      icon: "⚠️",
+      iconBg: "rgba(209,52,56,0.24)",
+      title: `${pendingCount} pagamento${pendingCount > 1 ? "s" : ""} pendente${pendingCount > 1 ? "s" : ""}`,
+      subtitle: "Toque para ver e resolver",
+      onClick: () => onNavigate("alerts")
+    });
+  }
+  if (spendingChangePct !== null) {
+    const down = spendingChangePct <= 0;
+    rows.push({
+      key: "spend",
+      icon: down ? "📉" : "📈",
+      iconBg: down ? "rgba(18,161,80,0.24)" : "rgba(184,130,60,0.24)",
+      title: `Gastou ${Math.abs(spendingChangePct).toFixed(0)}% ${down ? "menos" : "mais"}`,
+      subtitle: "Face ao mês passado",
+      onClick: () => onNavigate("budget")
+    });
+  }
+  if (nearestGoal) {
+    rows.push({
+      key: "goal",
+      icon: "🎯",
+      iconBg: "rgba(184,130,60,0.24)",
+      title: `${nearestGoal.pct.toFixed(0)}% da meta "${nearestGoal.name}"`,
+      subtitle: null,
+      progress: nearestGoal.pct,
+      onClick: () => onNavigate("goals")
+    });
+  }
+  const hasAnyInsight = rows.length > 0;
+  return React.createElement("div", {
     style: {
-      background: "linear-gradient(135deg, var(--sidebar) 0%, #17284D 100%)",
-      color: "#fff",
+      position: "relative",
+      overflow: "hidden",
+      borderRadius: 16,
       marginBottom: 18,
-      border: "none"
+      background: "linear-gradient(135deg, #101E40 0%, #1B2F5C 55%, #17284D 100%)",
+      boxShadow: "0 12px 30px rgba(10,20,45,0.28)",
+      opacity: mounted ? 1 : 0,
+      transform: mounted ? "translateY(0)" : "translateY(8px)",
+      transition: "opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: -60,
+      right: -60,
+      width: 200,
+      height: 200,
+      borderRadius: "50%",
+      background: "radial-gradient(circle, rgba(184,130,60,0.28) 0%, rgba(184,130,60,0) 70%)",
+      pointerEvents: "none"
+    }
+  }), React.createElement("div", {
+    style: {
+      position: "relative",
+      padding: "20px 20px 18px"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 42,
+      height: 42,
+      borderRadius: "50%",
+      background: "rgba(255,255,255,0.14)",
+      border: "1px solid rgba(255,255,255,0.22)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 15,
+      fontWeight: 700,
+      color: "#fff",
+      flexShrink: 0,
+      fontFamily: "Inter, sans-serif"
+    }
+  }, initials || "🙂"), React.createElement("div", {
+    style: {
+      minWidth: 0
     }
   }, React.createElement("div", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 17,
-      fontWeight: 700
+      fontSize: 18,
+      fontWeight: 700,
+      color: "#fff",
+      lineHeight: 1.2
     }
-  }, greeting, userName ? `, ${userName}` : "", "."), hasAnyInsight && React.createElement("div", {
+  }, greeting, userName ? `, ${userName}` : ""), React.createElement("div", {
     style: {
-      marginTop: 10,
+      fontSize: 12,
+      color: "rgba(255,255,255,0.55)",
+      marginTop: 2
+    }
+  }, dateLabel))), hasAnyInsight ? React.createElement("div", {
+    style: {
+      marginTop: 16,
       display: "flex",
       flexDirection: "column",
-      gap: 6
+      gap: 8
+    }
+  }, rows.map(row => React.createElement("button", {
+    key: row.key,
+    onClick: row.onClick,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      width: "100%",
+      textAlign: "left",
+      background: "rgba(255,255,255,0.07)",
+      border: "1px solid rgba(255,255,255,0.10)",
+      borderRadius: 12,
+      padding: "10px 12px",
+      cursor: "pointer",
+      fontFamily: "Inter, sans-serif"
     }
   }, React.createElement("div", {
     style: {
-      fontSize: 12.5,
-      color: "rgba(255,255,255,0.7)",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.4
-    }
-  }, "Hoje tem"), pendingCount > 0 && React.createElement("div", {
-    style: {
-      fontSize: 13.5
-    }
-  }, "⚠️ ", pendingCount, " pagamento", pendingCount > 1 ? "s" : "", " pendente", pendingCount > 1 ? "s" : ""), spendingChangePct !== null && React.createElement("div", {
-    style: {
-      fontSize: 13.5
-    }
-  }, spendingChangePct <= 0 ? "📉" : "📈", " Gastou ", Math.abs(spendingChangePct).toFixed(0), "% ", spendingChangePct <= 0 ? "menos" : "mais", " que no mês passado"), nearestGoal && React.createElement("div", {
-    style: {
-      fontSize: 13.5
-    }
-  }, "🎯 Está ", nearestGoal.pct.toFixed(0), "% próximo da meta \"", nearestGoal.name, "\"")), hasAnyInsight && React.createElement("div", {
-    style: {
+      width: 34,
+      height: 34,
+      borderRadius: "50%",
+      background: row.iconBg,
       display: "flex",
-      gap: 8,
-      marginTop: 14,
-      flexWrap: "wrap"
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 15,
+      flexShrink: 0
     }
-  }, pendingCount > 0 && React.createElement("button", {
-    onClick: () => onNavigate("alerts"),
+  }, row.icon), React.createElement("div", {
     style: {
-      padding: "8px 14px",
-      borderRadius: 20,
-      border: "none",
+      flex: 1,
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#fff",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    }
+  }, row.title), row.subtitle && React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "rgba(255,255,255,0.55)",
+      marginTop: 1
+    }
+  }, row.subtitle), row.progress !== undefined && React.createElement("div", {
+    style: {
+      marginTop: 6,
+      height: 4,
+      borderRadius: 2,
+      background: "rgba(255,255,255,0.15)",
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      height: "100%",
+      width: `${Math.min(row.progress, 100)}%`,
       background: "var(--gold)",
-      color: "#fff",
-      fontSize: 12.5,
-      fontWeight: 700,
-      cursor: "pointer",
-      fontFamily: "Inter, sans-serif"
+      borderRadius: 2
     }
-  }, "Pagar Agora"), nearestGoal && React.createElement("button", {
-    onClick: () => onNavigate("goals"),
+  }))), React.createElement("span", {
     style: {
-      padding: "8px 14px",
-      borderRadius: 20,
-      border: "1px solid rgba(255,255,255,0.35)",
-      background: "rgba(255,255,255,0.08)",
-      color: "#fff",
-      fontSize: 12.5,
-      fontWeight: 700,
-      cursor: "pointer",
-      fontFamily: "Inter, sans-serif"
+      color: "rgba(255,255,255,0.4)",
+      fontSize: 16,
+      flexShrink: 0
     }
-  }, "Ver Meta"), spendingChangePct !== null && React.createElement("button", {
-    onClick: () => onNavigate("budget"),
+  }, "›")))) : React.createElement("div", {
     style: {
-      padding: "8px 14px",
-      borderRadius: 20,
-      border: "1px solid rgba(255,255,255,0.35)",
-      background: "rgba(255,255,255,0.08)",
-      color: "#fff",
+      marginTop: 14,
       fontSize: 12.5,
-      fontWeight: 700,
-      cursor: "pointer",
-      fontFamily: "Inter, sans-serif"
+      color: "rgba(255,255,255,0.55)"
     }
-  }, "Analisar Gastos")));
+  }, "Está tudo em dia. 🎉")));
 }
 function Overview({
   accounts,
