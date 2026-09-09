@@ -211,6 +211,13 @@ const IconTag = p => React.createElement(Icon, p, React.createElement("path", {
   fill: "currentColor",
   stroke: "none"
 }));
+const IconAward = p => React.createElement(Icon, p, React.createElement("circle", {
+  cx: "12",
+  cy: "8",
+  r: "6"
+}), React.createElement("path", {
+  d: "M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"
+}));
 const IconBarChart3 = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M3 3v16a2 2 0 0 0 2 2h16"
 }), React.createElement("path", {
@@ -6146,8 +6153,10 @@ function Overview({
   userName,
   recurringExpenses
 }) {
-  const [chartsTab, setChartsTab] = useState("evolution");
+  const [chartsTab, setChartsTab] = useState("balance");
   const [pressedChartTab, setPressedChartTab] = useState(null);
+  const [summaryTab, setSummaryTab] = useState("interest");
+  const [pressedSummaryTab, setPressedSummaryTab] = useState(null);
   const smartHome = useMemo(() => buildSmartHomeInsights({
     recurringExpenses: recurringExpenses || [],
     transactions,
@@ -6327,21 +6336,7 @@ function Overview({
       flexShrink: 0,
       color: "rgba(255,255,255,0.85)"
     }
-  }), React.createElement("span", null, ins.text))))), React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, "Evolução do Saldo Consolidado"), React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 12.5,
-      margin: "4px 0 14px"
-    }
-  }, "Últimos 12 meses, convertido para Kz segundo as taxas de câmbio definidas."), React.createElement(ConsolidatedTrendChart, {
-    data: balanceTrend12m
-  })), React.createElement("div", null, React.createElement("div", {
+  }), React.createElement("span", null, ins.text))))), React.createElement("div", null, React.createElement("div", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
@@ -6408,6 +6403,10 @@ function Overview({
       flexWrap: "wrap"
     }
   }, [{
+    id: "balance",
+    label: "Saldo",
+    icon: IconWallet
+  }, {
     id: "evolution",
     label: "Evolução",
     icon: IconBarChart3
@@ -6423,6 +6422,10 @@ function Overview({
     id: "members",
     label: "Membros",
     icon: IconUsers
+  }, {
+    id: "family",
+    label: "Consolidado",
+    icon: IconAward
   }].map(t => {
     const isActive = chartsTab === t.id;
     const isPressed = pressedChartTab === t.id;
@@ -6471,7 +6474,15 @@ function Overview({
     style: {
       animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
     }
-  }, chartsTab === "evolution" && React.createElement(React.Fragment, null, React.createElement("div", {
+  }, chartsTab === "balance" && React.createElement(React.Fragment, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "0 0 14px"
+    }
+  }, "Últimos 12 meses, convertido para Kz segundo as taxas de câmbio definidas."), React.createElement(ConsolidatedTrendChart, {
+    data: balanceTrend12m
+  })), chartsTab === "evolution" && React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -6662,196 +6673,16 @@ function Overview({
       color: "var(--slate)",
       fontSize: 13.5
     }
-  }, "Sem despesas com membro atribuído ainda.")))), interestSummary.rows.length > 0 && React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, "Juros — poupança e investimentos"), React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 12.5,
-      margin: "0 0 14px"
-    }
-  }, "Acumulado estimado: ", React.createElement("strong", {
-    style: {
-      color: "var(--gold)"
-    }
-  }, fmt(interestSummary.accruedTotal)), " · Projeção anual: ", React.createElement("strong", {
-    style: {
-      color: "var(--gold)"
-    }
-  }, fmt(interestSummary.projectedTotal))), React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 10
-    }
-  }, interestSummary.rows.map(({
-    account,
-    sub,
-    principal,
-    accrued
-  }) => React.createElement("div", {
-    key: sub.id,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      fontSize: 13,
-      borderBottom: "1px solid var(--line)",
-      paddingBottom: 8
-    }
-  }, React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontWeight: 600
-    }
-  }, sub.label || sub.type, " ", React.createElement("span", {
-    style: {
-      color: "var(--slate)",
-      fontWeight: 400
-    }
-  }, "— ", account.bank.replace(/—.*/, "").trim())), React.createElement("div", {
-    style: {
-      fontSize: 11.5,
-      color: "var(--slate)"
-    }
-  }, fmt(principal, account.currency), " a ", sub.interestRate, "% a.a.")), React.createElement("div", {
-    style: {
-      textAlign: "right"
-    }
-  }, React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      color: "var(--gold)",
-      fontWeight: 600
-    }
-  }, "+", fmt(accrued, account.currency)), React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "var(--slate)"
-    }
-  }, "acumulado")))))), Object.keys(debtsByCurrency).length > 0 && React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, "Dívidas"), overdueDebts.length > 0 && React.createElement("p", {
-    style: {
-      color: "var(--rust)",
-      fontSize: 12.5,
-      margin: "0 0 10px",
-      fontWeight: 600
-    }
-  }, overdueDebts.length, " dívida", overdueDebts.length > 1 ? "s" : "", " vencida", overdueDebts.length > 1 ? "s" : ""), React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 24,
-      flexWrap: "wrap"
-    }
-  }, Object.entries(debtsByCurrency).map(([cur, byType]) => React.createElement("div", {
-    key: cur,
-    style: {
-      display: "flex",
-      gap: 24
-    }
-  }, byType["A pagar"] > 0 && React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)"
-    }
-  }, "A pagar (", cur, ")"), React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 18,
-      fontWeight: 600,
-      color: "var(--rust)"
-    }
-  }, fmt(byType["A pagar"], cur))), byType["A receber"] > 0 && React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)"
-    }
-  }, "A receber (", cur, ")"), React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 18,
-      fontWeight: 600,
-      color: "var(--emerald)"
-    }
-  }, fmt(byType["A receber"], cur))))))), React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 14px"
-    }
-  }, "Metas de poupança"), goals.length === 0 ? React.createElement("p", {
+  }, "Sem despesas com membro atribuído ainda.")), chartsTab === "family" && (familyBreakdown.length === 0 ? React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5
     }
-  }, "Sem metas criadas.") : React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 12
-    }
-  }, goals.slice(0, 4).map(g => {
-    const pct = Number(g.current) / Number(g.target) * 100;
-    return React.createElement("div", {
-      key: g.id
-    }, React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: 13,
-        marginBottom: 4
-      }
-    }, React.createElement("span", null, g.name), React.createElement("span", {
-      style: {
-        fontFamily: "'IBM Plex Mono', monospace",
-        color: "var(--slate)"
-      }
-    }, Math.round(pct), "%")), React.createElement(ProgressBar, {
-      pct: pct,
-      tone: "gold"
-    }));
-  }))), React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 14px"
-    }
-  }, "Contas"), accounts.length === 0 ? React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 13.5
-    }
-  }, "Ainda não adicionou nenhuma conta bancária.") : React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 14,
-      flexWrap: "wrap"
-    }
-  }, accounts.map(a => React.createElement(AccountCard, {
-    key: a.id,
-    account: a,
-    transactions: transactions,
-    exchangeRates: exchangeRates,
-    compact: true
-  })))), familyBreakdown.length > 0 && React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, "Consolidado por membro da família"), React.createElement("p", {
+  }, "Sem despesas com membro atribuído ainda.") : React.createElement(React.Fragment, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
-      margin: "4px 0 14px"
+      margin: "0 0 14px"
     }
   }, "Despesas do mês, agrupadas pela etiqueta de membro que definiu em cada movimento."), React.createElement("div", {
     style: {
@@ -6961,7 +6792,254 @@ function Overview({
         color: "var(--slate)"
       }
     }, "Menor utilização: "), React.createElement("strong", null, bottom[0], " (", bottomPct.toFixed(0), "%)")));
-  })()));
+  })())))), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 12px"
+    }
+  }, "Resumo Financeiro"), React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 10,
+      padding: 4,
+      gap: 2,
+      marginBottom: 18,
+      flexWrap: "wrap"
+    }
+  }, [{
+    id: "interest",
+    label: "Juros",
+    icon: IconPig
+  }, {
+    id: "debts",
+    label: "Dívidas",
+    icon: IconCreditCard
+  }, {
+    id: "goals",
+    label: "Metas",
+    icon: IconTarget
+  }].map(t => {
+    const isActive = summaryTab === t.id;
+    const isPressed = pressedSummaryTab === t.id;
+    return React.createElement("button", {
+      key: t.id,
+      onClick: () => setSummaryTab(t.id),
+      onMouseDown: () => {
+        setPressedSummaryTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onMouseUp: () => setPressedSummaryTab(null),
+      onMouseLeave: () => setPressedSummaryTab(p => p === t.id ? null : p),
+      onTouchStart: () => {
+        setPressedSummaryTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onTouchEnd: () => setPressedSummaryTab(null),
+      onTouchCancel: () => setPressedSummaryTab(null),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "7px 12px",
+        borderRadius: 7,
+        border: "none",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: 600,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: isActive ? "var(--card)" : "transparent",
+        color: isActive ? "var(--gold)" : "var(--slate)",
+        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+        transform: isPressed ? "scale(0.91)" : "scale(1)",
+        transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
+        whiteSpace: "nowrap"
+      }
+    }, React.createElement(t.icon, {
+      size: 14
+    }), t.label);
+  })), React.createElement("div", {
+    key: summaryTab,
+    style: {
+      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  }, summaryTab === "interest" && (interestSummary.rows.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Sem juros a acumular este mês.") : React.createElement(React.Fragment, null, React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "0 0 14px"
+    }
+  }, "Acumulado estimado: ", React.createElement("strong", {
+    style: {
+      color: "var(--gold)"
+    }
+  }, fmt(interestSummary.accruedTotal)), " · Projeção anual: ", React.createElement("strong", {
+    style: {
+      color: "var(--gold)"
+    }
+  }, fmt(interestSummary.projectedTotal))), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, interestSummary.rows.map(({
+    account,
+    sub,
+    principal,
+    accrued
+  }) => React.createElement("div", {
+    key: sub.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 13,
+      borderBottom: "1px solid var(--line)",
+      paddingBottom: 8
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontWeight: 600
+    }
+  }, sub.label || sub.type, " ", React.createElement("span", {
+    style: {
+      color: "var(--slate)",
+      fontWeight: 400
+    }
+  }, "— ", account.bank.replace(/—.*/, "").trim())), React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)"
+    }
+  }, fmt(principal, account.currency), " a ", sub.interestRate, "% a.a.")), React.createElement("div", {
+    style: {
+      textAlign: "right"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: "var(--gold)",
+      fontWeight: 600
+    }
+  }, "+", fmt(accrued, account.currency)), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "acumulado"))))))), summaryTab === "debts" && (Object.keys(debtsByCurrency).length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Sem dívidas registadas.") : React.createElement(React.Fragment, null, overdueDebts.length > 0 && React.createElement("p", {
+    style: {
+      color: "var(--rust)",
+      fontSize: 12.5,
+      margin: "0 0 10px",
+      fontWeight: 600
+    }
+  }, overdueDebts.length, " dívida", overdueDebts.length > 1 ? "s" : "", " vencida", overdueDebts.length > 1 ? "s" : ""), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 24,
+      flexWrap: "wrap"
+    }
+  }, Object.entries(debtsByCurrency).map(([cur, byType]) => React.createElement("div", {
+    key: cur,
+    style: {
+      display: "flex",
+      gap: 24
+    }
+  }, byType["A pagar"] > 0 && React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, "A pagar (", cur, ")"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 18,
+      fontWeight: 600,
+      color: "var(--rust)"
+    }
+  }, fmt(byType["A pagar"], cur))), byType["A receber"] > 0 && React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, "A receber (", cur, ")"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 18,
+      fontWeight: 600,
+      color: "var(--emerald)"
+    }
+  }, fmt(byType["A receber"], cur)))))))), summaryTab === "goals" && (goals.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Sem metas criadas.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, goals.slice(0, 4).map(g => {
+    const pct = Number(g.current) / Number(g.target) * 100;
+    return React.createElement("div", {
+      key: g.id
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 13,
+        marginBottom: 4
+      }
+    }, React.createElement("span", null, g.name), React.createElement("span", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        color: "var(--slate)"
+      }
+    }, Math.round(pct), "%")), React.createElement(ProgressBar, {
+      pct: pct,
+      tone: "gold"
+    }));
+  }))))), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 14px"
+    }
+  }, "Contas"), accounts.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Ainda não adicionou nenhuma conta bancária.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 14,
+      flexWrap: "wrap"
+    }
+  }, accounts.map(a => React.createElement(AccountCard, {
+    key: a.id,
+    account: a,
+    transactions: transactions,
+    exchangeRates: exchangeRates,
+    compact: true
+  })))));
 }
 const TYPE_BADGE_COLOR = {
   "À ordem": "#12A150",
