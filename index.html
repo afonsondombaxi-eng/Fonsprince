@@ -3527,16 +3527,38 @@ function FinanceApp() {
     }
   }, []);
   const contentScrollRef = useRef(null);
+  function scrollAppToTop(behavior) {
+    const opts = {
+      top: 0,
+      left: 0,
+      behavior
+    };
+    try {
+      window.scrollTo(opts);
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
+    try {
+      document.documentElement && document.documentElement.scrollTo(opts);
+    } catch (e) {
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+    }
+    try {
+      document.body && document.body.scrollTo(opts);
+    } catch (e) {
+      if (document.body) document.body.scrollTop = 0;
+    }
+    try {
+      contentScrollRef.current && contentScrollRef.current.scrollTo(opts);
+    } catch (e) {
+      if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+    }
+  }
   function selectTab(t) {
     const samePage = tab === t;
     setTab(t);
     setSidebarCollapsed(true);
-    if (contentScrollRef.current) {
-      contentScrollRef.current.scrollTo({
-        top: 0,
-        behavior: samePage ? "smooth" : "auto"
-      });
-    }
+    scrollAppToTop(samePage ? "smooth" : "auto");
   }
   const [confirmAction, setConfirmAction] = useState(null);
   function askConfirm(message, onConfirm, detail) {
