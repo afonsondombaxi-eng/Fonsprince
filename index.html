@@ -369,6 +369,9 @@ const IconFlame = p => React.createElement(Icon, p, React.createElement("path", 
 const IconChevronLeft = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M15 18l-6-6 6-6"
 }));
+const IconChevronRight = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M9 18l6-6-6-6"
+}));
 const IconChevronDown = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M6 9l6 6 6-6"
 }));
@@ -7561,6 +7564,61 @@ function AccountsTab({
   const [search, setSearch] = useState("");
   const [quickFilter, setQuickFilter] = useState("Todos");
   const [sortBy, setSortBy] = useState("saldo");
+  const [stack, setStack] = useState([]);
+  const [pressedKey, setPressedKey] = useState(null);
+  const depth = stack.length;
+  function pressRow(key) {
+    setPressedKey(key);
+    try {
+      navigator.vibrate && navigator.vibrate(9);
+    } catch (e) {}
+  }
+  function releaseRow() {
+    setPressedKey(null);
+  }
+  function openAccount(id) {
+    setStack([{
+      type: "account",
+      id
+    }]);
+  }
+  function openSub(id) {
+    setStack(s => [s[0], {
+      type: "sub",
+      id
+    }]);
+  }
+  function goBack() {
+    try {
+      navigator.vibrate && navigator.vibrate(8);
+    } catch (e) {}
+    setStack(s => s.slice(0, -1));
+  }
+  const activeAccount = stack[0] ? accounts.find(a => a.id === stack[0].id) : null;
+  const activeSub = stack[1] && activeAccount ? (activeAccount.subBalances || []).find(s => s.id === stack[1].id) : null;
+  function layerTransform(layerIdx) {
+    if (layerIdx > depth) return {
+      transform: "translateX(100%)",
+      filter: "none",
+      zIndex: layerIdx + 1,
+      boxShadow: "none",
+      pointerEvents: "none"
+    };
+    if (layerIdx === depth) return {
+      transform: "translateX(0) scale(1)",
+      filter: "none",
+      zIndex: layerIdx + 1,
+      boxShadow: layerIdx > 0 ? "-6px 0 18px rgba(16,24,40,0.10)" : "none",
+      pointerEvents: "auto"
+    };
+    return {
+      transform: "translateX(-10px) scale(0.965)",
+      filter: "brightness(0.92)",
+      zIndex: layerIdx + 1,
+      boxShadow: "none",
+      pointerEvents: "none"
+    };
+  }
   const byBank = accounts.length ? Object.entries(accounts.reduce((map, a) => {
     const bankName = a.bank.replace(/—.*/, "").trim();
     const total = accountTotal(a, transactions);
@@ -7757,17 +7815,745 @@ function AccountsTab({
     }
   }, "Nenhuma conta corresponde à pesquisa/filtro.")) : React.createElement("div", {
     style: {
-      display: "flex",
-      gap: 16,
-      flexWrap: "wrap"
+      position: "relative",
+      overflow: "hidden",
+      borderRadius: 14,
+      minHeight: 460,
+      border: "1px solid var(--line)",
+      background: "var(--paper)"
     }
-  }, sortedAccounts.map(a => React.createElement(AccountCard, {
-    key: a.id,
-    account: a,
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      overflowY: "auto",
+      padding: 12,
+      transition: "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), filter 0.34s ease",
+      ...layerTransform(0)
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, sortedAccounts.map(a => {
+    const key = `acc-${a.id}`;
+    return React.createElement(AccountRow, {
+      key: a.id,
+      account: a,
+      transactions: transactions,
+      hasAlert: accountHasAlert(a),
+      pressed: pressedKey === key,
+      onPress: () => pressRow(key),
+      onRelease: releaseRow,
+      onClick: () => {
+        try {
+          navigator.vibrate && navigator.vibrate(10);
+        } catch (e) {}
+        openAccount(a.id);
+      }
+    });
+  }))), React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      overflowY: "auto",
+      background: "var(--card)",
+      borderRadius: 14,
+      transition: "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), filter 0.34s ease",
+      ...layerTransform(1)
+    }
+  }, activeAccount && React.createElement(AccountDetailPanel, {
+    account: activeAccount,
     transactions: transactions,
     exchangeRates: exchangeRates,
-    onRemove: onRemove,
-    onEdit: onEdit
+    onBack: goBack,
+    onEdit: () => onEdit(activeAccount),
+    onRemove: () => onRemove(activeAccount.id),
+    onOpenSub: id => {
+      try {
+        navigator.vibrate && navigator.vibrate(10);
+      } catch (e) {}
+      openSub(id);
+    },
+    pressedKey: pressedKey,
+    onPress: pressRow,
+    onRelease: releaseRow
+  })), React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      overflowY: "auto",
+      background: "var(--card)",
+      borderRadius: 14,
+      transition: "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), filter 0.34s ease",
+      ...layerTransform(2)
+    }
+  }, activeSub && activeAccount && React.createElement(SubBalanceDetailPanel, {
+    sub: activeSub,
+    account: activeAccount,
+    transactions: transactions,
+    onBack: goBack
+  })))));
+}
+function AccountRow({
+  account,
+  transactions,
+  hasAlert,
+  pressed,
+  onPress,
+  onRelease,
+  onClick
+}) {
+  const total = accountTotal(account, transactions);
+  const presentTypes = Array.from(new Set((account.subBalances || []).map(sb => sb.type)));
+  return React.createElement("button", {
+    onClick: onClick,
+    onMouseDown: onPress,
+    onMouseUp: onRelease,
+    onMouseLeave: onRelease,
+    onTouchStart: onPress,
+    onTouchEnd: onRelease,
+    onTouchCancel: onRelease,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      width: "100%",
+      textAlign: "left",
+      padding: "13px 14px",
+      border: "1px solid var(--line)",
+      borderRadius: 10,
+      background: "var(--card)",
+      cursor: "pointer",
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      transform: pressed ? "scale(0.97)" : "scale(1)",
+      transition: pressed ? "transform 0.1s ease" : "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 36,
+      height: 36,
+      borderRadius: "50%",
+      border: "1.5px solid var(--gold)",
+      color: "var(--gold)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 10.5,
+      fontWeight: 700,
+      flexShrink: 0
+    }
+  }, seal(account.bank)), React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 14,
+      fontWeight: 600,
+      color: "var(--ink)"
+    }
+  }, React.createElement("span", {
+    style: {
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, account.bank.replace(/—.*/, "").trim()), hasAlert && React.createElement("span", {
+    style: {
+      width: 6,
+      height: 6,
+      borderRadius: "50%",
+      background: "var(--rust)",
+      flexShrink: 0
+    },
+    title: "Tem alertas pendentes"
+  })), account.nickname && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginTop: 1
+    }
+  }, account.nickname), presentTypes.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      marginTop: 5
+    }
+  }, presentTypes.map(t => React.createElement("span", {
+    key: t,
+    style: {
+      width: 6,
+      height: 6,
+      borderRadius: "50%",
+      background: TYPE_BADGE_COLOR[t],
+      flexShrink: 0
+    },
+    title: t
+  })))), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 14,
+      color: "var(--ink)",
+      flexShrink: 0
+    }
+  }, fmt(total, account.currency)), React.createElement(IconChevronRight, {
+    size: 16,
+    style: {
+      color: "var(--slate)",
+      flexShrink: 0
+    }
+  }));
+}
+function CascadeHeader({
+  title,
+  subtitle,
+  onBack,
+  actions
+}) {
+  const [backPressed, setBackPressed] = useState(false);
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "14px 16px",
+      borderBottom: "1px solid var(--line)",
+      position: "sticky",
+      top: 0,
+      background: "var(--card)",
+      zIndex: 1
+    }
+  }, React.createElement("button", {
+    onClick: onBack,
+    onMouseDown: () => {
+      setBackPressed(true);
+      try {
+        navigator.vibrate && navigator.vibrate(8);
+      } catch (e) {}
+    },
+    onMouseUp: () => setBackPressed(false),
+    onMouseLeave: () => setBackPressed(false),
+    onTouchStart: () => {
+      setBackPressed(true);
+      try {
+        navigator.vibrate && navigator.vibrate(8);
+      } catch (e) {}
+    },
+    onTouchEnd: () => setBackPressed(false),
+    onTouchCancel: () => setBackPressed(false),
+    style: {
+      background: "var(--paper)",
+      border: "none",
+      borderRadius: "50%",
+      width: 32,
+      height: 32,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "var(--ink)",
+      cursor: "pointer",
+      flexShrink: 0,
+      transform: backPressed ? "scale(0.88)" : "scale(1)",
+      transition: backPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  }, React.createElement(IconChevronLeft, {
+    size: 17
+  })), React.createElement("div", {
+    style: {
+      minWidth: 0,
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--ink)",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, title), subtitle && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)"
+    }
+  }, subtitle)), actions);
+}
+function AccountDetailPanel({
+  account,
+  transactions,
+  exchangeRates,
+  onBack,
+  onEdit,
+  onRemove,
+  onOpenSub,
+  pressedKey,
+  onPress,
+  onRelease
+}) {
+  const total = accountTotal(account, transactions);
+  const breakdown = typeBreakdown(account, transactions);
+  const kzEquivalent = account.currency !== "Kz" && exchangeRates ? toKz(total, account.currency, exchangeRates) : null;
+  const subTypeShortLabel = {
+    "À ordem": "À Ordem",
+    Poupança: "Poupança",
+    Investimento: "Invest."
+  };
+  const distColors = {
+    "À ordem": "var(--ink)",
+    Poupança: "var(--emerald)",
+    Investimento: "var(--gold)"
+  };
+  const related = transactions.filter(t => (account.subBalances || []).some(sb => sb.id === t.subBalanceId) || t.fromAccountId === account.id || t.toAccountId === account.id).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0).slice(0, 8);
+  return React.createElement("div", null, React.createElement(CascadeHeader, {
+    title: account.bank.replace(/—.*/, "").trim(),
+    subtitle: account.nickname,
+    onBack: onBack,
+    actions: React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 4
+      }
+    }, React.createElement("button", {
+      onClick: onEdit,
+      style: {
+        background: "none",
+        border: "none",
+        color: "var(--slate)",
+        cursor: "pointer",
+        padding: 6
+      },
+      title: "Editar conta"
+    }, React.createElement(IconPencil, {
+      size: 15
+    })), React.createElement("button", {
+      onClick: onRemove,
+      style: {
+        background: "none",
+        border: "none",
+        color: "var(--slate)",
+        cursor: "pointer",
+        padding: 6
+      },
+      title: "Remover conta"
+    }, React.createElement(IconTrash, {
+      size: 15
+    })))
+  }), React.createElement("div", {
+    style: {
+      padding: 18
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, "Saldo Disponível"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 26,
+      fontWeight: 700,
+      color: "var(--ink)",
+      marginTop: 4
+    }
+  }, fmt(total, account.currency)), kzEquivalent !== null && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginTop: 3
+    }
+  }, "≈ ", fmt(kzEquivalent)), React.createElement("div", {
+    style: {
+      marginTop: 20,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 10
+    }
+  }, "Saldos por tipo"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, (account.subBalances || []).map(sb => {
+    const val = availableBalance(sb, transactions);
+    const p = total > 0 ? val / total * 100 : 0;
+    const key = `sub-${sb.id}`;
+    return React.createElement("button", {
+      key: sb.id,
+      onClick: () => onOpenSub(sb.id),
+      onMouseDown: () => onPress(key),
+      onMouseUp: onRelease,
+      onMouseLeave: onRelease,
+      onTouchStart: () => onPress(key),
+      onTouchEnd: onRelease,
+      onTouchCancel: onRelease,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        textAlign: "left",
+        padding: "10px 12px",
+        borderRadius: 8,
+        border: "1px solid var(--line)",
+        background: "var(--paper)",
+        cursor: "pointer",
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        transform: pressedKey === key ? "scale(0.97)" : "scale(1)",
+        transition: pressedKey === key ? "transform 0.1s ease" : "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
+      }
+    }, React.createElement("span", {
+      style: {
+        width: 9,
+        height: 9,
+        borderRadius: "50%",
+        background: distColors[sb.type],
+        flexShrink: 0
+      }
+    }), React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, React.createElement("div", {
+      style: {
+        fontSize: 13,
+        color: "var(--ink)",
+        fontWeight: 600
+      }
+    }, sb.label || subTypeShortLabel[sb.type]), React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)"
+      }
+    }, subTypeShortLabel[sb.type], " ", sb.interestRate ? `· ${sb.interestRate}% a.a.` : "")), React.createElement("div", {
+      style: {
+        textAlign: "right",
+        flexShrink: 0
+      }
+    }, React.createElement("div", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontWeight: 700,
+        fontSize: 13,
+        color: "var(--ink)"
+      }
+    }, fmt(val, account.currency)), React.createElement("div", {
+      style: {
+        fontSize: 10.5,
+        color: "var(--slate)"
+      }
+    }, p.toFixed(0), "%")), React.createElement(IconChevronRight, {
+      size: 14,
+      style: {
+        color: "var(--slate)",
+        flexShrink: 0
+      }
+    }));
+  })), React.createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, React.createElement(SplitBar, {
+    breakdown: breakdown,
+    total: total
+  }))), related.length > 0 && React.createElement("div", {
+    style: {
+      marginTop: 20,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 10
+    }
+  }, "Movimentos recentes"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, related.map(t => {
+    const isTransfer = t.kind === "transferencia";
+    const isOutgoing = isTransfer && t.fromAccountId === account.id;
+    const signedAmount = isTransfer ? isOutgoing ? -Number(t.amount) : Number(t.amount) : t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
+    const label = isTransfer ? isOutgoing ? "Transferência enviada" : "Transferência recebida" : t.description || t.category;
+    return React.createElement("div", {
+      key: t.id,
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 10
+      }
+    }, React.createElement("div", {
+      style: {
+        minWidth: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, signedAmount >= 0 ? React.createElement(IconArrowDownLeft, {
+      size: 13,
+      style: {
+        color: "var(--emerald)",
+        flexShrink: 0
+      }
+    }) : React.createElement(IconArrowUpRight, {
+      size: 13,
+      style: {
+        color: "var(--rust)",
+        flexShrink: 0
+      }
+    }), React.createElement("div", {
+      style: {
+        minWidth: 0
+      }
+    }, React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: "var(--ink)",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, label), React.createElement("div", {
+      style: {
+        fontSize: 10.5,
+        color: "var(--slate)"
+      }
+    }, new Date(t.date + "T00:00:00").toLocaleDateString("pt-PT")))), React.createElement("div", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontWeight: 700,
+        fontSize: 13,
+        color: signedAmount >= 0 ? "var(--emerald)" : "var(--rust)",
+        flexShrink: 0
+      }
+    }, signedAmount >= 0 ? "+" : "", fmt(signedAmount, account.currency)));
+  })))));
+}
+function SubBalanceDetailPanel({
+  sub,
+  account,
+  transactions,
+  onBack
+}) {
+  const principal = availableBalance(sub, transactions);
+  const accrued = accruedInterest(sub, principal);
+  const projected = annualProjectedInterest(sub, principal);
+  const subTx = transactions.filter(t => t.subBalanceId === sub.id || t.fromSubBalanceId === sub.id || t.toSubBalanceId === sub.id).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  return React.createElement("div", null, React.createElement(CascadeHeader, {
+    title: sub.label || sub.type,
+    subtitle: `${account.bank.replace(/—.*/, "").trim()} · ${sub.type}`,
+    onBack: onBack
+  }), React.createElement("div", {
+    style: {
+      padding: 18
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, "Saldo Disponível"), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 24,
+      fontWeight: 700,
+      color: "var(--ink)",
+      marginTop: 4
+    }
+  }, fmt(principal, account.currency)), React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginTop: 3
+    }
+  }, "Saldo inicial: ", fmt(Number(sub.openingBalance) || 0, account.currency)), !!sub.interestRate && React.createElement("div", {
+    style: {
+      marginTop: 20,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 10
+    }
+  }, "Juros"), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 20
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Taxa"), React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--ink)",
+      marginTop: 3
+    }
+  }, sub.interestRate, "% a.a.")), React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Acumulado"), React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--gold)",
+      fontFamily: "'IBM Plex Mono', monospace",
+      marginTop: 3
+    }
+  }, "+", fmt(accrued, account.currency))), React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, "Projeção anual"), React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--ink)",
+      fontFamily: "'IBM Plex Mono', monospace",
+      marginTop: 3
+    }
+  }, fmt(projected, account.currency))))), React.createElement("div", {
+    style: {
+      marginTop: 20,
+      paddingTop: 16,
+      borderTop: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      marginBottom: 10
+    }
+  }, "Movimentos"), subTx.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: 0
+    }
+  }, "Ainda sem movimentos neste saldo.") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, subTx.slice(0, 12).map(t => {
+    const isTransfer = t.kind === "transferencia";
+    const isOutgoing = isTransfer && t.fromSubBalanceId === sub.id;
+    const signedAmount = isTransfer ? isOutgoing ? -Number(t.amount) : Number(t.amount) : t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
+    const label = isTransfer ? isOutgoing ? "Transferência enviada" : "Transferência recebida" : t.description || t.category;
+    return React.createElement("div", {
+      key: t.id,
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 10
+      }
+    }, React.createElement("div", {
+      style: {
+        minWidth: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, signedAmount >= 0 ? React.createElement(IconArrowDownLeft, {
+      size: 13,
+      style: {
+        color: "var(--emerald)",
+        flexShrink: 0
+      }
+    }) : React.createElement(IconArrowUpRight, {
+      size: 13,
+      style: {
+        color: "var(--rust)",
+        flexShrink: 0
+      }
+    }), React.createElement("div", {
+      style: {
+        minWidth: 0
+      }
+    }, React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: "var(--ink)",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, label), React.createElement("div", {
+      style: {
+        fontSize: 10.5,
+        color: "var(--slate)"
+      }
+    }, new Date(t.date + "T00:00:00").toLocaleDateString("pt-PT")))), React.createElement("div", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontWeight: 700,
+        fontSize: 13,
+        color: signedAmount >= 0 ? "var(--emerald)" : "var(--rust)",
+        flexShrink: 0
+      }
+    }, signedAmount >= 0 ? "+" : "", fmt(signedAmount, account.currency)));
   })))));
 }
 function emptySubBalance(type = "À ordem") {
