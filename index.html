@@ -381,6 +381,13 @@ const IconCalculator = p => React.createElement(Icon, p, React.createElement("re
   x2: "16",
   y2: "18.01"
 }));
+const IconCamera = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"
+}), React.createElement("circle", {
+  cx: "12",
+  cy: "13",
+  r: "3.5"
+}));
 const IconBarChart3 = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M3 3v16a2 2 0 0 0 2 2h16"
 }), React.createElement("path", {
@@ -792,6 +799,31 @@ function calcIRT(materiaColetavel) {
   };
 }
 const INSS_RATE_TRABALHADOR = 0.03;
+function solveTaxaMensalEfetiva(principalLiquido, prestacao, meses, valorFinal) {
+  valorFinal = valorFinal || 0;
+  if (principalLiquido <= 0 || prestacao <= 0 || meses <= 0) return 0;
+  let r = 0.02;
+  for (let iter = 0; iter < 80; iter++) {
+    const powNeg = Math.pow(1 + r, -meses);
+    const f = prestacao * (1 - powNeg) / r + valorFinal * powNeg - principalLiquido;
+    const dAnnuity = prestacao * (meses * Math.pow(1 + r, -meses - 1) / r - (1 - powNeg) / (r * r));
+    const dBalloon = -meses * valorFinal * Math.pow(1 + r, -meses - 1);
+    const df = dAnnuity + dBalloon;
+    if (!isFinite(df) || Math.abs(df) < 1e-9) break;
+    let rNew = r - f / df;
+    if (!isFinite(rNew) || rNew <= -0.999999) rNew = r / 2;
+    if (Math.abs(rNew - r) < 1e-10) {
+      r = rNew;
+      break;
+    }
+    r = rNew;
+  }
+  return r;
+}
+function taegAnualEstimada(principalLiquido, prestacao, meses, valorFinal) {
+  const rMensal = solveTaxaMensalEfetiva(principalLiquido, prestacao, meses, valorFinal || 0);
+  return Math.pow(1 + rMensal, 12) - 1;
+}
 const EXPENSE_CATEGORIES = ["Alimentação", "Transporte", "Combustíveis", "Habitação", "Contas Fixas", "Comunicação", "Salários de Funcionários", "Pagamento de Dívidas", "Empréstimos a Terceiros", "Saúde", "Educação", "Lazer", "Vestuário", "Outros"];
 const CATEGORY_COLORS = ["#12A150", "#B8873A", "#E08E45", "#1B1F27", "#68707C", "#4C9EE8", "#D13438", "#8A4F7D", "#A85C3C", "#3E7CB1", "#7B5EA7", "#D97B29", "#C77DA6", "#8C8C74"];
 function categoryColor(cat) {
@@ -978,6 +1010,71 @@ function previousMonthKey(month) {
 }
 function todayMonth() {
   return new Date().toISOString().slice(0, 7);
+}
+let _tesseractLoadPromise = null;
+function loadTesseract() {
+  if (typeof window !== "undefined" && window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (_tesseractLoadPromise) return _tesseractLoadPromise;
+  _tesseractLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    script.onload = () => resolve(window.Tesseract);
+    script.onerror = () => reject(new Error("Falha ao carregar o motor de OCR."));
+    document.head.appendChild(script);
+  });
+  return _tesseractLoadPromise;
+}
+async function scanReceiptImage(file, onProgress) {
+  const Tesseract = await loadTesseract();
+  const result = await Tesseract.recognize(file, "por", {
+    logger: m => {
+      if (onProgress && m.status === "recognizing text") onProgress(m.progress);
+    }
+  });
+  return result.data.text;
+}
+function parseReceiptText(text) {
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const amountRegex = /(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/g;
+  function parseNumberToken(tok) {
+    let cleaned = tok.replace(/\s/g, "");
+    const lastComma = cleaned.lastIndexOf(",");
+    const lastDot = cleaned.lastIndexOf(".");
+    if (lastComma > lastDot) cleaned = cleaned.replace(/\./g, "").replace(",", ".");else if (lastDot > lastComma) cleaned = cleaned.replace(/,/g, "");else cleaned = cleaned.replace(/,/g, "");
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? null : n;
+  }
+  let amount = null;
+  const totalLine = lines.find(l => /total/i.test(l) && !/sub\s*total/i.test(l));
+  if (totalLine) {
+    const matches = totalLine.match(amountRegex);
+    if (matches && matches.length) {
+      const candidates = matches.map(parseNumberToken).filter(n => n !== null && n > 0);
+      if (candidates.length) amount = Math.max(...candidates);
+    }
+  }
+  if (amount === null) {
+    const allMatches = text.match(amountRegex) || [];
+    const candidates = allMatches.map(parseNumberToken).filter(n => n !== null && n > 1);
+    if (candidates.length) amount = Math.max(...candidates);
+  }
+  let date = null;
+  const dateMatch = text.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if (dateMatch) {
+    let [, d, m, y] = dateMatch;
+    if (y.length === 2) y = "20" + y;
+    const dd = d.padStart(2, "0");
+    const mm = m.padStart(2, "0");
+    if (Number(mm) >= 1 && Number(mm) <= 12 && Number(dd) >= 1 && Number(dd) <= 31) {
+      date = `${y}-${mm}-${dd}`;
+    }
+  }
+  const description = lines.find(l => l.length > 2 && !/^\d+([.,]\d+)?$/.test(l)) || "";
+  return {
+    amount,
+    date,
+    description
+  };
 }
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -2043,6 +2140,102 @@ function sendLocalNotification(title, body) {
     });
   } catch {}
 }
+async function registerPeriodicSync() {
+  try {
+    if (!("serviceWorker" in navigator) || !("permissions" in navigator)) return;
+    const reg = await navigator.serviceWorker.ready;
+    if (!("periodicSync" in reg)) return;
+    const status = await navigator.permissions.query({
+      name: "periodic-background-sync"
+    });
+    if (status.state !== "granted") return;
+    await reg.periodicSync.register("fonsprince-check-alerts", {
+      minInterval: 12 * 60 * 60 * 1000
+    });
+  } catch {}
+}
+const FIREBASE_CONFIG = {
+  apiKey: "SUBSTITUA_AQUI",
+  authDomain: "SUBSTITUA_AQUI.firebaseapp.com",
+  projectId: "SUBSTITUA_AQUI",
+  storageBucket: "SUBSTITUA_AQUI.appspot.com",
+  messagingSenderId: "SUBSTITUA_AQUI",
+  appId: "SUBSTITUA_AQUI"
+};
+function isFirebaseConfigured() {
+  return !!FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "SUBSTITUA_AQUI";
+}
+let _firebaseLoadPromise = null;
+function loadFirebase() {
+  if (typeof window !== "undefined" && window.firebase && window.firebase.apps && window.firebase.apps.length) {
+    return Promise.resolve(window.firebase);
+  }
+  if (_firebaseLoadPromise) return _firebaseLoadPromise;
+  _firebaseLoadPromise = new Promise((resolve, reject) => {
+    const scripts = ["https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js", "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js", "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"];
+    function loadNext(i) {
+      if (i >= scripts.length) {
+        try {
+          if (!window.firebase.apps.length) window.firebase.initializeApp(FIREBASE_CONFIG);
+          resolve(window.firebase);
+        } catch (err) {
+          reject(err);
+        }
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = scripts[i];
+      s.onload = () => loadNext(i + 1);
+      s.onerror = () => reject(new Error("Falha ao carregar o Firebase."));
+      document.head.appendChild(s);
+    }
+    loadNext(0);
+  });
+  return _firebaseLoadPromise;
+}
+async function firebaseSignUp(email, password) {
+  const firebase = await loadFirebase();
+  const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+  return cred.user;
+}
+async function firebaseSignIn(email, password) {
+  const firebase = await loadFirebase();
+  const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
+  return cred.user;
+}
+async function firebaseSignOutUser() {
+  const firebase = await loadFirebase();
+  await firebase.auth().signOut();
+}
+function firebaseOnAuthChange(callback) {
+  loadFirebase().then(firebase => firebase.auth().onAuthStateChanged(callback)).catch(() => {});
+}
+async function pushDataToCloud(uid, payload) {
+  const firebase = await loadFirebase();
+  await firebase.firestore().collection("users").doc(uid).collection("data").doc("main").set({
+    ...payload,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+async function pullDataFromCloud(uid) {
+  const firebase = await loadFirebase();
+  const doc = await firebase.firestore().collection("users").doc(uid).collection("data").doc("main").get();
+  return doc.exists ? doc.data() : null;
+}
+function cloudErrorMessage(err) {
+  const code = err && err.code;
+  const map = {
+    "auth/email-already-in-use": "Já existe uma conta com este email.",
+    "auth/invalid-email": "Email inválido.",
+    "auth/weak-password": "A palavra-passe deve ter pelo menos 6 caracteres.",
+    "auth/wrong-password": "Palavra-passe incorreta.",
+    "auth/user-not-found": "Não existe nenhuma conta com este email.",
+    "auth/invalid-credential": "Email ou palavra-passe incorretos.",
+    "auth/too-many-requests": "Muitas tentativas — aguarde um pouco e tente novamente.",
+    "auth/network-request-failed": "Sem ligação à internet."
+  };
+  return map[code] || "Não foi possível concluir a operação. Tente novamente.";
+}
 function getNotifiedTodaySet() {
   try {
     const raw = localStorage.getItem("ledger:notified-today");
@@ -2080,6 +2273,7 @@ function checkDueSoonAndNotify(opts) {
     recurringExpenses,
     transactions,
     month,
+    categories,
     debts,
     debtPayments,
     creditCards,
@@ -2141,6 +2335,40 @@ function checkDueSoonAndNotify(opts) {
     const key = `investment-event-${e.id}`;
     if (!wasNotifiedToday(key)) {
       sendLocalNotification(e.tipo, `${e.descricao} — ${fmt(Number(e.valor_esperado) || 0)} em ${new Date(e.data + "T00:00:00").toLocaleDateString("pt-PT")}.`);
+      markNotified(key);
+    }
+  }
+  if (categories) {
+    const spentByCategoryNow = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && monthKey(t.date) === month) {
+        spentByCategoryNow[t.category] = (spentByCategoryNow[t.category] || 0) + Number(t.amount);
+      }
+    }
+    for (const [cat, val] of Object.entries(spentByCategoryNow)) {
+      const limit = Number(categories[cat]) || 0;
+      if (limit <= 0) continue;
+      const pct = val / limit;
+      if (pct >= 1) {
+        const key = `budget-over-${cat}-${month}`;
+        if (!wasNotifiedToday(key)) {
+          sendLocalNotification("Orçamento ultrapassado", `"${cat}" já passou o limite mensal (${fmt(val)} de ${fmt(limit)}).`);
+          markNotified(key);
+        }
+      } else if (pct >= 0.9) {
+        const key = `budget-near-${cat}-${month}`;
+        if (!wasNotifiedToday(key)) {
+          sendLocalNotification("Orçamento quase no limite", `"${cat}" já vai em ${fmt(val)} de ${fmt(limit)} (${Math.round(pct * 100)}%).`);
+          markNotified(key);
+        }
+      }
+    }
+  }
+  const currentMonthNum = Number(month.slice(5, 7));
+  if (currentMonthNum === 11) {
+    const key = `subsidio-natal-ferias-${month.slice(0, 4)}`;
+    if (!wasNotifiedToday(key)) {
+      sendLocalNotification("Subsídio de férias e Natal", "Novembro é o mês habitual de pagamento destes subsídios — confira o simulador para calcular o valor esperado.");
       markNotified(key);
     }
   }
@@ -3908,6 +4136,11 @@ function FinanceApp() {
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
   const [userName, setUserName] = useState(() => loadKey("user-name", "Afonso"));
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
+  const [cloudUser, setCloudUser] = useState(null);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState("idle");
+  const [cloudError, setCloudError] = useState(null);
+  const cloudInitialPullDone = useRef(false);
+  const cloudPushTimer = useRef(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => loadKey("onboarding-dismissed", false));
   const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
   const [showCategoryManager, setShowCategoryManager] = useState(false);
@@ -4033,6 +4266,7 @@ function FinanceApp() {
       recurringExpenses,
       transactions,
       month,
+      categories: budgetIncome.categories,
       debts,
       debtPayments,
       creditCards,
@@ -4041,7 +4275,7 @@ function FinanceApp() {
       bonds,
       investmentEvents
     });
-  }, [notificationsEnabled, recurringExpenses, transactions, month, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, investmentEvents]);
+  }, [notificationsEnabled, recurringExpenses, transactions, month, budgetIncome.categories, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, investmentEvents]);
   useEffect(() => saveKey("custom-categories", customCategories), [customCategories]);
   useEffect(() => saveKey("last-export-date", lastExportDate), [lastExportDate]);
   useEffect(() => saveKey("exchange-rate-history", rateHistory), [rateHistory]);
@@ -4657,6 +4891,117 @@ function FinanceApp() {
     setRateHistory(data.rateHistory || []);
     setPendingImport(null);
   }
+  function applyCloudData(data) {
+    if (!data) return;
+    setAccounts(data.accounts || []);
+    setTransactions(data.transactions || []);
+    setBudgetIncome(data.budgetIncome || {
+      categories: {},
+      income: [],
+      memberLimits: {}
+    });
+    setGoals(data.goals || []);
+    setDebts(data.debts || []);
+    setDebtPayments(data.debtPayments || []);
+    setCreditCards(data.creditCards || []);
+    setCardPurchases(data.cardPurchases || []);
+    setCardPayments(data.cardPayments || []);
+    setBonds(data.bonds || []);
+    setEquities(data.equities || []);
+    setFunds(data.funds || []);
+    setInvestmentEvents(data.investmentEvents || []);
+    setRecurringExpenses(data.recurringExpenses || []);
+    setExchangeRates(data.exchangeRates || {
+      usdRate: null,
+      eurRate: null,
+      updatedAt: null,
+      source: null
+    });
+    setExpenseShortcuts(data.expenseShortcuts || []);
+    setCustomCategories(data.customCategories || []);
+    setRateHistory(data.rateHistory || []);
+  }
+  async function handleCloudSignUp(email, password) {
+    setCloudError(null);
+    try {
+      await firebaseSignUp(email, password);
+    } catch (err) {
+      setCloudError(cloudErrorMessage(err));
+      throw err;
+    }
+  }
+  async function handleCloudSignIn(email, password) {
+    setCloudError(null);
+    try {
+      await firebaseSignIn(email, password);
+    } catch (err) {
+      setCloudError(cloudErrorMessage(err));
+      throw err;
+    }
+  }
+  async function handleCloudSignOut() {
+    setCloudError(null);
+    try {
+      await firebaseSignOutUser();
+      cloudInitialPullDone.current = false;
+    } catch (err) {
+      setCloudError(cloudErrorMessage(err));
+    }
+  }
+  useEffect(() => {
+    if (!isFirebaseConfigured()) return;
+    firebaseOnAuthChange(async user => {
+      setCloudUser(user);
+      if (user && !cloudInitialPullDone.current) {
+        cloudInitialPullDone.current = true;
+        setCloudSyncStatus("syncing");
+        try {
+          const remote = await pullDataFromCloud(user.uid);
+          if (remote) applyCloudData(remote);
+          setCloudSyncStatus("synced");
+        } catch (err) {
+          setCloudSyncStatus("error");
+          setCloudError("Não foi possível obter os dados da nuvem.");
+        }
+      }
+    });
+  }, []);
+  useEffect(() => {
+    if (!cloudUser) return;
+    if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
+    cloudPushTimer.current = setTimeout(async () => {
+      setCloudSyncStatus("syncing");
+      try {
+        await pushDataToCloud(cloudUser.uid, {
+          accounts,
+          transactions,
+          budgetIncome,
+          goals,
+          debts,
+          debtPayments,
+          creditCards,
+          cardPurchases,
+          cardPayments,
+          bonds,
+          equities,
+          funds,
+          investmentEvents,
+          recurringExpenses,
+          exchangeRates,
+          expenseShortcuts,
+          customCategories,
+          rateHistory
+        });
+        setCloudSyncStatus("synced");
+      } catch (err) {
+        setCloudSyncStatus("error");
+        setCloudError("Não foi possível sincronizar com a nuvem.");
+      }
+    }, 2500);
+    return () => {
+      if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
+    };
+  }, [cloudUser, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, rateHistory]);
   function addShortcut(s) {
     setExpenseShortcuts(ss => [...ss, {
       ...s,
@@ -5496,7 +5841,13 @@ function FinanceApp() {
     notificationsEnabled: notificationsEnabled,
     onToggleNotifications: setNotificationsEnabled,
     userName: userName,
-    onSetUserName: setUserName
+    onSetUserName: setUserName,
+    cloudUser: cloudUser,
+    cloudSyncStatus: cloudSyncStatus,
+    cloudError: cloudError,
+    onCloudSignUp: handleCloudSignUp,
+    onCloudSignIn: handleCloudSignIn,
+    onCloudSignOut: handleCloudSignOut
   }))), isMobile && React.createElement("div", {
     style: {
       position: "fixed",
@@ -6889,6 +7240,69 @@ function Overview({
       size: 14
     }), t.label);
   })), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(3, 1fr)",
+      gap: 10,
+      marginBottom: 16,
+      paddingBottom: 14,
+      borderBottom: "1px solid var(--line)"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.3
+    }
+  }, "Receitas"), React.createElement("div", {
+    title: fmt(totalReceitas),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 15,
+      color: "var(--emerald)",
+      marginTop: 3,
+      cursor: "help"
+    }
+  }, fmtCompact(totalReceitas))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.3
+    }
+  }, "Despesas"), React.createElement("div", {
+    title: fmt(totalDespesas),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 15,
+      color: "var(--rust)",
+      marginTop: 3,
+      cursor: "help"
+    }
+  }, fmtCompact(totalDespesas))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      letterSpacing: 0.3
+    }
+  }, "Resultado"), React.createElement("div", {
+    title: fmt(saldo),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 15,
+      color: saldo >= 0 ? "var(--emerald)" : "var(--rust)",
+      marginTop: 3,
+      cursor: "help"
+    }
+  }, fmtCompact(saldo)))), React.createElement("div", {
     key: detailTab,
     style: {
       animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
@@ -10215,6 +10629,39 @@ function TxModal({
   const [member, setMember] = useState(initial && initial.member || "");
   const [categoryTouched, setCategoryTouched] = useState(isEditing);
   const [categorySuggested, setCategorySuggested] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanError, setScanError] = useState(null);
+  const [scanApplied, setScanApplied] = useState(false);
+  const receiptInputRef = useRef(null);
+  async function handleReceiptSelected(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setScanError(null);
+    setScanApplied(false);
+    setScanning(true);
+    setScanProgress(0);
+    try {
+      const text = await scanReceiptImage(file, p => setScanProgress(p));
+      const parsed = parseReceiptText(text);
+      if (parsed.amount !== null) setAmount(String(parsed.amount));
+      if (parsed.date) setDate(parsed.date);
+      if (parsed.description) {
+        setDescription(parsed.description.slice(0, 60));
+        setCategoryTouched(false);
+      }
+      if (parsed.amount === null) {
+        setScanError("Não foi possível identificar o valor automaticamente. Confirme os campos abaixo.");
+      } else {
+        setScanApplied(true);
+      }
+    } catch (err) {
+      setScanError("Não foi possível ler o recibo. Tente novamente ou preencha manualmente.");
+    } finally {
+      setScanning(false);
+      e.target.value = "";
+    }
+  }
   useEffect(() => {
     if (categoryTouched) return;
     const suggestion = suggestCategoryFromHistory(description, transactions, kind);
@@ -10239,7 +10686,55 @@ function TxModal({
       flexDirection: "column",
       gap: 14
     }
-  }, React.createElement("div", {
+  }, !isEditing && React.createElement("div", null, React.createElement("input", {
+    ref: receiptInputRef,
+    type: "file",
+    accept: "image/*",
+    capture: "environment",
+    style: {
+      display: "none"
+    },
+    onChange: handleReceiptSelected
+  }), React.createElement("button", {
+    type: "button",
+    onClick: () => receiptInputRef.current && receiptInputRef.current.click(),
+    disabled: scanning,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      width: "100%",
+      padding: "11px 14px",
+      borderRadius: 8,
+      border: "1px dashed var(--gold)",
+      background: "#FBF2E4",
+      color: "var(--gold)",
+      fontWeight: 600,
+      fontSize: 13.5,
+      cursor: scanning ? "default" : "pointer",
+      fontFamily: "Inter, sans-serif"
+    }
+  }, React.createElement(IconCamera, {
+    size: 16
+  }), scanning ? `A ler recibo… ${Math.round(scanProgress * 100)}%` : "Digitalizar recibo (OCR)"), scanError && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)",
+      marginTop: 6
+    }
+  }, scanError), scanApplied && !scanError && React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--emerald)",
+      marginTop: 6,
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, React.createElement(IconCheckCircle2, {
+    size: 13
+  }), " Valor e data preenchidos a partir do recibo — confirme antes de guardar.")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -13919,32 +14414,22 @@ const SIM_GROUPS = [{
   }, {
     id: "salarioLiquido",
     label: "Salário Líquido",
-    sub: "Salário bruto → líquido (INSS + IRT)",
+    sub: "Bruto → líquido, com subsídios (INSS + IRT)",
     icon: IconWallet
   }, {
-    id: "decimoTerceiro",
-    label: "Décimo Terceiro",
-    sub: "Subsídio de Natal proporcional",
+    id: "subsidiosAnuais",
+    label: "Subsídios de Férias e Natal",
+    sub: "50% do salário, proporcional aos meses",
     icon: IconGift
-  }, {
-    id: "ferias",
-    label: "Férias",
-    sub: "Subsídio de férias",
-    icon: IconUmbrella
-  }, {
-    id: "feriasProporcionais",
-    label: "Férias Proporcionais",
-    sub: "Por meses trabalhados",
-    icon: IconPlane
   }, {
     id: "horaExtra",
     label: "Hora Extra",
-    sub: "Valor da hora extraordinária",
+    sub: "150% / 175% / 200% conforme a lei",
     icon: IconClock
   }, {
     id: "rescisao",
     label: "Rescisão de Contrato",
-    sub: "Estimativa de valores a receber",
+    sub: "Indemnização e proporcionais",
     icon: IconGavel
   }]
 }, {
@@ -13997,13 +14482,13 @@ const SIM_GROUPS = [{
   title: "Crédito",
   items: [{
     id: "emprestimo",
-    label: "Empréstimo Pessoal",
-    sub: "Prestação mensal (PMT)",
+    label: "Crédito Pessoal",
+    sub: "TAN, TAEG e Imposto de Selo (regras BFA)",
     icon: IconBanknote
   }, {
     id: "financiamento",
-    label: "Financiamento",
-    sub: "Viatura, casa ou outro bem",
+    label: "Leasing Automóvel",
+    sub: "Valor residual e taxa de esforço (regras BAI)",
     icon: IconCar
   }]
 }];
@@ -14126,54 +14611,86 @@ function SimIRT() {
 }
 function SimSalarioLiquido() {
   const [salario, setSalario] = useState("350000");
-  const [subsidios, setSubsidios] = useState("0");
+  const [alimentacao, setAlimentacao] = useState("30000");
+  const [transporte, setTransporte] = useState("30000");
+  const [abonoFamilia, setAbonoFamilia] = useState("0");
   const base = Number(salario) || 0;
-  const sub = Number(subsidios) || 0;
+  const subAlimentacao = Number(alimentacao) || 0;
+  const subTransporte = Number(transporte) || 0;
+  const subAbono = Number(abonoFamilia) || 0;
   const inss = base * INSS_RATE_TRABALHADOR;
-  const materiaColetavel = base - inss;
+  const excedenteAlimentacao = Math.max(0, subAlimentacao - 30000);
+  const excedenteTransporte = Math.max(0, subTransporte - 30000);
+  const abonoIsento = Math.min(subAbono, base * 0.05);
+  const excedenteAbono = Math.max(0, subAbono - abonoIsento);
+  const materiaColetavel = base - inss + excedenteAlimentacao + excedenteTransporte + excedenteAbono;
   const {
     irt,
     index
   } = calcIRT(materiaColetavel);
-  const liquido = base - inss - irt + sub;
+  const totalSubsidios = subAlimentacao + subTransporte + subAbono;
+  const liquido = base - inss - irt + totalSubsidios;
   return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
     label: "Salário base (bruto)",
     value: salario,
     onChange: setSalario,
     suffix: "Kz"
   }), React.createElement(SimNumberField, {
-    label: "Subsídios isentos (alimentação/transporte)",
-    value: subsidios,
-    onChange: setSubsidios,
+    label: "Subsídio de alimentação",
+    value: alimentacao,
+    onChange: setAlimentacao,
+    suffix: "Kz"
+  }), React.createElement(SimNumberField, {
+    label: "Subsídio de transporte",
+    value: transporte,
+    onChange: setTransporte,
+    suffix: "Kz"
+  }), React.createElement(SimNumberField, {
+    label: "Abono de família",
+    value: abonoFamilia,
+    onChange: setAbonoFamilia,
     suffix: "Kz"
   }), React.createElement("div", {
     style: {
       marginTop: 6
     }
   }, React.createElement(SimResultRow, {
-    label: "INSS (3% do trabalhador)",
+    label: "INSS (3% sobre o salário base)",
     value: "− " + fmt(inss),
     tone: "rust"
   }), React.createElement(SimResultRow, {
-    label: "Matéria coletável",
+    label: "Matéria coletável (inclui excedentes tributáveis)",
     value: fmt(materiaColetavel)
   }), React.createElement(SimResultRow, {
     label: `IRT (${index === 0 ? "isento" : (IRT_BRACKETS_2026[index].rate * 100).toFixed(1) + "%"})`,
     value: "− " + fmt(irt),
     tone: "rust"
   }), React.createElement(SimResultRow, {
+    label: "Total de subsídios recebidos",
+    value: "+ " + fmt(totalSubsidios),
+    tone: "gold"
+  }), React.createElement(SimResultRow, {
     label: "Salário líquido a receber",
     value: fmt(liquido),
     big: true,
     tone: "emerald"
-  })));
+  })), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Subsídios de alimentação e transporte são isentos de IRT até 30.000 Kz cada (só o excedente é tributado); o abono de família é isento até 5% do salário base. Baseado no Código do IRT (Lei n.º 28/20)."));
 }
-function SimDecimoTerceiro() {
+function SimSubsidiosAnuais() {
   const [salario, setSalario] = useState("350000");
   const [meses, setMeses] = useState("12");
   const base = Number(salario) || 0;
   const m = Math.min(12, Math.max(0, Number(meses) || 0));
-  const valor = base * (m / 12);
+  const subsidioFerias = base * 0.5 * (m / 12);
+  const subsidioNatal = base * 0.5 * (m / 12);
+  const diasFerias = m >= 12 ? 22 : Math.min(22, Math.round(m * 2));
+  const total = subsidioFerias + subsidioNatal;
   return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
     label: "Salário base mensal",
     value: salario,
@@ -14189,79 +14706,38 @@ function SimDecimoTerceiro() {
       marginTop: 6
     }
   }, React.createElement(SimResultRow, {
-    label: "Décimo terceiro (bruto)",
-    value: fmt(valor),
+    label: "Subsídio de férias (50% do salário)",
+    value: fmt(subsidioFerias),
+    tone: "gold"
+  }), React.createElement(SimResultRow, {
+    label: "Subsídio de Natal (50% do salário)",
+    value: fmt(subsidioNatal),
+    tone: "gold"
+  }), React.createElement(SimResultRow, {
+    label: "Total (bruto)",
+    value: fmt(total),
     big: true,
     tone: "emerald"
+  }), React.createElement(SimResultRow, {
+    label: "Dias de férias a que tem direito",
+    value: `${diasFerias} dias úteis`
   })), React.createElement("p", {
     style: {
       fontSize: 11.5,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, "Valor bruto proporcional; sujeito a IRT/INSS conforme processado no mês de pagamento."));
-}
-function SimFerias() {
-  const [salario, setSalario] = useState("350000");
-  const base = Number(salario) || 0;
-  return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
-    label: "Salário base mensal",
-    value: salario,
-    onChange: setSalario,
-    suffix: "Kz"
-  }), React.createElement("div", {
-    style: {
-      marginTop: 6
-    }
-  }, React.createElement(SimResultRow, {
-    label: "Subsídio de férias (bruto)",
-    value: fmt(base),
-    big: true,
-    tone: "emerald"
-  })), React.createElement("p", {
-    style: {
-      fontSize: 11.5,
-      color: "var(--slate)",
-      margin: "6px 0 0"
-    }
-  }, "Segundo a Lei Geral do Trabalho, o subsídio de férias corresponde à remuneração de um mês completo."));
-}
-function SimFeriasProporcionais() {
-  const [salario, setSalario] = useState("350000");
-  const [meses, setMeses] = useState("6");
-  const base = Number(salario) || 0;
-  const m = Math.min(12, Math.max(0, Number(meses) || 0));
-  const valor = base * (m / 12);
-  return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
-    label: "Salário base mensal",
-    value: salario,
-    onChange: setSalario,
-    suffix: "Kz"
-  }), React.createElement(SimNumberField, {
-    label: "Meses trabalhados",
-    value: meses,
-    onChange: setMeses,
-    suffix: "/ 12"
-  }), React.createElement("div", {
-    style: {
-      marginTop: 6
-    }
-  }, React.createElement(SimResultRow, {
-    label: "Férias proporcionais (bruto)",
-    value: fmt(valor),
-    big: true,
-    tone: "emerald"
-  })));
+  }, "Segundo a Lei Geral do Trabalho (Lei n.º 12/23), ambos os subsídios correspondem a, no mínimo, 50% do salário base e são proporcionais aos meses trabalhados. Direito a 22 dias úteis de férias por ano completo (2 dias/mês em contratos inferiores a 1 ano). Desde a Lei n.º 28/20, ambos os subsídios são ", React.createElement("b", null, "totalmente sujeitos a IRT"), " (deixou de haver isenção)."));
 }
 function SimHoraExtra() {
   const [salario, setSalario] = useState("350000");
   const [horas, setHoras] = useState("10");
-  const [tipo, setTipo] = useState("50");
+  const [tipo, setTipo] = useState("150");
   const base = Number(salario) || 0;
   const h = Number(horas) || 0;
-  const acrescimo = Number(tipo) / 100;
+  const percentagem = Number(tipo) / 100;
   const valorHora = base / (22 * 8);
-  const valorHoraExtra = valorHora * (1 + acrescimo);
+  const valorHoraExtra = valorHora * percentagem;
   const total = valorHoraExtra * h;
   return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
     label: "Salário base mensal",
@@ -14274,7 +14750,7 @@ function SimHoraExtra() {
     onChange: setHoras,
     suffix: "h"
   }), React.createElement(Field, {
-    label: "Tipo de acréscimo"
+    label: "Tipo de trabalho extraordinário"
   }, React.createElement("select", {
     value: tipo,
     onChange: e => setTipo(e.target.value),
@@ -14283,12 +14759,12 @@ function SimHoraExtra() {
       width: "100%"
     }
   }, React.createElement("option", {
-    value: "50"
-  }, "Dia útil (+50%)"), React.createElement("option", {
-    value: "75"
-  }, "Noturno (+75%)"), React.createElement("option", {
-    value: "100"
-  }, "Feriado / Domingo (+100%)"))), React.createElement("div", {
+    value: "150"
+  }, "Dia útil (150% da taxa normal)"), React.createElement("option", {
+    value: "175"
+  }, "Dia de descanso semanal (175%)"), React.createElement("option", {
+    value: "200"
+  }, "Feriado (200%)"))), React.createElement("div", {
     style: {
       marginTop: 6
     }
@@ -14309,46 +14785,47 @@ function SimHoraExtra() {
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, "Assume-se um mês padrão de 22 dias úteis × 8 horas."));
+  }, "Percentagens conforme a Lei Geral do Trabalho (Lei n.º 12/23, artigos 196.º, 197.º e 200.º). Assume-se um mês padrão de 22 dias úteis × 8 horas."));
 }
 function SimRescisao() {
   const [salario, setSalario] = useState("350000");
+  const [anos, setAnos] = useState("2");
   const [meses, setMeses] = useState("6");
-  const [avisoDias, setAvisoDias] = useState("30");
   const base = Number(salario) || 0;
+  const a = Math.max(0, Number(anos) || 0);
   const m = Math.min(12, Math.max(0, Number(meses) || 0));
-  const decimoProp = base * (m / 12);
-  const feriasProp = base * (m / 12);
-  const aviso = base / 30 * (Number(avisoDias) || 0);
-  const total = decimoProp + feriasProp + aviso;
+  const indemnizacao = base * a + base * 0.5;
+  const subsidioFeriasProp = base * 0.5 * (m / 12);
+  const subsidioNatalProp = base * 0.5 * (m / 12);
+  const total = indemnizacao + subsidioFeriasProp + subsidioNatalProp;
   return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
     label: "Salário base mensal",
     value: salario,
     onChange: setSalario,
     suffix: "Kz"
   }), React.createElement(SimNumberField, {
+    label: "Anos completos trabalhados",
+    value: anos,
+    onChange: setAnos,
+    suffix: "anos"
+  }), React.createElement(SimNumberField, {
     label: "Meses trabalhados no ano corrente",
     value: meses,
     onChange: setMeses,
     suffix: "/ 12"
-  }), React.createElement(SimNumberField, {
-    label: "Dias de aviso prévio não cumprido",
-    value: avisoDias,
-    onChange: setAvisoDias,
-    suffix: "dias"
   }), React.createElement("div", {
     style: {
       marginTop: 6
     }
   }, React.createElement(SimResultRow, {
-    label: "Décimo terceiro proporcional",
-    value: fmt(decimoProp)
+    label: "Indemnização (100% × anos + 50%)",
+    value: fmt(indemnizacao)
   }), React.createElement(SimResultRow, {
-    label: "Férias proporcionais",
-    value: fmt(feriasProp)
+    label: "Subsídio de férias proporcional",
+    value: fmt(subsidioFeriasProp)
   }), React.createElement(SimResultRow, {
-    label: "Aviso prévio",
-    value: fmt(aviso)
+    label: "Subsídio de Natal proporcional",
+    value: fmt(subsidioNatalProp)
   }), React.createElement(SimResultRow, {
     label: "Total estimado (bruto)",
     value: fmt(total),
@@ -14360,7 +14837,7 @@ function SimRescisao() {
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, "Estimativa simplificada — não substitui aconselhamento jurídico-laboral nem inclui indemnizações específicas do motivo de cessação."));
+  }, "Fórmula de indemnização por despedimento sem justa causa: (100% do salário × número de anos trabalhados) + 50% do salário, conforme a Lei Geral do Trabalho (Lei n.º 12/23). Estimativa simplificada — não inclui aviso prévio nem substitui aconselhamento jurídico-laboral."));
 }
 function SimJurosComposto() {
   const [capital, setCapital] = useState("500000");
@@ -14693,81 +15170,148 @@ function SimDiasFaltam() {
   })));
 }
 function SimEmprestimo() {
-  const [valor, setValor] = useState("1000000");
-  const [taxa, setTaxa] = useState("3");
-  const [prestacoes, setPrestacoes] = useState("12");
+  const [valor, setValor] = useState("1500000");
+  const [taxa, setTaxa] = useState("23.5");
+  const [comissao, setComissao] = useState("5000");
+  const [prazo, setPrazo] = useState("24");
+  const [rendimento, setRendimento] = useState("");
   const p = Number(valor) || 0;
-  const i = (Number(taxa) || 0) / 100;
-  const n = Number(prestacoes) || 0;
-  const pmt = i === 0 ? n > 0 ? p / n : 0 : p * i / (1 - Math.pow(1 + i, -n));
+  const tan = (Number(taxa) || 0) / 100;
+  const im = tan / 12;
+  const n = Number(prazo) || 0;
+  const comissaoAbertura = Number(comissao) || 0;
+  const pmt = im === 0 ? n > 0 ? p / n : 0 : p * im / (1 - Math.pow(1 + im, -n));
   const totalPago = pmt * n;
   const jurosTotais = totalPago - p;
+  const isMontante = p * 0.001;
+  const isComissao = comissaoAbertura * 0.007;
+  const isJurosTotal = jurosTotais * 0.002;
+  const valorLiquido = p - comissaoAbertura - isMontante - isComissao;
+  const custoTotalCredito = jurosTotais + comissaoAbertura + isMontante + isComissao + isJurosTotal;
+  const taeg = taegAnualEstimada(valorLiquido, pmt + (n > 0 ? isJurosTotal / n : 0), n);
+  const rend = Number(rendimento) || 0;
+  const taxaEsforco = rend > 0 ? pmt / rend * 100 : null;
   return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
-    label: "Valor do empréstimo",
+    label: "Valor do crédito",
     value: valor,
     onChange: setValor,
     suffix: "Kz"
   }), React.createElement(SimNumberField, {
-    label: "Taxa de juro mensal",
+    label: "TAN — Taxa Anual Nominal",
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
   }), React.createElement(SimNumberField, {
-    label: "Número de prestações",
-    value: prestacoes,
-    onChange: setPrestacoes,
+    label: "Comissão de abertura",
+    value: comissao,
+    onChange: setComissao,
+    suffix: "Kz"
+  }), React.createElement(SimNumberField, {
+    label: "Prazo",
+    value: prazo,
+    onChange: setPrazo,
     suffix: "meses"
+  }), React.createElement(SimNumberField, {
+    label: "Rendimento líquido mensal (opcional)",
+    value: rendimento,
+    onChange: setRendimento,
+    suffix: "Kz"
   }), React.createElement("div", {
     style: {
       marginTop: 6
     }
   }, React.createElement(SimResultRow, {
-    label: "Prestação mensal",
+    label: "Prestação mensal (capital + juros)",
     value: fmt(pmt),
     big: true,
     tone: "emerald"
   }), React.createElement(SimResultRow, {
-    label: "Total de juros",
-    value: fmt(jurosTotais),
+    label: "Imposto de Selo sobre o montante (0,1%)",
+    value: fmt(isMontante)
+  }), React.createElement(SimResultRow, {
+    label: "Imposto de Selo sobre a comissão (0,7%)",
+    value: fmt(isComissao)
+  }), React.createElement(SimResultRow, {
+    label: "Imposto de Selo sobre juros (0,2%, total)",
+    value: fmt(isJurosTotal)
+  }), React.createElement(SimResultRow, {
+    label: "Valor líquido a receber",
+    value: fmt(valorLiquido),
     tone: "gold"
   }), React.createElement(SimResultRow, {
-    label: "Total a pagar",
-    value: fmt(totalPago)
-  })));
+    label: "TAEG estimada",
+    value: (taeg * 100).toFixed(2) + "%",
+    big: true,
+    tone: "emerald"
+  }), React.createElement(SimResultRow, {
+    label: "Custo total do crédito",
+    value: fmt(custoTotalCredito),
+    tone: "rust"
+  }), taxaEsforco !== null && React.createElement(SimResultRow, {
+    label: "Taxa de esforço",
+    value: `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= 35 ? "(dentro do limite)" : "(acima de 35%)"}`,
+    tone: taxaEsforco <= 35 ? "emerald" : "rust"
+  })), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Segue as regras praticadas pela banca angolana (ex. BFA — Crédito Pessoal/Solução): sistema de prestações constantes, Imposto de Selo (0,1% sobre o montante financiado, 0,7% sobre a comissão, 0,2% sobre os juros) e taxa de esforço máxima habitual de 35%. Valores indicativos — consulte a Ficha Técnica Informativa do seu banco."));
 }
 function SimFinanciamento() {
   const [valorBem, setValorBem] = useState("8000000");
   const [entradaPct, setEntradaPct] = useState("20");
-  const [taxa, setTaxa] = useState("2.5");
-  const [prestacoes, setPrestacoes] = useState("48");
+  const [residualPct, setResidualPct] = useState("30");
+  const [taxa, setTaxa] = useState("19");
+  const [prazo, setPrazo] = useState("48");
+  const [rendimento, setRendimento] = useState("");
   const vb = Number(valorBem) || 0;
   const ep = (Number(entradaPct) || 0) / 100;
+  const rp = (Number(residualPct) || 0) / 100;
   const entrada = vb * ep;
   const financiado = vb - entrada;
-  const i = (Number(taxa) || 0) / 100;
-  const n = Number(prestacoes) || 0;
-  const pmt = i === 0 ? n > 0 ? financiado / n : 0 : financiado * i / (1 - Math.pow(1 + i, -n));
-  const totalPago = pmt * n;
+  const valorResidual = vb * rp;
+  const tan = (Number(taxa) || 0) / 100;
+  const im = tan / 12;
+  const n = Number(prazo) || 0;
+  const renda = im === 0 ? n > 0 ? (financiado - valorResidual) / n : 0 : (financiado - valorResidual / Math.pow(1 + im, n)) * im / (1 - Math.pow(1 + im, -n));
+  const totalRendas = renda * n;
+  const jurosTotais = totalRendas + valorResidual - financiado;
+  const isMontante = financiado * 0.001;
+  const taeg = taegAnualEstimada(financiado - isMontante, renda, n, valorResidual);
+  const rend = Number(rendimento) || 0;
+  const taxaEsforco = rend > 0 ? renda / rend * 100 : null;
   return React.createElement(SimGrid, null, React.createElement(SimNumberField, {
-    label: "Valor do bem",
+    label: "Valor da viatura / bem",
     value: valorBem,
     onChange: setValorBem,
     suffix: "Kz"
   }), React.createElement(SimNumberField, {
-    label: "Entrada",
+    label: "Entrada (comparticipação)",
     value: entradaPct,
     onChange: setEntradaPct,
     suffix: "%"
   }), React.createElement(SimNumberField, {
-    label: "Taxa de juro mensal",
+    label: "Valor residual",
+    value: residualPct,
+    onChange: setResidualPct,
+    suffix: "%"
+  }), React.createElement(SimNumberField, {
+    label: "TAN — Taxa Anual Nominal",
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
   }), React.createElement(SimNumberField, {
-    label: "Número de prestações",
-    value: prestacoes,
-    onChange: setPrestacoes,
+    label: "Prazo",
+    value: prazo,
+    onChange: setPrazo,
     suffix: "meses"
+  }), React.createElement(SimNumberField, {
+    label: "Rendimento líquido mensal (opcional)",
+    value: rendimento,
+    onChange: setRendimento,
+    suffix: "Kz"
   }), React.createElement("div", {
     style: {
       marginTop: 6
@@ -14776,24 +15320,42 @@ function SimFinanciamento() {
     label: "Valor de entrada",
     value: fmt(entrada)
   }), React.createElement(SimResultRow, {
-    label: "Valor financiado",
+    label: "Montante financiado",
     value: fmt(financiado)
   }), React.createElement(SimResultRow, {
-    label: "Prestação mensal",
-    value: fmt(pmt),
+    label: "Valor residual (opção de compra final)",
+    value: fmt(valorResidual)
+  }), React.createElement(SimResultRow, {
+    label: "Renda mensal",
+    value: fmt(renda),
     big: true,
     tone: "emerald"
   }), React.createElement(SimResultRow, {
-    label: "Total a pagar (financiado)",
-    value: fmt(totalPago)
-  })));
+    label: "Imposto de Selo sobre o montante (0,1%)",
+    value: fmt(isMontante)
+  }), React.createElement(SimResultRow, {
+    label: "TAEG estimada",
+    value: (taeg * 100).toFixed(2) + "%"
+  }), React.createElement(SimResultRow, {
+    label: "Total de juros",
+    value: fmt(jurosTotais),
+    tone: "gold"
+  }), taxaEsforco !== null && React.createElement(SimResultRow, {
+    label: "Taxa de esforço",
+    value: `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= 35 ? "(dentro do limite)" : "(acima de 35%)"}`,
+    tone: taxaEsforco <= 35 ? "emerald" : "rust"
+  })), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Modelo de Leasing Automóvel praticado pela banca angolana (ex. BAI): financia normalmente 70%-90% do valor do bem, prazos até 50 meses, valor residual pago no final para exercer a opção de compra, e taxa de esforço máxima habitual de 35%."));
 }
 const SIM_COMPONENTS = {
   irt: SimIRT,
   salarioLiquido: SimSalarioLiquido,
-  decimoTerceiro: SimDecimoTerceiro,
-  ferias: SimFerias,
-  feriasProporcionais: SimFeriasProporcionais,
+  subsidiosAnuais: SimSubsidiosAnuais,
   horaExtra: SimHoraExtra,
   rescisao: SimRescisao,
   jurosComposto: SimJurosComposto,
@@ -14996,6 +15558,171 @@ function SimuladoresTab() {
     }
   }, React.createElement(ActiveComponent, null)))));
 }
+function CloudSyncCard({
+  cloudUser,
+  cloudSyncStatus,
+  cloudError,
+  onCloudSignUp,
+  onCloudSignIn,
+  onCloudSignOut
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState("signin");
+  const [busy, setBusy] = useState(false);
+  if (!isFirebaseConfigured()) {
+    return React.createElement(Card, null, React.createElement("h3", {
+      style: {
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: 15,
+        margin: "0 0 4px"
+      }
+    }, "Sincronização na nuvem"), React.createElement("p", {
+      style: {
+        fontSize: 12.5,
+        color: "var(--slate)",
+        margin: "8px 0 0"
+      }
+    }, "Ainda não configurada. Crie um projeto gratuito em", " ", React.createElement("a", {
+      href: "https://console.firebase.google.com",
+      target: "_blank",
+      rel: "noreferrer",
+      style: {
+        color: "var(--gold)"
+      }
+    }, "console.firebase.google.com"), ", ative ", React.createElement("b", null, "Authentication"), " (método Email/Password) e o ", React.createElement("b", null, "Firestore Database"), ", e substitua os valores de", " ", React.createElement("code", {
+      style: {
+        background: "var(--paper)",
+        padding: "1px 5px",
+        borderRadius: 4,
+        margin: "0 3px"
+      }
+    }, "FIREBASE_CONFIG"), "no ficheiro pela configuração da sua app. Sem isso, os dados ficam só neste dispositivo."));
+  }
+  async function handleSubmit() {
+    if (!email || !password) return;
+    setBusy(true);
+    try {
+      if (mode === "signup") await onCloudSignUp(email.trim(), password);else await onCloudSignIn(email.trim(), password);
+    } catch {} finally {
+      setBusy(false);
+    }
+  }
+  const statusLabel = {
+    idle: "Por sincronizar",
+    syncing: "A sincronizar…",
+    synced: "Sincronizado",
+    error: "Erro ao sincronizar"
+  }[cloudSyncStatus] || "";
+  const statusColor = {
+    idle: "var(--slate)",
+    syncing: "var(--gold)",
+    synced: "var(--emerald)",
+    error: "var(--rust)"
+  }[cloudSyncStatus] || "var(--slate)";
+  return React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 4px"
+    }
+  }, "Sincronização na nuvem"), cloudUser ? React.createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 600
+    }
+  }, cloudUser.email), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: statusColor,
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      marginTop: 2
+    }
+  }, React.createElement("span", {
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: statusColor,
+      display: "inline-block"
+    }
+  }), statusLabel)), React.createElement(GhostButton, {
+    onClick: onCloudSignOut
+  }, "Terminar sessão")), cloudError && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--rust)",
+      marginTop: 8
+    }
+  }, cloudError), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      marginTop: 10
+    }
+  }, "Os seus dados sincronizam automaticamente entre todos os dispositivos onde iniciar sessão com esta conta.")) : React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Inicie sessão para guardar os seus dados na nuvem e aceder a partir de outro telemóvel ou computador."), React.createElement(Field, {
+    label: "Email"
+  }, React.createElement("input", {
+    type: "email",
+    style: inputStyle,
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    placeholder: "oseuemail@exemplo.com"
+  })), React.createElement(Field, {
+    label: "Palavra-passe"
+  }, React.createElement("input", {
+    type: "password",
+    style: inputStyle,
+    value: password,
+    onChange: e => setPassword(e.target.value),
+    placeholder: "mínimo 6 caracteres"
+  })), cloudError && React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--rust)"
+    }
+  }, cloudError), React.createElement(PrimaryButton, {
+    onClick: handleSubmit,
+    disabled: busy || !email || !password
+  }, busy ? "A processar…" : mode === "signup" ? "Criar conta" : "Iniciar sessão"), React.createElement("button", {
+    type: "button",
+    onClick: () => setMode(m => m === "signup" ? "signin" : "signup"),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      fontSize: 12,
+      cursor: "pointer",
+      textDecoration: "underline",
+      alignSelf: "center"
+    }
+  }, mode === "signup" ? "Já tenho conta — iniciar sessão" : "Ainda não tenho conta — criar uma")));
+}
 function SettingsTab({
   darkMode,
   onToggleDarkMode,
@@ -15005,7 +15732,13 @@ function SettingsTab({
   notificationsEnabled,
   onToggleNotifications,
   userName,
-  onSetUserName
+  onSetUserName,
+  cloudUser,
+  cloudSyncStatus,
+  cloudError,
+  onCloudSignUp,
+  onCloudSignIn,
+  onCloudSignOut
 }) {
   const [permission, setPermission] = useState(isNotificationSupported() ? Notification.permission : "unsupported");
   const [nameDraft, setNameDraft] = useState(userName || "");
@@ -15016,7 +15749,10 @@ function SettingsTab({
     }
     const result = await requestNotificationPermission();
     setPermission(result);
-    if (result === "granted") onToggleNotifications(true);
+    if (result === "granted") {
+      onToggleNotifications(true);
+      registerPeriodicSync();
+    }
   }
   return React.createElement("div", {
     style: {
@@ -15137,7 +15873,14 @@ function SettingsTab({
   }, "Desativar") : React.createElement(PrimaryButton, {
     onClick: handleToggleNotifications,
     disabled: permission === "denied"
-  }, "Ativar"))));
+  }, "Ativar"))), React.createElement(CloudSyncCard, {
+    cloudUser: cloudUser,
+    cloudSyncStatus: cloudSyncStatus,
+    cloudError: cloudError,
+    onCloudSignUp: onCloudSignUp,
+    onCloudSignIn: onCloudSignIn,
+    onCloudSignOut: onCloudSignOut
+  }));
 }
 function buildAnnualReportHtml(data) {
   const {
