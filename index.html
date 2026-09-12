@@ -8071,55 +8071,57 @@ function Overview({
     const kzEquivalent = active.currency !== "Kz" && exchangeRates ? toKz(total, active.currency, exchangeRates) : null;
     return React.createElement(React.Fragment, null, React.createElement("div", {
       style: {
-        display: "flex",
-        gap: 6,
+        position: "relative",
+        display: "inline-flex",
         marginBottom: 18,
-        overflowX: "auto",
-        paddingBottom: 2
+        maxWidth: "100%"
       }
-    }, accounts.map(a => {
-      const isActive = a.id === activeId;
-      const isPressed = pressedAccountsTab === a.id;
-      const label = a.nickname || a.bank.replace(/—.*/, "").trim();
-      return React.createElement("button", {
-        key: a.id,
-        onClick: () => setAccountsTab(a.id),
-        onMouseDown: () => {
-          setPressedAccountsTab(a.id);
-          try {
-            navigator.vibrate && navigator.vibrate(9);
-          } catch (e) {}
-        },
-        onMouseUp: () => setPressedAccountsTab(null),
-        onMouseLeave: () => setPressedAccountsTab(p => p === a.id ? null : p),
-        onTouchStart: () => {
-          setPressedAccountsTab(a.id);
-          try {
-            navigator.vibrate && navigator.vibrate(9);
-          } catch (e) {}
-        },
-        onTouchEnd: () => setPressedAccountsTab(null),
-        onTouchCancel: () => setPressedAccountsTab(null),
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "7px 14px",
-          borderRadius: 20,
-          border: `1px solid ${isActive ? "var(--gold)" : "var(--line)"}`,
-          cursor: "pointer",
-          fontSize: 12.5,
-          fontWeight: 600,
-          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          background: isActive ? "#FBF2E4" : "var(--paper)",
-          color: isActive ? "var(--gold)" : "var(--slate)",
-          transform: isPressed ? "scale(0.93)" : "scale(1)",
-          transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
-          whiteSpace: "nowrap",
-          flexShrink: 0
-        }
-      }, label);
-    })), React.createElement("div", {
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "9px 14px",
+        borderRadius: 10,
+        border: "1px solid var(--line)",
+        background: "var(--paper)",
+        fontSize: 13.5,
+        fontWeight: 600,
+        color: "var(--ink)",
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        maxWidth: "100%",
+        overflow: "hidden"
+      }
+    }, React.createElement("span", {
+      style: {
+        overflow: "hidden",
+        textOverflow: "ellipsis"
+      }
+    }, active.nickname || active.bank.replace(/—.*/, "").trim()), React.createElement(IconChevronDown, {
+      size: 14,
+      style: {
+        color: "var(--slate)",
+        flexShrink: 0
+      }
+    })), React.createElement("select", {
+      value: activeId,
+      onChange: e => setAccountsTab(e.target.value),
+      "aria-label": "Selecionar conta",
+      style: {
+        position: "absolute",
+        inset: 0,
+        opacity: 0,
+        width: "100%",
+        height: "100%",
+        cursor: "pointer",
+        border: "none",
+        padding: 0
+      }
+    }, accounts.map(a => React.createElement("option", {
+      key: a.id,
+      value: a.id
+    }, a.nickname || a.bank.replace(/—.*/, "").trim())))), React.createElement("div", {
       key: activeId,
       style: {
         animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
