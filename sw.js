@@ -41,3 +41,19 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+/* Verificação em segundo plano (melhor esforço, só Chrome/Android com a app
+   instalada e uso frequente — a Apple não suporta isto em Safari/iOS). Como
+   o service worker não tem acesso aos dados da app (guardados no localStorage
+   da página, não visível aqui), mostra um lembrete genérico a convidar a
+   abrir a app, que então faz a verificação completa. */
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "fonsprince-check-alerts") {
+    event.waitUntil(
+      self.registration.showNotification("Fonsprince One", {
+        body: "Pode haver contas a vencer ou orçamentos no limite — abra a app para ver.",
+        icon: "./icon-192.png",
+      })
+    );
+  }
+});

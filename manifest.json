@@ -1,15 +1,38 @@
 {
-  "name": "Fonsprince — Controlo Financeiro",
-  "short_name": "Fonsprince",
-  "description": "Controlo financeiro pessoal e familiar: contas, movimentos, orçamento, dívidas, câmbio, previsão e planeamento.",
+  "name": "Fonsprince One — Controlo Financeiro",
+  "short_name": "Fonsprince One",
+  "description": "Controlo financeiro pessoal e familiar: contas, transações, orçamento, empréstimos, cartões, câmbio, fluxo de caixa e planeamento.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#E7E9ED",
-  "theme_color": "#1B1F27",
+  "theme_color": "#0F1E42",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova Transação",
+      "short_name": "Transação",
+      "description": "Adicionar uma nova receita ou despesa",
+      "url": "./index.html?action=new-transaction",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nova Conta",
+      "short_name": "Conta",
+      "description": "Adicionar uma nova conta bancária",
+      "url": "./index.html?action=new-account",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Saldo",
+      "short_name": "Saldo",
+      "description": "Abrir a Visão Geral",
+      "url": "./index.html?tab=overview",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
