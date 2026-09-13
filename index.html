@@ -388,6 +388,60 @@ const IconCamera = p => React.createElement(Icon, p, React.createElement("path",
   cy: "13",
   r: "3.5"
 }));
+const IconHeart = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+}));
+const IconShirt = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 .55.45 1 1 1h10a1 1 0 0 0 1-1V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"
+}));
+const IconPhone = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
+}));
+const IconShoppingBag = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"
+}), React.createElement("path", {
+  d: "M3 6h18"
+}), React.createElement("path", {
+  d: "M16 10a4 4 0 0 1-8 0"
+}));
+const IconList = p => React.createElement(Icon, p, React.createElement("line", {
+  x1: "8",
+  y1: "6",
+  x2: "21",
+  y2: "6"
+}), React.createElement("line", {
+  x1: "8",
+  y1: "12",
+  x2: "21",
+  y2: "12"
+}), React.createElement("line", {
+  x1: "8",
+  y1: "18",
+  x2: "21",
+  y2: "18"
+}), React.createElement("line", {
+  x1: "3",
+  y1: "6",
+  x2: "3.01",
+  y2: "6"
+}), React.createElement("line", {
+  x1: "3",
+  y1: "12",
+  x2: "3.01",
+  y2: "12"
+}), React.createElement("line", {
+  x1: "3",
+  y1: "18",
+  x2: "3.01",
+  y2: "18"
+}));
+const IconGraduationCap = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M22 10 12 5 2 10l10 5 10-5Z"
+}), React.createElement("path", {
+  d: "M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"
+}), React.createElement("path", {
+  d: "M22 10v6"
+}));
 const IconBarChart3 = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M3 3v16a2 2 0 0 0 2 2h16"
 }), React.createElement("path", {
@@ -830,6 +884,25 @@ function categoryColor(cat) {
   const i = EXPENSE_CATEGORIES.indexOf(cat);
   return CATEGORY_COLORS[i >= 0 ? i % CATEGORY_COLORS.length : CATEGORY_COLORS.length - 1];
 }
+const CATEGORY_ICONS = {
+  "Alimentação": IconShoppingBag,
+  "Transporte": IconCar,
+  "Combustíveis": IconFlame,
+  "Habitação": IconHome,
+  "Contas Fixas": IconReceipt,
+  "Comunicação": IconPhone,
+  "Salários de Funcionários": IconUsers,
+  "Pagamento de Dívidas": IconCreditCard,
+  "Empréstimos a Terceiros": IconBanknote,
+  "Saúde": IconHeart,
+  "Educação": IconGraduationCap,
+  "Lazer": IconPartyPopper,
+  "Vestuário": IconShirt,
+  "Outros": IconTag
+};
+function categoryIcon(cat) {
+  return CATEGORY_ICONS[cat] || IconTag;
+}
 const STAFF_ROLES = ["Empregada doméstica", "Cozinheira/o", "Motorista", "Segurança", "Jardineiro", "Ama / Babysitter", "Outro"];
 const GOAL_CATEGORIES = ["Casa", "Carro", "Viagem", "Educação dos filhos", "Fundo de emergência", "Outro"];
 function goalCategoryIcon(cat) {
@@ -1078,6 +1151,78 @@ function parseReceiptText(text) {
 }
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+function timelineDayLabel(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.getTime() === today.getTime()) return "Hoje";
+  if (d.getTime() === yesterday.getTime()) return "Ontem";
+  const label = d.toLocaleDateString("pt-PT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+function groupTransactionsByDay(transactions) {
+  const sorted = [...transactions].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  const groups = [];
+  let current = null;
+  for (const t of sorted) {
+    if (!current || current.date !== t.date) {
+      current = {
+        date: t.date,
+        items: []
+      };
+      groups.push(current);
+    }
+    current.items.push(t);
+  }
+  return groups;
+}
+function dayNetTotal(items) {
+  return items.reduce((s, t) => {
+    if (t.kind === "receita") return s + Number(t.amount);
+    if (t.kind === "despesa") return s - Number(t.amount);
+    return s;
+  }, 0);
+}
+function timelineNodeInfo(t, accounts) {
+  if (t.kind === "transferencia") {
+    const fromAcc = accounts.find(a => a.id === t.fromAccountId);
+    const toAcc = accounts.find(a => a.id === t.toAccountId);
+    return {
+      icon: IconRepeat,
+      bg: "var(--slate)",
+      title: "Transferência enviada",
+      subtitle: `${fromAcc ? fromAcc.bank.replace(/—.*/, "").trim() : "—"} → ${toAcc ? toAcc.bank.replace(/—.*/, "").trim() : "—"}`,
+      amountColor: "var(--ink)",
+      amountPrefix: ""
+    };
+  }
+  const acc = accounts.find(a => a.id === t.accountId);
+  const accName = acc ? acc.bank.replace(/—.*/, "").trim() : "—";
+  if (t.kind === "receita") {
+    return {
+      icon: IconArrowDownLeft,
+      bg: "var(--emerald)",
+      title: `Recebeu ${t.description || t.category || "receita"}`,
+      subtitle: t.description ? `${t.category} · ${accName}` : accName,
+      amountColor: "var(--emerald)",
+      amountPrefix: "+ "
+    };
+  }
+  return {
+    icon: categoryIcon(t.category),
+    bg: categoryColor(t.category),
+    title: `Pagou ${t.description || t.category}`,
+    subtitle: t.description ? `${t.category} · ${accName}` : accName,
+    amountColor: "var(--rust)",
+    amountPrefix: "− "
+  };
 }
 function monthlyHistory(transactions, count) {
   count = count || 6;
@@ -6531,7 +6676,7 @@ function FinanceApp() {
     onClose: () => setShowCategoryManager(false)
   }));
 }
-function buildSmartHomeInsights({
+function buildCockpitDecisions({
   recurringExpenses,
   transactions,
   month,
@@ -6539,23 +6684,90 @@ function buildSmartHomeInsights({
   debtPayments,
   goals,
   totalDespesas,
-  prevTotalDespesas
+  prevTotalDespesas,
+  spentByCategory,
+  categories,
+  liquidKzNow
 }) {
   const in5days = new Date();
   in5days.setDate(in5days.getDate() + 5);
   const in5daysStr = in5days.toISOString().slice(0, 10);
-  let pendingCount = 0;
+  const decisions = [];
+  const dueRecurring = [];
   for (const r of recurringExpenses) {
     const status = recurringStatus(r, month, transactions);
     const due = recurringDueDateForMonth(r, month);
-    if (status === "Vencida" || status === "Pendente" && due <= in5daysStr) pendingCount++;
+    if (status === "Vencida") dueRecurring.push({
+      ...r,
+      due,
+      overdue: true
+    });else if (status === "Pendente" && due <= in5daysStr) dueRecurring.push({
+      ...r,
+      due,
+      overdue: false
+    });
   }
-  for (const d of debts) {
-    if (debtStatus(d, debtPayments) === "Vencida") pendingCount++;
+  dueRecurring.sort((a, b) => a.due < b.due ? -1 : 1);
+  for (const r of dueRecurring.slice(0, 3)) {
+    decisions.push({
+      id: `rec-${r.id}`,
+      tone: r.overdue ? "urgent" : "warning",
+      icon: r.overdue ? IconAlertTriangle : IconClock,
+      title: r.overdue ? `${r.name} está vencida` : `Pague ${r.name} em breve`,
+      subtitle: `${fmt(r.amount)} · vence ${new Date(r.due + "T00:00:00").toLocaleDateString("pt-PT")}`,
+      actionLabel: "Ver",
+      tab: "budget"
+    });
+  }
+  const overdueDebtsList = debts.filter(d => debtStatus(d, debtPayments) === "Vencida");
+  for (const d of overdueDebtsList.slice(0, 2)) {
+    decisions.push({
+      id: `debt-${d.id}`,
+      tone: "urgent",
+      icon: IconAlertTriangle,
+      title: `Dívida vencida: ${d.creditor}`,
+      subtitle: fmt(debtBalance(d, debtPayments), d.currency),
+      actionLabel: "Ver",
+      tab: "debts"
+    });
+  }
+  const budgetIssues = [];
+  for (const [cat, limit] of Object.entries(categories || {})) {
+    const lim = Number(limit) || 0;
+    if (lim <= 0) continue;
+    const spent = spentByCategory[cat] || 0;
+    const pct = spent / lim;
+    if (pct >= 0.9) budgetIssues.push({
+      cat,
+      pct,
+      spent,
+      lim
+    });
+  }
+  budgetIssues.sort((a, b) => b.pct - a.pct);
+  for (const b of budgetIssues.slice(0, 2)) {
+    decisions.push({
+      id: `budget-${b.cat}`,
+      tone: b.pct >= 1 ? "urgent" : "warning",
+      icon: b.pct >= 1 ? IconAlertTriangle : IconTrendingUp,
+      title: b.pct >= 1 ? `Orçamento de ${b.cat} ultrapassado` : `${b.cat} quase no limite`,
+      subtitle: `${fmt(b.spent)} de ${fmt(b.lim)} (${Math.round(b.pct * 100)}%)`,
+      actionLabel: "Ajustar",
+      tab: "budget"
+    });
   }
   let spendingChangePct = null;
-  if (prevTotalDespesas > 0) {
-    spendingChangePct = (totalDespesas - prevTotalDespesas) / prevTotalDespesas * 100;
+  if (prevTotalDespesas > 0) spendingChangePct = (totalDespesas - prevTotalDespesas) / prevTotalDespesas * 100;
+  if (spendingChangePct !== null && spendingChangePct >= 30) {
+    decisions.push({
+      id: "spike",
+      tone: "warning",
+      icon: IconTrendingUp,
+      title: `Gastou ${spendingChangePct.toFixed(0)}% mais este mês`,
+      subtitle: "Face ao mês anterior",
+      actionLabel: "Ver",
+      tab: "budget"
+    });
   }
   let nearestGoal = null;
   for (const g of goals) {
@@ -6563,27 +6775,112 @@ function buildSmartHomeInsights({
     if (target <= 0) continue;
     const pct = Number(g.current) / target * 100;
     if (pct >= 100) continue;
-    if (!nearestGoal || pct > nearestGoal.pct) nearestGoal = {
+    if (pct >= 80 && (!nearestGoal || pct > nearestGoal.pct)) nearestGoal = {
       name: g.name,
       pct
     };
   }
+  if (nearestGoal) {
+    decisions.push({
+      id: "goal",
+      tone: "opportunity",
+      icon: IconTarget,
+      title: `Falta pouco para "${nearestGoal.name}"`,
+      subtitle: `${nearestGoal.pct.toFixed(0)}% concluído`,
+      actionLabel: "Ver",
+      tab: "goals"
+    });
+  }
+  const monthsCovered = totalDespesas > 0 ? liquidKzNow / totalDespesas : null;
+  if (monthsCovered !== null && monthsCovered >= 8 && decisions.length < 5) {
+    decisions.push({
+      id: "idle-liquidity",
+      tone: "opportunity",
+      icon: IconPig,
+      title: "Tem dinheiro parado a render pouco",
+      subtitle: `${fmtCompact(liquidKzNow)} disponíveis — considere investir ou reforçar uma meta`,
+      actionLabel: "Ver",
+      tab: "planning"
+    });
+  }
+  const toneOrder = {
+    urgent: 0,
+    warning: 1,
+    opportunity: 2
+  };
+  decisions.sort((a, b) => toneOrder[a.tone] - toneOrder[b.tone]);
+  return decisions.slice(0, 5);
+}
+function computeHealthScore({
+  totalReceitas,
+  totalDespesas,
+  liquidKzNow,
+  spentByCategory,
+  categories,
+  debts,
+  debtPayments
+}) {
+  const savingsRate = totalReceitas > 0 ? (totalReceitas - totalDespesas) / totalReceitas : 0;
+  const score1 = Math.max(0, Math.min(1, savingsRate / 0.2)) * 35;
+  const monthsCovered = totalDespesas > 0 ? liquidKzNow / totalDespesas : 6;
+  const score2 = Math.max(0, Math.min(1, monthsCovered / 6)) * 30;
+  const catLimits = Object.entries(categories || {}).filter(([, v]) => Number(v) > 0);
+  let score3;
+  if (catLimits.length === 0) score3 = 20;else {
+    const within = catLimits.filter(([c, lim]) => (spentByCategory[c] || 0) <= Number(lim)).length;
+    score3 = within / catLimits.length * 20;
+  }
+  const totalDebtPagar = debts.filter(d => d.type === "A pagar").reduce((s, d) => s + debtBalance(d, debtPayments), 0);
+  const debtRatio = totalReceitas > 0 ? totalDebtPagar / totalReceitas : totalDebtPagar > 0 ? 3 : 0;
+  let score4 = 15 * (1 - Math.max(0, Math.min(1, debtRatio / 3)));
+  const hasOverdueDebt = debts.some(d => debtStatus(d, debtPayments) === "Vencida");
+  if (hasOverdueDebt) score4 = Math.max(0, score4 - 5);
+  return Math.max(0, Math.min(100, Math.round(score1 + score2 + score3 + score4)));
+}
+function healthLabel(score) {
+  if (score >= 80) return {
+    label: "Excelente",
+    color: "var(--emerald)"
+  };
+  if (score >= 60) return {
+    label: "Bom",
+    color: "var(--emerald)"
+  };
+  if (score >= 40) return {
+    label: "Razoável",
+    color: "var(--gold)"
+  };
+  if (score >= 20) return {
+    label: "Atenção",
+    color: "#E08E45"
+  };
   return {
-    pendingCount,
-    spendingChangePct,
-    nearestGoal
+    label: "Crítico",
+    color: "var(--rust)"
   };
 }
-function SmartHomeRow({
-  row
+function CockpitDecisionRow({
+  row,
+  onNavigate
 }) {
   const {
     pressed,
     bind
   } = usePressPhysics();
+  const toneColors = {
+    urgent: {
+      bg: "rgba(209,52,56,0.24)"
+    },
+    warning: {
+      bg: "rgba(224,142,69,0.24)"
+    },
+    opportunity: {
+      bg: "rgba(18,161,80,0.24)"
+    }
+  };
+  const tone = toneColors[row.tone] || toneColors.warning;
   return React.createElement("button", {
-    key: row.key,
-    onClick: row.onClick,
+    onClick: () => onNavigate(row.tab),
     ...bind,
     style: {
       display: "flex",
@@ -6605,7 +6902,7 @@ function SmartHomeRow({
       width: 34,
       height: 34,
       borderRadius: "50%",
-      background: row.iconBg,
+      background: tone.bg,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -6630,40 +6927,70 @@ function SmartHomeRow({
       overflow: "hidden",
       textOverflow: "ellipsis"
     }
-  }, row.title), row.subtitle && React.createElement("div", {
+  }, row.title), React.createElement("div", {
     style: {
       fontSize: 11,
       color: "rgba(255,255,255,0.55)",
-      marginTop: 1
+      marginTop: 1,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
     }
-  }, row.subtitle), row.progress !== undefined && React.createElement("div", {
+  }, row.subtitle)), React.createElement("span", {
     style: {
-      marginTop: 6,
-      height: 4,
-      borderRadius: 2,
-      background: "rgba(255,255,255,0.15)",
-      overflow: "hidden"
+      fontSize: 11,
+      fontWeight: 700,
+      color: "rgba(255,255,255,0.7)",
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      gap: 3
+    }
+  }, row.actionLabel, React.createElement(IconChevronRight, {
+    size: 13
+  })));
+}
+function HealthScoreGauge({
+  score,
+  color
+}) {
+  return React.createElement("div", {
+    style: {
+      position: "relative",
+      width: 68,
+      height: 68,
+      borderRadius: "50%",
+      background: `conic-gradient(${color} ${score * 3.6}deg, rgba(255,255,255,0.14) 0deg)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
     }
   }, React.createElement("div", {
     style: {
-      height: "100%",
-      width: `${Math.min(row.progress, 100)}%`,
-      background: "var(--gold)",
-      borderRadius: 2
+      width: 54,
+      height: 54,
+      borderRadius: "50%",
+      background: "rgba(11,20,42,0.92)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center"
     }
-  }))), React.createElement("span", {
+  }, React.createElement("div", {
     style: {
-      color: "rgba(255,255,255,0.4)",
-      fontSize: 16,
-      flexShrink: 0
+      fontSize: 18,
+      fontWeight: 800,
+      color: "#fff",
+      fontFamily: "'IBM Plex Mono', monospace",
+      lineHeight: 1
     }
-  }, "›"));
+  }, score)));
 }
-function SmartHomeCard({
+function CockpitCard({
   userName,
-  pendingCount,
-  spendingChangePct,
-  nearestGoal,
+  score,
+  decisions,
   onNavigate
 }) {
   const [mounted, setMounted] = useState(false);
@@ -6681,40 +7008,11 @@ function SmartHomeCard({
   });
   const dateLabel = dateLabelRaw.charAt(0).toUpperCase() + dateLabelRaw.slice(1);
   const initials = (userName || "").trim().slice(0, 2).toUpperCase();
-  const rows = [];
-  if (pendingCount > 0) {
-    rows.push({
-      key: "pending",
-      icon: IconAlertTriangle,
-      iconBg: "rgba(209,52,56,0.24)",
-      title: `${pendingCount} pagamento${pendingCount > 1 ? "s" : ""} pendente${pendingCount > 1 ? "s" : ""}`,
-      subtitle: "Toque para ver e resolver",
-      onClick: () => onNavigate("alerts")
-    });
-  }
-  if (spendingChangePct !== null) {
-    const down = spendingChangePct <= 0;
-    rows.push({
-      key: "spend",
-      icon: down ? IconTrendingDown : IconTrendingUp,
-      iconBg: down ? "rgba(18,161,80,0.24)" : "rgba(184,130,60,0.24)",
-      title: `Gastou ${Math.abs(spendingChangePct).toFixed(0)}% ${down ? "menos" : "mais"}`,
-      subtitle: "Face ao mês passado",
-      onClick: () => onNavigate("budget")
-    });
-  }
-  if (nearestGoal) {
-    rows.push({
-      key: "goal",
-      icon: IconTarget,
-      iconBg: "rgba(184,130,60,0.24)",
-      title: `${nearestGoal.pct.toFixed(0)}% da meta "${nearestGoal.name}"`,
-      subtitle: null,
-      progress: nearestGoal.pct,
-      onClick: () => onNavigate("goals")
-    });
-  }
-  const hasAnyInsight = rows.length > 0;
+  const {
+    label: scoreLabel,
+    color: scoreColor
+  } = healthLabel(score);
+  const hasDecisions = decisions.length > 0;
   return React.createElement("div", {
     style: {
       position: "relative",
@@ -6736,7 +7034,15 @@ function SmartHomeCard({
     style: {
       display: "flex",
       alignItems: "center",
+      justifyContent: "space-between",
       gap: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      minWidth: 0
     }
   }, React.createElement("div", {
     style: {
@@ -6763,28 +7069,63 @@ function SmartHomeCard({
   }, React.createElement("div", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: 700,
       color: "#fff",
-      lineHeight: 1.2
+      lineHeight: 1.2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
     }
   }, greeting, userName ? `, ${userName}` : ""), React.createElement("div", {
     style: {
-      fontSize: 12,
+      fontSize: 11.5,
       color: "rgba(255,255,255,0.55)",
       marginTop: 2
     }
-  }, dateLabel))), hasAnyInsight ? React.createElement("div", {
+  }, dateLabel))), React.createElement("div", {
     style: {
-      marginTop: 16,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 3,
+      flexShrink: 0
+    }
+  }, React.createElement(HealthScoreGauge, {
+    score: score,
+    color: scoreColor
+  }), React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      fontWeight: 700,
+      color: scoreColor,
+      textTransform: "uppercase",
+      letterSpacing: 0.3
+    }
+  }, scoreLabel))), hasDecisions ? React.createElement("div", {
+    style: {
+      marginTop: 16
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "rgba(255,255,255,0.5)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 8
+    }
+  }, "O que precisa da sua atenção"), React.createElement("div", {
+    style: {
       display: "flex",
       flexDirection: "column",
       gap: 8
     }
-  }, rows.map(row => React.createElement(SmartHomeRow, {
-    key: row.key,
-    row: row
-  }))) : React.createElement("div", {
+  }, decisions.map(row => React.createElement(CockpitDecisionRow, {
+    key: row.id,
+    row: row,
+    onNavigate: onNavigate
+  })))) : React.createElement("div", {
     style: {
       marginTop: 14,
       fontSize: 12.5,
@@ -6795,7 +7136,7 @@ function SmartHomeCard({
     }
   }, React.createElement(IconCheckCircle2, {
     size: 14
-  }), " Está tudo em dia.")));
+  }), " Está tudo em dia. Nenhuma decisão urgente agora.")));
 }
 function StackedCard({
   children,
@@ -6886,16 +7227,6 @@ function Overview({
   const [pressedAccountsTab, setPressedAccountsTab] = useState(null);
   const [summaryTab, setSummaryTab] = useState("interest");
   const [pressedSummaryTab, setPressedSummaryTab] = useState(null);
-  const smartHome = useMemo(() => buildSmartHomeInsights({
-    recurringExpenses: recurringExpenses || [],
-    transactions,
-    month,
-    debts,
-    debtPayments,
-    goals,
-    totalDespesas,
-    prevTotalDespesas
-  }), [recurringExpenses, transactions, month, debts, debtPayments, goals, totalDespesas, prevTotalDespesas]);
   const saldo = totalReceitas - totalDespesas;
   const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
   const prevMonthKeyForOverview = previousMonthKey(month);
@@ -6967,17 +7298,38 @@ function Overview({
     familyBreakdown
   }), [accounts, transactions, exchangeRates, consolidatedKzNow, consolidatedKzPrev, familyBreakdown]);
   const memberTrend = useMemo(() => memberMonthlyHistory(transactions, 6), [transactions]);
+  const cockpitDecisions = useMemo(() => buildCockpitDecisions({
+    recurringExpenses: recurringExpenses || [],
+    transactions,
+    month,
+    debts,
+    debtPayments,
+    goals,
+    totalDespesas,
+    prevTotalDespesas,
+    spentByCategory,
+    categories,
+    liquidKzNow
+  }), [recurringExpenses, transactions, month, debts, debtPayments, goals, totalDespesas, prevTotalDespesas, spentByCategory, categories, liquidKzNow]);
+  const healthScore = useMemo(() => computeHealthScore({
+    totalReceitas,
+    totalDespesas,
+    liquidKzNow,
+    spentByCategory,
+    categories,
+    debts,
+    debtPayments
+  }), [totalReceitas, totalDespesas, liquidKzNow, spentByCategory, categories, debts, debtPayments]);
   return React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: 22
     }
-  }, React.createElement(SmartHomeCard, {
+  }, React.createElement(CockpitCard, {
     userName: userName,
-    pendingCount: smartHome.pendingCount,
-    spendingChangePct: smartHome.spendingChangePct,
-    nearestGoal: smartHome.nearestGoal,
+    score: healthScore,
+    decisions: cockpitDecisions,
     onNavigate: onNavigate
   }), React.createElement(Card, null, React.createElement("h3", {
     style: {
@@ -9978,6 +10330,258 @@ function AccountModal({
     onClick: handleSave
   }, isEditing ? "Guardar alterações" : "Guardar conta")));
 }
+function TimelineNode({
+  t,
+  accounts,
+  onEdit,
+  onRemove,
+  isLast,
+  index
+}) {
+  const {
+    pressed,
+    bind
+  } = usePressPhysics(8);
+  const [dragX, setDragX] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const dragging = useRef(false);
+  const axisLocked = useRef(null);
+  const info = timelineNodeInfo(t, accounts);
+  const Icon = info.icon;
+  function handleTouchStart(e) {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    dragging.current = true;
+    axisLocked.current = null;
+  }
+  function handleTouchMove(e) {
+    if (!dragging.current) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (axisLocked.current === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+      axisLocked.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+    if (axisLocked.current !== "x") return;
+    e.preventDefault();
+    const base = revealed ? -56 : 0;
+    let next = base + dx;
+    next = Math.max(-56, Math.min(0, next));
+    setDragX(next);
+  }
+  function handleTouchEnd() {
+    dragging.current = false;
+    if (axisLocked.current === "x") {
+      if (dragX < -28) {
+        setRevealed(true);
+        setDragX(-56);
+      } else {
+        setRevealed(false);
+        setDragX(0);
+      }
+    }
+    axisLocked.current = null;
+  }
+  return React.createElement("div", {
+    style: {
+      position: "relative",
+      overflow: "hidden",
+      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards",
+      animationDelay: `${Math.min(index, 10) * 0.025}s`
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      height: "100%",
+      width: 56,
+      display: "flex"
+    }
+  }, React.createElement("button", {
+    onClick: () => {
+      onRemove(t.id);
+      setRevealed(false);
+      setDragX(0);
+    },
+    style: {
+      flex: 1,
+      background: "var(--rust)",
+      color: "#fff",
+      border: "none",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, React.createElement(IconTrash, {
+    size: 16
+  }))), React.createElement("div", {
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+    onClick: () => onEdit(t),
+    ...bind,
+    style: {
+      position: "relative",
+      display: "flex",
+      gap: 14,
+      padding: "2px 4px",
+      paddingBottom: isLast ? 4 : 22,
+      background: "var(--card)",
+      transform: `translateX(${dragX}px) scale(${pressed ? 0.985 : 1})`,
+      transition: dragging.current ? "none" : "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      cursor: "pointer",
+      touchAction: "pan-y"
+    }
+  }, !isLast && React.createElement("div", {
+    style: {
+      position: "absolute",
+      left: 19,
+      top: 40,
+      bottom: -22,
+      width: 2,
+      background: "var(--line)"
+    }
+  }), React.createElement("div", {
+    style: {
+      width: 40,
+      height: 40,
+      borderRadius: "50%",
+      background: info.bg,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      zIndex: 1,
+      boxShadow: "0 2px 6px rgba(16,24,40,0.12)"
+    }
+  }, React.createElement(Icon, {
+    size: 18,
+    style: {
+      color: "#fff"
+    }
+  })), React.createElement("div", {
+    style: {
+      flex: 1,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 8,
+      minWidth: 0,
+      paddingTop: 2
+    }
+  }, React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: "var(--ink)",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, info.title), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginTop: 2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, info.subtitle)), React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 14,
+      color: info.amountColor,
+      whiteSpace: "nowrap",
+      flexShrink: 0
+    }
+  }, info.amountPrefix, fmt(t.amount)))));
+}
+function TimelineDayGroup({
+  group,
+  accounts,
+  onEdit,
+  onRemove,
+  startIndex
+}) {
+  const net = dayNetTotal(group.items);
+  return React.createElement("div", {
+    style: {
+      marginBottom: 24
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "baseline",
+      marginBottom: 14,
+      paddingLeft: 2
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: "var(--ink)"
+    }
+  }, timelineDayLabel(group.date)), net !== 0 && React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 12,
+      fontWeight: 600,
+      color: net >= 0 ? "var(--emerald)" : "var(--rust)"
+    }
+  }, net >= 0 ? "+ " : "− ", fmtCompact(Math.abs(net)))), React.createElement("div", null, group.items.map((t, i) => React.createElement(TimelineNode, {
+    key: t.id,
+    t: t,
+    accounts: accounts,
+    onEdit: onEdit,
+    onRemove: onRemove,
+    isLast: i === group.items.length - 1,
+    index: startIndex + i
+  }))));
+}
+function TimelineView({
+  transactions,
+  accounts,
+  onEdit,
+  onRemove
+}) {
+  const groups = useMemo(() => groupTransactionsByDay(transactions), [transactions]);
+  if (groups.length === 0) {
+    return React.createElement("p", {
+      style: {
+        color: "var(--slate)",
+        fontSize: 13.5,
+        padding: "20px 16px"
+      }
+    }, "Nenhum movimento corresponde aos filtros.");
+  }
+  let runningIndex = 0;
+  return React.createElement("div", {
+    style: {
+      padding: "18px 16px 8px"
+    }
+  }, groups.map(g => {
+    const startIndex = runningIndex;
+    runningIndex += g.items.length;
+    return React.createElement(TimelineDayGroup, {
+      key: g.date,
+      group: g,
+      accounts: accounts,
+      onEdit: onEdit,
+      onRemove: onRemove,
+      startIndex: startIndex
+    });
+  }));
+}
 function MobileTxCard({
   t,
   accounts,
@@ -10175,6 +10779,7 @@ function TransactionsTab({
   const [search, setSearch] = useState("");
   const [filterAccount, setFilterAccount] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [view, setView] = useState("timeline");
   const allCategories = useMemo(() => {
     const set = new Set();
     transactions.forEach(t => t.category && set.add(t.category));
@@ -10296,6 +10901,52 @@ function TransactionsTab({
   }, "Adicione primeiro uma conta bancária na aba Contas."), transactions.length > 0 && React.createElement("div", {
     style: {
       display: "flex",
+      justifyContent: "flex-end",
+      marginBottom: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 9,
+      padding: 3,
+      gap: 2
+    }
+  }, [{
+    id: "timeline",
+    label: "Timeline",
+    icon: IconActivity
+  }, {
+    id: "list",
+    label: "Lista",
+    icon: IconList
+  }].map(v => {
+    const isActive = view === v.id;
+    return React.createElement("button", {
+      key: v.id,
+      onClick: () => setView(v.id),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "7px 13px",
+        borderRadius: 7,
+        border: "none",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: 600,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: isActive ? "var(--card)" : "transparent",
+        color: isActive ? "var(--gold)" : "var(--slate)",
+        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+        transition: "background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease"
+      }
+    }, React.createElement(v.icon, {
+      size: 13
+    }), v.label);
+  }))), transactions.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
       gap: 10,
       marginBottom: 14,
       flexWrap: "wrap",
@@ -10380,7 +11031,12 @@ function TransactionsTab({
       padding: 20,
       margin: 0
     }
-  }, "Nenhum movimento corresponde aos filtros.") : isMobile ? React.createElement(MobileTxList, {
+  }, "Nenhum movimento corresponde aos filtros.") : view === "timeline" ? React.createElement(TimelineView, {
+    transactions: filteredTransactions,
+    accounts: accounts,
+    onEdit: onEdit,
+    onRemove: onRemove
+  }) : isMobile ? React.createElement(MobileTxList, {
     transactions: filteredTransactions,
     accounts: accounts,
     onEdit: onEdit,
