@@ -9380,81 +9380,178 @@ function AccountsTab({
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 15,
-      margin: "0 0 12px"
+      margin: "0 0 4px"
     }
-  }, "Consolidado por banco"), React.createElement("div", {
+  }, "Consolidado por banco"), React.createElement("p", {
     style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 8
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "0 0 16px"
     }
-  }, byBank.map(([bank, kz]) => {
-    const share = bankTotal > 0 ? kz / bankTotal * 100 : 0;
-    const isPressed = pressedBank === bank;
-    return React.createElement("div", {
-      key: bank,
-      onClick: () => goToBank(bank),
-      onMouseDown: () => setPressedBank(bank),
-      onMouseUp: () => setPressedBank(null),
-      onMouseLeave: () => setPressedBank(p => p === bank ? null : p),
-      onTouchStart: () => setPressedBank(bank),
-      onTouchEnd: () => setPressedBank(null),
-      onTouchCancel: () => setPressedBank(null),
-      style: {
-        cursor: "pointer",
-        borderRadius: 8,
-        padding: "4px 6px",
-        margin: "0 -6px",
-        background: isPressed ? "var(--paper)" : "transparent",
-        ...pressStyle(isPressed, 0.98)
-      }
-    }, React.createElement("div", {
+  }, "Onde está o dinheiro, de relance."), (() => {
+    const topShare = bankTotal > 0 ? byBank[0][1] / bankTotal * 100 : 0;
+    const riskLevel = topShare >= 60 ? "alto" : topShare >= 40 ? "moderado" : null;
+    const r = 70,
+      cx = 88,
+      cy = 88,
+      strokeWidth = 26;
+    const circumference = 2 * Math.PI * r;
+    let cumulative = 0;
+    return React.createElement(React.Fragment, null, riskLevel && React.createElement("div", {
       style: {
         display: "flex",
-        justifyContent: "space-between",
-        fontSize: 13,
-        marginBottom: 3,
-        alignItems: "center"
+        alignItems: "flex-start",
+        gap: 8,
+        padding: "10px 12px",
+        borderRadius: 8,
+        marginBottom: 16,
+        background: riskLevel === "alto" ? "#FBEAEA" : "#FBF2E4",
+        border: `1px solid ${riskLevel === "alto" ? "#F0C2C2" : "#EBD5AE"}`
       }
-    }, React.createElement("span", {
+    }, React.createElement(IconAlertTriangle, {
+      size: 15,
       style: {
-        fontWeight: 600,
+        color: riskLevel === "alto" ? "var(--rust)" : "var(--gold)",
+        flexShrink: 0,
+        marginTop: 1
+      }
+    }), React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        color: riskLevel === "alto" ? "#8A2A2A" : "#7A5A1E"
+      }
+    }, React.createElement("b", null, riskLevel === "alto" ? "Concentração de risco elevada" : "Concentração moderada"), " — ", topShare.toFixed(0), "% do dinheiro está concentrado no ", byBank[0][0], ". Considere distribuir por mais bancos.")), React.createElement("div", {
+      style: {
         display: "flex",
         alignItems: "center",
-        gap: 5
+        gap: 24,
+        flexWrap: "wrap"
       }
-    }, bank, React.createElement(IconChevronRight, {
-      size: 13,
+    }, React.createElement("svg", {
+      width: 176,
+      height: 176,
+      viewBox: "0 0 176 176",
       style: {
-        color: "var(--slate)"
+        flexShrink: 0
       }
-    })), React.createElement("span", {
-      title: fmt(kz),
+    }, React.createElement("g", {
+      transform: `rotate(-90 ${cx} ${cy})`
+    }, byBank.map(([bank, kz], i) => {
+      const frac = bankTotal > 0 ? kz / bankTotal : 0;
+      const dash = frac * circumference;
+      const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+      const el = React.createElement("circle", {
+        key: bank,
+        cx: cx,
+        cy: cy,
+        r: r,
+        fill: "none",
+        stroke: color,
+        strokeWidth: strokeWidth,
+        strokeDasharray: `${dash} ${circumference - dash}`,
+        strokeDashoffset: -cumulative,
+        style: {
+          cursor: "pointer",
+          transition: "opacity 0.15s ease"
+        },
+        opacity: pressedBank && pressedBank !== bank ? 0.35 : 1,
+        onClick: () => goToBank(bank)
+      });
+      cumulative += dash;
+      return el;
+    })), React.createElement("circle", {
+      cx: cx,
+      cy: cy,
+      r: r - strokeWidth / 2 - 3,
+      fill: "var(--card)"
+    }), React.createElement("text", {
+      x: cx,
+      y: cy - 4,
+      textAnchor: "middle",
+      fontSize: "10.5",
+      fill: "var(--slate)",
+      fontFamily: "Inter, sans-serif"
+    }, "Total"), React.createElement("text", {
+      x: cx,
+      y: cy + 14,
+      textAnchor: "middle",
+      fontSize: "13",
+      fontWeight: "700",
+      fill: "var(--ink)",
+      fontFamily: "'IBM Plex Mono', monospace"
+    }, fmtCompact(bankTotal))), React.createElement("div", {
       style: {
-        fontFamily: "'IBM Plex Mono', monospace",
-        fontWeight: 700,
-        cursor: "help"
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+        flex: "1 1 260px",
+        minWidth: 240
       }
-    }, fmtCompact(kz), " ", React.createElement("span", {
-      style: {
-        color: "var(--slate)",
-        fontWeight: 500
-      }
-    }, "(", share.toFixed(0), "%)"))), React.createElement("div", {
-      style: {
-        height: 5,
-        borderRadius: 3,
-        background: "var(--paper)",
-        overflow: "hidden"
-      }
-    }, React.createElement("div", {
-      style: {
-        height: "100%",
-        width: `${share}%`,
-        background: "var(--gold)"
-      }
-    })));
-  }))), React.createElement("div", {
+    }, byBank.map(([bank, kz], i) => {
+      const share = bankTotal > 0 ? kz / bankTotal * 100 : 0;
+      const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+      const isPressed = pressedBank === bank;
+      return React.createElement("div", {
+        key: bank,
+        onClick: () => goToBank(bank),
+        onMouseDown: () => setPressedBank(bank),
+        onMouseUp: () => setPressedBank(null),
+        onMouseLeave: () => setPressedBank(p => p === bank ? null : p),
+        onTouchStart: () => setPressedBank(bank),
+        onTouchEnd: () => setPressedBank(null),
+        onTouchCancel: () => setPressedBank(null),
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 9,
+          cursor: "pointer",
+          borderRadius: 8,
+          padding: "6px 8px",
+          margin: "0 -8px",
+          background: isPressed ? "var(--paper)" : "transparent",
+          ...pressStyle(isPressed, 0.98)
+        }
+      }, React.createElement("span", {
+        style: {
+          width: 10,
+          height: 10,
+          borderRadius: "50%",
+          background: color,
+          flexShrink: 0
+        }
+      }), React.createElement("span", {
+        style: {
+          fontSize: 13,
+          fontWeight: 600,
+          flex: 1,
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }
+      }, bank), React.createElement("span", {
+        title: fmt(kz),
+        style: {
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 12.5,
+          fontWeight: 700,
+          cursor: "help",
+          whiteSpace: "nowrap"
+        }
+      }, fmtCompact(kz), " ", React.createElement("span", {
+        style: {
+          color: "var(--slate)",
+          fontWeight: 500
+        }
+      }, "(", share.toFixed(0), "%)")), React.createElement(IconChevronRight, {
+        size: 13,
+        style: {
+          color: "var(--slate)",
+          flexShrink: 0
+        }
+      }));
+    }))));
+  })()), React.createElement("div", {
     ref: accountsListRef,
     style: {
       display: "flex",
