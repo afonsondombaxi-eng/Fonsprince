@@ -9238,7 +9238,22 @@ function AccountsTab({
   const [sortBy, setSortBy] = useState("saldo");
   const [stack, setStack] = useState([]);
   const [pressedKey, setPressedKey] = useState(null);
+  const [pressedBank, setPressedBank] = useState(null);
+  const accountsListRef = useRef(null);
   const depth = stack.length;
+  function goToBank(bank) {
+    setSearch(bank);
+    setQuickFilter("Todos");
+    try {
+      navigator.vibrate && navigator.vibrate(9);
+    } catch (e) {}
+    requestAnimationFrame(() => {
+      accountsListRef.current && accountsListRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+  }
   function pressRow(key) {
     setPressedKey(key);
     try {
@@ -9375,20 +9390,45 @@ function AccountsTab({
     }
   }, byBank.map(([bank, kz]) => {
     const share = bankTotal > 0 ? kz / bankTotal * 100 : 0;
+    const isPressed = pressedBank === bank;
     return React.createElement("div", {
-      key: bank
+      key: bank,
+      onClick: () => goToBank(bank),
+      onMouseDown: () => setPressedBank(bank),
+      onMouseUp: () => setPressedBank(null),
+      onMouseLeave: () => setPressedBank(p => p === bank ? null : p),
+      onTouchStart: () => setPressedBank(bank),
+      onTouchEnd: () => setPressedBank(null),
+      onTouchCancel: () => setPressedBank(null),
+      style: {
+        cursor: "pointer",
+        borderRadius: 8,
+        padding: "4px 6px",
+        margin: "0 -6px",
+        background: isPressed ? "var(--paper)" : "transparent",
+        ...pressStyle(isPressed, 0.98)
+      }
     }, React.createElement("div", {
       style: {
         display: "flex",
         justifyContent: "space-between",
         fontSize: 13,
-        marginBottom: 3
+        marginBottom: 3,
+        alignItems: "center"
       }
     }, React.createElement("span", {
       style: {
-        fontWeight: 600
+        fontWeight: 600,
+        display: "flex",
+        alignItems: "center",
+        gap: 5
       }
-    }, bank), React.createElement("span", {
+    }, bank, React.createElement(IconChevronRight, {
+      size: 13,
+      style: {
+        color: "var(--slate)"
+      }
+    })), React.createElement("span", {
       title: fmt(kz),
       style: {
         fontFamily: "'IBM Plex Mono', monospace",
@@ -9415,6 +9455,7 @@ function AccountsTab({
       }
     })));
   }))), React.createElement("div", {
+    ref: accountsListRef,
     style: {
       display: "flex",
       gap: 10,
