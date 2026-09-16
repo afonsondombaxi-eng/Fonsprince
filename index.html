@@ -6294,7 +6294,7 @@ function FinanceApp() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "0 6px 18px rgba(184,130,60,0.45)",
+      boxShadow: "0 4px 12px rgba(184,130,60,0.22)",
       cursor: "pointer",
       transform: showFabMenu ? "rotate(45deg)" : "rotate(0deg)",
       transition: "transform 0.2s ease"
@@ -13534,7 +13534,7 @@ function BondCard({
       fontSize: 12,
       padding: "6px 8px",
       borderRadius: 6,
-      background: c.recebido ? "#EAF6EE" : "var(--paper)"
+      background: c.recebido ? "color-mix(in srgb, var(--emerald) 14%, var(--card))" : "var(--paper)"
     }
   }, React.createElement("span", null, new Date(c.data + "T00:00:00").toLocaleDateString("pt-PT")), React.createElement("span", {
     style: {
