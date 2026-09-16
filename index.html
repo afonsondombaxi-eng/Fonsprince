@@ -3112,7 +3112,7 @@ const inputStyle = {
   fontFamily: "Inter, sans-serif",
   fontSize: 14,
   color: "var(--ink)",
-  background: "#FCFCFA",
+  background: "var(--card)",
   outline: "none"
 };
 function Toast({
@@ -3915,7 +3915,7 @@ function ProgressBar({
     style: {
       height: 7,
       borderRadius: 4,
-      background: "#EDEBE3",
+      background: "var(--paper)",
       overflow: "hidden"
     }
   }, React.createElement("div", {
@@ -4226,7 +4226,7 @@ function SplitBar({
     style: {
       height: 8,
       borderRadius: 4,
-      background: "#EDEBE3"
+      background: "var(--paper)"
     }
   });
   return React.createElement("div", {
@@ -6354,7 +6354,7 @@ function FinanceApp() {
       padding: "12px 14px",
       borderRadius: 8,
       border: "1px solid var(--line)",
-      background: tab === t.id ? "#EEF3FB" : "#fff",
+      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: "var(--ink)",
       fontFamily: "Inter, sans-serif",
       fontSize: 14,
@@ -6445,7 +6445,7 @@ function FinanceApp() {
       padding: "12px 4px",
       borderRadius: 12,
       border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
-      background: tab === t.id ? "#FBF2E4" : "#fff",
+      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       cursor: "pointer"
     }
   }, React.createElement(t.icon, {
@@ -6488,7 +6488,7 @@ function FinanceApp() {
       padding: "12px 14px",
       borderRadius: 8,
       border: "1px solid var(--line)",
-      background: "#fff",
+      background: "var(--card)",
       color: "var(--ink)",
       fontFamily: "Inter, sans-serif",
       fontSize: 14,
@@ -6513,7 +6513,7 @@ function FinanceApp() {
       padding: "12px 14px",
       borderRadius: 8,
       border: "1px solid var(--line)",
-      background: "#fff",
+      background: "var(--card)",
       color: "var(--ink)",
       fontFamily: "Inter, sans-serif",
       fontSize: 14,
@@ -6538,7 +6538,7 @@ function FinanceApp() {
       padding: "12px 14px",
       borderRadius: 8,
       border: "1px solid var(--line)",
-      background: "#fff",
+      background: "var(--card)",
       color: "var(--ink)",
       fontFamily: "Inter, sans-serif",
       fontSize: 14,
@@ -9496,8 +9496,8 @@ function AccountsTab({
         padding: "10px 12px",
         borderRadius: 8,
         marginBottom: 16,
-        background: riskLevel === "alto" ? "#FBEAEA" : "#FBF2E4",
-        border: `1px solid ${riskLevel === "alto" ? "#F0C2C2" : "#EBD5AE"}`
+        background: riskLevel === "alto" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--gold) 16%, var(--card))",
+        border: `1px solid ${riskLevel === "alto" ? "color-mix(in srgb, var(--rust) 35%, var(--card))" : "color-mix(in srgb, var(--gold) 35%, var(--card))"}`
       }
     }, React.createElement(IconAlertTriangle, {
       size: 15,
@@ -9509,7 +9509,7 @@ function AccountsTab({
     }), React.createElement("div", {
       style: {
         fontSize: 12.5,
-        color: riskLevel === "alto" ? "#8A2A2A" : "#7A5A1E"
+        color: "var(--ink)"
       }
     }, React.createElement("b", null, riskLevel === "alto" ? "Concentração de risco elevada" : "Concentração moderada"), " — ", topShare.toFixed(0), "% do dinheiro está concentrado no ", byBank[0][0], ". Considere distribuir por mais bancos.")), React.createElement("div", {
       style: {
@@ -9702,7 +9702,7 @@ function AccountsTab({
       padding: "5px 12px",
       borderRadius: 20,
       border: `1px solid ${quickFilter === f ? "var(--gold)" : "var(--line)"}`,
-      background: quickFilter === f ? "#EEF3FB" : "#fff",
+      background: quickFilter === f ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: quickFilter === f ? "var(--gold)" : "var(--slate)",
       fontSize: 12,
       fontWeight: 600,
@@ -11130,7 +11130,7 @@ function MobileTxCard({
     onTouchEnd: handleTouchEnd,
     style: {
       position: "relative",
-      background: isTransfer ? "#F7F8FA" : "var(--card)",
+      background: isTransfer ? "var(--paper)" : "var(--card)",
       transform: `translateX(${dragX}px)`,
       transition: dragging.current ? "none" : "transform 0.2s ease",
       padding: "12px 16px",
@@ -11303,7 +11303,7 @@ function TransactionsTab({
       padding: "8px 14px",
       borderRadius: 20,
       border: "1px solid var(--line)",
-      background: "#fff",
+      background: "var(--card)",
       cursor: "pointer",
       fontFamily: "Inter, sans-serif"
     },
@@ -11523,7 +11523,7 @@ function TransactionsTab({
         key: t.id,
         style: {
           borderTop: "1px solid var(--line)",
-          background: "#F7F8FA"
+          background: "var(--paper)"
         }
       }, React.createElement("td", {
         "data-label": "Data",
@@ -11799,7 +11799,7 @@ function TxModal({
       padding: "11px 14px",
       borderRadius: 8,
       border: "1px dashed var(--gold)",
-      background: "#FBF2E4",
+      background: "color-mix(in srgb, var(--gold) 16%, var(--card))",
       color: "var(--gold)",
       fontWeight: 600,
       fontSize: 13.5,
@@ -11838,7 +11838,7 @@ function TxModal({
       padding: "9px 0",
       borderRadius: 7,
       border: `1.5px solid ${kind === k ? k === "receita" ? "var(--emerald)" : "var(--rust)" : "var(--line)"}`,
-      background: kind === k ? k === "receita" ? "#EAF4EE" : "#F7EAE6" : "#fff",
+      background: kind === k ? k === "receita" ? "color-mix(in srgb, var(--emerald) 16%, var(--card))" : "color-mix(in srgb, var(--rust) 16%, var(--card))" : "var(--card)",
       color: kind === k ? k === "receita" ? "var(--emerald)" : "var(--rust)" : "var(--slate)",
       fontWeight: 600,
       fontSize: 13.5,
@@ -12060,7 +12060,7 @@ function TransferModal({
         padding: "7px 12px",
         borderRadius: 20,
         border: `1px solid ${active ? "var(--gold)" : "var(--line)"}`,
-        background: active ? "#FBF2E4" : "var(--paper)",
+        background: active ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--paper)",
         fontSize: 12.5,
         fontWeight: 600,
         color: "var(--ink)",
@@ -12272,7 +12272,7 @@ function ExchangeTab({
     style: {
       fontSize: 12.5,
       color: "var(--rust)",
-      background: "#F7EAE6",
+      background: "color-mix(in srgb, var(--rust) 14%, var(--card))",
       padding: "10px 12px",
       borderRadius: 8,
       margin: "14px 0 0"
@@ -13152,7 +13152,7 @@ function AlertsTab({
       alignItems: "center",
       gap: 10,
       border: `1px solid var(--${a.severity === "slate" ? "line" : a.severity})`,
-      background: a.severity === "rust" ? "#F7EAE6" : a.severity === "gold" ? "#FBF3E5" : "#fff",
+      background: a.severity === "rust" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : a.severity === "gold" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       borderRadius: 9,
       padding: "12px 14px"
     }
@@ -15201,7 +15201,7 @@ function InvestmentsTab({
       padding: "6px 14px",
       borderRadius: 20,
       border: `1px solid ${subTab === p.id ? "var(--gold)" : "var(--line)"}`,
-      background: subTab === p.id ? "#F7EFE0" : "#fff",
+      background: subTab === p.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: subTab === p.id ? "var(--gold)" : "var(--slate)",
       fontSize: 12.5,
       fontWeight: 600,
@@ -17145,7 +17145,7 @@ function ReportTab({
       padding: "6px 14px",
       borderRadius: 20,
       border: `1px solid ${reportMode === "mensal" ? "var(--gold)" : "var(--line)"}`,
-      background: reportMode === "mensal" ? "#EEF3FB" : "#fff",
+      background: reportMode === "mensal" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: reportMode === "mensal" ? "var(--gold)" : "var(--slate)",
       fontSize: 12.5,
       fontWeight: 600,
@@ -17157,7 +17157,7 @@ function ReportTab({
       padding: "6px 14px",
       borderRadius: 20,
       border: `1px solid ${reportMode === "anual" ? "var(--gold)" : "var(--line)"}`,
-      background: reportMode === "anual" ? "#EEF3FB" : "#fff",
+      background: reportMode === "anual" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: reportMode === "anual" ? "var(--gold)" : "var(--slate)",
       fontSize: 12.5,
       fontWeight: 600,
@@ -17305,7 +17305,7 @@ function ForecastTab({
     style: {
       fontSize: 12.5,
       color: "var(--rust)",
-      background: "#F7EAE6",
+      background: "color-mix(in srgb, var(--rust) 14%, var(--card))",
       padding: "10px 12px",
       borderRadius: 8,
       marginTop: 14
@@ -17824,7 +17824,7 @@ function GoalsTab({
         width: 30,
         height: 30,
         borderRadius: 8,
-        background: "#F1EFE8",
+        background: "color-mix(in srgb, var(--gold) 16%, var(--card))",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -17946,7 +17946,7 @@ function DebtCard({
       fontSize: 10.5,
       fontWeight: 700,
       color: typeTone,
-      background: debt.type === "A pagar" ? "#F7EAE6" : "#EAF4EE",
+      background: debt.type === "A pagar" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--emerald) 14%, var(--card))",
       padding: "2px 8px",
       borderRadius: 20,
       textTransform: "uppercase",
@@ -18094,7 +18094,7 @@ function DebtPayoffSimulator({
       padding: "9px 0",
       borderRadius: 7,
       border: `1.5px solid ${strategy === "avalanche" ? "var(--ink)" : "var(--line)"}`,
-      background: strategy === "avalanche" ? "#EEF0F4" : "#fff",
+      background: strategy === "avalanche" ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: "var(--ink)",
       fontWeight: 600,
       fontSize: 13,
@@ -18113,7 +18113,7 @@ function DebtPayoffSimulator({
       padding: "9px 0",
       borderRadius: 7,
       border: `1.5px solid ${strategy === "snowball" ? "var(--ink)" : "var(--line)"}`,
-      background: strategy === "snowball" ? "#EEF0F4" : "#fff",
+      background: strategy === "snowball" ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: "var(--ink)",
       fontWeight: 600,
       fontSize: 13,
@@ -18288,7 +18288,7 @@ function DebtModal({
       padding: "9px 0",
       borderRadius: 7,
       border: `1.5px solid ${type === t ? t === "A pagar" ? "var(--rust)" : "var(--emerald)" : "var(--line)"}`,
-      background: type === t ? t === "A pagar" ? "#F7EAE6" : "#EAF4EE" : "#fff",
+      background: type === t ? t === "A pagar" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--emerald) 14%, var(--card))" : "var(--card)",
       color: type === t ? t === "A pagar" ? "var(--rust)" : "var(--emerald)" : "var(--slate)",
       fontWeight: 600,
       fontSize: 13.5,
@@ -19093,7 +19093,7 @@ function RecurringModal({
       padding: "9px 0",
       borderRadius: 7,
       border: `1.5px solid ${isStaff === opt.key ? "var(--ink)" : "var(--line)"}`,
-      background: isStaff === opt.key ? "#EEF0F4" : "#fff",
+      background: isStaff === opt.key ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: isStaff === opt.key ? "var(--ink)" : "var(--slate)",
       fontWeight: 600,
       fontSize: 13.5,
