@@ -560,6 +560,9 @@ const IconUpload = p => React.createElement(Icon, p, React.createElement("path",
 const IconZap = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M13 2L3 14h9l-1 8 10-12h-9l1-8z"
 }));
+const IconSparkles = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+}));
 const IconCompass = p => React.createElement(Icon, p, React.createElement("circle", {
   cx: "12",
   cy: "12",
@@ -1777,6 +1780,44 @@ function recurringStatus(rec, month, transactions) {
   const due = recurringDueDateForMonth(rec, month);
   if (due < todayISO()) return "Vencida";
   return "Pendente";
+}
+function detectRecurringCandidates(transactions, recurringExpenses) {
+  const groups = {};
+  for (const t of transactions) {
+    if (t.kind !== "despesa" || !t.category) continue;
+    const desc = (t.description || "").trim();
+    if (!desc) continue;
+    const monthKey = (t.date || "").slice(0, 7);
+    if (!monthKey) continue;
+    const key = `${t.category}||${desc.toLowerCase()}`;
+    if (!groups[key]) groups[key] = {
+      category: t.category,
+      name: desc,
+      months: {}
+    };
+    if (!groups[key].months[monthKey]) groups[key].months[monthKey] = 0;
+    groups[key].months[monthKey] += Number(t.amount) || 0;
+  }
+  const candidates = [];
+  for (const g of Object.values(groups)) {
+    const monthKeys = Object.keys(g.months).sort();
+    if (monthKeys.length < 2) continue;
+    const amounts = monthKeys.map(mk => g.months[mk]);
+    const avg = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+    if (avg <= 0) continue;
+    const consistent = amounts.every(v => Math.abs(v - avg) / avg <= 0.25);
+    if (!consistent) continue;
+    const alreadyTracked = recurringExpenses.some(r => r.category === g.category && (r.name || "").trim().toLowerCase() === g.name.toLowerCase());
+    if (alreadyTracked) continue;
+    candidates.push({
+      category: g.category,
+      name: g.name,
+      avgAmount: avg,
+      monthsSeen: monthKeys.length
+    });
+  }
+  candidates.sort((a, b) => b.monthsSeen - a.monthsSeen || b.avgAmount - a.avgAmount);
+  return candidates.slice(0, 3);
 }
 function toKz(amount, currency, rates) {
   if (currency === "Kz") return Number(amount);
@@ -6716,7 +6757,7 @@ function FinanceApp() {
       setEditingRecurring(null);
     },
     onSave: rec => {
-      if (editingRecurring) updateRecurring(editingRecurring.id, rec);else addRecurring(rec);
+      if (editingRecurring && editingRecurring.id) updateRecurring(editingRecurring.id, rec);else addRecurring(rec);
       setShowRecurringModal(false);
       setEditingRecurring(null);
     }
@@ -17372,6 +17413,8 @@ function BudgetTab({
   const [newIncomeType, setNewIncomeType] = useState(INCOME_TYPES[0]);
   const [newIncomeLabel, setNewIncomeLabel] = useState("");
   const [newIncomeAmount, setNewIncomeAmount] = useState("");
+  const [dismissedSuggestions, setDismissedSuggestions] = useState([]);
+  const recurringCandidates = useMemo(() => detectRecurringCandidates(transactions, recurringExpenses).filter(c => !dismissedSuggestions.includes(`${c.category}||${c.name}`)), [transactions, recurringExpenses, dismissedSuggestions]);
   const fixedExpenses = recurringExpenses.filter(r => !r.isStaff);
   const staff = recurringExpenses.filter(r => r.isStaff);
   const staffTotal = staff.reduce((s, r) => s + Number(r.amount), 0);
@@ -17381,7 +17424,104 @@ function BudgetTab({
       flexDirection: "column",
       gap: 18
     }
-  }, React.createElement(Card, null, React.createElement("div", {
+  }, recurringCandidates.length > 0 && React.createElement(Card, {
+    style: {
+      border: "1px dashed var(--gold)",
+      background: "color-mix(in srgb, var(--gold) 8%, var(--card))"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 8,
+      marginBottom: 10
+    }
+  }, React.createElement(IconSparkles, {
+    size: 16,
+    style: {
+      color: "var(--gold)",
+      flexShrink: 0,
+      marginTop: 1
+    }
+  }), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 700
+    }
+  }, "Detetámos possíveis despesas recorrentes"), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginTop: 2
+    }
+  }, "Estas despesas repetem-se todo mês, com valores parecidos. Quer marcá-las como fixas?"))), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, recurringCandidates.map(c => React.createElement("div", {
+    key: `${c.category}||${c.name}`,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      background: "var(--card)",
+      borderRadius: 8,
+      padding: "10px 12px",
+      border: "1px solid var(--line)"
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, c.name), React.createElement("div", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)"
+    }
+  }, c.category, " · ~", fmtCompact(c.avgAmount), " · visto em ", c.monthsSeen, " meses")), React.createElement("button", {
+    onClick: () => onEditRecurring({
+      category: c.category,
+      name: c.name,
+      amount: Math.round(c.avgAmount),
+      dueDay: 5,
+      isStaff: false
+    }),
+    style: {
+      background: "var(--gold)",
+      color: "#fff",
+      border: "none",
+      borderRadius: 6,
+      padding: "7px 12px",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, "Marcar como fixa"), React.createElement("button", {
+    onClick: () => setDismissedSuggestions(d => [...d, `${c.category}||${c.name}`]),
+    title: "Dispensar",
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4,
+      flexShrink: 0
+    }
+  }, React.createElement(IconX, {
+    size: 14
+  })))))), React.createElement(Card, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -19032,7 +19172,7 @@ function RecurringModal({
   onClose,
   onSave
 }) {
-  const isEditing = !!initial;
+  const isEditing = !!(initial && initial.id);
   const [isStaff, setIsStaff] = useState(initial ? !!initial.isStaff : !!defaultIsStaff);
   const [name, setName] = useState(initial && initial.name || "");
   const [role, setRole] = useState(initial && initial.role || STAFF_ROLES[0]);
