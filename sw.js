@@ -1,5 +1,5 @@
-const CACHE_NAME = "fonsprince-cache-v1";
-const APP_SHELL = [
+const CACHE_NAME = "fonsprince-one-v1";
+const CORE_ASSETS = [
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
@@ -8,7 +8,7 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).catch(() => {})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).catch(() => {})
   );
   self.skipWaiting();
 });
