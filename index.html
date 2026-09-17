@@ -693,6 +693,15 @@ const IconMore = p => React.createElement(Icon, p, React.createElement("circle",
   fill: "currentColor",
   stroke: "none"
 }));
+const IconArrowRightCircle = p => React.createElement(Icon, p, React.createElement("circle", {
+  cx: "12",
+  cy: "12",
+  r: "10"
+}), React.createElement("path", {
+  d: "M8 12h8"
+}), React.createElement("path", {
+  d: "M12 8l4 4-4 4"
+}));
 const IconArrowDownLeft = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M17 7 7 17"
 }), React.createElement("path", {
@@ -1101,6 +1110,11 @@ function monthKey(dateStr) {
 function previousMonthKey(month) {
   const d = new Date(month + "-01");
   d.setMonth(d.getMonth() - 1);
+  return d.toISOString().slice(0, 7);
+}
+function nextMonthKey(month) {
+  const d = new Date(month + "-01");
+  d.setMonth(d.getMonth() + 1);
   return d.toISOString().slice(0, 7);
 }
 function todayMonth() {
@@ -4491,6 +4505,8 @@ function FinanceApp() {
   const [taxaImpostoDividendos, setTaxaImpostoDividendos] = useState(() => loadKey("taxa-imposto-dividendos", 0.1));
   const [taxaImpostoMaisValias, setTaxaImpostoMaisValias] = useState(() => loadKey("taxa-imposto-mais-valias", 0.1));
   const [recurringExpenses, setRecurringExpenses] = useState(() => loadKey("recurring-expenses", []));
+  const [budgetRollovers, setBudgetRollovers] = useState(() => loadKey("budget-rollovers", {}));
+  const [rolledOverKeys, setRolledOverKeys] = useState(() => loadKey("rolled-over-keys", []));
   const [exchangeRates, setExchangeRates] = useState(() => loadKey("exchange-rates", {
     usdRate: null,
     eurRate: null,
@@ -4550,6 +4566,8 @@ function FinanceApp() {
   useEffect(() => saveKey("taxa-imposto-dividendos", taxaImpostoDividendos), [taxaImpostoDividendos]);
   useEffect(() => saveKey("taxa-imposto-mais-valias", taxaImpostoMaisValias), [taxaImpostoMaisValias]);
   useEffect(() => saveKey("recurring-expenses", recurringExpenses), [recurringExpenses]);
+  useEffect(() => saveKey("budget-rollovers", budgetRollovers), [budgetRollovers]);
+  useEffect(() => saveKey("rolled-over-keys", rolledOverKeys), [rolledOverKeys]);
   useEffect(() => saveKey("exchange-rates", exchangeRates), [exchangeRates]);
   useEffect(() => saveKey("expense-shortcuts", expenseShortcuts), [expenseShortcuts]);
   useEffect(() => saveKey("sidebar-collapsed", sidebarCollapsed), [sidebarCollapsed]);
@@ -4691,6 +4709,17 @@ function FinanceApp() {
         [cat]: limit
       }
     }));
+  }
+  function rolloverCategory(fromMonth, cat, amount) {
+    const toMonth = nextMonthKey(fromMonth);
+    setBudgetRollovers(r => ({
+      ...r,
+      [toMonth]: {
+        ...(r[toMonth] || {}),
+        [cat]: (r[toMonth]?.[cat] || 0) + amount
+      }
+    }));
+    setRolledOverKeys(k => [...k, `${fromMonth}||${cat}`]);
   }
   function setMemberLimit(member, limit) {
     setBudgetIncome(b => ({
@@ -5950,6 +5979,10 @@ function FinanceApp() {
   }), tab === "budget" && React.createElement(BudgetTab, {
     categories: budgetIncome.categories,
     spentByCategory: spentByCategory,
+    prevSpentByCategory: prevSpentByCategory,
+    budgetRollovers: budgetRollovers,
+    rolledOverKeys: rolledOverKeys,
+    onRolloverCategory: rolloverCategory,
     income: budgetIncome.income,
     expectedIncome: expectedIncome,
     totalReceitas: totalReceitas,
@@ -17389,6 +17422,10 @@ function ForecastTab({
 function BudgetTab({
   categories,
   spentByCategory,
+  prevSpentByCategory,
+  budgetRollovers,
+  rolledOverKeys,
+  onRolloverCategory,
   income,
   expectedIncome,
   totalReceitas,
@@ -17675,7 +17712,16 @@ function BudgetTab({
   }, expenseCategories.map(cat => {
     const limit = categories[cat] || "";
     const spent = spentByCategory[cat] || 0;
-    const pct = limit ? spent / Number(limit) * 100 : 0;
+    const rolloverIn = Number(budgetRollovers[month]?.[cat] || 0);
+    const effectiveLimit = Number(limit || 0) + rolloverIn;
+    const pct = effectiveLimit ? spent / effectiveLimit * 100 : 0;
+    const prevMonth = previousMonthKey(month);
+    const prevLimit = Number(categories[cat] || 0);
+    const prevSpent = Number((prevSpentByCategory || {})[cat] || 0);
+    const prevLeftover = prevLimit - prevSpent;
+    const rolloverKey = `${prevMonth}||${cat}`;
+    const alreadyRolled = (rolledOverKeys || []).includes(rolloverKey);
+    const rolloverEligible = prevLimit > 0 && prevLeftover > 0 && !alreadyRolled;
     return React.createElement("div", {
       key: cat
     }, React.createElement("div", {
@@ -17715,7 +17761,36 @@ function BudgetTab({
         marginTop: 3,
         fontFamily: "'IBM Plex Mono', monospace"
       }
-    }, fmt(spent), " / ", fmt(Number(limit)))));
+    }, fmt(spent), " / ", fmt(effectiveLimit), rolloverIn > 0 && React.createElement("span", {
+      style: {
+        color: "var(--emerald)",
+        marginLeft: 6,
+        fontFamily: "Inter, sans-serif"
+      }
+    }, "(+", fmtCompact(rolloverIn), " transportado)"))), rolloverEligible && React.createElement("button", {
+      onClick: () => onRolloverCategory(prevMonth, cat, prevLeftover),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        marginTop: 6,
+        background: "color-mix(in srgb, var(--emerald) 12%, var(--card))",
+        border: "1px dashed var(--emerald)",
+        borderRadius: 6,
+        padding: "5px 9px",
+        fontSize: 11.5,
+        color: "var(--emerald)",
+        fontWeight: 600,
+        cursor: "pointer",
+        width: "100%",
+        textAlign: "left"
+      }
+    }, React.createElement(IconArrowRightCircle, {
+      size: 13,
+      style: {
+        flexShrink: 0
+      }
+    }), "Sobraram ", fmtCompact(prevLeftover), " no mês anterior — transportar para este mês"));
   }))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
