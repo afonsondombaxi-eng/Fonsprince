@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>Fonsprince One — Controlo Financeiro Pessoal</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0F1E42" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -61,6 +61,14 @@
   .ptr-indicator.spinning svg {
     animation: ptrSpin 0.7s linear infinite;
   }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
   @keyframes bootSplashBgIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes bootSplashLogoIn { from { opacity: 0; transform: scale(0.88) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
   .boot-splash {
@@ -80,15 +88,8 @@
     gap: 12px;
     animation: bootSplashLogoIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  .boot-splash-mark img {
-    display: block;
-    border-radius: 10px;
-  }
-  .boot-splash-wordmark {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-  }
+  .boot-splash-mark img { display: block; border-radius: 10px; }
+  .boot-splash-wordmark { font-size: 26px; font-weight: 700; letter-spacing: 0.2px; }
   .boot-splash-wordmark .w1 { color: #fff; }
   .boot-splash-wordmark .w2 { color: #E4B054; }
   @media (max-width: 768px) {
@@ -3380,6 +3381,8 @@ function Modal({
     }
   }, title), React.createElement("button", {
     onClick: onClose,
+    title: "Fechar",
+    "aria-label": "Fechar",
     style: {
       background: "none",
       border: "none",
@@ -4656,6 +4659,11 @@ function FinanceApp() {
   const [showTxModal, setShowTxModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
+  const [txSearchSeed, setTxSearchSeed] = useState(null);
+  function goToMemberTransactions(member) {
+    setTxSearchSeed(member);
+    setTab("transactions");
+  }
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
   const [contribGoal, setContribGoal] = useState(null);
@@ -6077,6 +6085,7 @@ function FinanceApp() {
     prevSpentByCategory: prevSpentByCategory,
     categories: budgetIncome.categories,
     onNavigate: setTab,
+    onNavigateToMember: goToMemberTransactions,
     userName: userName,
     recurringExpenses: recurringExpenses
   }), tab === "accounts" && React.createElement(AccountsTab, {
@@ -6112,6 +6121,7 @@ function FinanceApp() {
     onQuickAdd: quickAddExpense,
     onManageShortcuts: () => setShowShortcutsModal(true),
     onExportCSV: exportTransactionsCSV,
+    initialSearch: txSearchSeed,
     isMobile: isMobile
   }), tab === "budget" && React.createElement(BudgetTab, {
     categories: budgetIncome.categories,
@@ -7563,6 +7573,7 @@ function Overview({
   prevSpentByCategory,
   categories,
   onNavigate,
+  onNavigateToMember,
   userName,
   recurringExpenses
 }) {
@@ -8442,7 +8453,14 @@ function Overview({
       const diff = val - prevVal;
       const trendPct = prevVal > 0 ? diff / prevVal * 100 : null;
       return React.createElement("div", {
-        key: member
+        key: member,
+        onClick: () => onNavigateToMember && onNavigateToMember(member),
+        style: {
+          cursor: onNavigateToMember ? "pointer" : "default",
+          borderRadius: 8,
+          padding: "4px 6px",
+          margin: "-4px -6px"
+        }
       }, React.createElement("div", {
         style: {
           display: "flex",
@@ -8498,12 +8516,23 @@ function Overview({
           color: "var(--slate)",
           fontWeight: 500
         }
-      }, "(", pct.toFixed(0), "%)")))), React.createElement(ProgressBar, {
+      }, "(", pct.toFixed(0), "%)")), onNavigateToMember && React.createElement(IconChevronRight, {
+        size: 14,
+        style: {
+          color: "var(--slate)"
+        }
+      }))), React.createElement(ProgressBar, {
         pct: pct,
         tone: "gold"
       }));
     });
-  })()), familyBreakdown.length > 1 && (() => {
+  })()), onNavigateToMember && React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 11.5,
+      marginTop: 10
+    }
+  }, "Toque numa pessoa para ver as transações dela."), familyBreakdown.length > 1 && (() => {
     const total = familyBreakdown.reduce((s, [, v]) => s + v, 0);
     const top = familyBreakdown[0];
     const bottom = familyBreakdown[familyBreakdown.length - 1];
@@ -10176,7 +10205,9 @@ function CascadeHeader({
       flexShrink: 0,
       transform: backPressed ? "scale(0.88)" : "scale(1)",
       transition: backPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)"
-    }
+    },
+    title: "Voltar",
+    "aria-label": "Voltar"
   }, React.createElement(IconChevronLeft, {
     size: 17
   })), React.createElement("div", {
@@ -10862,7 +10893,9 @@ function AccountModal({
       border: "none",
       color: "var(--slate)",
       cursor: "pointer"
-    }
+    },
+    title: "Remover saldo",
+    "aria-label": "Remover saldo"
   }, React.createElement(IconTrash, {
     size: 13
   })), React.createElement("div", {
@@ -11058,7 +11091,9 @@ function TimelineNode({
       display: "flex",
       alignItems: "center",
       justifyContent: "center"
-    }
+    },
+    title: "Remover transação",
+    "aria-label": "Remover transação"
   }, React.createElement(IconTrash, {
     size: 16
   }))), React.createElement("div", {
@@ -11418,9 +11453,10 @@ function TransactionsTab({
   onQuickAdd,
   onManageShortcuts,
   onExportCSV,
+  initialSearch,
   isMobile
 }) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch || "");
   const [filterAccount, setFilterAccount] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [view, setView] = useState("timeline");
@@ -11434,7 +11470,7 @@ function TransactionsTab({
     return transactions.filter(t => {
       if (filterAccount && t.accountId !== filterAccount && t.fromAccountId !== filterAccount && t.toAccountId !== filterAccount) return false;
       if (filterCategory && t.category !== filterCategory) return false;
-      if (q && !`${t.description || ""} ${t.category || ""}`.toLowerCase().includes(q)) return false;
+      if (q && !`${t.description || ""} ${t.category || ""} ${t.member || ""}`.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [transactions, search, filterAccount, filterCategory]);
@@ -11799,7 +11835,9 @@ function TransactionsTab({
           border: "none",
           cursor: "pointer",
           color: "var(--slate)"
-        }
+        },
+        title: "Editar transação",
+        "aria-label": "Editar transação"
       }, React.createElement(IconPencil, {
         size: 14
       })), React.createElement("button", {
@@ -11809,7 +11847,9 @@ function TransactionsTab({
           border: "none",
           cursor: "pointer",
           color: "var(--slate)"
-        }
+        },
+        title: "Remover transação",
+        "aria-label": "Remover transação"
       }, React.createElement(IconTrash, {
         size: 14
       })))));
@@ -11873,7 +11913,9 @@ function TransactionsTab({
         border: "none",
         cursor: "pointer",
         color: "var(--slate)"
-      }
+      },
+      title: "Editar transação",
+      "aria-label": "Editar transação"
     }, React.createElement(IconPencil, {
       size: 14
     })), React.createElement("button", {
@@ -11883,7 +11925,9 @@ function TransactionsTab({
         border: "none",
         cursor: "pointer",
         color: "var(--slate)"
-      }
+      },
+      title: "Remover transação",
+      "aria-label": "Remover transação"
     }, React.createElement(IconTrash, {
       size: 14
     })))));
@@ -13615,7 +13659,9 @@ function BondCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Editar obrigação",
+    "aria-label": "Editar obrigação"
   }, React.createElement(IconPencil, {
     size: 15
   })), React.createElement("button", {
@@ -13626,7 +13672,9 @@ function BondCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Remover obrigação",
+    "aria-label": "Remover obrigação"
   }, React.createElement(IconTrash, {
     size: 15
   })))), React.createElement("div", {
@@ -14029,7 +14077,9 @@ function EquityCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Editar ação",
+    "aria-label": "Editar ação"
   }, React.createElement(IconPencil, {
     size: 15
   })), React.createElement("button", {
@@ -14040,7 +14090,9 @@ function EquityCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Remover ação",
+    "aria-label": "Remover ação"
   }, React.createElement(IconTrash, {
     size: 15
   })))), React.createElement("div", {
@@ -14599,7 +14651,9 @@ function FundCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Editar fundo",
+    "aria-label": "Editar fundo"
   }, React.createElement(IconPencil, {
     size: 15
   })), React.createElement("button", {
@@ -14610,7 +14664,9 @@ function FundCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Remover fundo",
+    "aria-label": "Remover fundo"
   }, React.createElement(IconTrash, {
     size: 15
   })))), React.createElement("div", {
@@ -17990,7 +18046,9 @@ function BudgetTab({
       border: "none",
       cursor: "pointer",
       color: "var(--slate)"
-    }
+    },
+    title: "Remover fonte de rendimento",
+    "aria-label": "Remover fonte de rendimento"
   }, React.createElement(IconTrash, {
     size: 13
   })))))), React.createElement("div", {
@@ -18217,7 +18275,9 @@ function GoalsTab({
         cursor: "pointer",
         color: "var(--slate)",
         padding: 4
-      }
+      },
+      title: "Editar meta",
+      "aria-label": "Editar meta"
     }, React.createElement(IconPencil, {
       size: 13
     })), React.createElement("button", {
@@ -18228,7 +18288,9 @@ function GoalsTab({
         cursor: "pointer",
         color: "var(--slate)",
         padding: 4
-      }
+      },
+      title: "Remover meta",
+      "aria-label": "Remover meta"
     }, React.createElement(IconTrash, {
       size: 13
     })))), React.createElement("div", {
@@ -19125,7 +19187,9 @@ function CreditCardCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Editar cartão",
+    "aria-label": "Editar cartão"
   }, React.createElement(IconPencil, {
     size: 15
   })), React.createElement("button", {
@@ -19136,7 +19200,9 @@ function CreditCardCard({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Remover cartão",
+    "aria-label": "Remover cartão"
   }, React.createElement(IconTrash, {
     size: 15
   })))), React.createElement("div", {
@@ -19634,7 +19700,9 @@ function CategoryManagerModal({
       color: "var(--slate)",
       cursor: "pointer",
       padding: 4
-    }
+    },
+    title: "Remover categoria",
+    "aria-label": "Remover categoria"
   }, React.createElement(IconTrash, {
     size: 14
   })))))), React.createElement("div", {
