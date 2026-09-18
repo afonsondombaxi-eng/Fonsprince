@@ -2391,12 +2391,12 @@ async function registerPeriodicSync() {
   } catch {}
 }
 const FIREBASE_CONFIG = {
-  apiKey: "SUBSTITUA_AQUI",
-  authDomain: "SUBSTITUA_AQUI.firebaseapp.com",
-  projectId: "SUBSTITUA_AQUI",
-  storageBucket: "SUBSTITUA_AQUI.appspot.com",
-  messagingSenderId: "SUBSTITUA_AQUI",
-  appId: "SUBSTITUA_AQUI"
+  apiKey: "AIzaSyD-CWvH5-0b0XTuuoRF_SLwDvtfUTUjCDM",
+  authDomain: "fonsprince-one.firebaseapp.com",
+  projectId: "fonsprince-one",
+  storageBucket: "fonsprince-one.firebasestorage.app",
+  messagingSenderId: "571681883839",
+  appId: "1:571681883839:web:ef76e20d9790f8bf1c680a"
 };
 function isFirebaseConfigured() {
   return !!FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "SUBSTITUA_AQUI";
@@ -5205,7 +5205,9 @@ function FinanceApp() {
       exchangeRates,
       expenseShortcuts,
       customCategories,
-      rateHistory
+      rateHistory,
+      budgetRollovers,
+      rolledOverKeys
     };
     downloadJson(payload, `ledger-backup-${todayISO()}.json`);
     setLastExportDate(todayISO());
@@ -5362,6 +5364,8 @@ function FinanceApp() {
     setExpenseShortcuts(data.expenseShortcuts || []);
     setCustomCategories(data.customCategories || []);
     setRateHistory(data.rateHistory || []);
+    setBudgetRollovers(data.budgetRollovers || {});
+    setRolledOverKeys(data.rolledOverKeys || []);
     setPendingImport(null);
   }
   function applyCloudData(data) {
@@ -5393,6 +5397,8 @@ function FinanceApp() {
     setExpenseShortcuts(data.expenseShortcuts || []);
     setCustomCategories(data.customCategories || []);
     setRateHistory(data.rateHistory || []);
+    setBudgetRollovers(data.budgetRollovers || {});
+    setRolledOverKeys(data.rolledOverKeys || []);
   }
   async function handleCloudSignUp(email, password) {
     setCloudError(null);
@@ -5463,7 +5469,9 @@ function FinanceApp() {
           exchangeRates,
           expenseShortcuts,
           customCategories,
-          rateHistory
+          rateHistory,
+          budgetRollovers,
+          rolledOverKeys
         });
         setCloudSyncStatus("synced");
       } catch (err) {
@@ -5474,7 +5482,7 @@ function FinanceApp() {
     return () => {
       if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
     };
-  }, [cloudUser, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, rateHistory]);
+  }, [cloudUser, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, rateHistory, budgetRollovers, rolledOverKeys]);
   function addShortcut(s) {
     setExpenseShortcuts(ss => [...ss, {
       ...s,
