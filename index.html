@@ -2468,9 +2468,11 @@ function cloudErrorMessage(err) {
     "auth/user-not-found": "Não existe nenhuma conta com este email.",
     "auth/invalid-credential": "Email ou palavra-passe incorretos.",
     "auth/too-many-requests": "Muitas tentativas — aguarde um pouco e tente novamente.",
-    "auth/network-request-failed": "Sem ligação à internet."
+    "auth/network-request-failed": "Sem ligação à internet.",
+    "auth/unauthorized-domain": "Este site não está autorizado no Firebase — adicione o domínio em Authentication → Settings → Authorized domains.",
+    "auth/operation-not-allowed": "O registo por email/palavra-passe ainda não está ativado no Firebase — ative-o em Authentication → Sign-in method."
   };
-  return map[code] || "Não foi possível concluir a operação. Tente novamente.";
+  return map[code] || `Não foi possível concluir a operação${code ? ` (código: ${code})` : ""}. Tente novamente.`;
 }
 function getNotifiedTodaySet() {
   try {
@@ -4029,6 +4031,157 @@ function LockScreen({
     }
   }, "Entrar")));
 }
+function CloudAuthGate({
+  cloudError,
+  onCloudSignUp,
+  onCloudSignIn
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState("signup");
+  const [busy, setBusy] = useState(false);
+  const gateInputStyle = {
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "1px solid #E1E5EE",
+    fontFamily: "Inter, sans-serif",
+    fontSize: 14,
+    color: "#16274D",
+    background: "#fff",
+    outline: "none",
+    width: "100%"
+  };
+  async function handleSubmit() {
+    if (!email || !password) return;
+    setBusy(true);
+    try {
+      if (mode === "signup") await onCloudSignUp(email.trim(), password);else await onCloudSignIn(email.trim(), password);
+    } catch {} finally {
+      setBusy(false);
+    }
+  }
+  return React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "#0F1E42",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 22,
+      zIndex: 150,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      padding: "24px 20px",
+      overflowY: "auto",
+      animation: "splashBgIn 0.25s ease-out"
+    }
+  }, React.createElement("style", null, `
+        @keyframes splashBgIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes splashLogoIn { from { opacity: 0; transform: scale(0.88) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+      `), React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      animation: "splashLogoIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both"
+    }
+  }, React.createElement(LogoIcon, {
+    size: 42
+  }), React.createElement("span", {
+    style: {
+      fontSize: 24,
+      fontWeight: 700,
+      letterSpacing: 0.2
+    }
+  }, React.createElement("span", {
+    style: {
+      color: "#fff"
+    }
+  }, "Fonsprince"), " ", React.createElement("span", {
+    style: {
+      color: "#E4B054"
+    }
+  }, "One"))), React.createElement("div", {
+    style: {
+      width: "100%",
+      maxWidth: 340,
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      color: "#fff",
+      fontSize: 17,
+      fontWeight: 700
+    }
+  }, mode === "signup" ? "Crie a sua conta para continuar" : "Inicie sessão para continuar"), React.createElement("p", {
+    style: {
+      color: "rgba(255,255,255,0.55)",
+      fontSize: 12.5,
+      margin: "6px 0 0"
+    }
+  }, mode === "signup" ? "É necessária uma conta para usar o Fonsprince One e proteger os seus dados financeiros na nuvem." : "Introduza os dados da sua conta para aceder aos seus dados financeiros.")), React.createElement("div", null, React.createElement("label", {
+    style: {
+      color: "rgba(255,255,255,0.7)",
+      fontSize: 12,
+      fontWeight: 600,
+      display: "block",
+      marginBottom: 5
+    }
+  }, "Email"), React.createElement("input", {
+    type: "email",
+    style: gateInputStyle,
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    placeholder: "oseuemail@exemplo.com",
+    autoCapitalize: "none",
+    autoCorrect: "off"
+  })), React.createElement("div", null, React.createElement("label", {
+    style: {
+      color: "rgba(255,255,255,0.7)",
+      fontSize: 12,
+      fontWeight: 600,
+      display: "block",
+      marginBottom: 5
+    }
+  }, "Palavra-passe"), React.createElement("input", {
+    type: "password",
+    style: gateInputStyle,
+    value: password,
+    onChange: e => setPassword(e.target.value),
+    placeholder: "mínimo 6 caracteres",
+    onKeyDown: e => e.key === "Enter" && handleSubmit()
+  })), cloudError && React.createElement("div", {
+    style: {
+      color: "#E8A9A0",
+      fontSize: 12.5
+    }
+  }, cloudError), React.createElement(PrimaryButton, {
+    onClick: handleSubmit,
+    disabled: busy || !email || !password,
+    style: {
+      background: "#B8823C"
+    }
+  }, busy ? "A processar…" : mode === "signup" ? "Criar conta" : "Iniciar sessão"), React.createElement("button", {
+    type: "button",
+    onClick: () => setMode(m => m === "signup" ? "signin" : "signup"),
+    style: {
+      background: "none",
+      border: "none",
+      color: "rgba(255,255,255,0.6)",
+      fontSize: 12.5,
+      cursor: "pointer",
+      textDecoration: "underline",
+      alignSelf: "center"
+    }
+  }, mode === "signup" ? "Já tenho conta — iniciar sessão" : "Ainda não tenho conta — criar uma")));
+}
 function PrimaryButton({
   children,
   onClick,
@@ -4589,6 +4742,7 @@ function FinanceApp() {
   const [userName, setUserName] = useState(() => loadKey("user-name", "Afonso"));
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
   const [cloudUser, setCloudUser] = useState(null);
+  const [cloudAuthChecked, setCloudAuthChecked] = useState(false);
   const [cloudSyncStatus, setCloudSyncStatus] = useState("idle");
   const [cloudError, setCloudError] = useState(null);
   const cloudInitialPullDone = useRef(false);
@@ -5428,9 +5582,13 @@ function FinanceApp() {
     }
   }
   useEffect(() => {
-    if (!isFirebaseConfigured()) return;
+    if (!isFirebaseConfigured()) {
+      setCloudAuthChecked(true);
+      return;
+    }
     firebaseOnAuthChange(async user => {
       setCloudUser(user);
+      setCloudAuthChecked(true);
       if (user && !cloudInitialPullDone.current) {
         cloudInitialPullDone.current = true;
         setCloudSyncStatus("syncing");
@@ -5507,6 +5665,18 @@ function FinanceApp() {
       amount: Number(shortcut.amount),
       date: todayISO(),
       description: shortcut.name
+    });
+  }
+  if (isFirebaseConfigured() && !cloudAuthChecked) {
+    return React.createElement(SplashScreen, {
+      subtitle: "A verificar sessão…"
+    });
+  }
+  if (isFirebaseConfigured() && !cloudUser) {
+    return React.createElement(CloudAuthGate, {
+      cloudError: cloudError,
+      onCloudSignUp: handleCloudSignUp,
+      onCloudSignIn: handleCloudSignIn
     });
   }
   if ((pin || biometricCredentialId) && !unlocked) {
