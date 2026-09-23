@@ -509,6 +509,9 @@ const IconPig = p => React.createElement(Icon, p, React.createElement("path", {
 const IconX = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M18 6L6 18M6 6l12 12"
 }));
+const IconCheck = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M20 6L9 17l-5-5"
+}));
 const IconPencil = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M12 20h9"
 }), React.createElement("path", {
@@ -2441,15 +2444,55 @@ function loadFirebase() {
   });
   return _firebaseLoadPromise;
 }
+function passwordRequirements(password) {
+  return {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password)
+  };
+}
+function isPasswordValid(password) {
+  const r = passwordRequirements(password);
+  return r.length && r.upper && r.number;
+}
 async function firebaseSignUp(email, password) {
   const firebase = await loadFirebase();
   const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+  const actionCodeSettings = {
+    url: window.location.origin + window.location.pathname,
+    handleCodeInApp: true
+  };
+  await cred.user.sendEmailVerification(actionCodeSettings);
   return cred.user;
 }
 async function firebaseSignIn(email, password) {
   const firebase = await loadFirebase();
   const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
   return cred.user;
+}
+async function resendVerificationEmail() {
+  const firebase = await loadFirebase();
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  const actionCodeSettings = {
+    url: window.location.origin + window.location.pathname,
+    handleCodeInApp: true
+  };
+  await user.sendEmailVerification(actionCodeSettings);
+}
+async function completeEmailVerification() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("mode") !== "verifyEmail") return null;
+  const oobCode = params.get("oobCode");
+  if (!oobCode) return null;
+  const firebase = await loadFirebase();
+  await firebase.auth().applyActionCode(oobCode);
+  window.history.replaceState(null, "", window.location.origin + window.location.pathname);
+  if (firebase.auth().currentUser) {
+    await firebase.auth().currentUser.reload();
+    return firebase.auth().currentUser;
+  }
+  return null;
 }
 async function firebaseSignOutUser() {
   const firebase = await loadFirebase();
@@ -4013,6 +4056,7 @@ function CloudAuthGate({
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("signup");
   const [busy, setBusy] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
   const gateInputStyle = {
     padding: "10px 12px",
     borderRadius: 8,
@@ -4024,14 +4068,87 @@ function CloudAuthGate({
     outline: "none",
     width: "100%"
   };
+  const req = passwordRequirements(password);
+  const passwordOk = mode === "signin" || isPasswordValid(password);
   async function handleSubmit() {
-    if (!email || !password) return;
+    if (!email || !password || !passwordOk) return;
     setBusy(true);
     try {
-      if (mode === "signup") await onCloudSignUp(email.trim(), password);else await onCloudSignIn(email.trim(), password);
+      if (mode === "signup") {
+        await onCloudSignUp(email.trim(), password);
+        setJustSignedUp(true);
+      } else {
+        await onCloudSignIn(email.trim(), password);
+      }
     } catch {} finally {
       setBusy(false);
     }
+  }
+  if (justSignedUp) {
+    return React.createElement("div", {
+      className: "brand-gate",
+      style: {
+        zIndex: 150,
+        gap: 22,
+        padding: "24px 20px",
+        overflowY: "auto"
+      }
+    }, React.createElement("div", {
+      className: "brand-mark"
+    }, React.createElement(LogoIcon, {
+      size: 42
+    }), React.createElement("span", {
+      style: {
+        fontSize: 24,
+        fontWeight: 700,
+        letterSpacing: 0.2
+      }
+    }, React.createElement("span", {
+      style: {
+        color: "#fff"
+      }
+    }, "Fonsprince"), " ", React.createElement("span", {
+      style: {
+        color: "#E4B054"
+      }
+    }, "One"))), React.createElement("div", {
+      style: {
+        width: "100%",
+        maxWidth: 340,
+        textAlign: "center"
+      }
+    }, React.createElement("div", {
+      style: {
+        color: "#fff",
+        fontSize: 17,
+        fontWeight: 700
+      }
+    }, "Confirme o seu email"), React.createElement("p", {
+      style: {
+        color: "rgba(255,255,255,0.55)",
+        fontSize: 12.5,
+        margin: "6px 0 0"
+      }
+    }, "Enviámos um link de confirmação para ", React.createElement("strong", {
+      style: {
+        color: "rgba(255,255,255,0.8)"
+      }
+    }, email.trim()), ", válido por tempo limitado. Abra-o para ativar a sua conta — depois pode voltar aqui e iniciar sessão."), React.createElement("button", {
+      type: "button",
+      onClick: () => {
+        setJustSignedUp(false);
+        setMode("signin");
+      },
+      style: {
+        background: "none",
+        border: "none",
+        color: "rgba(255,255,255,0.6)",
+        fontSize: 12.5,
+        cursor: "pointer",
+        textDecoration: "underline",
+        marginTop: 14
+      }
+    }, "Já confirmei — iniciar sessão")));
   }
   return React.createElement("div", {
     className: "brand-gate",
@@ -4112,20 +4229,49 @@ function CloudAuthGate({
     style: gateInputStyle,
     value: password,
     onChange: e => setPassword(e.target.value),
-    placeholder: "mínimo 6 caracteres",
+    placeholder: mode === "signup" ? "mínimo 8 caracteres" : "a sua palavra-passe",
     onKeyDown: e => e.key === "Enter" && handleSubmit()
-  })), cloudError && React.createElement("div", {
+  }), mode === "signup" && password.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 3,
+      marginTop: 8
+    }
+  }, [{
+    ok: req.length,
+    label: "Pelo menos 8 caracteres"
+  }, {
+    ok: req.upper,
+    label: "Uma letra maiúscula"
+  }, {
+    ok: req.number,
+    label: "Um número"
+  }].map(r => React.createElement("div", {
+    key: r.label,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 11.5,
+      color: r.ok ? "#8FD9AE" : "rgba(255,255,255,0.5)"
+    }
+  }, r.ok ? React.createElement(IconCheck, {
+    size: 12
+  }) : React.createElement(IconX, {
+    size: 12
+  }), r.label)))), cloudError && React.createElement("div", {
     style: {
       color: "#E8A9A0",
       fontSize: 12.5
     }
   }, cloudError), React.createElement(PrimaryButton, {
     onClick: handleSubmit,
-    disabled: busy || !email || !password,
+    disabled: busy || !email || !password || !passwordOk,
     style: {
       background: "#B8823C"
     }
-  }, busy ? "A processar…" : mode === "signup" ? "Criar conta" : "Iniciar sessão"), React.createElement("button", {
+  }, busy ? "A processar…" : mode === "signup" ? "Criar Conta" : "Iniciar sessão"), React.createElement("button", {
     type: "button",
     onClick: () => setMode(m => m === "signup" ? "signin" : "signup"),
     style: {
@@ -4138,6 +4284,143 @@ function CloudAuthGate({
       alignSelf: "center"
     }
   }, mode === "signup" ? "Já tenho conta — iniciar sessão" : "Ainda não tenho conta — criar uma")));
+}
+function VerifyEmailGate({
+  cloudUser,
+  justVerified,
+  onDismissJustVerified,
+  onResend,
+  onSignOut
+}) {
+  const [resendStatus, setResendStatus] = useState("idle");
+  async function handleResend() {
+    setResendStatus("sending");
+    try {
+      await onResend();
+      setResendStatus("sent");
+    } catch {
+      setResendStatus("idle");
+    }
+  }
+  if (justVerified) {
+    return React.createElement("div", {
+      className: "brand-gate",
+      style: {
+        zIndex: 140,
+        gap: 22,
+        padding: "24px 20px"
+      }
+    }, React.createElement("div", {
+      className: "brand-mark"
+    }, React.createElement(LogoIcon, {
+      size: 42
+    }), React.createElement("span", {
+      style: {
+        fontSize: 24,
+        fontWeight: 700,
+        letterSpacing: 0.2
+      }
+    }, React.createElement("span", {
+      style: {
+        color: "#fff"
+      }
+    }, "Fonsprince"), " ", React.createElement("span", {
+      style: {
+        color: "#E4B054"
+      }
+    }, "One"))), React.createElement("div", {
+      style: {
+        width: "100%",
+        maxWidth: 340,
+        textAlign: "center"
+      }
+    }, React.createElement("div", {
+      style: {
+        color: "#fff",
+        fontSize: 17,
+        fontWeight: 700
+      }
+    }, "Conta validada com sucesso. Bem-vindo(a)!"), React.createElement("p", {
+      style: {
+        color: "rgba(255,255,255,0.55)",
+        fontSize: 12.5,
+        margin: "6px 0 0"
+      }
+    }, "Já pode começar a usar o Fonsprince One — explore, personalize, e aproveite ao máximo a sua experiência."), React.createElement(PrimaryButton, {
+      onClick: onDismissJustVerified,
+      style: {
+        background: "#B8823C",
+        marginTop: 16
+      }
+    }, "Continuar")));
+  }
+  return React.createElement("div", {
+    className: "brand-gate",
+    style: {
+      zIndex: 140,
+      gap: 22,
+      padding: "24px 20px"
+    }
+  }, React.createElement("div", {
+    className: "brand-mark"
+  }, React.createElement(LogoIcon, {
+    size: 42
+  }), React.createElement("span", {
+    style: {
+      fontSize: 24,
+      fontWeight: 700,
+      letterSpacing: 0.2
+    }
+  }, React.createElement("span", {
+    style: {
+      color: "#fff"
+    }
+  }, "Fonsprince"), " ", React.createElement("span", {
+    style: {
+      color: "#E4B054"
+    }
+  }, "One"))), React.createElement("div", {
+    style: {
+      width: "100%",
+      maxWidth: 340,
+      textAlign: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      color: "#fff",
+      fontSize: 17,
+      fontWeight: 700
+    }
+  }, "Confirme o seu email"), React.createElement("p", {
+    style: {
+      color: "rgba(255,255,255,0.55)",
+      fontSize: 12.5,
+      margin: "6px 0 0"
+    }
+  }, "Enviámos um link de confirmação para ", React.createElement("strong", {
+    style: {
+      color: "rgba(255,255,255,0.8)"
+    }
+  }, cloudUser && cloudUser.email), ". Abra-o para ativar a conta e continuar."), React.createElement(PrimaryButton, {
+    onClick: handleResend,
+    disabled: resendStatus === "sending",
+    style: {
+      background: "#B8823C",
+      marginTop: 16
+    }
+  }, resendStatus === "sending" ? "A reenviar…" : resendStatus === "sent" ? "Email reenviado" : "Reenviar email"), React.createElement("button", {
+    type: "button",
+    onClick: onSignOut,
+    style: {
+      background: "none",
+      border: "none",
+      color: "rgba(255,255,255,0.6)",
+      fontSize: 12.5,
+      cursor: "pointer",
+      textDecoration: "underline",
+      marginTop: 12
+    }
+  }, "Usar outra conta")));
 }
 function PrimaryButton({
   children,
@@ -4700,6 +4983,7 @@ function FinanceApp() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
   const [cloudUser, setCloudUser] = useState(null);
   const [cloudAuthChecked, setCloudAuthChecked] = useState(false);
+  const [emailJustVerified, setEmailJustVerified] = useState(false);
   const [cloudSyncStatus, setCloudSyncStatus] = useState("idle");
   const [cloudError, setCloudError] = useState(null);
   const cloudInitialPullDone = useRef(false);
@@ -5543,22 +5827,33 @@ function FinanceApp() {
       setCloudAuthChecked(true);
       return;
     }
-    firebaseOnAuthChange(async user => {
-      setCloudUser(user);
-      setCloudAuthChecked(true);
-      if (user && !cloudInitialPullDone.current) {
-        cloudInitialPullDone.current = true;
-        setCloudSyncStatus("syncing");
-        try {
-          const remote = await pullDataFromCloud(user.uid);
-          if (remote) applyCloudData(remote);
-          setCloudSyncStatus("synced");
-        } catch (err) {
-          setCloudSyncStatus("error");
-          setCloudError("Não foi possível obter os dados da nuvem.");
+    (async () => {
+      try {
+        const verifiedUser = await completeEmailVerification();
+        if (verifiedUser) {
+          setCloudUser(verifiedUser);
+          setEmailJustVerified(true);
         }
+      } catch (err) {
+        setCloudError(cloudErrorMessage(err));
       }
-    });
+      firebaseOnAuthChange(async user => {
+        setCloudUser(user);
+        setCloudAuthChecked(true);
+        if (user && !cloudInitialPullDone.current) {
+          cloudInitialPullDone.current = true;
+          setCloudSyncStatus("syncing");
+          try {
+            const remote = await pullDataFromCloud(user.uid);
+            if (remote) applyCloudData(remote);
+            setCloudSyncStatus("synced");
+          } catch (err) {
+            setCloudSyncStatus("error");
+            setCloudError("Não foi possível obter os dados da nuvem.");
+          }
+        }
+      });
+    })();
   }, []);
   useEffect(() => {
     if (!cloudUser) return;
@@ -5634,6 +5929,15 @@ function FinanceApp() {
       cloudError: cloudError,
       onCloudSignUp: handleCloudSignUp,
       onCloudSignIn: handleCloudSignIn
+    });
+  }
+  if (isFirebaseConfigured() && cloudUser && !cloudUser.emailVerified) {
+    return React.createElement(VerifyEmailGate, {
+      cloudUser: cloudUser,
+      justVerified: emailJustVerified,
+      onDismissJustVerified: () => setEmailJustVerified(false),
+      onResend: resendVerificationEmail,
+      onSignOut: handleCloudSignOut
     });
   }
   if ((pin || biometricCredentialId) && !unlocked) {
