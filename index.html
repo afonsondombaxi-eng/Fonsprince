@@ -4633,7 +4633,8 @@ function MonthlyBarChart({
 }
 function CategoryDonut({
   data,
-  currency = "Kz"
+  currency = "Kz",
+  onItemClick
 }) {
   const total = data.reduce((s, d) => s + d.value, 0);
   if (total <= 0) return null;
@@ -4704,10 +4705,15 @@ function CategoryDonut({
     }
   }, data.map((d, i) => React.createElement("div", {
     key: i,
+    onClick: () => onItemClick && onItemClick(d.name),
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 8
+      gap: 8,
+      cursor: onItemClick ? "pointer" : "default",
+      borderRadius: 6,
+      padding: "2px 4px",
+      margin: "-2px -4px"
     }
   }, React.createElement("span", {
     style: {
@@ -4731,7 +4737,13 @@ function CategoryDonut({
     style: {
       color: "var(--slate)"
     }
-  }, "(", Math.round(d.value / total * 100), "%)")))));
+  }, "(", Math.round(d.value / total * 100), "%)"), onItemClick && React.createElement(IconChevronRight, {
+    size: 13,
+    style: {
+      color: "var(--slate)",
+      marginLeft: -2
+    }
+  })))));
 }
 function ForecastLineChart({
   rows,
@@ -5053,6 +5065,10 @@ function FinanceApp() {
   const [txSearchSeed, setTxSearchSeed] = useState(null);
   function goToMemberTransactions(member) {
     setTxSearchSeed(member);
+    setTab("transactions");
+  }
+  function goToCategoryTransactions(category) {
+    setTxSearchSeed(category);
     setTab("transactions");
   }
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -6526,6 +6542,7 @@ function FinanceApp() {
     categories: budgetIncome.categories,
     onNavigate: setTab,
     onNavigateToMember: goToMemberTransactions,
+    onNavigateToCategory: goToCategoryTransactions,
     userName: userName,
     recurringExpenses: recurringExpenses
   }), tab === "accounts" && React.createElement(AccountsTab, {
@@ -8014,6 +8031,7 @@ function Overview({
   categories,
   onNavigate,
   onNavigateToMember,
+  onNavigateToCategory,
   userName,
   recurringExpenses
 }) {
@@ -8812,7 +8830,8 @@ function Overview({
       marginBottom: 18
     }
   }, React.createElement(CategoryDonut, {
-    data: categoryChartData
+    data: categoryChartData,
+    onItemClick: onNavigateToCategory
   })), React.createElement("div", {
     style: {
       display: "flex",
