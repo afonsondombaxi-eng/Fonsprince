@@ -2413,6 +2413,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "571681883839",
   appId: "1:571681883839:web:ef76e20d9790f8bf1c680a"
 };
+const REQUIRE_EMAIL_VERIFICATION = false;
 function isFirebaseConfigured() {
   return !!FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "SUBSTITUA_AQUI";
 }
@@ -2458,11 +2459,7 @@ function isPasswordValid(password) {
 async function firebaseSignUp(email, password) {
   const firebase = await loadFirebase();
   const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
-  const actionCodeSettings = {
-    url: window.location.origin + window.location.pathname,
-    handleCodeInApp: true
-  };
-  await cred.user.sendEmailVerification(actionCodeSettings);
+  await cred.user.sendEmailVerification();
   return cred.user;
 }
 async function firebaseSignIn(email, password) {
@@ -2474,11 +2471,7 @@ async function resendVerificationEmail() {
   const firebase = await loadFirebase();
   const user = firebase.auth().currentUser;
   if (!user) return;
-  const actionCodeSettings = {
-    url: window.location.origin + window.location.pathname,
-    handleCodeInApp: true
-  };
-  await user.sendEmailVerification(actionCodeSettings);
+  await user.sendEmailVerification();
 }
 async function completeEmailVerification() {
   const params = new URLSearchParams(window.location.search);
@@ -2525,7 +2518,9 @@ function cloudErrorMessage(err) {
     "auth/too-many-requests": "Muitas tentativas — aguarde um pouco e tente novamente.",
     "auth/network-request-failed": "Sem ligação à internet.",
     "auth/unauthorized-domain": "Este site não está autorizado no Firebase — adicione o domínio em Authentication → Settings → Authorized domains.",
-    "auth/operation-not-allowed": "O registo por email/palavra-passe ainda não está ativado no Firebase — ative-o em Authentication → Sign-in method."
+    "auth/operation-not-allowed": "O registo por email/palavra-passe ainda não está ativado no Firebase — ative-o em Authentication → Sign-in method.",
+    "auth/unauthorized-continue-uri": "O domínio da app não está autorizado a receber o link de verificação — adicione-o em Authentication → Settings → Authorized domains.",
+    "auth/quota-exceeded": "Foi atingido o limite diário de emails do Firebase (plano gratuito) — tente novamente amanhã, ou aguarde algumas horas."
   };
   return map[code] || `Não foi possível concluir a operação${code ? ` (código: ${code})` : ""}. Tente novamente.`;
 }
@@ -4987,6 +4982,7 @@ function FinanceApp() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState("idle");
   const [cloudError, setCloudError] = useState(null);
   const cloudInitialPullDone = useRef(false);
+  const [initialPullComplete, setInitialPullComplete] = useState(false);
   const cloudPushTimer = useRef(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => loadKey("onboarding-dismissed", false));
   const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
@@ -5818,6 +5814,7 @@ function FinanceApp() {
     try {
       await firebaseSignOutUser();
       cloudInitialPullDone.current = false;
+      setInitialPullComplete(false);
     } catch (err) {
       setCloudError(cloudErrorMessage(err));
     }
@@ -5850,13 +5847,17 @@ function FinanceApp() {
           } catch (err) {
             setCloudSyncStatus("error");
             setCloudError("Não foi possível obter os dados da nuvem.");
+          } finally {
+            setInitialPullComplete(true);
           }
+        } else if (user) {
+          setInitialPullComplete(true);
         }
       });
     })();
   }, []);
   useEffect(() => {
-    if (!cloudUser) return;
+    if (!cloudUser || !initialPullComplete) return;
     if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
     cloudPushTimer.current = setTimeout(async () => {
       setCloudSyncStatus("syncing");
@@ -5892,7 +5893,7 @@ function FinanceApp() {
     return () => {
       if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
     };
-  }, [cloudUser, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, rateHistory, budgetRollovers, rolledOverKeys]);
+  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, rateHistory, budgetRollovers, rolledOverKeys]);
   function addShortcut(s) {
     setExpenseShortcuts(ss => [...ss, {
       ...s,
@@ -5931,7 +5932,7 @@ function FinanceApp() {
       onCloudSignIn: handleCloudSignIn
     });
   }
-  if (isFirebaseConfigured() && cloudUser && !cloudUser.emailVerified) {
+  if (REQUIRE_EMAIL_VERIFICATION && isFirebaseConfigured() && cloudUser && !cloudUser.emailVerified) {
     return React.createElement(VerifyEmailGate, {
       cloudUser: cloudUser,
       justVerified: emailJustVerified,
