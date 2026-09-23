@@ -982,6 +982,67 @@ const DEBT_CATEGORIES = ["Empréstimo pessoal", "Cartão de crédito", "Financia
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
+function parseCSVText(text) {
+  const firstLine = text.split(/\r?\n/)[0] || "";
+  const delimiter = firstLine.split(";").length > firstLine.split(",").length ? ";" : ",";
+  const rows = [];
+  let row = [],
+    field = "",
+    inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else inQuotes = false;
+      } else field += c;
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === delimiter) {
+      row.push(field);
+      field = "";
+    } else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field);
+      field = "";
+      if (row.length > 1 || row[0] !== "") rows.push(row);
+      row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field !== "" || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+function parseFlexibleDate(str) {
+  if (!str) return null;
+  str = str.trim();
+  let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+  m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return null;
+}
+function parseFlexibleAmount(str) {
+  if (str === null || str === undefined) return null;
+  str = String(str).trim().replace(/[^\d,.\-]/g, "");
+  if (!str) return null;
+  const hasComma = str.includes(","),
+    hasDot = str.includes(".");
+  let normalized = str;
+  if (hasComma && hasDot) {
+    normalized = str.lastIndexOf(",") > str.lastIndexOf(".") ? str.replace(/\./g, "").replace(",", ".") : str.replace(/,/g, "");
+  } else if (hasComma) {
+    normalized = str.replace(",", ".");
+  }
+  const num = parseFloat(normalized);
+  return isNaN(num) ? null : num;
+}
 function fmt(amount, currency = "Kz") {
   const n = Number(amount) || 0;
   const s = n.toLocaleString("pt-PT", {
@@ -2283,12 +2344,58 @@ function buildAlerts(opts) {
     debtPayments,
     goals,
     lastExportDate,
-    memberLimits
+    memberLimits,
+    balancesByCurrency,
+    totalReceitas,
+    totalDespesas
   } = opts;
   const alerts = [];
   const in5days = new Date();
   in5days.setDate(in5days.getDate() + 5);
   const in5daysStr = in5days.toISOString().slice(0, 10);
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  if (month === currentMonthKey && balancesByCurrency && typeof totalReceitas === "number" && typeof totalDespesas === "number") {
+    const dayOfMonth = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysRemaining = daysInMonth - dayOfMonth;
+    if (dayOfMonth >= 3 && daysRemaining > 0) {
+      const netSoFar = totalReceitas - totalDespesas;
+      const avgDailyNet = netSoFar / dayOfMonth;
+      const currentBalance = balancesByCurrency["Kz"] || 0;
+      const projectedEndBalance = currentBalance + avgDailyNet * daysRemaining;
+      if (avgDailyNet < 0 && projectedEndBalance < 0) {
+        alerts.push({
+          severity: "rust",
+          text: `A este ritmo de gastos, o saldo pode ficar negativo antes do fim do mês — previsão: ${fmt(projectedEndBalance)}.`
+        });
+      }
+    }
+  }
+  const anomalyPrevMonths = [previousMonthKey(month), previousMonthKey(previousMonthKey(month)), previousMonthKey(previousMonthKey(previousMonthKey(month)))];
+  const categoryHistory = {};
+  for (const t of transactions) {
+    if (t.kind !== "despesa") continue;
+    const tMonth = monthKey(t.date);
+    if (!anomalyPrevMonths.includes(tMonth)) continue;
+    categoryHistory[t.category] = categoryHistory[t.category] || {};
+    categoryHistory[t.category][tMonth] = (categoryHistory[t.category][tMonth] || 0) + Number(t.amount);
+  }
+  for (const [cat, curVal] of Object.entries(spentByCategory)) {
+    const hist = categoryHistory[cat];
+    if (!hist) continue;
+    const monthsWithData = Object.keys(hist).length;
+    if (monthsWithData < 2) continue;
+    const avg = Object.values(hist).reduce((s, v) => s + v, 0) / monthsWithData;
+    if (avg < 5000) continue;
+    if (curVal > avg * 1.3) {
+      const pctIncrease = Math.round((curVal - avg) / avg * 100);
+      alerts.push({
+        severity: "gold",
+        text: `Gastou ${pctIncrease}% mais em "${cat}" este mês, face à média dos últimos meses (${fmt(curVal)} vs. média de ${fmt(avg)}).`
+      });
+    }
+  }
   for (const r of recurringExpenses) {
     const status = recurringStatus(r, month, transactions);
     const due = recurringDueDateForMonth(r, month);
@@ -5060,6 +5167,7 @@ function FinanceApp() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [showTxModal, setShowTxModal] = useState(false);
+  const [showCsvImportModal, setShowCsvImportModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
   const [txSearchSeed, setTxSearchSeed] = useState(null);
@@ -5243,6 +5351,15 @@ function FinanceApp() {
       vibrate(15);
       showToast("Despesa registada", "info");
     }
+  }
+  function bulkAddTx(txArray) {
+    if (!txArray || txArray.length === 0) return;
+    setTransactions(t => [...t, ...txArray.map(tx => ({
+      ...tx,
+      id: uid()
+    }))]);
+    vibrate(30);
+    showToast(`${txArray.length} movimento(s) importado(s)!`, "income");
   }
   function updateTx(id, patch) {
     setTransactions(t => t.map(x => x.id === id ? {
@@ -6578,6 +6695,7 @@ function FinanceApp() {
     onQuickAdd: quickAddExpense,
     onManageShortcuts: () => setShowShortcutsModal(true),
     onExportCSV: exportTransactionsCSV,
+    onImportCSV: () => setShowCsvImportModal(true),
     initialSearch: txSearchSeed,
     isMobile: isMobile
   }), tab === "budget" && React.createElement(BudgetTab, {
@@ -6717,7 +6835,10 @@ function FinanceApp() {
     debtPayments: debtPayments,
     goals: goals,
     lastExportDate: lastExportDate,
-    memberLimits: budgetIncome.memberLimits
+    memberLimits: budgetIncome.memberLimits,
+    balancesByCurrency: balancesByCurrency,
+    totalReceitas: totalReceitas,
+    totalDespesas: totalDespesas
   }), tab === "investments" && React.createElement(InvestmentsTab, {
     bonds: bonds,
     onAddBond: () => {
@@ -7207,6 +7328,31 @@ function FinanceApp() {
   }), " Exportar movimentos (CSV)"), React.createElement("button", {
     onClick: () => {
       setShowMoreSheet(false);
+      setShowCsvImportModal(true);
+    },
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 8,
+      border: "1px solid var(--line)",
+      background: "var(--card)",
+      color: "var(--ink)",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      textAlign: "left"
+    }
+  }, React.createElement(IconUpload, {
+    size: 17,
+    style: {
+      color: "var(--slate)"
+    }
+  }), " Importar extrato (CSV)"), React.createElement("button", {
+    onClick: () => {
+      setShowMoreSheet(false);
       fileInputRef.current && fileInputRef.current.click();
     },
     style: {
@@ -7259,6 +7405,15 @@ function FinanceApp() {
       if (editingTx) updateTx(editingTx.id, tx);else addTx(tx);
       setShowTxModal(false);
       setEditingTx(null);
+    }
+  }), showCsvImportModal && React.createElement(CsvImportModal, {
+    accounts: accounts,
+    expenseCategories: expenseCategories,
+    transactions: transactions,
+    onClose: () => setShowCsvImportModal(false),
+    onImport: txArray => {
+      bulkAddTx(txArray);
+      setShowCsvImportModal(false);
     }
   }), showTransferModal && React.createElement(TransferModal, {
     initial: editingTx && editingTx.kind === "transferencia" ? editingTx : null,
@@ -10156,13 +10311,46 @@ function AccountsTab({
     style: {
       color: "var(--slate)"
     }
-  }), " Exportar PDF"))))), accounts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+  }), " Exportar PDF"))))), accounts.length === 0 ? React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      textAlign: "center",
+      padding: "24px 8px",
+      gap: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 52,
+      height: 52,
+      borderRadius: "50%",
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, React.createElement(IconBank, {
+    size: 24,
+    style: {
+      color: "var(--gold)"
+    }
+  })), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 14.5,
+      fontWeight: 600
+    }
+  }, "Ainda não tem contas cadastradas"), React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
+      fontSize: 13,
+      margin: "4px 0 0"
     }
-  }, "Ainda não tem contas cadastradas. Adicione o seu primeiro banco comercial para começar.")) : React.createElement(React.Fragment, null, byBank.length > 1 && React.createElement(Card, {
+  }, "Adicione o seu primeiro banco comercial para começar a acompanhar o seu dinheiro.")), React.createElement(PrimaryButton, {
+    onClick: onAdd
+  }, React.createElement(IconPlus, {
+    size: 15
+  }), " Adicionar a primeira conta"))) : React.createElement(React.Fragment, null, byBank.length > 1 && React.createElement(Card, {
     style: {
       marginBottom: 18
     }
@@ -11912,6 +12100,7 @@ function TransactionsTab({
   onQuickAdd,
   onManageShortcuts,
   onExportCSV,
+  onImportCSV,
   initialSearch,
   isMobile
 }) {
@@ -11955,7 +12144,12 @@ function TransactionsTab({
     disabled: transactions.length === 0
   }, React.createElement(IconDownload, {
     size: 14
-  }), " Exportar CSV")), accounts.length > 0 && React.createElement("div", {
+  }), " Exportar CSV"), React.createElement(GhostButton, {
+    onClick: onImportCSV,
+    disabled: accounts.length === 0
+  }, React.createElement(IconUpload, {
+    size: 14
+  }), " Importar extrato")), accounts.length > 0 && React.createElement("div", {
     style: {
       marginBottom: 18
     }
@@ -12412,6 +12606,310 @@ function suggestCategoryFromHistory(description, transactions, kind) {
   });
   const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
   return sorted[0][0];
+}
+function CsvImportModal({
+  accounts,
+  expenseCategories,
+  transactions,
+  onClose,
+  onImport
+}) {
+  const [step, setStep] = useState(1);
+  const [fileName, setFileName] = useState("");
+  const [rows, setRows] = useState([]);
+  const [error, setError] = useState(null);
+  const [accountId, setAccountId] = useState(accounts[0]?.id || "");
+  const [dateCol, setDateCol] = useState(0);
+  const [descCol, setDescCol] = useState(1);
+  const [amountCol, setAmountCol] = useState(2);
+  const [fallbackExpenseCategory, setFallbackExpenseCategory] = useState(expenseCategories[0] || "Outros");
+  const [fallbackIncomeCategory, setFallbackIncomeCategory] = useState("Rendimento");
+  const fileInputRef = useRef(null);
+  function guessColumn(headers, keywords) {
+    const idx = headers.findIndex(h => keywords.some(k => h.toLowerCase().includes(k)));
+    return idx >= 0 ? idx : 0;
+  }
+  function handleFile(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = parseCSVText(String(reader.result));
+        if (parsed.length < 2) {
+          setError("O ficheiro não parece ter dados — confirme que exportou um CSV com cabeçalho e linhas.");
+          return;
+        }
+        const headers = parsed[0];
+        setDateCol(guessColumn(headers, ["data", "date"]));
+        setDescCol(guessColumn(headers, ["descri", "histor", "memo", "detalhe"]));
+        setAmountCol(guessColumn(headers, ["valor", "montante", "amount", "quantia"]));
+        setRows(parsed);
+        setFileName(file.name);
+        setStep(2);
+      } catch {
+        setError("Não foi possível ler este ficheiro. Confirme que é um CSV exportado do seu banco.");
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+  const dataRows = rows.slice(1);
+  const parsedRows = useMemo(() => {
+    return dataRows.map(r => {
+      const date = parseFlexibleDate(r[dateCol]);
+      const description = (r[descCol] || "").trim();
+      const amountRaw = parseFlexibleAmount(r[amountCol]);
+      const kind = amountRaw !== null && amountRaw < 0 ? "despesa" : "receita";
+      const amount = amountRaw !== null ? Math.abs(amountRaw) : null;
+      const suggested = description ? suggestCategoryFromHistory(description, transactions, kind) : null;
+      const category = suggested || (kind === "despesa" ? fallbackExpenseCategory : fallbackIncomeCategory);
+      const valid = !!date && amount !== null && amount > 0;
+      return {
+        date,
+        description,
+        amount,
+        kind,
+        category,
+        valid
+      };
+    });
+  }, [dataRows, dateCol, descCol, amountCol, transactions, fallbackExpenseCategory, fallbackIncomeCategory]);
+  const validCount = parsedRows.filter(r => r.valid).length;
+  const invalidCount = parsedRows.length - validCount;
+  function handleConfirmImport() {
+    const toImport = parsedRows.filter(r => r.valid).map(r => ({
+      kind: r.kind,
+      accountId,
+      category: r.category,
+      amount: r.amount,
+      date: r.date,
+      description: r.description
+    }));
+    onImport(toImport);
+  }
+  return React.createElement(Modal, {
+    title: "Importar extrato bancário (CSV)",
+    onClose: onClose
+  }, step === 1 ? React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Exporte o extrato da sua conta como CSV a partir do site ou app do seu banco, e carregue-o aqui. A app tenta reconhecer automaticamente as colunas de data, descrição e valor."), React.createElement(Field, {
+    label: "Importar para a conta"
+  }, React.createElement("select", {
+    value: accountId,
+    onChange: e => setAccountId(e.target.value),
+    style: inputStyle
+  }, accounts.map(a => React.createElement("option", {
+    key: a.id,
+    value: a.id
+  }, a.bank)))), error && React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--rust)"
+    }
+  }, error), React.createElement("input", {
+    ref: fileInputRef,
+    type: "file",
+    accept: ".csv,text/csv",
+    style: {
+      display: "none"
+    },
+    onChange: handleFile
+  }), React.createElement(PrimaryButton, {
+    onClick: () => fileInputRef.current && fileInputRef.current.click(),
+    disabled: !accountId
+  }, React.createElement(IconUpload, {
+    size: 15
+  }), " Escolher ficheiro CSV")) : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Ficheiro: ", React.createElement("strong", {
+    style: {
+      color: "var(--ink)"
+    }
+  }, fileName), " — ", dataRows.length, " linha(s) encontrada(s). Confirme as colunas certas:"), React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Coluna da data"
+  }, React.createElement("select", {
+    value: dateCol,
+    onChange: e => setDateCol(Number(e.target.value)),
+    style: inputStyle
+  }, rows[0].map((h, i) => React.createElement("option", {
+    key: i,
+    value: i
+  }, h || `Coluna ${i + 1}`)))), React.createElement(Field, {
+    label: "Coluna da descrição"
+  }, React.createElement("select", {
+    value: descCol,
+    onChange: e => setDescCol(Number(e.target.value)),
+    style: inputStyle
+  }, rows[0].map((h, i) => React.createElement("option", {
+    key: i,
+    value: i
+  }, h || `Coluna ${i + 1}`)))), React.createElement(Field, {
+    label: "Coluna do valor"
+  }, React.createElement("select", {
+    value: amountCol,
+    onChange: e => setAmountCol(Number(e.target.value)),
+    style: inputStyle
+  }, rows[0].map((h, i) => React.createElement("option", {
+    key: i,
+    value: i
+  }, h || `Coluna ${i + 1}`))))), React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Valores negativos são lançados como despesa, positivos como receita. A categoria é sugerida automaticamente a partir do seu histórico; sem sugestão, usa-se um valor por defeito."), React.createElement("div", {
+    className: "resp-grid-2col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10
+    }
+  }, React.createElement(Field, {
+    label: "Categoria por defeito (despesas)"
+  }, React.createElement("select", {
+    value: fallbackExpenseCategory,
+    onChange: e => setFallbackExpenseCategory(e.target.value),
+    style: inputStyle
+  }, expenseCategories.map(c => React.createElement("option", {
+    key: c,
+    value: c
+  }, c)))), React.createElement(Field, {
+    label: "Categoria por defeito (receitas)"
+  }, React.createElement("input", {
+    value: fallbackIncomeCategory,
+    onChange: e => setFallbackIncomeCategory(e.target.value),
+    style: inputStyle
+  }))), React.createElement("div", {
+    style: {
+      border: "1px solid var(--line)",
+      borderRadius: 8,
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      maxHeight: 220,
+      overflowY: "auto"
+    }
+  }, React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 12
+    }
+  }, React.createElement("thead", null, React.createElement("tr", {
+    style: {
+      background: "var(--paper)",
+      textAlign: "left",
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      fontSize: 10.5
+    }
+  }, React.createElement("th", {
+    style: {
+      padding: "6px 8px"
+    }
+  }, "Data"), React.createElement("th", {
+    style: {
+      padding: "6px 8px"
+    }
+  }, "Descrição"), React.createElement("th", {
+    style: {
+      padding: "6px 8px"
+    }
+  }, "Categoria"), React.createElement("th", {
+    style: {
+      padding: "6px 8px",
+      textAlign: "right"
+    }
+  }, "Valor"))), React.createElement("tbody", null, parsedRows.slice(0, 8).map((r, i) => React.createElement("tr", {
+    key: i,
+    style: {
+      borderTop: "1px solid var(--line)",
+      opacity: r.valid ? 1 : 0.4
+    }
+  }, React.createElement("td", {
+    style: {
+      padding: "6px 8px"
+    }
+  }, r.date || "—"), React.createElement("td", {
+    style: {
+      padding: "6px 8px",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      maxWidth: 140
+    }
+  }, r.description || "—"), React.createElement("td", {
+    style: {
+      padding: "6px 8px"
+    }
+  }, r.category), React.createElement("td", {
+    style: {
+      padding: "6px 8px",
+      textAlign: "right",
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: r.kind === "receita" ? "var(--emerald)" : "var(--rust)"
+    }
+  }, r.amount !== null ? fmt(r.amount) : "—")))))), parsedRows.length > 8 && React.createElement("div", {
+    style: {
+      padding: "6px 8px",
+      fontSize: 11,
+      color: "var(--slate)",
+      background: "var(--paper)"
+    }
+  }, "… e mais ", parsedRows.length - 8, " linha(s)")), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, React.createElement("strong", {
+    style: {
+      color: "var(--emerald)"
+    }
+  }, validCount), " movimento(s) prontos a importar", invalidCount > 0 && React.createElement(React.Fragment, null, " — ", React.createElement("strong", {
+    style: {
+      color: "var(--rust)"
+    }
+  }, invalidCount), " ignorado(s) por falta de data ou valor válido"), "."), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement(GhostButton, {
+    onClick: () => setStep(1)
+  }, "Voltar"), React.createElement(PrimaryButton, {
+    onClick: handleConfirmImport,
+    disabled: validCount === 0
+  }, "Importar ", validCount, " movimento(s)"))));
 }
 function TxModal({
   initial,
@@ -13833,7 +14331,10 @@ function AlertsTab({
   debtPayments,
   goals,
   lastExportDate,
-  memberLimits
+  memberLimits,
+  balancesByCurrency,
+  totalReceitas,
+  totalDespesas
 }) {
   const alerts = useMemo(() => buildAlerts({
     recurringExpenses,
@@ -13845,8 +14346,11 @@ function AlertsTab({
     debtPayments,
     goals,
     lastExportDate,
-    memberLimits
-  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate, memberLimits]);
+    memberLimits,
+    balancesByCurrency,
+    totalReceitas,
+    totalDespesas
+  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate, memberLimits, balancesByCurrency, totalReceitas, totalDespesas]);
   return React.createElement("div", null, alerts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
