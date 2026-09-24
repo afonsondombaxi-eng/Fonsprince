@@ -25,7 +25,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: #0F1E42; }
-  html, body { overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; }
+  html, body { overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
   * { -webkit-tap-highlight-color: transparent; }
   body { font-family: 'Inter', sans-serif; }
   #root { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px; }
@@ -4997,7 +4997,6 @@ function FinanceApp() {
       ptrAxisLocked.current = dy > 0 && window.scrollY <= 2 ? "pull" : "scroll";
     }
     if (ptrAxisLocked.current !== "pull") return;
-    e.preventDefault();
     setPtrPull(Math.max(0, Math.min(PTR_MAX, dy * 0.5)));
   }
   function handlePtrTouchEnd() {
@@ -6524,7 +6523,8 @@ function FinanceApp() {
     style: {
       flex: 1,
       padding: isMobile ? "14px 16px calc(84px + env(safe-area-inset-bottom))" : "26px 32px",
-      overflowY: isMobile ? "visible" : "auto"
+      overflowY: isMobile ? "visible" : "auto",
+      WebkitOverflowScrolling: "touch"
     }
   }, React.createElement("div", {
     style: {
