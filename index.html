@@ -4964,6 +4964,7 @@ function FinanceApp() {
     const shortcutTab = params.get("tab");
     if (action === "new-transaction") {
       setEditingTx(null);
+      setTxModalKind("despesa");
       setShowTxModal(true);
     } else if (action === "new-account") {
       setEditingAccount(null);
@@ -5167,6 +5168,7 @@ function FinanceApp() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [showTxModal, setShowTxModal] = useState(false);
+  const [txModalKind, setTxModalKind] = useState("despesa");
   const [showCsvImportModal, setShowCsvImportModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
@@ -6685,7 +6687,10 @@ function FinanceApp() {
     transactions: monthTx,
     accounts: accounts,
     shortcuts: expenseShortcuts,
-    onAdd: () => setShowTxModal(true),
+    onAdd: () => {
+      setTxModalKind("despesa");
+      setShowTxModal(true);
+    },
     onTransfer: () => setShowTransferModal(true),
     onEdit: t => {
       setEditingTx(t);
@@ -7009,35 +7014,58 @@ function FinanceApp() {
     style: {
       position: "fixed",
       inset: 0,
-      background: "rgba(15,24,45,0.28)",
+      background: "rgba(15,24,45,0.42)",
       zIndex: 32
     }
   }), isMobile && showFabMenu && React.createElement("div", {
     style: {
       position: "fixed",
-      right: 16,
-      bottom: "calc(60px + env(safe-area-inset-bottom) + 78px)",
+      left: 0,
+      right: 0,
+      bottom: "calc(60px + env(safe-area-inset-bottom) + 92px)",
       zIndex: 35,
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-      alignItems: "flex-end"
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      columnGap: 36,
+      rowGap: 22,
+      padding: "0 56px",
+      justifyItems: "center"
     }
   }, [{
-    label: "Nova conta",
-    icon: IconBank,
+    label: "Receita",
+    icon: IconTrendingUp,
+    color: "var(--emerald)",
     onClick: () => {
-      setEditingAccount(null);
-      setShowAccountModal(true);
+      setTxModalKind("receita");
+      setEditingTx(null);
+      setShowTxModal(true);
+    }
+  }, {
+    label: "Despesa Cartão",
+    icon: IconCreditCard,
+    color: "var(--gold)",
+    onClick: () => {
+      if (creditCards.length === 1) {
+        setPurchaseCard(creditCards[0]);
+        setShowCardPurchaseModal(true);
+      } else {
+        selectTab("cards");
+      }
     }
   }, {
     label: "Transferência",
     icon: IconRepeat,
+    color: "#4C9FE8",
     onClick: () => setShowTransferModal(true)
   }, {
-    label: "Nova transação",
-    icon: IconReceipt,
-    onClick: () => setShowTxModal(true)
+    label: "Despesa",
+    icon: IconTrendingDown,
+    color: "var(--rust)",
+    onClick: () => {
+      setTxModalKind("despesa");
+      setEditingTx(null);
+      setShowTxModal(true);
+    }
   }].map(a => React.createElement("button", {
     key: a.label,
     onClick: () => {
@@ -7046,37 +7074,41 @@ function FinanceApp() {
     },
     style: {
       display: "flex",
+      flexDirection: "column",
       alignItems: "center",
-      gap: 9,
-      background: "var(--card)",
-      color: "var(--ink)",
-      border: "1px solid var(--line)",
-      borderRadius: 24,
-      padding: "10px 16px 10px 18px",
-      fontSize: 13.5,
-      fontWeight: 600,
-      fontFamily: "Inter, sans-serif",
-      boxShadow: "0 6px 18px rgba(16,24,40,0.18)",
+      gap: 7,
+      background: "none",
+      border: "none",
       cursor: "pointer",
-      whiteSpace: "nowrap"
+      padding: 0
     }
-  }, a.label, React.createElement("span", {
+  }, React.createElement("span", {
     style: {
-      width: 30,
-      height: 30,
+      width: 54,
+      height: 54,
       borderRadius: "50%",
-      background: "var(--paper)",
+      background: "var(--card)",
+      border: "1px solid var(--line)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      flexShrink: 0
+      boxShadow: "0 6px 18px rgba(16,24,40,0.22)"
     }
   }, React.createElement(a.icon, {
-    size: 15,
+    size: 22,
     style: {
-      color: "var(--gold)"
+      color: a.color
     }
-  }))))), isMobile && React.createElement("button", {
+  })), React.createElement("span", {
+    style: {
+      fontSize: 11.5,
+      fontWeight: 600,
+      color: "#fff",
+      textShadow: "0 1px 4px rgba(0,0,0,0.55)",
+      textAlign: "center",
+      lineHeight: 1.2
+    }
+  }, a.label)))), isMobile && React.createElement("button", {
     onClick: () => setShowFabMenu(v => !v),
     "aria-label": "Adicionar",
     style: {
@@ -7393,6 +7425,7 @@ function FinanceApp() {
     }
   }), showTxModal && React.createElement(TxModal, {
     initial: editingTx && editingTx.kind !== "transferencia" ? editingTx : null,
+    initialKind: txModalKind,
     accounts: accounts,
     transactions: transactions,
     expenseCategories: expenseCategories,
@@ -7958,6 +7991,140 @@ function HealthScoreGauge({
     }
   }, Math.round(animatedScore))));
 }
+function MonthlyBalanceCard({
+  totalReceitas,
+  totalDespesas,
+  saldo,
+  onNavigate
+}) {
+  const maxVal = Math.max(totalReceitas, totalDespesas, 1);
+  const MAX_BAR_HEIGHT = 92;
+  const MIN_BAR_HEIGHT = 8;
+  const receitaHeight = totalReceitas > 0 ? Math.max(MIN_BAR_HEIGHT, totalReceitas / maxVal * MAX_BAR_HEIGHT) : MIN_BAR_HEIGHT;
+  const despesaHeight = totalDespesas > 0 ? Math.max(MIN_BAR_HEIGHT, totalDespesas / maxVal * MAX_BAR_HEIGHT) : MIN_BAR_HEIGHT;
+  return React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, "Balanço mensal"), React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 26
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-end",
+      gap: 10,
+      height: MAX_BAR_HEIGHT,
+      flexShrink: 0
+    }
+  }, React.createElement("div", {
+    title: `Receitas: ${fmt(totalReceitas)}`,
+    style: {
+      width: 20,
+      height: receitaHeight,
+      borderRadius: 10,
+      background: "var(--emerald)"
+    }
+  }), React.createElement("div", {
+    title: `Despesas: ${fmt(totalDespesas)}`,
+    style: {
+      width: 20,
+      height: despesaHeight,
+      borderRadius: 10,
+      background: "var(--rust)"
+    }
+  })), React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "6px 0"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 14.5,
+      fontWeight: 600
+    }
+  }, "Receitas"), React.createElement("span", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--emerald)",
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totalReceitas))), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "6px 0"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 14.5,
+      fontWeight: 600
+    }
+  }, "Despesas"), React.createElement("span", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--rust)",
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totalDespesas))), React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      margin: "6px 0"
+    }
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "6px 0"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 14.5,
+      fontWeight: 600
+    }
+  }, "Balanço"), React.createElement("span", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: "var(--ink)",
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(saldo))))), onNavigate && React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginTop: 8
+    }
+  }, React.createElement("button", {
+    onClick: () => onNavigate("transactions"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "var(--gold)",
+      fontSize: 13,
+      fontWeight: 600,
+      padding: 4
+    }
+  }, "Detalhes"))));
+}
 function CockpitCard({
   userName,
   score,
@@ -8303,6 +8470,11 @@ function Overview({
     userName: userName,
     score: healthScore,
     decisions: cockpitDecisions,
+    onNavigate: onNavigate
+  }), React.createElement(MonthlyBalanceCard, {
+    totalReceitas: totalReceitas,
+    totalDespesas: totalDespesas,
+    saldo: saldo,
     onNavigate: onNavigate
   }), React.createElement(Card, null, React.createElement("h3", {
     style: {
@@ -12913,6 +13085,7 @@ function CsvImportModal({
 }
 function TxModal({
   initial,
+  initialKind,
   accounts,
   transactions,
   expenseCategories,
@@ -12921,7 +13094,7 @@ function TxModal({
   onSave
 }) {
   const isEditing = !!initial;
-  const [kind, setKind] = useState(initial && initial.kind || "despesa");
+  const [kind, setKind] = useState(initial && initial.kind || initialKind || "despesa");
   const [accountId, setAccountId] = useState(initial && initial.accountId || (accounts[0] ? accounts[0].id : ""));
   const currentAccount = accounts.find(a => a.id === accountId);
   const [subBalanceId, setSubBalanceId] = useState(initial && initial.subBalanceId || (currentAccount && currentAccount.subBalances && currentAccount.subBalances[0] ? currentAccount.subBalances[0].id : ""));
