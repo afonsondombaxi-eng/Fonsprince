@@ -6706,7 +6706,22 @@ function FinanceApp() {
     onNavigateToCategory: goToCategoryTransactions,
     userName: userName,
     recurringExpenses: recurringExpenses,
-    creditCards: creditCards
+    creditCards: creditCards,
+    onQuickReceita: () => {
+      setTxModalKind("receita");
+      setEditingTx(null);
+      setShowTxModal(true);
+    },
+    onQuickDespesa: () => {
+      setTxModalKind("despesa");
+      setEditingTx(null);
+      setShowTxModal(true);
+    },
+    onQuickTransfer: () => setShowTransferModal(true),
+    onQuickNovaConta: () => {
+      setEditingAccount(null);
+      setShowAccountModal(true);
+    }
   }), tab === "accounts" && React.createElement(AccountsTab, {
     accounts: accounts,
     transactions: transactions,
@@ -8133,6 +8148,93 @@ function FirstStepsCard({
     }
   }, s.label)))));
 }
+function QuickActionsRow({
+  onReceita,
+  onDespesa,
+  onTransfer,
+  onNovaConta
+}) {
+  const [wide, setWide] = useState(() => typeof window !== "undefined" ? window.innerWidth > 768 : true);
+  useEffect(() => {
+    function onResize() {
+      setWide(window.innerWidth > 768);
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  if (!wide) return null;
+  const actions = [{
+    label: "Receita",
+    icon: IconArrowDownLeft,
+    color: "var(--emerald)",
+    onClick: onReceita
+  }, {
+    label: "Despesa",
+    icon: IconArrowUpRight,
+    color: "var(--rust)",
+    onClick: onDespesa
+  }, {
+    label: "Transferência",
+    icon: IconArrowRightLeft,
+    color: "#4C9FE8",
+    onClick: onTransfer
+  }, {
+    label: "Nova conta",
+    icon: IconBank,
+    color: "var(--gold)",
+    onClick: onNovaConta
+  }];
+  return React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 12
+    }
+  }, actions.map(a => React.createElement("button", {
+    key: a.label,
+    onClick: a.onClick,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "13px 14px",
+      borderRadius: 12,
+      border: "1px solid var(--line)",
+      background: "var(--card)",
+      cursor: "pointer",
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 13.5,
+      fontWeight: 600,
+      color: "var(--ink)",
+      textAlign: "left",
+      transition: "border-color 0.15s ease, box-shadow 0.15s ease"
+    },
+    onMouseEnter: e => {
+      e.currentTarget.style.borderColor = a.color;
+      e.currentTarget.style.boxShadow = "0 2px 10px rgba(16,24,40,0.06)";
+    },
+    onMouseLeave: e => {
+      e.currentTarget.style.borderColor = "var(--line)";
+      e.currentTarget.style.boxShadow = "none";
+    }
+  }, React.createElement("span", {
+    style: {
+      width: 32,
+      height: 32,
+      borderRadius: "50%",
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, React.createElement(a.icon, {
+    size: 16,
+    style: {
+      color: a.color
+    }
+  })), a.label)));
+}
 function MonthlySavingsCard({
   totalReceitas,
   totalDespesas
@@ -8495,11 +8597,27 @@ function CockpitCard({
       flexDirection: "column",
       gap: 8
     }
-  }, decisions.map(row => React.createElement(CockpitDecisionRow, {
+  }, decisions.slice(0, 3).map(row => React.createElement(CockpitDecisionRow, {
     key: row.id,
     row: row,
     onNavigate: onNavigate
-  })))) : React.createElement("div", {
+  }))), decisions.length > 3 && React.createElement("button", {
+    onClick: () => onNavigate && onNavigate("alerts"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "rgba(255,255,255,0.75)",
+      fontSize: 12,
+      fontWeight: 600,
+      padding: "8px 2px 0",
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, "Ver todos os alertas (", decisions.length, ") ", React.createElement(IconChevronRight, {
+    size: 13
+  }))) : React.createElement("div", {
     style: {
       marginTop: 14,
       fontSize: 12.5,
@@ -8592,14 +8710,16 @@ function Overview({
   onNavigateToCategory,
   userName,
   recurringExpenses,
-  creditCards
+  creditCards,
+  onQuickReceita,
+  onQuickDespesa,
+  onQuickTransfer,
+  onQuickNovaConta
 }) {
   const [chartsTab, setChartsTab] = useState("balance");
   const [pressedChartTab, setPressedChartTab] = useState(null);
   const [dashTab, setDashTab] = useState("patrimony");
   const [pressedDashTab, setPressedDashTab] = useState(null);
-  const [detailTab, setDetailTab] = useState("balances");
-  const [pressedDetailTab, setPressedDetailTab] = useState(null);
   const [accountsTab, setAccountsTab] = useState(null);
   const [pressedAccountsTab, setPressedAccountsTab] = useState(null);
   const [summaryTab, setSummaryTab] = useState("interest");
@@ -8664,7 +8784,6 @@ function Overview({
   }, 0);
   const liquidKzNow = liquidAssetsKz(accounts, transactions, exchangeRates);
   const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
-  const netResultPrev = prevTotalReceitas - prevTotalDespesas;
   const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, 12), [accounts, transactions, exchangeRates, rateHistory]);
   const insights = useMemo(() => buildInsights({
     accounts,
@@ -8732,6 +8851,11 @@ function Overview({
   }), React.createElement(MonthlySavingsCard, {
     totalReceitas: totalReceitas,
     totalDespesas: totalDespesas
+  }), React.createElement(QuickActionsRow, {
+    onReceita: onQuickReceita,
+    onDespesa: onQuickDespesa,
+    onTransfer: onQuickTransfer,
+    onNovaConta: onQuickNovaConta
   }), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -8752,10 +8876,6 @@ function Overview({
     id: "patrimony",
     label: "Património",
     icon: IconBank
-  }, {
-    id: "result",
-    label: "Resultado",
-    icon: IconTrendingUp
   }, {
     id: "interest",
     label: "Juros",
@@ -8836,24 +8956,6 @@ function Overview({
     previous: consolidatedKzPrev,
     previousLabel: prevMonthLabel,
     invert: false
-  })), dashTab === "result" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(saldo),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: saldo >= 0 ? "var(--emerald)" : "var(--rust)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, React.createElement(AnimatedNumber, {
-    value: saldo,
-    format: fmtCompact
-  })), React.createElement(TrendBadge, {
-    current: saldo,
-    previous: netResultPrev,
-    previousLabel: prevMonthLabel,
-    invert: false
   })), dashTab === "interest" && React.createElement(React.Fragment, null, React.createElement("div", {
     title: fmt(interestSummary.accruedTotal),
     style: {
@@ -8925,254 +9027,7 @@ function Overview({
       flexShrink: 0,
       color: "rgba(255,255,255,0.85)"
     }
-  }), React.createElement("span", null, ins.text))))), React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 12px"
-    }
-  }, "Detalhe"), React.createElement("div", {
-    style: {
-      display: "inline-flex",
-      background: "var(--paper)",
-      borderRadius: 10,
-      padding: 4,
-      gap: 2,
-      marginBottom: 18,
-      flexWrap: "wrap"
-    }
-  }, [{
-    id: "balances",
-    label: "Saldos",
-    icon: IconWallet
-  }, {
-    id: "income",
-    label: "Receitas",
-    icon: IconArrowDownLeft
-  }, {
-    id: "expenses",
-    label: "Despesas",
-    icon: IconArrowUpRight
-  }, {
-    id: "result",
-    label: "Resultado",
-    icon: IconArrowRightLeft
-  }, {
-    id: "cashflow",
-    label: "Fluxo de Caixa",
-    icon: IconActivity
-  }].map(t => {
-    const isActive = detailTab === t.id;
-    const isPressed = pressedDetailTab === t.id;
-    return React.createElement("button", {
-      key: t.id,
-      onClick: () => setDetailTab(t.id),
-      onMouseDown: () => {
-        setPressedDetailTab(t.id);
-        try {
-          navigator.vibrate && navigator.vibrate(9);
-        } catch (e) {}
-      },
-      onMouseUp: () => setPressedDetailTab(null),
-      onMouseLeave: () => setPressedDetailTab(p => p === t.id ? null : p),
-      onTouchStart: () => {
-        setPressedDetailTab(t.id);
-        try {
-          navigator.vibrate && navigator.vibrate(9);
-        } catch (e) {}
-      },
-      onTouchEnd: () => setPressedDetailTab(null),
-      onTouchCancel: () => setPressedDetailTab(null),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "7px 12px",
-        borderRadius: 7,
-        border: "none",
-        cursor: "pointer",
-        fontSize: 12.5,
-        fontWeight: 600,
-        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        background: isActive ? "var(--card)" : "transparent",
-        color: isActive ? "var(--gold)" : "var(--slate)",
-        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
-        transform: isPressed ? "scale(0.91)" : "scale(1)",
-        transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
-        whiteSpace: "nowrap"
-      }
-    }, React.createElement(t.icon, {
-      size: 14
-    }), t.label);
-  })), React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 10,
-      marginBottom: 16,
-      paddingBottom: 14,
-      borderBottom: "1px solid var(--line)"
-    }
-  }, React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.3
-    }
-  }, "Receitas"), React.createElement("div", {
-    title: fmt(totalReceitas),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontWeight: 700,
-      fontSize: 15,
-      color: "var(--emerald)",
-      marginTop: 3,
-      cursor: "help"
-    }
-  }, fmtCompact(totalReceitas))), React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.3
-    }
-  }, "Despesas"), React.createElement("div", {
-    title: fmt(totalDespesas),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontWeight: 700,
-      fontSize: 15,
-      color: "var(--rust)",
-      marginTop: 3,
-      cursor: "help"
-    }
-  }, fmtCompact(totalDespesas))), React.createElement("div", null, React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.3
-    }
-  }, "Resultado"), React.createElement("div", {
-    title: fmt(saldo),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontWeight: 700,
-      fontSize: 15,
-      color: saldo >= 0 ? "var(--emerald)" : "var(--rust)",
-      marginTop: 3,
-      cursor: "help"
-    }
-  }, fmtCompact(saldo)))), React.createElement("div", {
-    key: detailTab,
-    style: {
-      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
-    }
-  }, detailTab === "balances" && (Object.keys(balancesByCurrency).length === 0 ? React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 13.5
-    }
-  }, "Nenhuma conta cadastrada") : React.createElement(React.Fragment, null, React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 10
-    }
-  }, Object.entries(balancesByCurrency).map(([cur, val]) => React.createElement("div", {
-    key: cur,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "baseline",
-      gap: 10
-    }
-  }, React.createElement("span", {
-    style: {
-      fontSize: 13,
-      color: "var(--slate)",
-      fontWeight: 600
-    }
-  }, cur), React.createElement("span", {
-    title: fmt(val, cur),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontWeight: 700,
-      fontSize: 18,
-      color: "var(--ink)",
-      cursor: "help"
-    }
-  }, fmtCompact(val, cur))))), React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)",
-      marginTop: 12
-    }
-  }, "Atualizado ao dia de hoje"))), detailTab === "income" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(totalReceitas),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: "var(--emerald)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, fmtCompact(totalReceitas)), React.createElement(DeltaBadge, {
-    current: totalReceitas,
-    previous: prevTotalReceitas,
-    invert: false
-  })), detailTab === "expenses" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(totalDespesas),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: "var(--rust)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, fmtCompact(totalDespesas)), React.createElement(DeltaBadge, {
-    current: totalDespesas,
-    previous: prevTotalDespesas,
-    invert: true
-  })), detailTab === "result" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(saldo),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: saldo >= 0 ? "var(--emerald)" : "var(--rust)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, fmtCompact(saldo)), React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--slate)",
-      marginTop: 6
-    }
-  }, "Receitas − Despesas")), detailTab === "cashflow" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(saldo),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: saldo >= 0 ? "var(--emerald)" : "var(--rust)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, fmtCompact(saldo)), React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--slate)",
-      marginTop: 6
-    }
-  }, "Previsto: ", fmt(expectedIncome))))), React.createElement("div", {
+  }), React.createElement("span", null, ins.text))))), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -9996,7 +9851,23 @@ function Overview({
         fontWeight: 600
       }
     }, fmt(breakdown[t], active.currency))))))));
-  })()))));
+  })(), onNavigate && React.createElement("button", {
+    onClick: () => onNavigate("accounts"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "var(--gold)",
+      fontSize: 12.5,
+      fontWeight: 600,
+      padding: "14px 0 0",
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, "Ver todas as contas ", React.createElement(IconChevronRight, {
+    size: 13
+  }))))));
 }
 const TYPE_BADGE_COLOR = {
   "À ordem": "#12A150",
