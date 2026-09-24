@@ -4847,6 +4847,57 @@ function MonthlyBarChart({
     }, d.label));
   }));
 }
+function FrequencyAreaChart({
+  points
+}) {
+  const W = 600,
+    H = 200,
+    padL = 4,
+    padR = 4,
+    padT = 10,
+    padB = 10;
+  const maxVal = Math.max(...points.map(p => p.value), 1);
+  const stepX = points.length > 1 ? (W - padL - padR) / (points.length - 1) : 0;
+  const coords = points.map((p, i) => ({
+    x: padL + i * stepX,
+    y: padT + (1 - p.value / maxVal) * (H - padT - padB)
+  }));
+  const linePath = coords.map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L ${coords[coords.length - 1]?.x.toFixed(1) || 0} ${H - padB} L ${padL} ${H - padB} Z`;
+  return React.createElement("svg", {
+    width: "100%",
+    height: 200,
+    viewBox: `0 0 ${W} ${H}`,
+    preserveAspectRatio: "none",
+    style: {
+      display: "block"
+    }
+  }, React.createElement("defs", null, React.createElement("linearGradient", {
+    id: "freqAreaGradient",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, React.createElement("stop", {
+    offset: "0%",
+    stopColor: "var(--emerald)",
+    stopOpacity: "0.35"
+  }), React.createElement("stop", {
+    offset: "100%",
+    stopColor: "var(--emerald)",
+    stopOpacity: "0"
+  }))), React.createElement("path", {
+    d: areaPath,
+    fill: "url(#freqAreaGradient)"
+  }), React.createElement("path", {
+    d: linePath,
+    fill: "none",
+    stroke: "var(--emerald)",
+    strokeWidth: 2.5,
+    strokeLinejoin: "round",
+    strokeLinecap: "round"
+  }));
+}
 function CategoryDonut({
   data,
   currency = "Kz",
@@ -9073,6 +9124,8 @@ function Overview({
 }) {
   const [chartsTab, setChartsTab] = useState("balance");
   const [pressedChartTab, setPressedChartTab] = useState(null);
+  const [freqRange, setFreqRange] = useState("monthly");
+  const [categoryViewMode, setCategoryViewMode] = useState("category");
   const [dashTab, setDashTab] = useState("patrimony");
   const [pressedDashTab, setPressedDashTab] = useState(null);
   const [accountsTab, setAccountsTab] = useState(null);
@@ -9104,11 +9157,47 @@ function Overview({
   }, [transactions, prevMonthKeyForOverview]);
   const monthlyData = useMemo(() => monthlyHistory(transactions, 6), [transactions]);
   const monthlyDataFull = useMemo(() => monthlyHistory(transactions, 12), [transactions]);
+  const frequencyData = useMemo(() => {
+    const [year, mo] = month.split("-").map(Number);
+    const daysInMonth = new Date(year, mo, 0).getDate();
+    const daily = {};
+    for (const t of transactions) {
+      if (t.kind !== "despesa") continue;
+      const day = Number(t.date.slice(8, 10));
+      daily[day] = (daily[day] || 0) + Number(t.amount);
+    }
+    const startDay = freqRange === "weekly" ? Math.max(1, daysInMonth - 6) : 1;
+    const points = [];
+    for (let d = startDay; d <= daysInMonth; d++) points.push({
+      day: d,
+      value: daily[d] || 0
+    });
+    return {
+      points,
+      total: points.reduce((s, p) => s + p.value, 0)
+    };
+  }, [transactions, month, freqRange]);
   const categoryChartData = useMemo(() => Object.entries(spentByCategory).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({
     name,
     value,
     color: categoryColor(name)
   })), [spentByCategory]);
+  const ACCOUNT_DONUT_PALETTE = ["#12A150", "#B8823C", "#4C9EE8", "#D13438", "#7C5CD6", "#E07B39", "#2FBE73", "#8A6D3B"];
+  const accountChartData = useMemo(() => {
+    const byAccount = {};
+    for (const t of transactions) {
+      if (t.kind !== "despesa" || monthKey(t.date) !== month) continue;
+      byAccount[t.accountId] = (byAccount[t.accountId] || 0) + Number(t.amount);
+    }
+    return Object.entries(byAccount).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([accId, value], i) => {
+      const acc = accounts.find(a => a.id === accId);
+      return {
+        name: acc ? acc.bank.replace(/—.*/, "").trim() : "Conta removida",
+        value,
+        color: ACCOUNT_DONUT_PALETTE[i % ACCOUNT_DONUT_PALETTE.length]
+      };
+    });
+  }, [transactions, month, accounts]);
   const debtsByCurrency = useMemo(() => {
     const map = {};
     for (const d of debts) {
@@ -9416,6 +9505,10 @@ function Overview({
     label: "Evolução",
     icon: IconBarChart3
   }, {
+    id: "frequency",
+    label: "Frequência",
+    icon: IconActivity
+  }, {
     id: "distribution",
     label: "Distribuição",
     icon: IconPieChart
@@ -9517,7 +9610,62 @@ function Overview({
     }
   }, React.createElement(MonthlyBarChart, {
     data: monthlyData
-  }))), chartsTab === "distribution" && (Object.keys(splitByCurrency).length === 0 ? React.createElement("p", {
+  }))), chartsTab === "frequency" && React.createElement(React.Fragment, null, React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 999,
+      padding: 3,
+      gap: 2,
+      marginBottom: 16
+    }
+  }, [{
+    id: "monthly",
+    label: "Despesas mensais"
+  }, {
+    id: "weekly",
+    label: "Despesas semanais"
+  }].map(r => React.createElement("button", {
+    key: r.id,
+    onClick: () => setFreqRange(r.id),
+    style: {
+      padding: "7px 14px",
+      borderRadius: 999,
+      border: "none",
+      cursor: "pointer",
+      fontSize: 12.5,
+      fontWeight: 600,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      background: freqRange === r.id ? "var(--gold)" : "transparent",
+      color: freqRange === r.id ? "#fff" : "var(--slate)",
+      whiteSpace: "nowrap"
+    }
+  }, r.label))), frequencyData.total === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Ainda sem despesas neste período.") : React.createElement(React.Fragment, null, React.createElement(FrequencyAreaChart, {
+    points: frequencyData.points
+  }), React.createElement("div", {
+    style: {
+      marginTop: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, "Total"), React.createElement("div", {
+    title: fmt(frequencyData.total),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      fontSize: 20,
+      color: "var(--rust)",
+      cursor: "help"
+    }
+  }, fmt(frequencyData.total))))), chartsTab === "distribution" && (Object.keys(splitByCurrency).length === 0 ? React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5
@@ -9613,7 +9761,37 @@ function Overview({
         color: "var(--slate)"
       }
     }, "Sem saldo nesta moeda."));
-  }))), chartsTab === "categories" && (Object.keys(spentByCategory).length === 0 ? React.createElement("p", {
+  }))), chartsTab === "categories" && React.createElement(React.Fragment, null, React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 999,
+      padding: 3,
+      gap: 2,
+      marginBottom: 18
+    }
+  }, [{
+    id: "category",
+    label: "Despesas por categoria"
+  }, {
+    id: "account",
+    label: "Despesas por conta"
+  }].map(r => React.createElement("button", {
+    key: r.id,
+    onClick: () => setCategoryViewMode(r.id),
+    style: {
+      padding: "7px 14px",
+      borderRadius: 999,
+      border: "none",
+      cursor: "pointer",
+      fontSize: 12.5,
+      fontWeight: 600,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      background: categoryViewMode === r.id ? "var(--gold)" : "transparent",
+      color: categoryViewMode === r.id ? "#fff" : "var(--slate)",
+      whiteSpace: "nowrap"
+    }
+  }, r.label))), categoryViewMode === "category" ? Object.keys(spentByCategory).length === 0 ? React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5
@@ -9665,7 +9843,51 @@ function Overview({
       pct: pct,
       tone: pct > 100 ? "rust" : "emerald"
     }));
-  })))), chartsTab === "members" && (memberTrend.members.length > 0 ? React.createElement(React.Fragment, null, React.createElement("p", {
+  }))) : accountChartData.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Ainda sem despesas registadas este mês.") : React.createElement(React.Fragment, null, React.createElement("div", {
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement(CategoryDonut, {
+    data: accountChartData
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, accountChartData.map(a => React.createElement("div", {
+    key: a.name,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 13
+    }
+  }, React.createElement("span", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, React.createElement("span", {
+    style: {
+      width: 9,
+      height: 9,
+      borderRadius: "50%",
+      background: a.color,
+      flexShrink: 0
+    }
+  }), a.name), React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(a.value))))))), chartsTab === "members" && (memberTrend.members.length > 0 ? React.createElement(React.Fragment, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
