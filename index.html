@@ -615,6 +615,9 @@ const IconBell = p => React.createElement(Icon, p, React.createElement("path", {
 }), React.createElement("path", {
   d: "M13.73 21a2 2 0 0 1-3.46 0"
 }));
+const IconStar = p => React.createElement(Icon, p, React.createElement("path", {
+  d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+}));
 const IconHome = p => React.createElement(Icon, p, React.createElement("path", {
   d: "M3 9l9-7 9 7"
 }), React.createElement("path", {
@@ -2833,14 +2836,85 @@ function saveKey(key, value) {
     console.error("Erro ao guardar", key, e);
   }
 }
+const ALL_NAV_TABS = [{
+  id: "overview",
+  label: "Visão Geral",
+  icon: IconDashboard
+}, {
+  id: "accounts",
+  label: "Contas",
+  icon: IconBank
+}, {
+  id: "transactions",
+  label: "Transações",
+  icon: IconReceipt
+}, {
+  id: "budget",
+  label: "Orçamento",
+  icon: IconWallet
+}, {
+  id: "goals",
+  label: "Metas",
+  icon: IconTarget
+}, {
+  id: "planning",
+  label: "Planeamento",
+  icon: IconCompass
+}, {
+  id: "debts",
+  label: "Empréstimos",
+  icon: IconCreditCard
+}, {
+  id: "cards",
+  label: "Cartões",
+  icon: IconBanknote
+}, {
+  id: "exchange",
+  label: "Câmbio",
+  icon: IconRepeat
+}, {
+  id: "forecast",
+  label: "Fluxo de Caixa",
+  icon: IconTrendingUp
+}, {
+  id: "investments",
+  label: "Investimentos",
+  icon: IconPieChart
+}, {
+  id: "report",
+  label: "Financeiros",
+  icon: IconFileText
+}, {
+  id: "kpis",
+  label: "KPI's",
+  icon: IconActivity
+}, {
+  id: "exports",
+  label: "Exportações",
+  icon: IconDownload
+}, {
+  id: "alerts",
+  label: "Alertas",
+  icon: IconBell
+}, {
+  id: "simulators",
+  label: "Simuladores",
+  icon: IconCalculator
+}, {
+  id: "settings",
+  label: "Definições",
+  icon: IconSettings
+}];
 function NavItem({
   icon: IconC,
   label,
   active,
   onClick,
-  collapsed
+  collapsed,
+  isFavorite,
+  onToggleFavorite
 }) {
-  return React.createElement("button", {
+  const button = React.createElement("button", {
     onClick: onClick,
     title: collapsed ? label : undefined,
     style: {
@@ -2849,7 +2923,7 @@ function NavItem({
       justifyContent: collapsed ? "center" : "flex-start",
       gap: 10,
       width: "100%",
-      padding: collapsed ? "11px 0" : "10px 14px 10px 12px",
+      padding: collapsed ? "11px 0" : `10px ${onToggleFavorite ? 30 : 14}px 10px 12px`,
       borderRadius: 8,
       border: "none",
       borderLeft: active ? "3px solid var(--gold)" : "3px solid transparent",
@@ -2871,6 +2945,33 @@ function NavItem({
       flexShrink: 0
     }
   }), !collapsed && label);
+  if (!onToggleFavorite || collapsed) return button;
+  return React.createElement("div", {
+    style: {
+      position: "relative"
+    }
+  }, button, React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      onToggleFavorite();
+    },
+    title: isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos",
+    style: {
+      position: "absolute",
+      right: 6,
+      top: "50%",
+      transform: "translateY(-50%)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      padding: 5,
+      color: isFavorite ? "var(--gold)" : "rgba(255,255,255,0.28)",
+      display: "flex"
+    }
+  }, React.createElement(IconStar, {
+    size: 13,
+    fill: isFavorite ? "currentColor" : "none"
+  })));
 }
 function NavSection({
   label,
@@ -4956,6 +5057,18 @@ function SplitBar({
 function FinanceApp() {
   const [tab, setTab] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => loadKey("sidebar-collapsed", true));
+  const [favoriteTabs, setFavoriteTabs] = useState(() => loadKey("favorite-tabs", []));
+  const [tabUsageCounts, setTabUsageCounts] = useState(() => loadKey("tab-usage-counts", {}));
+  function toggleFavorite(id) {
+    setFavoriteTabs(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      saveKey("favorite-tabs", next);
+      return next;
+    });
+  }
+  const mostUsedTabs = useMemo(() => {
+    return ALL_NAV_TABS.filter(t => t.id !== "overview" && !favoriteTabs.includes(t.id) && tabUsageCounts[t.id] > 0).sort((a, b) => (tabUsageCounts[b.id] || 0) - (tabUsageCounts[a.id] || 0)).slice(0, 3);
+  }, [tabUsageCounts, favoriteTabs]);
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth <= 768 : false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [showFabMenu, setShowFabMenu] = useState(false);
@@ -5106,6 +5219,14 @@ function FinanceApp() {
     setTab(t);
     setSidebarCollapsed(true);
     scrollAppToTop(samePage ? "smooth" : "auto");
+    setTabUsageCounts(prev => {
+      const next = {
+        ...prev,
+        [t]: (prev[t] || 0) + 1
+      };
+      saveKey("tab-usage-counts", next);
+      return next;
+    });
   }
   const [confirmAction, setConfirmAction] = useState(null);
   function askConfirm(message, onConfirm, detail) {
@@ -6229,7 +6350,31 @@ function FinanceApp() {
       transform: sidebarCollapsed ? "rotate(180deg)" : "none",
       transition: "transform 0.18s"
     }
-  })), React.createElement(NavSection, {
+  })), favoriteTabs.length > 0 && React.createElement(NavSection, {
+    label: "Favoritos",
+    collapsed: sidebarCollapsed
+  }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(t => React.createElement(NavItem, {
+    key: t.id,
+    icon: t.icon,
+    label: t.label,
+    active: tab === t.id,
+    onClick: () => selectTab(t.id),
+    collapsed: sidebarCollapsed,
+    isFavorite: true,
+    onToggleFavorite: () => toggleFavorite(t.id)
+  }))), mostUsedTabs.length > 0 && React.createElement(NavSection, {
+    label: "Mais usados",
+    collapsed: sidebarCollapsed
+  }, mostUsedTabs.map(t => React.createElement(NavItem, {
+    key: t.id,
+    icon: t.icon,
+    label: t.label,
+    active: tab === t.id,
+    onClick: () => selectTab(t.id),
+    collapsed: sidebarCollapsed,
+    isFavorite: favoriteTabs.includes(t.id),
+    onToggleFavorite: () => toggleFavorite(t.id)
+  }))), React.createElement(NavSection, {
     label: "Dashboard",
     collapsed: sidebarCollapsed
   }, React.createElement(NavItem, {
@@ -6237,6 +6382,8 @@ function FinanceApp() {
     label: "Visão Geral",
     active: tab === "overview",
     onClick: () => selectTab("overview"),
+    isFavorite: favoriteTabs.includes("overview"),
+    onToggleFavorite: () => toggleFavorite("overview"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Finanças",
@@ -6246,18 +6393,24 @@ function FinanceApp() {
     label: "Contas",
     active: tab === "accounts",
     onClick: () => selectTab("accounts"),
+    isFavorite: favoriteTabs.includes("accounts"),
+    onToggleFavorite: () => toggleFavorite("accounts"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconReceipt,
     label: "Transações",
     active: tab === "transactions",
     onClick: () => selectTab("transactions"),
+    isFavorite: favoriteTabs.includes("transactions"),
+    onToggleFavorite: () => toggleFavorite("transactions"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconWallet,
     label: "Orçamento",
     active: tab === "budget",
     onClick: () => selectTab("budget"),
+    isFavorite: favoriteTabs.includes("budget"),
+    onToggleFavorite: () => toggleFavorite("budget"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Planeamento",
@@ -6267,12 +6420,16 @@ function FinanceApp() {
     label: "Metas",
     active: tab === "goals",
     onClick: () => selectTab("goals"),
+    isFavorite: favoriteTabs.includes("goals"),
+    onToggleFavorite: () => toggleFavorite("goals"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconCompass,
     label: "Planeamento",
     active: tab === "planning",
     onClick: () => selectTab("planning"),
+    isFavorite: favoriteTabs.includes("planning"),
+    onToggleFavorite: () => toggleFavorite("planning"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Financiamento",
@@ -6282,12 +6439,16 @@ function FinanceApp() {
     label: "Empréstimos",
     active: tab === "debts",
     onClick: () => selectTab("debts"),
+    isFavorite: favoriteTabs.includes("debts"),
+    onToggleFavorite: () => toggleFavorite("debts"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconBanknote,
     label: "Cartões",
     active: tab === "cards",
     onClick: () => selectTab("cards"),
+    isFavorite: favoriteTabs.includes("cards"),
+    onToggleFavorite: () => toggleFavorite("cards"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Tesouraria",
@@ -6297,12 +6458,16 @@ function FinanceApp() {
     label: "Câmbio",
     active: tab === "exchange",
     onClick: () => selectTab("exchange"),
+    isFavorite: favoriteTabs.includes("exchange"),
+    onToggleFavorite: () => toggleFavorite("exchange"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconTrendingUp,
     label: "Fluxo de Caixa",
     active: tab === "forecast",
     onClick: () => selectTab("forecast"),
+    isFavorite: favoriteTabs.includes("forecast"),
+    onToggleFavorite: () => toggleFavorite("forecast"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Investimentos",
@@ -6312,6 +6477,8 @@ function FinanceApp() {
     label: "Investimentos",
     active: tab === "investments",
     onClick: () => selectTab("investments"),
+    isFavorite: favoriteTabs.includes("investments"),
+    onToggleFavorite: () => toggleFavorite("investments"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Relatórios",
@@ -6321,18 +6488,24 @@ function FinanceApp() {
     label: "Financeiros",
     active: tab === "report",
     onClick: () => selectTab("report"),
+    isFavorite: favoriteTabs.includes("report"),
+    onToggleFavorite: () => toggleFavorite("report"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconActivity,
     label: "KPI's",
     active: tab === "kpis",
     onClick: () => selectTab("kpis"),
+    isFavorite: favoriteTabs.includes("kpis"),
+    onToggleFavorite: () => toggleFavorite("kpis"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconDownload,
     label: "Exportações",
     active: tab === "exports",
     onClick: () => selectTab("exports"),
+    isFavorite: favoriteTabs.includes("exports"),
+    onToggleFavorite: () => toggleFavorite("exports"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Alertas",
@@ -6342,6 +6515,8 @@ function FinanceApp() {
     label: "Alertas",
     active: tab === "alerts",
     onClick: () => selectTab("alerts"),
+    isFavorite: favoriteTabs.includes("alerts"),
+    onToggleFavorite: () => toggleFavorite("alerts"),
     collapsed: sidebarCollapsed
   })), React.createElement(NavSection, {
     label: "Ferramentas",
@@ -6351,6 +6526,8 @@ function FinanceApp() {
     label: "Simuladores",
     active: tab === "simulators",
     onClick: () => selectTab("simulators"),
+    isFavorite: favoriteTabs.includes("simulators"),
+    onToggleFavorite: () => toggleFavorite("simulators"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
     icon: IconWrench,
@@ -6378,6 +6555,8 @@ function FinanceApp() {
     label: "Definições",
     active: tab === "settings",
     onClick: () => selectTab("settings"),
+    isFavorite: favoriteTabs.includes("settings"),
+    onToggleFavorite: () => toggleFavorite("settings"),
     collapsed: sidebarCollapsed
   })), React.createElement("div", {
     style: {
@@ -6678,7 +6857,91 @@ function FinanceApp() {
       border: "none",
       padding: 0
     }
-  }))), React.createElement("div", {
+  }))), (() => {
+    const contextualActions = {
+      accounts: [{
+        label: "Nova conta",
+        icon: IconBank,
+        onClick: () => {
+          setEditingAccount(null);
+          setShowAccountModal(true);
+        }
+      }],
+      transactions: [{
+        label: "Nova transação",
+        icon: IconReceipt,
+        onClick: () => {
+          setTxModalKind("despesa");
+          setEditingTx(null);
+          setShowTxModal(true);
+        }
+      }, {
+        label: "Importar extrato",
+        icon: IconUpload,
+        onClick: () => setShowCsvImportModal(true)
+      }],
+      goals: [{
+        label: "Nova meta",
+        icon: IconTarget,
+        onClick: () => {
+          setEditingGoal(null);
+          setShowGoalModal(true);
+        }
+      }],
+      debts: [{
+        label: "Nova dívida",
+        icon: IconCreditCard,
+        onClick: () => {
+          setEditingDebt(null);
+          setShowDebtModal(true);
+        }
+      }],
+      cards: [{
+        label: "Novo cartão",
+        icon: IconBanknote,
+        onClick: () => {
+          setEditingCreditCard(null);
+          setShowCreditCardModal(true);
+        }
+      }],
+      investments: [{
+        label: "Nova obrigação",
+        icon: IconPieChart,
+        onClick: () => {
+          setEditingBond(null);
+          setShowBondModal(true);
+        }
+      }]
+    }[tab];
+    if (!contextualActions) return null;
+    return React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 10,
+        marginBottom: 18,
+        flexWrap: "wrap"
+      }
+    }, contextualActions.map(a => React.createElement("button", {
+      key: a.label,
+      onClick: a.onClick,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 7,
+        padding: "9px 14px",
+        borderRadius: 9,
+        border: "1px solid var(--gold)",
+        background: "var(--gold)",
+        color: "#fff",
+        cursor: "pointer",
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: 13,
+        fontWeight: 600
+      }
+    }, React.createElement(a.icon, {
+      size: 14
+    }), a.label)));
+  })(), React.createElement("div", {
     key: tab,
     className: "tab-page-transition"
   }, tab === "overview" && React.createElement(Overview, {
@@ -7224,7 +7487,99 @@ function FinanceApp() {
       flexDirection: "column",
       gap: 18
     }
-  }, React.createElement("div", null, React.createElement("div", {
+  }, favoriteTabs.length > 0 && React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 8
+    }
+  }, "Favoritos"), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 8
+    }
+  }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(t => React.createElement("button", {
+    key: t.id,
+    onClick: () => {
+      selectTab(t.id);
+      setShowMoreSheet(false);
+    },
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      padding: "12px 4px",
+      borderRadius: 12,
+      border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
+      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
+      cursor: "pointer"
+    }
+  }, React.createElement(t.icon, {
+    size: 20,
+    style: {
+      color: tab === t.id ? "var(--gold)" : "var(--slate)"
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 10.5,
+      fontWeight: 600,
+      color: "var(--ink)",
+      textAlign: "center",
+      lineHeight: 1.2
+    }
+  }, t.label))))), mostUsedTabs.length > 0 && React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "var(--slate)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginBottom: 8
+    }
+  }, "Mais usados"), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 8
+    }
+  }, mostUsedTabs.map(t => React.createElement("button", {
+    key: t.id,
+    onClick: () => {
+      selectTab(t.id);
+      setShowMoreSheet(false);
+    },
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      padding: "12px 4px",
+      borderRadius: 12,
+      border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
+      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
+      cursor: "pointer"
+    }
+  }, React.createElement(t.icon, {
+    size: 20,
+    style: {
+      color: tab === t.id ? "var(--gold)" : "var(--slate)"
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 10.5,
+      fontWeight: 600,
+      color: "var(--ink)",
+      textAlign: "center",
+      lineHeight: 1.2
+    }
+  }, t.label))))), React.createElement("div", null, React.createElement("div", {
     style: {
       fontSize: 10.5,
       color: "var(--slate)",
