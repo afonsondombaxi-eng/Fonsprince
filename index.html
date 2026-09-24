@@ -7041,16 +7041,12 @@ function FinanceApp() {
       setShowTxModal(true);
     }
   }, {
-    label: "Despesa Cartão",
-    icon: IconCreditCard,
+    label: "Nova conta",
+    icon: IconBank,
     color: "var(--gold)",
     onClick: () => {
-      if (creditCards.length === 1) {
-        setPurchaseCard(creditCards[0]);
-        setShowCardPurchaseModal(true);
-      } else {
-        selectTab("cards");
-      }
+      setEditingAccount(null);
+      setShowAccountModal(true);
     }
   }, {
     label: "Transferência",
