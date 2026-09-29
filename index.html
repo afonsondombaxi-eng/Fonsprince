@@ -2888,6 +2888,10 @@ const ALL_NAV_TABS = [{
   label: "Transações",
   icon: IconReceipt
 }, {
+  id: "charts",
+  label: "Gráficos",
+  icon: IconBarChart3
+}, {
   id: "budget",
   label: "Orçamento",
   icon: IconWallet
@@ -6495,6 +6499,14 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("transactions"),
     collapsed: sidebarCollapsed
   }), React.createElement(NavItem, {
+    icon: IconBarChart3,
+    label: "Gráficos",
+    active: tab === "charts",
+    onClick: () => selectTab("charts"),
+    isFavorite: favoriteTabs.includes("charts"),
+    onToggleFavorite: () => toggleFavorite("charts"),
+    collapsed: sidebarCollapsed
+  }), React.createElement(NavItem, {
     icon: IconWallet,
     label: "Orçamento",
     active: tab === "budget",
@@ -6748,6 +6760,7 @@ function FinanceApp() {
     overview: "Visão Geral",
     accounts: "Contas Bancárias",
     transactions: "Transações",
+    charts: "Gráficos",
     budget: "Orçamento Mensal",
     goals: "Metas de Poupança",
     planning: "Planeamento Financeiro",
@@ -6866,6 +6879,7 @@ function FinanceApp() {
     overview: "Visão Geral",
     accounts: "Contas Bancárias",
     transactions: "Transações",
+    charts: "Gráficos",
     budget: "Orçamento Mensal",
     goals: "Metas de Poupança",
     planning: "Planeamento Financeiro",
@@ -6891,6 +6905,7 @@ function FinanceApp() {
     overview: "O saldo disponível reflete as receitas e despesas registadas até hoje.",
     accounts: "Cada conta pode dividir o dinheiro entre à ordem, poupança e investimento.",
     transactions: "Receitas e despesas registadas.",
+    charts: "Todos os gráficos e análises num só sítio.",
     budget: "Limites por categoria e fontes de rendimento.",
     goals: "Objetivos de poupança e o seu progresso.",
     planning: "Património líquido, saúde financeira e simulações.",
@@ -7114,6 +7129,19 @@ function FinanceApp() {
     onImportCSV: () => setShowCsvImportModal(true),
     initialSearch: txSearchSeed,
     isMobile: isMobile
+  }), tab === "charts" && React.createElement(ChartsPage, {
+    accounts: accounts,
+    transactions: transactions,
+    month: month,
+    exchangeRates: exchangeRates,
+    rateHistory: rateHistory,
+    balancesByCurrency: balancesByCurrency,
+    splitByCurrency: splitByCurrency,
+    spentByCategory: spentByCategory,
+    prevSpentByCategory: prevSpentByCategory,
+    categories: budgetIncome.categories,
+    onNavigateToCategory: goToCategoryTransactions,
+    onNavigateToMember: goToMemberTransactions
   }), tab === "budget" && React.createElement(BudgetTab, {
     categories: budgetIncome.categories,
     spentByCategory: spentByCategory,
@@ -7416,7 +7444,7 @@ function FinanceApp() {
       justifyContent: "center",
       gap: 3,
       padding: "9px 0",
-      color: ["budget", "goals", "planning", "cards", "exchange", "forecast", "investments", "report", "kpis", "exports", "simulators", "tools", "settings"].includes(tab) ? "var(--gold)" : "rgba(255,255,255,0.6)"
+      color: ["charts", "budget", "goals", "planning", "cards", "exchange", "forecast", "investments", "report", "kpis", "exports", "simulators", "tools", "settings"].includes(tab) ? "var(--gold)" : "rgba(255,255,255,0.6)"
     }
   }, React.createElement(IconMore, {
     size: 19,
@@ -7685,6 +7713,10 @@ function FinanceApp() {
       gap: 6
     }
   }, [{
+    id: "charts",
+    label: "Gráficos",
+    icon: IconBarChart3
+  }, {
     id: "budget",
     label: "Orçamento",
     icon: IconWallet
@@ -9180,70 +9212,25 @@ function StackedCard({
     }
   }, children));
 }
-function Overview({
+function ChartsPage({
   accounts,
   transactions,
   month,
-  balancesByCurrency,
-  splitByCurrency,
-  interestSummary,
-  totalReceitas,
-  totalDespesas,
-  expectedIncome,
-  goals,
-  debts,
-  debtPayments,
   exchangeRates,
   rateHistory,
+  balancesByCurrency,
+  splitByCurrency,
   spentByCategory,
-  prevTotalReceitas,
-  prevTotalDespesas,
   prevSpentByCategory,
   categories,
-  onNavigate,
-  onNavigateToMember,
   onNavigateToCategory,
-  userName,
-  recurringExpenses,
-  creditCards,
-  onQuickReceita,
-  onQuickDespesa,
-  onQuickTransfer,
-  onQuickNovaConta
+  onNavigateToMember
 }) {
   const [chartsTab, setChartsTab] = useState("balance");
   const [pressedChartTab, setPressedChartTab] = useState(null);
   const [freqRange, setFreqRange] = useState("monthly");
   const [categoryViewMode, setCategoryViewMode] = useState("category");
-  const [dashTab, setDashTab] = useState("patrimony");
-  const [pressedDashTab, setPressedDashTab] = useState(null);
-  const [summaryTab, setSummaryTab] = useState("interest");
-  const [pressedSummaryTab, setPressedSummaryTab] = useState(null);
-  const saldo = totalReceitas - totalDespesas;
-  const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
-  const prevMonthKeyForOverview = previousMonthKey(month);
-  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyForOverview);
-  const prevMonthLabel = monthShortLabel(prevMonthKeyForOverview);
-  const familyBreakdown = useMemo(() => {
-    const map = {};
-    for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
-        map[t.member] = (map[t.member] || 0) + Number(t.amount);
-      }
-    }
-    return Object.entries(map).sort((a, b) => b[1] - a[1]);
-  }, [transactions, month]);
-  const familyBreakdownPrevMap = useMemo(() => {
-    const map = {};
-    for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === prevMonthKeyForOverview) {
-        map[t.member] = (map[t.member] || 0) + Number(t.amount);
-      }
-    }
-    return map;
-  }, [transactions, prevMonthKeyForOverview]);
   const monthlyData = useMemo(() => monthlyHistory(transactions, 6), [transactions]);
-  const monthlyDataFull = useMemo(() => monthlyHistory(transactions, 12), [transactions]);
   const frequencyData = useMemo(() => {
     const [year, mo] = month.split("-").map(Number);
     const daysInMonth = new Date(year, mo, 0).getDate();
@@ -9285,297 +9272,35 @@ function Overview({
       };
     });
   }, [transactions, month, accounts]);
-  const debtsByCurrency = useMemo(() => {
+  const prevMonthKeyForCharts = previousMonthKey(month);
+  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyForCharts);
+  const prevMonthLabel = monthShortLabel(prevMonthKeyForCharts);
+  const familyBreakdown = useMemo(() => {
     const map = {};
-    for (const d of debts) {
-      const bal = debtBalance(d, debtPayments);
-      if (bal <= 0.005) continue;
-      if (!map[d.currency]) map[d.currency] = {
-        "A pagar": 0,
-        "A receber": 0
-      };
-      map[d.currency][d.type] += bal;
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
+        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      }
+    }
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [transactions, month]);
+  const familyBreakdownPrevMap = useMemo(() => {
+    const map = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === prevMonthKeyForCharts) {
+        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      }
     }
     return map;
-  }, [debts, debtPayments]);
-  const overdueDebts = debts.filter(d => debtStatus(d, debtPayments) === "Vencida");
-  const missingRatesAll = otherCurrencies.some(c => toKz(1, c, exchangeRates) === null);
-  const consolidatedKzNow = Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
-    const converted = toKz(val, cur, exchangeRates);
-    return sum + (converted === null ? 0 : converted);
-  }, 0);
+  }, [transactions, prevMonthKeyForCharts]);
   const balancesByCurrencyPrev = useMemo(() => {
     const map = {};
     for (const a of accounts) map[a.currency] = (map[a.currency] || 0) + accountTotal(a, transactions, prevMonthEndDate);
     return map;
   }, [accounts, transactions, prevMonthEndDate]);
-  const consolidatedKzPrev = Object.entries(balancesByCurrencyPrev).reduce((sum, [cur, val]) => {
-    const converted = toKzAsOf(val, cur, rateHistory, exchangeRates, prevMonthEndDate);
-    return sum + (converted === null ? 0 : converted);
-  }, 0);
-  const liquidKzNow = liquidAssetsKz(accounts, transactions, exchangeRates);
-  const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
   const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, 12), [accounts, transactions, exchangeRates, rateHistory]);
-  const insights = useMemo(() => buildInsights({
-    accounts,
-    transactions,
-    exchangeRates,
-    consolidatedKzNow,
-    consolidatedKzPrev,
-    familyBreakdown
-  }), [accounts, transactions, exchangeRates, consolidatedKzNow, consolidatedKzPrev, familyBreakdown]);
   const memberTrend = useMemo(() => memberMonthlyHistory(transactions, 6), [transactions]);
-  const cockpitDecisions = useMemo(() => buildCockpitDecisions({
-    recurringExpenses: recurringExpenses || [],
-    transactions,
-    month,
-    debts,
-    debtPayments,
-    goals,
-    totalDespesas,
-    prevTotalDespesas,
-    spentByCategory,
-    categories,
-    liquidKzNow
-  }), [recurringExpenses, transactions, month, debts, debtPayments, goals, totalDespesas, prevTotalDespesas, spentByCategory, categories, liquidKzNow]);
-  const healthScore = useMemo(() => computeHealthScore({
-    totalReceitas,
-    totalDespesas,
-    liquidKzNow,
-    spentByCategory,
-    categories,
-    debts,
-    debtPayments
-  }), [totalReceitas, totalDespesas, liquidKzNow, spentByCategory, categories, debts, debtPayments]);
-  const firstSteps = [{
-    label: "Cadastre uma conta bancária",
-    done: accounts.length > 0,
-    tab: "accounts"
-  }, {
-    label: "Registe a sua primeira transação",
-    done: transactions.length > 0,
-    tab: "transactions"
-  }, {
-    label: "Cadastre um cartão de crédito",
-    done: (creditCards || []).length > 0,
-    tab: "cards"
-  }];
-  return React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 22
-    }
-  }, React.createElement(CockpitCard, {
-    userName: userName,
-    score: healthScore,
-    decisions: cockpitDecisions,
-    onNavigate: onNavigate
-  }), React.createElement(SaldoAtualCard, {
-    totalBalance: consolidatedKzNow
-  }), React.createElement(FirstStepsCard, {
-    steps: firstSteps,
-    onNavigate: onNavigate
-  }), React.createElement(MonthlyBalanceCard, {
-    totalReceitas: totalReceitas,
-    totalDespesas: totalDespesas,
-    saldo: saldo,
-    onNavigate: onNavigate
-  }), React.createElement(MonthlySavingsCard, {
-    totalReceitas: totalReceitas,
-    totalDespesas: totalDespesas
-  }), React.createElement(QuickActionsRow, {
-    onReceita: onQuickReceita,
-    onDespesa: onQuickDespesa,
-    onTransfer: onQuickTransfer,
-    onNovaConta: onQuickNovaConta
-  }), React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 12px"
-    }
-  }, "Dashboard Executivo"), React.createElement("div", {
-    style: {
-      display: "inline-flex",
-      background: "var(--paper)",
-      borderRadius: 10,
-      padding: 4,
-      gap: 2,
-      marginBottom: 18,
-      flexWrap: "wrap"
-    }
-  }, [{
-    id: "patrimony",
-    label: "Património",
-    icon: IconBank
-  }, {
-    id: "interest",
-    label: "Juros",
-    icon: IconPig
-  }, {
-    id: "liquidity",
-    label: "Liquidez",
-    icon: IconWallet
-  }].map(t => {
-    const isActive = dashTab === t.id;
-    const isPressed = pressedDashTab === t.id;
-    return React.createElement("button", {
-      key: t.id,
-      onClick: () => setDashTab(t.id),
-      onMouseDown: () => {
-        setPressedDashTab(t.id);
-        try {
-          navigator.vibrate && navigator.vibrate(9);
-        } catch (e) {}
-      },
-      onMouseUp: () => setPressedDashTab(null),
-      onMouseLeave: () => setPressedDashTab(p => p === t.id ? null : p),
-      onTouchStart: () => {
-        setPressedDashTab(t.id);
-        try {
-          navigator.vibrate && navigator.vibrate(9);
-        } catch (e) {}
-      },
-      onTouchEnd: () => setPressedDashTab(null),
-      onTouchCancel: () => setPressedDashTab(null),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "7px 12px",
-        borderRadius: 7,
-        border: "none",
-        cursor: "pointer",
-        fontSize: 12.5,
-        fontWeight: 600,
-        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        background: isActive ? "var(--card)" : "transparent",
-        color: isActive ? "var(--gold)" : "var(--slate)",
-        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
-        transform: isPressed ? "scale(0.91)" : "scale(1)",
-        transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
-        whiteSpace: "nowrap"
-      }
-    }, React.createElement(t.icon, {
-      size: 14
-    }), t.label);
-  })), React.createElement("div", {
-    key: dashTab,
-    style: {
-      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
-    }
-  }, dashTab === "patrimony" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(consolidatedKzNow),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: "var(--ink)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, React.createElement(AnimatedNumber, {
-    value: consolidatedKzNow,
-    format: fmtCompact
-  })), missingRatesAll ? React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--slate)",
-      marginTop: 6
-    }
-  }, "Defina as taxas de câmbio para incluir todas as moedas") : React.createElement(TrendBadge, {
-    current: consolidatedKzNow,
-    previous: consolidatedKzPrev,
-    previousLabel: prevMonthLabel,
-    invert: false
-  })), dashTab === "interest" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(interestSummary.accruedTotal),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: "var(--gold)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, React.createElement(AnimatedNumber, {
-    value: interestSummary.accruedTotal,
-    format: fmtCompact
-  })), React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--slate)",
-      marginTop: 6
-    }
-  }, interestSummary.rows.length > 0 ? `${interestSummary.rows.length} saldo(s) a render juro` : "Sem saldos com juro definido")), dashTab === "liquidity" && React.createElement(React.Fragment, null, React.createElement("div", {
-    title: fmt(liquidKzNow),
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
-      fontWeight: 700,
-      color: "var(--ink)",
-      fontVariantNumeric: "tabular-nums",
-      cursor: "help"
-    }
-  }, React.createElement(AnimatedNumber, {
-    value: liquidKzNow,
-    format: fmtCompact
-  })), React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: "var(--slate)",
-      marginTop: 6
-    }
-  }, liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : "À ordem + poupança")))), insights.length > 0 && React.createElement(Card, {
-    style: {
-      background: "linear-gradient(135deg, #1B1F27 0%, #262B35 100%)",
-      border: "none"
-    }
-  }, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
-      margin: "0 0 12px",
-      color: "#fff"
-    }
-  }, "Insights automáticos"), React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 10
-    }
-  }, insights.map((ins, i) => React.createElement("div", {
-    key: i,
-    style: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: 10,
-      fontSize: 13,
-      color: "rgba(255,255,255,0.9)"
-    }
-  }, React.createElement(ins.icon, {
-    size: 15,
-    style: {
-      flexShrink: 0,
-      color: "rgba(255,255,255,0.85)"
-    }
-  }), React.createElement("span", null, ins.text))))), React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 0
-    }
-  }, React.createElement(StackedCard, {
-    index: 0,
-    total: 2
-  }, React.createElement(Card, null, React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 12px"
-    }
-  }, "Gráficos"), React.createElement("div", {
+  return React.createElement("div", null, React.createElement(Card, null, React.createElement("div", {
     style: {
       display: "inline-flex",
       background: "var(--paper)",
@@ -10127,10 +9852,403 @@ function Overview({
         color: "var(--slate)"
       }
     }, "Menor utilização: "), React.createElement("strong", null, bottom[0], " (", bottomPct.toFixed(0), "%)")));
-  })()))))), React.createElement(StackedCard, {
-    index: 1,
-    total: 2
-  }, React.createElement(Card, null, React.createElement("h3", {
+  })())))));
+}
+function Overview({
+  accounts,
+  transactions,
+  month,
+  balancesByCurrency,
+  splitByCurrency,
+  interestSummary,
+  totalReceitas,
+  totalDespesas,
+  expectedIncome,
+  goals,
+  debts,
+  debtPayments,
+  exchangeRates,
+  rateHistory,
+  spentByCategory,
+  prevTotalReceitas,
+  prevTotalDespesas,
+  prevSpentByCategory,
+  categories,
+  onNavigate,
+  onNavigateToMember,
+  onNavigateToCategory,
+  userName,
+  recurringExpenses,
+  creditCards,
+  onQuickReceita,
+  onQuickDespesa,
+  onQuickTransfer,
+  onQuickNovaConta
+}) {
+  const [chartsTab, setChartsTab] = useState("balance");
+  const [pressedChartTab, setPressedChartTab] = useState(null);
+  const [freqRange, setFreqRange] = useState("monthly");
+  const [categoryViewMode, setCategoryViewMode] = useState("category");
+  const [dashTab, setDashTab] = useState("interest");
+  const [pressedDashTab, setPressedDashTab] = useState(null);
+  const [summaryTab, setSummaryTab] = useState("interest");
+  const [pressedSummaryTab, setPressedSummaryTab] = useState(null);
+  const saldo = totalReceitas - totalDespesas;
+  const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
+  const prevMonthKeyForOverview = previousMonthKey(month);
+  const prevMonthEndDate = lastDayOfMonth(prevMonthKeyForOverview);
+  const prevMonthLabel = monthShortLabel(prevMonthKeyForOverview);
+  const familyBreakdown = useMemo(() => {
+    const map = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
+        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      }
+    }
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [transactions, month]);
+  const familyBreakdownPrevMap = useMemo(() => {
+    const map = {};
+    for (const t of transactions) {
+      if (t.kind === "despesa" && t.member && monthKey(t.date) === prevMonthKeyForOverview) {
+        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      }
+    }
+    return map;
+  }, [transactions, prevMonthKeyForOverview]);
+  const monthlyData = useMemo(() => monthlyHistory(transactions, 6), [transactions]);
+  const monthlyDataFull = useMemo(() => monthlyHistory(transactions, 12), [transactions]);
+  const frequencyData = useMemo(() => {
+    const [year, mo] = month.split("-").map(Number);
+    const daysInMonth = new Date(year, mo, 0).getDate();
+    const daily = {};
+    for (const t of transactions) {
+      if (t.kind !== "despesa") continue;
+      const day = Number(t.date.slice(8, 10));
+      daily[day] = (daily[day] || 0) + Number(t.amount);
+    }
+    const startDay = freqRange === "weekly" ? Math.max(1, daysInMonth - 6) : 1;
+    const points = [];
+    for (let d = startDay; d <= daysInMonth; d++) points.push({
+      day: d,
+      value: daily[d] || 0
+    });
+    return {
+      points,
+      total: points.reduce((s, p) => s + p.value, 0)
+    };
+  }, [transactions, month, freqRange]);
+  const categoryChartData = useMemo(() => Object.entries(spentByCategory).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({
+    name,
+    value,
+    color: categoryColor(name)
+  })), [spentByCategory]);
+  const ACCOUNT_DONUT_PALETTE = ["#12A150", "#B8823C", "#4C9EE8", "#D13438", "#7C5CD6", "#E07B39", "#2FBE73", "#8A6D3B"];
+  const accountChartData = useMemo(() => {
+    const byAccount = {};
+    for (const t of transactions) {
+      if (t.kind !== "despesa" || monthKey(t.date) !== month) continue;
+      byAccount[t.accountId] = (byAccount[t.accountId] || 0) + Number(t.amount);
+    }
+    return Object.entries(byAccount).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([accId, value], i) => {
+      const acc = accounts.find(a => a.id === accId);
+      return {
+        name: acc ? acc.bank.replace(/—.*/, "").trim() : "Conta removida",
+        value,
+        color: ACCOUNT_DONUT_PALETTE[i % ACCOUNT_DONUT_PALETTE.length]
+      };
+    });
+  }, [transactions, month, accounts]);
+  const debtsByCurrency = useMemo(() => {
+    const map = {};
+    for (const d of debts) {
+      const bal = debtBalance(d, debtPayments);
+      if (bal <= 0.005) continue;
+      if (!map[d.currency]) map[d.currency] = {
+        "A pagar": 0,
+        "A receber": 0
+      };
+      map[d.currency][d.type] += bal;
+    }
+    return map;
+  }, [debts, debtPayments]);
+  const overdueDebts = debts.filter(d => debtStatus(d, debtPayments) === "Vencida");
+  const missingRatesAll = otherCurrencies.some(c => toKz(1, c, exchangeRates) === null);
+  const consolidatedKzNow = Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
+    const converted = toKz(val, cur, exchangeRates);
+    return sum + (converted === null ? 0 : converted);
+  }, 0);
+  const balancesByCurrencyPrev = useMemo(() => {
+    const map = {};
+    for (const a of accounts) map[a.currency] = (map[a.currency] || 0) + accountTotal(a, transactions, prevMonthEndDate);
+    return map;
+  }, [accounts, transactions, prevMonthEndDate]);
+  const consolidatedKzPrev = Object.entries(balancesByCurrencyPrev).reduce((sum, [cur, val]) => {
+    const converted = toKzAsOf(val, cur, rateHistory, exchangeRates, prevMonthEndDate);
+    return sum + (converted === null ? 0 : converted);
+  }, 0);
+  const liquidKzNow = liquidAssetsKz(accounts, transactions, exchangeRates);
+  const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
+  const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, 12), [accounts, transactions, exchangeRates, rateHistory]);
+  const insights = useMemo(() => buildInsights({
+    accounts,
+    transactions,
+    exchangeRates,
+    consolidatedKzNow,
+    consolidatedKzPrev,
+    familyBreakdown
+  }), [accounts, transactions, exchangeRates, consolidatedKzNow, consolidatedKzPrev, familyBreakdown]);
+  const memberTrend = useMemo(() => memberMonthlyHistory(transactions, 6), [transactions]);
+  const cockpitDecisions = useMemo(() => buildCockpitDecisions({
+    recurringExpenses: recurringExpenses || [],
+    transactions,
+    month,
+    debts,
+    debtPayments,
+    goals,
+    totalDespesas,
+    prevTotalDespesas,
+    spentByCategory,
+    categories,
+    liquidKzNow
+  }), [recurringExpenses, transactions, month, debts, debtPayments, goals, totalDespesas, prevTotalDespesas, spentByCategory, categories, liquidKzNow]);
+  const healthScore = useMemo(() => computeHealthScore({
+    totalReceitas,
+    totalDespesas,
+    liquidKzNow,
+    spentByCategory,
+    categories,
+    debts,
+    debtPayments
+  }), [totalReceitas, totalDespesas, liquidKzNow, spentByCategory, categories, debts, debtPayments]);
+  const firstSteps = [{
+    label: "Cadastre uma conta bancária",
+    done: accounts.length > 0,
+    tab: "accounts"
+  }, {
+    label: "Registe a sua primeira transação",
+    done: transactions.length > 0,
+    tab: "transactions"
+  }, {
+    label: "Cadastre um cartão de crédito",
+    done: (creditCards || []).length > 0,
+    tab: "cards"
+  }];
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 22
+    }
+  }, React.createElement(CockpitCard, {
+    userName: userName,
+    score: healthScore,
+    decisions: cockpitDecisions,
+    onNavigate: onNavigate
+  }), React.createElement(SaldoAtualCard, {
+    totalBalance: consolidatedKzNow
+  }), React.createElement(FirstStepsCard, {
+    steps: firstSteps,
+    onNavigate: onNavigate
+  }), React.createElement(MonthlyBalanceCard, {
+    totalReceitas: totalReceitas,
+    totalDespesas: totalDespesas,
+    saldo: saldo,
+    onNavigate: onNavigate
+  }), React.createElement(MonthlySavingsCard, {
+    totalReceitas: totalReceitas,
+    totalDespesas: totalDespesas
+  }), React.createElement(QuickActionsRow, {
+    onReceita: onQuickReceita,
+    onDespesa: onQuickDespesa,
+    onTransfer: onQuickTransfer,
+    onNovaConta: onQuickNovaConta
+  }), React.createElement(Card, null, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 12px"
+    }
+  }, "Dashboard Executivo"), React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 10,
+      padding: 4,
+      gap: 2,
+      marginBottom: 18,
+      flexWrap: "wrap"
+    }
+  }, [{
+    id: "interest",
+    label: "Juros",
+    icon: IconPig
+  }, {
+    id: "liquidity",
+    label: "Liquidez",
+    icon: IconWallet
+  }].map(t => {
+    const isActive = dashTab === t.id;
+    const isPressed = pressedDashTab === t.id;
+    return React.createElement("button", {
+      key: t.id,
+      onClick: () => setDashTab(t.id),
+      onMouseDown: () => {
+        setPressedDashTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onMouseUp: () => setPressedDashTab(null),
+      onMouseLeave: () => setPressedDashTab(p => p === t.id ? null : p),
+      onTouchStart: () => {
+        setPressedDashTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onTouchEnd: () => setPressedDashTab(null),
+      onTouchCancel: () => setPressedDashTab(null),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "7px 12px",
+        borderRadius: 7,
+        border: "none",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: 600,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: isActive ? "var(--card)" : "transparent",
+        color: isActive ? "var(--gold)" : "var(--slate)",
+        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+        transform: isPressed ? "scale(0.91)" : "scale(1)",
+        transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
+        whiteSpace: "nowrap"
+      }
+    }, React.createElement(t.icon, {
+      size: 14
+    }), t.label);
+  })), React.createElement("div", {
+    key: dashTab,
+    style: {
+      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  }, dashTab === "interest" && React.createElement(React.Fragment, null, React.createElement("div", {
+    title: fmt(interestSummary.accruedTotal),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 30,
+      fontWeight: 700,
+      color: "var(--gold)",
+      fontVariantNumeric: "tabular-nums",
+      cursor: "help"
+    }
+  }, React.createElement(AnimatedNumber, {
+    value: interestSummary.accruedTotal,
+    format: fmtCompact
+  })), React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      marginTop: 6
+    }
+  }, interestSummary.rows.length > 0 ? `${interestSummary.rows.length} saldo(s) a render juro` : "Sem saldos com juro definido")), dashTab === "liquidity" && React.createElement(React.Fragment, null, React.createElement("div", {
+    title: fmt(liquidKzNow),
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 30,
+      fontWeight: 700,
+      color: "var(--ink)",
+      fontVariantNumeric: "tabular-nums",
+      cursor: "help"
+    }
+  }, React.createElement(AnimatedNumber, {
+    value: liquidKzNow,
+    format: fmtCompact
+  })), React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      marginTop: 6
+    }
+  }, liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : "À ordem + poupança")))), insights.length > 0 && React.createElement(Card, {
+    style: {
+      background: "linear-gradient(135deg, #1B1F27 0%, #262B35 100%)",
+      border: "none"
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 12px",
+      color: "#fff"
+    }
+  }, "Insights automáticos"), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, insights.map((ins, i) => React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 10,
+      fontSize: 13,
+      color: "rgba(255,255,255,0.9)"
+    }
+  }, React.createElement(ins.icon, {
+    size: 15,
+    style: {
+      flexShrink: 0,
+      color: "rgba(255,255,255,0.85)"
+    }
+  }), React.createElement("span", null, ins.text))))), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 0
+    }
+  }, React.createElement(Card, null, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 14
+    }
+  }, React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: 0
+    }
+  }, "Categorias"), onNavigate && React.createElement("button", {
+    onClick: () => onNavigate("charts"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "var(--gold)",
+      fontSize: 12.5,
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, "Ver todos os gráficos ", React.createElement(IconChevronRight, {
+    size: 13
+  }))), categoryChartData.length === 0 ? React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13.5
+    }
+  }, "Ainda sem despesas registadas este mês.") : React.createElement(CategoryDonut, {
+    data: categoryChartData,
+    onItemClick: onNavigateToCategory
+  })), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -10354,7 +10472,7 @@ function Overview({
       pct: pct,
       tone: "gold"
     }));
-  }))))))));
+  })))))));
 }
 const TYPE_BADGE_COLOR = {
   "À ordem": "#12A150",
