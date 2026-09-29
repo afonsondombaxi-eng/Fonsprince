@@ -1339,12 +1339,22 @@ function groupTransactionsByDay(transactions) {
   }
   return groups;
 }
-function dayNetTotal(items) {
-  return items.reduce((s, t) => {
-    if (t.kind === "receita") return s + Number(t.amount);
-    if (t.kind === "despesa") return s - Number(t.amount);
-    return s;
-  }, 0);
+function dayNetTotal(items, accounts) {
+  let net = 0;
+  let currency = null;
+  let mixed = false;
+  for (const t of items) {
+    if (t.kind !== "receita" && t.kind !== "despesa") continue;
+    const acc = accounts.find(a => a.id === t.accountId);
+    const itemCurrency = acc ? acc.currency : "Kz";
+    if (currency === null) currency = itemCurrency;else if (currency !== itemCurrency) mixed = true;
+    if (t.kind === "receita") net += Number(t.amount);else net -= Number(t.amount);
+  }
+  return {
+    net: net,
+    currency: currency || "Kz",
+    mixed: mixed
+  };
 }
 function timelineNodeInfo(t, accounts) {
   if (t.kind === "transferencia") {
@@ -1356,11 +1366,13 @@ function timelineNodeInfo(t, accounts) {
       title: "Transferência enviada",
       subtitle: `${fromAcc ? fromAcc.bank.replace(/—.*/, "").trim() : "—"} → ${toAcc ? toAcc.bank.replace(/—.*/, "").trim() : "—"}`,
       amountColor: "var(--ink)",
-      amountPrefix: ""
+      amountPrefix: "",
+      currency: fromAcc ? fromAcc.currency : "Kz"
     };
   }
   const acc = accounts.find(a => a.id === t.accountId);
   const accName = acc ? acc.bank.replace(/—.*/, "").trim() : "—";
+  const currency = acc ? acc.currency : "Kz";
   if (t.kind === "receita") {
     return {
       icon: IconArrowDownLeft,
@@ -1368,7 +1380,8 @@ function timelineNodeInfo(t, accounts) {
       title: `Recebeu ${t.description || t.category || "receita"}`,
       subtitle: t.description ? `${t.category} · ${accName}` : accName,
       amountColor: "var(--emerald)",
-      amountPrefix: "+ "
+      amountPrefix: "+ ",
+      currency
     };
   }
   return {
@@ -1377,7 +1390,8 @@ function timelineNodeInfo(t, accounts) {
     title: `Pagou ${t.description || t.category}`,
     subtitle: t.description ? `${t.category} · ${accName}` : accName,
     amountColor: "var(--rust)",
-    amountPrefix: "− "
+    amountPrefix: "− ",
+    currency
   };
 }
 function monthlyHistory(transactions, count) {
@@ -12591,7 +12605,7 @@ function TimelineNode({
       whiteSpace: "nowrap",
       flexShrink: 0
     }
-  }, info.amountPrefix, fmt(t.amount)))));
+  }, info.amountPrefix, fmt(t.amount, info.currency)))));
 }
 function TimelineDayGroup({
   group,
@@ -12600,7 +12614,8 @@ function TimelineDayGroup({
   onRemove,
   startIndex
 }) {
-  const net = dayNetTotal(group.items);
+  const dayTotal = dayNetTotal(group.items, accounts);
+  const net = dayTotal.net;
   return React.createElement("div", {
     style: {
       marginBottom: 24
@@ -12619,14 +12634,14 @@ function TimelineDayGroup({
       fontWeight: 700,
       color: "var(--ink)"
     }
-  }, timelineDayLabel(group.date)), net !== 0 && React.createElement("div", {
+  }, timelineDayLabel(group.date)), net !== 0 && !dayTotal.mixed && React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 12,
       fontWeight: 600,
       color: net >= 0 ? "var(--emerald)" : "var(--rust)"
     }
-  }, net >= 0 ? "+ " : "− ", fmtCompact(Math.abs(net)))), React.createElement("div", null, group.items.map((t, i) => React.createElement(TimelineNode, {
+  }, net >= 0 ? "+ " : "− ", fmtCompact(Math.abs(net), dayTotal.currency))), React.createElement("div", null, group.items.map((t, i) => React.createElement(TimelineNode, {
     key: t.id,
     t: t,
     accounts: accounts,
@@ -12716,18 +12731,20 @@ function MobileTxCard({
     axisLocked.current = null;
   }
   const isTransfer = t.kind === "transferencia";
-  let line2, amountColor, amountPrefix;
+  let line2, amountColor, amountPrefix, currency;
   if (isTransfer) {
     const fromAcc = accounts.find(a => a.id === t.fromAccountId);
     const toAcc = accounts.find(a => a.id === t.toAccountId);
     line2 = `${fromAcc ? fromAcc.bank.replace(/—.*/, "").trim() : "—"} → ${toAcc ? toAcc.bank.replace(/—.*/, "").trim() : "—"}`;
     amountColor = "var(--ink)";
     amountPrefix = "";
+    currency = fromAcc ? fromAcc.currency : "Kz";
   } else {
     const acc = accounts.find(a => a.id === t.accountId);
     line2 = `${acc ? acc.bank.replace(/—.*/, "").trim() : "—"} · ${t.category}`;
     amountColor = t.kind === "receita" ? "var(--emerald)" : "var(--rust)";
     amountPrefix = t.kind === "receita" ? "+ " : "− ";
+    currency = acc ? acc.currency : "Kz";
   }
   return React.createElement("div", {
     style: {
@@ -12834,7 +12851,7 @@ function MobileTxCard({
       color: amountColor,
       flexShrink: 0
     }
-  }, amountPrefix, fmt(t.amount)))));
+  }, amountPrefix, fmt(t.amount, currency)))));
 }
 function MobileTxList({
   transactions,
@@ -13233,7 +13250,7 @@ function TransactionsTab({
           color: "var(--ink)",
           fontWeight: 600
         }
-      }, fmt(t.amount)), React.createElement("td", {
+      }, fmt(t.amount, fromAcc ? fromAcc.currency : "Kz")), React.createElement("td", {
         "data-label": "",
         style: {
           padding: "10px 16px"
@@ -13311,7 +13328,7 @@ function TransactionsTab({
         color: t.kind === "receita" ? "var(--emerald)" : "var(--rust)",
         fontWeight: 600
       }
-    }, t.kind === "receita" ? "+" : "−", " ", fmt(t.amount)), React.createElement("td", {
+    }, t.kind === "receita" ? "+" : "−", " ", fmt(t.amount, acc ? acc.currency : "Kz")), React.createElement("td", {
       "data-label": "",
       style: {
         padding: "10px 16px"

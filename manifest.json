@@ -1,19 +1,16 @@
 {
   "name": "Fonsprince One — Controlo Financeiro Pessoal",
   "short_name": "Fonsprince One",
-  "description": "Controlo financeiro pessoal e familiar para Angola.",
+  "description": "Aplicação pessoal e familiar de controlo financeiro para o mercado angolano.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0F1E42",
   "theme_color": "#0F1E42",
-  "lang": "pt",
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "shortcuts": [
     {
@@ -26,12 +23,6 @@
       "name": "Nova conta",
       "short_name": "Nova conta",
       "url": "./index.html?action=new-account",
-      "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Simuladores",
-      "short_name": "Simuladores",
-      "url": "./index.html?tab=simulators",
       "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
     }
   ]

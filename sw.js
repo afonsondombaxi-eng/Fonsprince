@@ -23,37 +23,19 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  if (request.mode === "navigate") {
-    event.respondWith(fetch(request).catch(() => caches.match("./index.html")));
-    return;
-  }
+  if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => {});
-          return response;
+    caches.match(event.request).then((cached) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return networkResponse;
         })
         .catch(() => cached);
+      return cached || fetchPromise;
     })
   );
-});
-
-/* Verificação em segundo plano (melhor esforço, só Chrome/Android com a app
-   instalada e uso frequente — a Apple não suporta isto em Safari/iOS). Como
-   o service worker não tem acesso aos dados da app (guardados no localStorage
-   da página, não visível aqui), mostra um lembrete genérico a convidar a
-   abrir a app, que então faz a verificação completa. */
-self.addEventListener("periodicsync", (event) => {
-  if (event.tag === "fonsprince-check-alerts") {
-    event.waitUntil(
-      self.registration.showNotification("Fonsprince One", {
-        body: "Pode haver contas a vencer ou orçamentos no limite — abra a app para ver.",
-        icon: "./icon-192.png",
-      })
-    );
-  }
 });
