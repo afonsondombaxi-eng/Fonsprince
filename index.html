@@ -1480,7 +1480,7 @@ function availableBalance(sub, transactions, asOfDate) {
     if (t.date > cutoff) continue;
     if (t.kind === "transferencia") {
       if (t.fromSubBalanceId === sub.id) total -= Number(t.amount);
-      if (t.toSubBalanceId === sub.id) total += Number(t.amount);
+      if (t.toSubBalanceId === sub.id) total += Number(t.toAmount != null ? t.toAmount : t.amount);
     } else if (t.subBalanceId === sub.id) {
       total += t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
     }
@@ -1971,6 +1971,15 @@ function toKz(amount, currency, rates) {
   if (currency === "Kz") return Number(amount);
   if (currency === "USD") return rates.usdRate ? Number(amount) * Number(rates.usdRate) : null;
   if (currency === "EUR") return rates.eurRate ? Number(amount) * Number(rates.eurRate) : null;
+  return null;
+}
+function convertCurrency(amount, fromCurrency, toCurrency, rates) {
+  if (fromCurrency === toCurrency) return Number(amount);
+  const kzAmount = toKz(amount, fromCurrency, rates);
+  if (kzAmount === null) return null;
+  if (toCurrency === "Kz") return kzAmount;
+  if (toCurrency === "USD") return rates.usdRate ? kzAmount / Number(rates.usdRate) : null;
+  if (toCurrency === "EUR") return rates.eurRate ? kzAmount / Number(rates.eurRate) : null;
   return null;
 }
 function rateAsOf(rateHistory, currentRates, asOfDate) {
@@ -7971,6 +7980,7 @@ function FinanceApp() {
     initial: editingTx && editingTx.kind === "transferencia" ? editingTx : null,
     accounts: accounts,
     transactions: transactions,
+    exchangeRates: exchangeRates,
     onClose: () => {
       setShowTransferModal(false);
       setEditingTx(null);
@@ -13963,6 +13973,7 @@ function TransferModal({
   initial,
   accounts,
   transactions,
+  exchangeRates,
   onClose,
   onSave
 }) {
@@ -13977,6 +13988,15 @@ function TransferModal({
   const [date, setDate] = useState(initial && initial.date || todayISO());
   const [description, setDescription] = useState(initial && initial.description || "");
   const recentPairs = isEditing ? [] : getRecentTransferPairs(transactions, accounts);
+  const differentCurrency = fromAccount && toAccount && fromAccount.currency !== toAccount.currency;
+  const [toAmount, setToAmount] = useState(initial && initial.toAmount != null ? String(initial.toAmount) : "");
+  const [toAmountTouched, setToAmountTouched] = useState(isEditing && differentCurrency);
+  const convertedPreview = differentCurrency && amount !== "" && Number(amount) > 0 ? convertCurrency(Number(amount), fromAccount.currency, toAccount.currency, exchangeRates) : null;
+  useEffect(() => {
+    if (!differentCurrency) return;
+    if (toAmountTouched) return;
+    if (convertedPreview !== null) setToAmount(String(Number(convertedPreview.toFixed(2))));
+  }, [convertedPreview, differentCurrency, toAmountTouched]);
   function applyPair(p) {
     setFromAccountId(p.fromAccountId);
     setFromSubId(p.fromSubBalanceId);
@@ -13987,15 +14007,17 @@ function TransferModal({
     setFromAccountId(id);
     const acc = accounts.find(a => a.id === id);
     setFromSubId(acc && acc.subBalances && acc.subBalances[0] ? acc.subBalances[0].id : "");
+    setToAmountTouched(false);
   }
   function handleToAccountChange(id) {
     setToAccountId(id);
     const acc = accounts.find(a => a.id === id);
     setToSubId(acc && acc.subBalances && acc.subBalances[0] ? acc.subBalances[0].id : "");
+    setToAmountTouched(false);
   }
   const sameSub = fromSubId && fromSubId === toSubId;
-  const differentCurrency = fromAccount && toAccount && fromAccount.currency !== toAccount.currency;
-  const canSave = fromSubId && toSubId && !sameSub && amount !== "" && Number(amount) > 0;
+  const effectiveToAmount = differentCurrency ? Number(toAmount) : Number(amount);
+  const canSave = fromSubId && toSubId && !sameSub && amount !== "" && Number(amount) > 0 && (!differentCurrency || toAmount !== "" && effectiveToAmount > 0);
   function handleSave() {
     onSave({
       kind: "transferencia",
@@ -14004,6 +14026,7 @@ function TransferModal({
       toAccountId,
       toSubBalanceId: toSubId,
       amount: Number(amount),
+      toAmount: effectiveToAmount,
       date,
       description
     });
@@ -14153,19 +14176,25 @@ function TransferModal({
       color: "var(--rust)",
       margin: 0
     }
-  }, "A origem e o destino não podem ser o mesmo saldo."), !sameSub && differentCurrency && React.createElement("p", {
+  }, "A origem e o destino não podem ser o mesmo saldo."), !sameSub && differentCurrency && convertedPreview === null && amount !== "" && React.createElement("p", {
     style: {
       fontSize: 12,
-      color: "var(--gold)",
+      color: "var(--rust)",
       margin: 0
     }
-  }, "As moedas são diferentes (", fromAccount.currency, " → ", toAccount.currency, "). O valor será debitado e creditado sem conversão automática."), React.createElement("div", {
+  }, "Sem taxa de câmbio ", fromAccount.currency === "Kz" ? toAccount.currency : fromAccount.currency, " definida — configure-a em Câmbio para poder converter automaticamente, ou indique o valor creditado manualmente abaixo."), !sameSub && differentCurrency && React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, "Moedas diferentes (", fromAccount.currency, " → ", toAccount.currency, ") — o valor creditado é convertido à taxa atual e pode ser ajustado abaixo."), React.createElement("div", {
     style: {
       display: "flex",
       gap: 10
     }
   }, React.createElement(Field, {
-    label: "Valor"
+    label: differentCurrency ? `Valor debitado (${fromAccount.currency})` : "Valor"
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -14179,7 +14208,18 @@ function TransferModal({
     style: inputStyle,
     value: date,
     onChange: e => setDate(e.target.value)
-  }))), React.createElement(Field, {
+  }))), differentCurrency && React.createElement(Field, {
+    label: `Valor creditado (${toAccount.currency})`
+  }, React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: toAmount,
+    onChange: e => {
+      setToAmount(e.target.value);
+      setToAmountTouched(true);
+    },
+    placeholder: "0.00"
+  })), React.createElement(Field, {
     label: "Descrição (opcional)"
   }, React.createElement("input", {
     style: inputStyle,
