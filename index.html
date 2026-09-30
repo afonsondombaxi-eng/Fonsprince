@@ -6548,7 +6548,7 @@ function Field({
 }
 const inputStyle = {
   padding: "9px 10px",
-  borderRadius: 7,
+  borderRadius: 8,
   border: "1px solid var(--line)",
   fontFamily: "Inter, sans-serif",
   fontSize: 14,
@@ -6610,7 +6610,7 @@ function Toast({
       background: palette.bg,
       color: "#fff",
       padding: "12px 20px",
-      borderRadius: 24,
+      borderRadius: 20,
       boxShadow: "0 10px 30px rgba(16,24,40,0.28)",
       display: "flex",
       alignItems: "center",
@@ -6703,7 +6703,7 @@ function Modal({
     style: {
       width: 36,
       height: 4,
-      borderRadius: 2,
+      borderRadius: 6,
       background: "var(--line)",
       margin: sheet ? "2px auto 12px" : "0 auto 14px",
       display: sheet ? "block" : "none"
@@ -7807,7 +7807,7 @@ function ProgressBar({
   return /*#__PURE__*/React.createElement("div", {
     style: {
       height: 7,
-      borderRadius: 4,
+      borderRadius: 6,
       background: "var(--paper)",
       overflow: "hidden"
     }
@@ -7816,7 +7816,7 @@ function ProgressBar({
       height: "100%",
       width: `${Math.min(pct, 100)}%`,
       background: colors[tone],
-      borderRadius: 4,
+      borderRadius: 6,
       transition: "width 0.3s"
     }
   }));
@@ -8181,7 +8181,7 @@ function SplitBar({
   if (total <= 0) return /*#__PURE__*/React.createElement("div", {
     style: {
       height: 8,
-      borderRadius: 4,
+      borderRadius: 6,
       background: "var(--paper)"
     }
   });
@@ -8189,7 +8189,7 @@ function SplitBar({
     style: {
       display: "flex",
       height: 8,
-      borderRadius: 4,
+      borderRadius: 6,
       overflow: "hidden"
     }
   }, SUB_TYPES.map(t => breakdown[t] > 0 ? /*#__PURE__*/React.createElement("div", {
@@ -9505,7 +9505,7 @@ function FinanceApp() {
       "--line": darkMode ? "#2A3550" : "#E1E5EE",
       "--emerald": darkMode ? "#2FBE73" : "#12A150",
       "--rust": darkMode ? "#E5595C" : "#D13438",
-      "--gold": darkMode ? "#E0A855" : "#B8823C",
+      "--gold": darkMode ? "#E0A855" : "#96682A",
       "--sidebar": darkMode ? "#0A0F1E" : "#0F1E42",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
@@ -10169,7 +10169,7 @@ function FinanceApp() {
         alignItems: "center",
         gap: 7,
         padding: "9px 14px",
-        borderRadius: 9,
+        borderRadius: 8,
         border: "1px solid var(--gold)",
         background: "var(--gold)",
         color: "#fff",
@@ -11524,7 +11524,7 @@ function CockpitDecisionRow({
       textAlign: "left",
       background: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.07)",
       border: "1px solid rgba(255,255,255,0.10)",
-      borderRadius: 12,
+      borderRadius: 14,
       padding: "10px 12px",
       cursor: "pointer",
       fontFamily: "Inter, sans-serif",
@@ -11665,7 +11665,7 @@ function FirstStepsCard({
       flex: "0 0 150px",
       textAlign: "left",
       padding: "14px 14px 16px",
-      borderRadius: 12,
+      borderRadius: 14,
       border: "1px solid var(--line)",
       background: "var(--card)",
       cursor: s.done ? "default" : "pointer"
@@ -11748,7 +11748,7 @@ function QuickActionsRow({
       alignItems: "center",
       gap: 10,
       padding: "13px 14px",
-      borderRadius: 12,
+      borderRadius: 14,
       border: "1px solid var(--line)",
       background: "var(--card)",
       cursor: "pointer",
@@ -11968,7 +11968,7 @@ function MonthlyBalanceCard({
     style: {
       width: 20,
       height: receitaHeight,
-      borderRadius: 10,
+      borderRadius: 8,
       background: "var(--emerald)"
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -11976,7 +11976,7 @@ function MonthlyBalanceCard({
     style: {
       width: 20,
       height: despesaHeight,
-      borderRadius: 10,
+      borderRadius: 8,
       background: "var(--rust)"
     }
   })), /*#__PURE__*/React.createElement("div", {
@@ -12096,7 +12096,7 @@ function CockpitCard({
     style: {
       position: "relative",
       overflow: "hidden",
-      borderRadius: 16,
+      borderRadius: 14,
       marginBottom: 18,
       background: "linear-gradient(135deg, #101E40 0%, #1B2F5C 55%, #17284D 100%)",
       boxShadow: "0 12px 30px rgba(10,20,45,0.28)",
@@ -12382,7 +12382,7 @@ function ChartsPage({
     style: {
       display: "inline-flex",
       background: "var(--paper)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 4,
       gap: 2,
       marginBottom: 18,
@@ -12443,7 +12443,7 @@ function ChartsPage({
         alignItems: "center",
         gap: 6,
         padding: "7px 12px",
-        borderRadius: 7,
+        borderRadius: 8,
         border: "none",
         cursor: "pointer",
         fontSize: 13,
@@ -12573,7 +12573,7 @@ function ChartsPage({
     const donutData = SUB_TYPES.filter(t => breakdown[t] > 0).map(t => ({
       name: t === "À ordem" ? "Liquidez Imediata" : t === "Poupança" ? "Baixo Risco" : "Médio/Alto Risco",
       value: breakdown[t],
-      color: t === "À ordem" ? "#16274D" : t === "Poupança" ? "#12A150" : "#B8823C"
+      color: t === "À ordem" ? "#3E7CB1" : t === "Poupança" ? "#12A150" : "#B8823C"
     }));
     const profile = portfolioRiskProfile(breakdown);
     const prevVal = balancesByCurrencyPrev[cur] || 0;
@@ -13161,7 +13161,7 @@ function Overview({
     style: {
       display: "inline-flex",
       background: "var(--paper)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 4,
       gap: 2,
       marginBottom: 18,
@@ -13202,7 +13202,7 @@ function Overview({
         alignItems: "center",
         gap: 6,
         padding: "7px 12px",
-        borderRadius: 7,
+        borderRadius: 8,
         border: "none",
         cursor: "pointer",
         fontSize: 13,
@@ -13346,7 +13346,7 @@ function Overview({
     style: {
       display: "inline-flex",
       background: "var(--paper)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 4,
       gap: 2,
       marginBottom: 18,
@@ -13391,7 +13391,7 @@ function Overview({
         alignItems: "center",
         gap: 6,
         padding: "7px 12px",
-        borderRadius: 7,
+        borderRadius: 8,
         border: "none",
         cursor: "pointer",
         fontSize: 13,
@@ -13765,7 +13765,7 @@ function AccountCard({
   return /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 12,
+      borderRadius: 14,
       padding: 20,
       width: "100%",
       maxWidth: 380,
@@ -14710,7 +14710,7 @@ function AccountRow({
       textAlign: "left",
       padding: "13px 14px",
       border: "1px solid var(--line)",
-      borderRadius: 10,
+      borderRadius: 8,
       background: "var(--card)",
       cursor: "pointer",
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -15525,7 +15525,7 @@ function AccountModal({
     key: sb.id,
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 9,
+      borderRadius: 8,
       padding: 12,
       position: "relative"
     }
@@ -15568,6 +15568,7 @@ function AccountModal({
     label: translate(lang, "accounts", "field_opening_balance")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "7px 8px",
@@ -15601,6 +15602,7 @@ function AccountModal({
     label: translate(lang, "accounts", "field_interest_rate")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "7px 8px",
@@ -16250,7 +16252,7 @@ function TransactionsTab({
     style: {
       display: "inline-flex",
       background: "var(--paper)",
-      borderRadius: 9,
+      borderRadius: 8,
       padding: 3,
       gap: 2
     }
@@ -16272,7 +16274,7 @@ function TransactionsTab({
         alignItems: "center",
         gap: 6,
         padding: "7px 13px",
-        borderRadius: 7,
+        borderRadius: 8,
         border: "none",
         cursor: "pointer",
         fontSize: 13,
@@ -17060,7 +17062,7 @@ function TxModal({
     style: {
       flex: 1,
       padding: "9px 0",
-      borderRadius: 7,
+      borderRadius: 8,
       border: `1.5px solid ${kind === k ? k === "receita" ? "var(--emerald)" : "var(--rust)" : "var(--line)"}`,
       background: kind === k ? k === "receita" ? "color-mix(in srgb, var(--emerald) 16%, var(--card))" : "color-mix(in srgb, var(--rust) 16%, var(--card))" : "var(--card)",
       color: kind === k ? k === "receita" ? "var(--emerald)" : "var(--rust)" : "var(--slate)",
@@ -17126,6 +17128,7 @@ function TxModal({
     label: translate(lang, "transactions", "field_amount")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value),
@@ -17309,7 +17312,7 @@ function TransferModal({
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 9,
+      borderRadius: 8,
       padding: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -17358,7 +17361,7 @@ function TransferModal({
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 9,
+      borderRadius: 8,
       padding: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -17420,6 +17423,7 @@ function TransferModal({
     label: differentCurrency ? `${translate(lang, "transactions", "debited_value_label")} (${fromAccount.currency})` : translate(lang, "transactions", "value_label")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value),
@@ -17435,6 +17439,7 @@ function TransferModal({
     label: `${translate(lang, "transactions", "credited_value_label")} (${toAccount.currency})`
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: toAmount,
     onChange: e => {
@@ -17562,6 +17567,7 @@ function ExchangeTab({
     label: translate(lang, "exchange", "field_usd")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: usdRate,
     onChange: e => setUsdRate(e.target.value),
@@ -17570,6 +17576,7 @@ function ExchangeTab({
     label: translate(lang, "exchange", "field_eur")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: eurRate,
     onChange: e => setEurRate(e.target.value),
@@ -17578,6 +17585,7 @@ function ExchangeTab({
     label: translate(lang, "exchange", "field_zar")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: zarRate,
     onChange: e => setZarRate(e.target.value),
@@ -17586,6 +17594,7 @@ function ExchangeTab({
     label: translate(lang, "exchange", "field_gbp")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: gbpRate,
     onChange: e => setGbpRate(e.target.value),
@@ -17733,7 +17742,7 @@ function RecurringRow({
       style: {
         position: "relative",
         overflow: "hidden",
-        borderRadius: 9
+        borderRadius: 8
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -17852,7 +17861,7 @@ function RecurringRow({
         justifyContent: "space-between",
         alignItems: "center",
         border: "1px solid var(--line)",
-        borderRadius: 9,
+        borderRadius: 8,
         padding: "10px 14px",
         gap: 10,
         background: "var(--card)",
@@ -17923,7 +17932,7 @@ function RecurringRow({
       justifyContent: "space-between",
       alignItems: "center",
       border: "1px solid var(--line)",
-      borderRadius: 9,
+      borderRadius: 8,
       padding: "10px 14px",
       gap: 10,
       flexWrap: "wrap"
@@ -18241,7 +18250,7 @@ function PlanningTab({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 14
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -18273,7 +18282,7 @@ function PlanningTab({
   }, translate(lang, "planning", "savings_rate_desc"))), /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 14
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -18305,7 +18314,7 @@ function PlanningTab({
   }, translate(lang, "planning", "emergency_fund_desc"))), /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 14
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -18365,7 +18374,7 @@ function PlanningTab({
       key: sub.id,
       style: {
         border: "1px solid var(--line)",
-        borderRadius: 9,
+        borderRadius: 8,
         padding: "10px 14px"
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -18457,7 +18466,7 @@ function AlertsTab({
       gap: 10,
       border: `1px solid var(--${a.severity === "slate" ? "line" : a.severity})`,
       background: a.severity === "rust" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : a.severity === "gold" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
-      borderRadius: 9,
+      borderRadius: 8,
       padding: "12px 14px"
     }
   }, /*#__PURE__*/React.createElement(IconBell, {
@@ -18606,6 +18615,7 @@ function BondModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: valorInvestido,
     onChange: e => setValorInvestido(e.target.value)
@@ -18616,6 +18626,7 @@ function BondModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: valorNominal,
     onChange: e => setValorNominal(e.target.value)
@@ -18631,6 +18642,7 @@ function BondModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.01",
     style: inputStyle,
     value: taxaCupao,
@@ -18642,6 +18654,7 @@ function BondModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: periodicidade,
     onChange: e => setPeriodicidade(e.target.value)
@@ -18649,6 +18662,7 @@ function BondModal({
     label: "Yield na compra (%, opcional)"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.01",
     style: inputStyle,
     value: yieldCompra,
@@ -18766,6 +18780,7 @@ function BondCard({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "4px 6px",
@@ -19038,6 +19053,7 @@ function EquityModal({
     label: "Quantidade"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.0001",
     style: inputStyle,
     value: quantidade,
@@ -19054,6 +19070,7 @@ function EquityModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: precoMedio,
     onChange: e => setPrecoMedio(e.target.value)
@@ -19064,6 +19081,7 @@ function EquityModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: precoAtual,
     onChange: e => setPrecoAtual(e.target.value)
@@ -19188,6 +19206,7 @@ function EquityCard({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "4px 6px",
@@ -19301,6 +19320,7 @@ function EquityCard({
     }
   }, "Valor"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "5px 7px",
@@ -19361,6 +19381,7 @@ function EquityCard({
     onChange: e => setEditDivDate(e.target.value)
   }), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "4px 6px",
@@ -19624,6 +19645,7 @@ function FundModal({
     label: "Unidades adquiridas (UP)"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.0001",
     style: inputStyle,
     value: unidades,
@@ -19640,6 +19662,7 @@ function FundModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.0001",
     style: inputStyle,
     value: valorUpCompra,
@@ -19651,6 +19674,7 @@ function FundModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.0001",
     style: inputStyle,
     value: valorUpAtual,
@@ -19766,6 +19790,7 @@ function FundCard({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     step: "0.0001",
     style: {
       ...inputStyle,
@@ -19878,6 +19903,7 @@ function FundCard({
     }
   }, "Valor"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       padding: "5px 7px",
@@ -20089,6 +20115,7 @@ function EventModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: valorEsperado,
     onChange: e => setValorEsperado(e.target.value)
@@ -20153,7 +20180,7 @@ function CalendarTab({
       alignItems: "center",
       fontSize: 13,
       padding: "8px 10px",
-      borderRadius: 7,
+      borderRadius: 8,
       background: "var(--paper)"
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
@@ -20201,7 +20228,7 @@ function CalendarTab({
       alignItems: "center",
       fontSize: 13,
       padding: "8px 10px",
-      borderRadius: 7,
+      borderRadius: 8,
       background: "var(--paper)"
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
@@ -20352,6 +20379,7 @@ function IndicatorsTab({
     }
   }, "Taxa livre de risco (%)"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       width: 80,
@@ -20366,6 +20394,7 @@ function IndicatorsTab({
     }
   }, "Inflação (%)"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       width: 80,
@@ -20385,6 +20414,7 @@ function IndicatorsTab({
     }
   }, "Imp. Cupões (%)"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       width: 80,
@@ -20399,6 +20429,7 @@ function IndicatorsTab({
     }
   }, "Imp. Dividendos (%)"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       width: 80,
@@ -20413,6 +20444,7 @@ function IndicatorsTab({
     }
   }, "Imp. Mais-valias (%)"), /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: {
       ...inputStyle,
       width: 80,
@@ -20661,7 +20693,7 @@ function ExportsTab({
     style: {
       width: 38,
       height: 38,
-      borderRadius: 9,
+      borderRadius: 8,
       background: "var(--paper)",
       display: "flex",
       alignItems: "center",
@@ -20990,6 +21022,7 @@ function SimNumberField({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     value: value,
     onChange: e => onChange(e.target.value),
     placeholder: placeholder,
@@ -21863,7 +21896,7 @@ function SimListRow({
       textAlign: "left",
       padding: "13px 14px",
       border: "1px solid var(--line)",
-      borderRadius: 10,
+      borderRadius: 8,
       background: "var(--card)",
       cursor: "pointer",
       fontFamily: "Inter, sans-serif",
@@ -22074,7 +22107,7 @@ function CloudSyncCard({
       style: {
         background: "var(--paper)",
         padding: "1px 5px",
-        borderRadius: 4,
+        borderRadius: 6,
         margin: "0 3px"
       }
     }, "FIREBASE_CONFIG"), "no ficheiro pela configuração da sua app. Sem isso, os dados ficam só neste dispositivo."));
@@ -23123,7 +23156,7 @@ function BudgetTab({
     style: {
       position: "relative",
       height: 8,
-      borderRadius: 4,
+      borderRadius: 6,
       background: "rgba(255,255,255,0.18)",
       overflow: "visible",
       marginBottom: 10
@@ -23133,7 +23166,7 @@ function BudgetTab({
       position: "absolute",
       inset: 0,
       width: `${Math.min(overallPct, 100)}%`,
-      borderRadius: 4,
+      borderRadius: 6,
       background: overallPct > 100 ? "#FF8A80" : "#8EF0C0",
       transition: "width 0.3s"
     }
@@ -23157,7 +23190,7 @@ function BudgetTab({
       display: "flex",
       gap: 2,
       background: "var(--paper)",
-      borderRadius: 10,
+      borderRadius: 8,
       padding: 3,
       overflowX: isMobile ? "auto" : "visible",
       WebkitOverflowScrolling: "touch"
@@ -23174,7 +23207,7 @@ function BudgetTab({
         justifyContent: "center",
         gap: 6,
         padding: "9px 14px",
-        borderRadius: 7,
+        borderRadius: 8,
         border: "none",
         cursor: "pointer",
         fontSize: 13,
@@ -23284,6 +23317,7 @@ function BudgetTab({
       }
     }, cat), /*#__PURE__*/React.createElement("input", {
       type: "number",
+      inputMode: "decimal",
       placeholder: translate(lang, "budget", "limit_placeholder"),
       value: limit,
       onChange: e => onSetLimit(cat, e.target.value),
@@ -23497,6 +23531,7 @@ function BudgetTab({
     label: translate(lang, "budget", "field_monthly_amount")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: newIncomeAmount,
     onChange: e => setNewIncomeAmount(e.target.value),
@@ -23738,6 +23773,7 @@ function BudgetTab({
         }
       }, member), /*#__PURE__*/React.createElement("input", {
         type: "number",
+        inputMode: "decimal",
         placeholder: translate(lang, "budget", "limit_placeholder"),
         value: limit,
         onChange: e => onSetMemberLimit(member, e.target.value),
@@ -24101,7 +24137,7 @@ function DebtPayoffSimulator({
       justifyContent: "center",
       gap: 6,
       padding: "9px 0",
-      borderRadius: 7,
+      borderRadius: 8,
       border: `1.5px solid ${strategy === "avalanche" ? "var(--ink)" : "var(--line)"}`,
       background: strategy === "avalanche" ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: "var(--ink)",
@@ -24120,7 +24156,7 @@ function DebtPayoffSimulator({
       justifyContent: "center",
       gap: 6,
       padding: "9px 0",
-      borderRadius: 7,
+      borderRadius: 8,
       border: `1.5px solid ${strategy === "snowball" ? "var(--ink)" : "var(--line)"}`,
       background: strategy === "snowball" ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: "var(--ink)",
@@ -24134,6 +24170,7 @@ function DebtPayoffSimulator({
     label: translate(lang, "debts", "field_monthly_budget")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: budget,
     onChange: e => setBudget(e.target.value),
@@ -24299,7 +24336,7 @@ function DebtModal({
     style: {
       flex: 1,
       padding: "9px 0",
-      borderRadius: 7,
+      borderRadius: 8,
       border: `1.5px solid ${type === t ? t === "A pagar" ? "var(--rust)" : "var(--emerald)" : "var(--line)"}`,
       background: type === t ? t === "A pagar" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--emerald) 14%, var(--card))" : "var(--card)",
       color: type === t ? t === "A pagar" ? "var(--rust)" : "var(--emerald)" : "var(--slate)",
@@ -24331,6 +24368,7 @@ function DebtModal({
     label: translate(lang, "debts", "field_original_amount")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: originalAmount,
     onChange: e => setOriginalAmount(e.target.value),
@@ -24352,6 +24390,7 @@ function DebtModal({
     label: translate(lang, "debts", "field_interest_rate_optional")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: interestRate,
     onChange: e => setInterestRate(e.target.value),
@@ -24477,6 +24516,7 @@ function CreditCardModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: limit,
     onChange: e => setLimit(e.target.value),
@@ -24493,6 +24533,7 @@ function CreditCardModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     min: "1",
     max: "31",
     style: inputStyle,
@@ -24505,6 +24546,7 @@ function CreditCardModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     min: "1",
     max: "31",
     style: inputStyle,
@@ -24586,6 +24628,7 @@ function CardPurchaseModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: totalAmount,
     onChange: e => setTotalAmount(e.target.value),
@@ -24597,6 +24640,7 @@ function CardPurchaseModal({
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     min: "1",
     max: "48",
     style: inputStyle,
@@ -24703,6 +24747,7 @@ function CardPaymentModal({
     label: translate(lang, "cards", "field_amount_to_pay")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value)
@@ -25016,6 +25061,7 @@ function DebtPaymentModal({
     label: translate(lang, "debts", "field_amount")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value),
@@ -25131,7 +25177,7 @@ function RecurringModal({
     style: {
       flex: 1,
       padding: "9px 0",
-      borderRadius: 7,
+      borderRadius: 8,
       border: `1.5px solid ${isStaff === opt.key ? "var(--ink)" : "var(--line)"}`,
       background: isStaff === opt.key ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: isStaff === opt.key ? "var(--ink)" : "var(--slate)",
@@ -25178,6 +25224,7 @@ function RecurringModal({
     label: isStaff ? "Salário mensal" : "Valor"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value),
@@ -25186,6 +25233,7 @@ function RecurringModal({
     label: "Dia de pagamento (1-31)"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     min: "1",
     max: "31",
     style: inputStyle,
@@ -25308,7 +25356,7 @@ function CategoryManagerModal({
       alignItems: "center",
       padding: "7px 10px",
       border: "1px solid var(--line)",
-      borderRadius: 7
+      borderRadius: 8
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -25453,7 +25501,7 @@ function MembersManagerModal({
       alignItems: "center",
       padding: "7px 10px",
       border: "1px solid var(--line)",
-      borderRadius: 7,
+      borderRadius: 8,
       gap: 8
     }
   }, editingMember === m ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
@@ -25710,6 +25758,7 @@ function ShortcutFormModal({
     label: "Valor"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value),
@@ -25776,6 +25825,7 @@ function GoalModal({
     label: translate(lang, "goals", "field_target_value")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: target,
     onChange: e => setTarget(e.target.value),
@@ -25822,6 +25872,7 @@ function ContributeModal({
     label: translate(lang, "goals", "field_amount_to_add")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    inputMode: "decimal",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value),
