@@ -8324,7 +8324,7 @@ function FinanceApp() {
   function handlePtrTouchMove(e) {
     if (!ptrDragging.current || ptrRefreshing) return;
     const dy = e.touches[0].clientY - ptrTouchStartY.current;
-    if (ptrAxisLocked.current === null && Math.abs(dy) > 6) {
+    if (ptrAxisLocked.current === null && Math.abs(dy) > 12) {
       ptrAxisLocked.current = dy > 0 && window.scrollY <= 2 ? "pull" : "scroll";
     }
     if (ptrAxisLocked.current !== "pull") return;
@@ -9970,10 +9970,16 @@ function FinanceApp() {
   }, "AN"))), isMobile && (ptrPull > 0 || ptrRefreshing) && /*#__PURE__*/React.createElement("div", {
     className: `ptr-indicator${ptrRefreshing ? " spinning" : ""}`,
     style: {
+      position: "absolute",
+      top: "calc(52px + env(safe-area-inset-top))",
+      left: 0,
+      right: 0,
       height: ptrRefreshing ? 44 : ptrPull,
       overflow: "hidden",
       transition: ptrDragging.current ? "none" : "height 0.2s ease",
-      background: "var(--paper)"
+      background: "var(--paper)",
+      zIndex: 15,
+      pointerEvents: "none"
     }
   }, /*#__PURE__*/React.createElement(IconRepeat, {
     size: 18,
