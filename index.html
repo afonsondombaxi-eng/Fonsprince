@@ -6045,7 +6045,7 @@ function NavSection({
   }, !collapsed ? /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "0 12px 6px",
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: 700,
       letterSpacing: 0.7,
       textTransform: "uppercase",
@@ -6202,7 +6202,7 @@ function StatCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       fontWeight: 500,
       letterSpacing: 0.5,
@@ -6217,7 +6217,7 @@ function StatCard({
     title: fullValue,
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: big ? 27 : 23,
+      fontSize: big ? 26 : 22,
       fontWeight: 700,
       color: colors[tone],
       marginTop: 9,
@@ -6263,7 +6263,7 @@ function TrendBadge({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color,
       fontWeight: 700
     }
@@ -6471,7 +6471,7 @@ function MultiCurrencyCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       fontWeight: 500,
       letterSpacing: 0.5,
@@ -6510,7 +6510,7 @@ function MultiCurrencyCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       fontWeight: 600
     }
@@ -6540,7 +6540,7 @@ function Field({
       display: "flex",
       flexDirection: "column",
       gap: 5,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       fontWeight: 600
     }
@@ -6615,7 +6615,7 @@ function Toast({
       display: "flex",
       alignItems: "center",
       gap: 8,
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600,
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       zIndex: 200,
@@ -6718,7 +6718,7 @@ function Modal({
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: sheet ? 17 : 19,
+      fontSize: sheet ? 17 : 20,
       fontWeight: 700,
       color: "var(--ink)",
       margin: 0
@@ -6729,16 +6729,18 @@ function Modal({
     "aria-label": "Fechar",
     style: {
       background: sheet ? "var(--paper)" : "none",
-      borderRadius: sheet ? "50%" : 0,
-      width: sheet ? 30 : "auto",
-      height: sheet ? 30 : "auto",
-      display: sheet ? "flex" : "inline-block",
+      borderRadius: "50%",
+      width: 36,
+      height: 36,
+      display: "flex",
       alignItems: "center",
       justifyContent: "center",
       border: "none",
       cursor: "pointer",
       color: "var(--slate)",
-      padding: sheet ? 0 : 4
+      padding: 0,
+      margin: -6,
+      flexShrink: 0
     }
   }, /*#__PURE__*/React.createElement(IconX, {
     size: sheet ? 16 : 18
@@ -6811,7 +6813,7 @@ function OnboardingModal({
     }
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, s.title), /*#__PURE__*/React.createElement("div", {
@@ -6828,7 +6830,7 @@ function OnboardingModal({
       background: "none",
       border: "none",
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       cursor: "pointer",
       textDecoration: "underline"
     }
@@ -7065,12 +7067,12 @@ function PinSetupModal({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, "Face ID / Touch ID"), biometricCredentialId && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--emerald)",
       fontWeight: 700,
       display: "inline-flex",
@@ -7081,25 +7083,25 @@ function PinSetupModal({
     size: 13
   }), " Ativado")), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
   }, "Usa o sensor biométrico deste aparelho para desbloquear a app. Fica guardado só neste aparelho — noutro terá de o ativar de novo."), bioError && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--rust)"
     }
   }, bioError), biometricCredentialId ? /*#__PURE__*/React.createElement(GhostButton, {
     onClick: onDisableBiometric,
     style: {
-      fontSize: 12.5
+      fontSize: 13
     }
   }, "Desativar") : /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: handleEnableBiometric,
     disabled: bioBusy,
     style: {
-      fontSize: 12.5
+      fontSize: 13
     }
   }, bioBusy ? "A configurar…" : "Ativar Face ID / Touch ID")), step === "manage" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -7302,7 +7304,7 @@ function LockScreen({
   }), " Desbloquear com Face ID / Touch ID")), bioFailed && /*#__PURE__*/React.createElement("div", {
     style: {
       color: "#E8A9A0",
-      fontSize: 12.5
+      fontSize: 13
     }
   }, "Não foi possível confirmar. Tente novamente ou use o PIN."), pin && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7336,7 +7338,7 @@ function LockScreen({
   }), error && /*#__PURE__*/React.createElement("div", {
     style: {
       color: "#E8A9A0",
-      fontSize: 12.5
+      fontSize: 13
     }
   }, "PIN incorreto."), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: handleSubmit,
@@ -7426,7 +7428,7 @@ function CloudAuthGate({
     }, "Confirme o seu email"), /*#__PURE__*/React.createElement("p", {
       style: {
         color: "rgba(255,255,255,0.55)",
-        fontSize: 12.5,
+        fontSize: 13,
         margin: "6px 0 0"
       }
     }, "Enviámos um link de confirmação para ", /*#__PURE__*/React.createElement("strong", {
@@ -7443,7 +7445,7 @@ function CloudAuthGate({
         background: "none",
         border: "none",
         color: "rgba(255,255,255,0.6)",
-        fontSize: 12.5,
+        fontSize: 13,
         cursor: "pointer",
         textDecoration: "underline",
         marginTop: 14
@@ -7497,7 +7499,7 @@ function CloudAuthGate({
   }, mode === "signup" ? "Crie a sua conta para continuar" : "Inicie sessão para continuar"), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "rgba(255,255,255,0.55)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "6px 0 0"
     }
   }, mode === "signup" ? "É necessária uma conta para usar o Fonsprince One e proteger os seus dados financeiros na nuvem." : "Introduza os dados da sua conta para aceder aos seus dados financeiros.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
@@ -7553,7 +7555,7 @@ function CloudAuthGate({
       display: "flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 11.5,
+      fontSize: 12,
       color: r.ok ? "#8FD9AE" : "rgba(255,255,255,0.5)"
     }
   }, r.ok ? /*#__PURE__*/React.createElement(IconCheck, {
@@ -7563,7 +7565,7 @@ function CloudAuthGate({
   }), r.label)))), cloudError && /*#__PURE__*/React.createElement("div", {
     style: {
       color: "#E8A9A0",
-      fontSize: 12.5
+      fontSize: 13
     }
   }, cloudError), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: handleSubmit,
@@ -7578,7 +7580,7 @@ function CloudAuthGate({
       background: "none",
       border: "none",
       color: "rgba(255,255,255,0.6)",
-      fontSize: 12.5,
+      fontSize: 13,
       cursor: "pointer",
       textDecoration: "underline",
       alignSelf: "center"
@@ -7643,7 +7645,7 @@ function VerifyEmailGate({
     }, "Conta validada com sucesso. Bem-vindo(a)!"), /*#__PURE__*/React.createElement("p", {
       style: {
         color: "rgba(255,255,255,0.55)",
-        fontSize: 12.5,
+        fontSize: 13,
         margin: "6px 0 0"
       }
     }, "Já pode começar a usar o Fonsprince One — explore, personalize, e aproveite ao máximo a sua experiência."), /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -7694,7 +7696,7 @@ function VerifyEmailGate({
   }, "Confirme o seu email"), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "rgba(255,255,255,0.55)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "6px 0 0"
     }
   }, "Enviámos um link de confirmação para ", /*#__PURE__*/React.createElement("strong", {
@@ -7715,7 +7717,7 @@ function VerifyEmailGate({
       background: "none",
       border: "none",
       color: "rgba(255,255,255,0.6)",
-      fontSize: 12.5,
+      fontSize: 13,
       cursor: "pointer",
       textDecoration: "underline",
       marginTop: 12
@@ -7748,7 +7750,7 @@ function PrimaryButton({
       borderRadius: 8,
       padding: "10px 16px",
       fontFamily: "Inter, sans-serif",
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600,
       cursor: disabled ? "not-allowed" : "pointer",
       display: "flex",
@@ -7871,7 +7873,7 @@ function LegendDot({
       display: "flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)"
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -8062,7 +8064,7 @@ function CategoryDonut({
       display: "flex",
       flexDirection: "column",
       gap: 6,
-      fontSize: 12.5
+      fontSize: 13
     }
   }, data.map((d, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -9836,7 +9838,7 @@ function FinanceApp() {
       background: "none",
       border: "none",
       color: "rgba(255,255,255,0.65)",
-      fontSize: 11.5,
+      fontSize: 12,
       cursor: "pointer",
       padding: "4px 0",
       width: sidebarCollapsed ? "auto" : "100%"
@@ -9854,7 +9856,7 @@ function FinanceApp() {
       background: "none",
       border: "none",
       color: "rgba(255,255,255,0.65)",
-      fontSize: 11.5,
+      fontSize: 12,
       cursor: "pointer",
       padding: "4px 0",
       width: sidebarCollapsed ? "auto" : "100%"
@@ -9863,7 +9865,7 @@ function FinanceApp() {
     size: 13
   }), " ", !sidebarCollapsed && "Importar dados"), importError && !sidebarCollapsed && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "#E8A9A0"
     }
   }, importError))), /*#__PURE__*/React.createElement("input", {
@@ -9903,7 +9905,7 @@ function FinanceApp() {
       display: "flex",
       alignItems: "center",
       gap: 7,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)"
     }
   }, !isMobile && /*#__PURE__*/React.createElement("span", null, "Fonsprince One"), !isMobile && /*#__PURE__*/React.createElement("span", {
@@ -9929,8 +9931,11 @@ function FinanceApp() {
       border: "none",
       cursor: "pointer",
       color: tab === "alerts" ? "var(--gold)" : "var(--slate)",
-      padding: 4,
-      display: "flex"
+      padding: 8,
+      margin: -8,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
     }
   }, /*#__PURE__*/React.createElement(IconBell, {
     size: 17
@@ -9942,8 +9947,11 @@ function FinanceApp() {
       border: "none",
       cursor: "pointer",
       color: "var(--slate)",
-      padding: 4,
-      display: "flex"
+      padding: 8,
+      margin: -8,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
     }
   }, darkMode ? /*#__PURE__*/React.createElement(IconSun, {
     size: 17
@@ -9953,15 +9961,15 @@ function FinanceApp() {
     onClick: () => setShowPinSetup(true),
     title: "Segurança",
     style: {
-      width: 28,
-      height: 28,
+      width: 36,
+      height: 36,
       borderRadius: "50%",
       background: "var(--gold)",
       color: "#fff",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 11.5,
+      fontSize: 12,
       fontWeight: 600,
       fontFamily: "Inter, sans-serif",
       flexShrink: 0,
@@ -10045,7 +10053,7 @@ function FinanceApp() {
   }, translate(lang, "title", tab))), !isMobile && /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5,
+      fontSize: 14,
       margin: "4px 0 0"
     }
   }, translate(lang, "subtitle", tab))), (tab === "overview" || tab === "transactions" || tab === "budget" || tab === "report" || tab === "alerts") && /*#__PURE__*/React.createElement("div", {
@@ -10063,7 +10071,7 @@ function FinanceApp() {
       borderRadius: 8,
       border: "1px solid var(--line)",
       background: "var(--card)",
-      fontSize: isMobile ? 12 : 13.5,
+      fontSize: isMobile ? 12 : 14,
       fontWeight: 600,
       color: "var(--ink)",
       cursor: "pointer",
@@ -10715,7 +10723,7 @@ function FinanceApp() {
     onClose: () => setPendingImport(null)
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       color: "var(--slate)"
     }
   }, "Isto vai substituir todos os dados atuais neste dispositivo (contas, movimentos, orçamento, dívidas, etc.) pelos dados do ficheiro importado. Esta ação não pode ser desfeita."), /*#__PURE__*/React.createElement("div", {
@@ -10831,7 +10839,7 @@ function FinanceApp() {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: 600
     }
   }, t.label))), /*#__PURE__*/React.createElement("button", {
@@ -10855,7 +10863,7 @@ function FinanceApp() {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: 600
     }
   }, "Mais"))), isMobile && showFabMenu && /*#__PURE__*/React.createElement("div", {
@@ -10961,7 +10969,7 @@ function FinanceApp() {
     }
   })), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       fontWeight: 700,
       color: "#fff",
       background: "rgba(8,13,28,0.82)",
@@ -11038,7 +11046,7 @@ function FinanceApp() {
         }
       })), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 10.5,
+          fontSize: 11,
           fontWeight: 600,
           color: active ? "var(--gold)" : "var(--ink)",
           textAlign: "center",
@@ -11249,7 +11257,7 @@ function FinanceApp() {
       }
     })), "Importar dados")), importError && /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--rust)",
         marginTop: 8
       }
@@ -11745,7 +11753,7 @@ function QuickActionsRow({
       background: "var(--card)",
       cursor: "pointer",
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600,
       color: "var(--ink)",
       textAlign: "left",
@@ -11850,7 +11858,7 @@ function MonthlySavingsCard({
     }
   }, positive ? translate(lang, "overview", "congrats") : translate(lang, "overview", "budget_attention")), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       color: "var(--ink)",
       marginBottom: 4
     }
@@ -11860,12 +11868,12 @@ function MonthlySavingsCard({
     }
   }, fmt(Math.abs(saved))), "."), totalReceitas > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       color: "var(--ink)"
     }
   }, positive ? translate(lang, "overview", "saved_prefix") : translate(lang, "overview", "spent_prefix"), /*#__PURE__*/React.createElement("strong", null, Math.abs(pct).toFixed(2), "%"), " ", positive ? translate(lang, "overview", "of_earnings") : translate(lang, "overview", "more_than_earned")), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       marginTop: 10,
       marginBottom: 0
@@ -11891,7 +11899,7 @@ function SaldoAtualCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       fontWeight: 600
     }
@@ -11985,7 +11993,7 @@ function MonthlyBalanceCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 14.5,
+      fontSize: 15,
       fontWeight: 600
     }
   }, translate(lang, "overview", "income")), /*#__PURE__*/React.createElement("span", {
@@ -12004,7 +12012,7 @@ function MonthlyBalanceCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 14.5,
+      fontSize: 15,
       fontWeight: 600
     }
   }, translate(lang, "overview", "expenses")), /*#__PURE__*/React.createElement("span", {
@@ -12028,7 +12036,7 @@ function MonthlyBalanceCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 14.5,
+      fontSize: 15,
       fontWeight: 600
     }
   }, translate(lang, "overview", "balance")), /*#__PURE__*/React.createElement("span", {
@@ -12150,7 +12158,7 @@ function CockpitCard({
     }
   }, greeting, userName ? `, ${userName}` : ""), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "rgba(255,255,255,0.55)",
       marginTop: 2
     }
@@ -12167,7 +12175,7 @@ function CockpitCard({
     color: scoreColor
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       fontWeight: 700,
       color: scoreColor,
       textTransform: "uppercase",
@@ -12179,7 +12187,7 @@ function CockpitCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "rgba(255,255,255,0.5)",
       fontWeight: 700,
       textTransform: "uppercase",
@@ -12215,7 +12223,7 @@ function CockpitCard({
   }))) : /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "rgba(255,255,255,0.55)",
       display: "flex",
       alignItems: "center",
@@ -12438,7 +12446,7 @@ function ChartsPage({
         borderRadius: 7,
         border: "none",
         cursor: "pointer",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 600,
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         background: isActive ? "var(--card)" : "transparent",
@@ -12459,7 +12467,7 @@ function ChartsPage({
   }, chartsTab === "balance" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 14px"
     }
   }, "Últimos 12 meses, convertido para Kz segundo as taxas de câmbio definidas."), /*#__PURE__*/React.createElement(ConsolidatedTrendChart, {
@@ -12474,7 +12482,7 @@ function ChartsPage({
   }, /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: 0
     }
   }, "Últimos 6 meses."), /*#__PURE__*/React.createElement("div", {
@@ -12517,7 +12525,7 @@ function ChartsPage({
       borderRadius: 999,
       border: "none",
       cursor: "pointer",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       background: freqRange === r.id ? "var(--gold)" : "transparent",
@@ -12527,7 +12535,7 @@ function ChartsPage({
   }, r.label))), frequencyData.total === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, "Ainda sem despesas neste período.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FrequencyAreaChart, {
     points: frequencyData.points
@@ -12552,7 +12560,7 @@ function ChartsPage({
   }, fmt(frequencyData.total))))), chartsTab === "distribution" && (Object.keys(splitByCurrency).length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, "Sem contas ainda.") : /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12589,7 +12597,7 @@ function ChartsPage({
         padding: "9px 12px",
         borderRadius: 8,
         background: "var(--paper)",
-        fontSize: 12.5,
+        fontSize: 13,
         display: "flex",
         flexDirection: "column",
         gap: 2
@@ -12617,7 +12625,7 @@ function ChartsPage({
         marginTop: 12,
         borderTop: "1px solid var(--line)",
         paddingTop: 10,
-        fontSize: 12.5,
+        fontSize: 13,
         color: "var(--slate)",
         display: "flex",
         flexDirection: "column",
@@ -12668,7 +12676,7 @@ function ChartsPage({
       borderRadius: 999,
       border: "none",
       cursor: "pointer",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       background: categoryViewMode === r.id ? "var(--gold)" : "transparent",
@@ -12678,7 +12686,7 @@ function ChartsPage({
   }, r.label))), categoryViewMode === "category" ? Object.keys(spentByCategory).length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, "Ainda sem despesas registadas este mês.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12730,7 +12738,7 @@ function ChartsPage({
   }))) : accountChartData.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, "Ainda sem despesas registadas este mês.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12774,7 +12782,7 @@ function ChartsPage({
   }, fmt(a.value))))))), chartsTab === "members" && (memberTrend.members.length > 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 14px"
     }
   }, "Despesas por pessoa, últimos 6 meses — ajuda a perceber quem está a aumentar ou reduzir gastos."), /*#__PURE__*/React.createElement(MemberTrendChart, {
@@ -12783,17 +12791,17 @@ function ChartsPage({
   })) : /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, "Sem despesas com membro atribuído ainda.")), chartsTab === "family" && (familyBreakdown.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, "Sem despesas com membro atribuído ainda.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 14px"
     }
   }, "Despesas do mês, agrupadas pela etiqueta de membro que definiu em cada movimento."), /*#__PURE__*/React.createElement("div", {
@@ -12840,7 +12848,7 @@ function ChartsPage({
           borderRadius: "50%",
           background: rankColors[i],
           color: "#fff",
-          fontSize: 9.5,
+          fontSize: 11,
           fontWeight: 700,
           display: "inline-flex",
           alignItems: "center",
@@ -12887,7 +12895,7 @@ function ChartsPage({
   })()), onNavigateToMember && /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 11.5,
+      fontSize: 12,
       marginTop: 10
     }
   }, "Toque numa pessoa para ver as transações dela."), familyBreakdown.length > 1 && (() => {
@@ -12907,7 +12915,7 @@ function ChartsPage({
         display: "flex",
         flexDirection: "column",
         gap: 8,
-        fontSize: 12.5
+        fontSize: 13
       }
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
       style: {
@@ -13197,7 +13205,7 @@ function Overview({
         borderRadius: 7,
         border: "none",
         cursor: "pointer",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 600,
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         background: isActive ? "var(--card)" : "transparent",
@@ -13219,7 +13227,7 @@ function Overview({
     title: fmt(interestSummary.accruedTotal),
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
+      fontSize: 32,
       fontWeight: 700,
       color: "var(--gold)",
       fontVariantNumeric: "tabular-nums",
@@ -13230,7 +13238,7 @@ function Overview({
     format: fmtCompact
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       marginTop: 6
     }
@@ -13238,7 +13246,7 @@ function Overview({
     title: fmt(liquidKzNow),
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 30,
+      fontSize: 32,
       fontWeight: 700,
       color: "var(--ink)",
       fontVariantNumeric: "tabular-nums",
@@ -13249,7 +13257,7 @@ function Overview({
     format: fmtCompact
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       marginTop: 6
     }
@@ -13312,7 +13320,7 @@ function Overview({
       border: "none",
       cursor: "pointer",
       color: "var(--gold)",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       display: "flex",
       alignItems: "center",
@@ -13323,7 +13331,7 @@ function Overview({
   }))), categoryChartData.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, translate(lang, "overview", "no_expenses_month")) : /*#__PURE__*/React.createElement(CategoryDonut, {
     data: categoryChartData,
@@ -13386,7 +13394,7 @@ function Overview({
         borderRadius: 7,
         border: "none",
         cursor: "pointer",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 600,
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         background: isActive ? "var(--card)" : "transparent",
@@ -13407,12 +13415,12 @@ function Overview({
   }, summaryTab === "interest" && (interestSummary.rows.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, translate(lang, "overview", "no_interest_month")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 14px"
     }
   }, translate(lang, "overview", "accrued_estimate"), " ", /*#__PURE__*/React.createElement("strong", {
@@ -13455,7 +13463,7 @@ function Overview({
     }
   }, "— ", account.bank.replace(/—.*/, "").trim())), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)"
     }
   }, fmt(principal, account.currency), " a ", sub.interestRate, "% a.a.")), /*#__PURE__*/React.createElement("div", {
@@ -13476,12 +13484,12 @@ function Overview({
   }, translate(lang, "overview", "accrued")))))))), summaryTab === "debts" && (Object.keys(debtsByCurrency).length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, translate(lang, "overview", "no_debts")) : /*#__PURE__*/React.createElement(React.Fragment, null, overdueDebts.length > 0 && /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--rust)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 10px",
       fontWeight: 600
     }
@@ -13524,7 +13532,7 @@ function Overview({
   }, fmt(byType["A receber"], cur)))))))), summaryTab === "goals" && (goals.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, translate(lang, "overview", "no_goals")) : /*#__PURE__*/React.createElement("div", {
     style: {
@@ -13662,7 +13670,7 @@ function AccountCard({
     }, presentTypes.map(t => /*#__PURE__*/React.createElement("span", {
       key: t,
       style: {
-        fontSize: 10.5,
+        fontSize: 11,
         color: "var(--slate)",
         background: "var(--paper)",
         padding: "2px 7px",
@@ -13712,7 +13720,7 @@ function AccountCard({
       }
     }, fmt(total, account.currency))), kzEquivalent !== null && /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)",
         marginTop: 2
       }
@@ -13735,7 +13743,7 @@ function AccountCard({
       style: {
         display: "flex",
         justifyContent: "space-between",
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)"
       }
     }, /*#__PURE__*/React.createElement("span", null, t), /*#__PURE__*/React.createElement("span", {
@@ -13826,7 +13834,7 @@ function AccountCard({
       display: "flex",
       alignItems: "center",
       gap: 7,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)"
     }
   }, /*#__PURE__*/React.createElement(IconUser, {
@@ -13858,7 +13866,7 @@ function AccountCard({
     }
   }, fmt(total, account.currency)), kzEquivalent !== null && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 3
     }
@@ -13916,7 +13924,7 @@ function AccountCard({
         borderRadius: "50%",
         background: "var(--paper)",
         color: "var(--slate)",
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: 700,
         display: "flex",
         alignItems: "center",
@@ -13925,13 +13933,13 @@ function AccountCard({
       }
     }, i + 1), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13,
         color: "var(--ink)",
         flex: 1
       }
     }, subTypeShortLabel[t]), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 700,
         color: distColors[t],
         fontFamily: "'IBM Plex Mono', monospace"
@@ -14021,7 +14029,7 @@ function AccountCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--ink)",
       display: "flex",
       alignItems: "center",
@@ -14218,7 +14226,7 @@ function AccountsTab({
       background: "none",
       border: "none",
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       cursor: "pointer",
       padding: "6px 4px",
@@ -14327,7 +14335,7 @@ function AccountsTab({
     }
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 14.5,
+      fontSize: 15,
       fontWeight: 600
     }
   }, translate(lang, "accounts", "no_accounts_title")), /*#__PURE__*/React.createElement("p", {
@@ -14385,7 +14393,7 @@ function AccountsTab({
       }
     }), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13,
         color: "var(--ink)"
       }
     }, /*#__PURE__*/React.createElement("b", null, riskLevel === "alto" ? translate(lang, "accounts", "high_concentration") : translate(lang, "accounts", "moderate_concentration")), " — ", topShare.toFixed(0), "% do dinheiro está concentrado no ", byBank[0][0], ". Considere distribuir por mais bancos.")), /*#__PURE__*/React.createElement("div", {
@@ -14501,7 +14509,7 @@ function AccountsTab({
         title: fmt(kz),
         style: {
           fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 12.5,
+          fontSize: 13,
           fontWeight: 700,
           cursor: "help",
           whiteSpace: "nowrap"
@@ -14720,7 +14728,7 @@ function AccountRow({
       alignItems: "center",
       justifyContent: "center",
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 10.5,
+      fontSize: 11,
       fontWeight: 700,
       flexShrink: 0
     }
@@ -14755,7 +14763,7 @@ function AccountRow({
     title: "Tem alertas pendentes"
   })), account.nickname && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 1
     }
@@ -14863,7 +14871,7 @@ function CascadeHeader({
     }
   }, title), subtitle && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)"
     }
   }, subtitle)), actions);
@@ -15004,7 +15012,7 @@ function AccountDetailPanel({
     }
   }, fmt(total, account.currency)), kzEquivalent !== null && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 3
     }
@@ -15095,7 +15103,7 @@ function AccountDetailPanel({
       }
     }, fmt(val, account.currency)), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10.5,
+        fontSize: 11,
         color: "var(--slate)"
       }
     }, p.toFixed(0), "%")), /*#__PURE__*/React.createElement(IconChevronRight, {
@@ -15171,7 +15179,7 @@ function AccountDetailPanel({
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13,
         color: "var(--ink)",
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -15179,7 +15187,7 @@ function AccountDetailPanel({
       }
     }, label), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10.5,
+        fontSize: 11,
         color: "var(--slate)"
       }
     }, new Date(t.date + "T00:00:00").toLocaleDateString("pt-PT")))), /*#__PURE__*/React.createElement("div", {
@@ -15229,7 +15237,7 @@ function SubBalanceDetailPanel({
     }
   }, fmt(principal, account.currency)), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 3
     }
@@ -15321,7 +15329,7 @@ function SubBalanceDetailPanel({
   }, "Movimentos"), subTx.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: 0
     }
   }, "Ainda sem movimentos neste saldo.") : /*#__PURE__*/React.createElement("div", {
@@ -15368,7 +15376,7 @@ function SubBalanceDetailPanel({
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13,
         color: "var(--ink)",
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -15376,7 +15384,7 @@ function SubBalanceDetailPanel({
       }
     }, label), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10.5,
+        fontSize: 11,
         color: "var(--slate)"
       }
     }, new Date(t.date + "T00:00:00").toLocaleDateString("pt-PT")))), /*#__PURE__*/React.createElement("div", {
@@ -15883,7 +15891,7 @@ function TimelineView({
     return /*#__PURE__*/React.createElement("p", {
       style: {
         color: "var(--slate)",
-        fontSize: 13.5,
+        fontSize: 14,
         padding: "20px 16px"
       }
     }, translate(lang, "transactions", "no_match_filters"));
@@ -16048,7 +16056,7 @@ function MobileTxCard({
     }
   }, t.date), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       color: "var(--ink)",
       marginTop: 2,
       overflow: "hidden",
@@ -16066,7 +16074,7 @@ function MobileTxCard({
     }
   }, t.description)), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 14.5,
+      fontSize: 15,
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace",
       color: amountColor,
@@ -16166,7 +16174,7 @@ function TransactionsTab({
       display: "flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       fontWeight: 600
     }
@@ -16184,7 +16192,7 @@ function TransactionsTab({
     }
   }, translate(lang, "transactions", "manage_shortcuts"))), shortcuts.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -16228,7 +16236,7 @@ function TransactionsTab({
   }, fmt(s.amount)))))), accounts.length === 0 && /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5,
+      fontSize: 14,
       marginTop: -10,
       marginBottom: 14
     }
@@ -16267,7 +16275,7 @@ function TransactionsTab({
         borderRadius: 7,
         border: "none",
         cursor: "pointer",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 600,
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         background: isActive ? "var(--card)" : "transparent",
@@ -16343,7 +16351,7 @@ function TransactionsTab({
       background: "none",
       border: "none",
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       cursor: "pointer",
       textDecoration: "underline"
     }
@@ -16381,13 +16389,13 @@ function TransactionsTab({
     style: {
       width: "100%",
       borderCollapse: "collapse",
-      fontSize: 13.5
+      fontSize: 14
     }
   }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
     style: {
       textAlign: "left",
       color: "var(--slate)",
-      fontSize: 11.5,
+      fontSize: 12,
       textTransform: "uppercase"
     }
   }, /*#__PURE__*/React.createElement("th", {
@@ -16701,7 +16709,7 @@ function CsvImportModal({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -16716,7 +16724,7 @@ function CsvImportModal({
     value: a.id
   }, a.bank)))), error && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--rust)"
     }
   }, error), /*#__PURE__*/React.createElement("input", {
@@ -16784,7 +16792,7 @@ function CsvImportModal({
     value: i
   }, h || `Coluna ${i + 1}`))))), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
@@ -16833,7 +16841,7 @@ function CsvImportModal({
       textAlign: "left",
       color: "var(--slate)",
       textTransform: "uppercase",
-      fontSize: 10.5
+      fontSize: 11
     }
   }, /*#__PURE__*/React.createElement("th", {
     style: {
@@ -17018,7 +17026,7 @@ function TxModal({
       background: "color-mix(in srgb, var(--gold) 16%, var(--card))",
       color: "var(--gold)",
       fontWeight: 600,
-      fontSize: 13.5,
+      fontSize: 14,
       cursor: scanning ? "default" : "pointer",
       fontFamily: "Inter, sans-serif"
     }
@@ -17057,7 +17065,7 @@ function TxModal({
       background: kind === k ? k === "receita" ? "color-mix(in srgb, var(--emerald) 16%, var(--card))" : "color-mix(in srgb, var(--rust) 16%, var(--card))" : "var(--card)",
       color: kind === k ? k === "receita" ? "var(--emerald)" : "var(--rust)" : "var(--slate)",
       fontWeight: 600,
-      fontSize: 13.5,
+      fontSize: 14,
       cursor: "pointer",
       textTransform: "capitalize"
     }
@@ -17100,7 +17108,7 @@ function TxModal({
     key: c
   }, c))), categorySuggested && !categoryTouched && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--gold)",
       marginTop: 4,
       display: "flex",
@@ -17291,7 +17299,7 @@ function TransferModal({
         borderRadius: 20,
         border: `1px solid ${active ? "var(--gold)" : "var(--line)"}`,
         background: active ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--paper)",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 600,
         color: "var(--ink)",
         cursor: "pointer",
@@ -17526,7 +17534,7 @@ function ExchangeTab({
   }, translate(lang, "exchange", "rates_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 0"
     }
   }, translate(lang, "exchange", "rates_desc"))), /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -17536,7 +17544,7 @@ function ExchangeTab({
     size: 14
   }), " ", loading ? translate(lang, "exchange", "updating") : translate(lang, "exchange", "update_automatically"))), error && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--rust)",
       background: "color-mix(in srgb, var(--rust) 14%, var(--card))",
       padding: "10px 12px",
@@ -17592,7 +17600,7 @@ function ExchangeTab({
       marginTop: 18,
       paddingTop: 14,
       borderTop: "1px solid var(--line)",
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)"
     }
   }, rates.updatedAt ? /*#__PURE__*/React.createElement("p", {
@@ -17633,7 +17641,7 @@ function ExchangeTab({
       display: "flex",
       flexDirection: "column",
       gap: 8,
-      fontSize: 13.5
+      fontSize: 14
     }
   }, usdRate && /*#__PURE__*/React.createElement("div", null, "1 USD = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(usdRate))), " · 100 USD = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(usdRate) * 100))), eurRate && /*#__PURE__*/React.createElement("div", null, "1 EUR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(eurRate))), " · 100 EUR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(eurRate) * 100))), zarRate && /*#__PURE__*/React.createElement("div", null, "1 ZAR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(zarRate))), " · 100 ZAR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(zarRate) * 100))), gbpRate && /*#__PURE__*/React.createElement("div", null, "1 GBP = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(gbpRate))), " · 100 GBP = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(gbpRate) * 100))))));
 }
@@ -17752,7 +17760,7 @@ function RecurringRow({
         justifyContent: "center",
         gap: 3,
         cursor: "pointer",
-        fontSize: 9.5,
+        fontSize: 11,
         fontWeight: 700,
         fontFamily: "Inter, sans-serif"
       }
@@ -17774,7 +17782,7 @@ function RecurringRow({
         justifyContent: "center",
         gap: 3,
         cursor: "pointer",
-        fontSize: 9.5,
+        fontSize: 11,
         fontWeight: 700,
         fontFamily: "Inter, sans-serif"
       }
@@ -17805,7 +17813,7 @@ function RecurringRow({
         justifyContent: "center",
         gap: 3,
         cursor: "pointer",
-        fontSize: 9.5,
+        fontSize: 11,
         fontWeight: 700,
         fontFamily: "Inter, sans-serif"
       }
@@ -17828,7 +17836,7 @@ function RecurringRow({
         justifyContent: "center",
         gap: 3,
         cursor: "pointer",
-        fontSize: 9.5,
+        fontSize: 11,
         fontWeight: 700,
         fontFamily: "Inter, sans-serif"
       }
@@ -17859,11 +17867,11 @@ function RecurringRow({
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontWeight: 600,
-        fontSize: 13.5
+        fontSize: 14
       }
     }, r.name), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)"
       }
     }, isStaffRow ? r.role : r.category, " · dia ", r.dueDay, " ", account && /*#__PURE__*/React.createElement(React.Fragment, null, "· ", account.bank.replace(/—.*/, "").trim()))), /*#__PURE__*/React.createElement("div", {
@@ -17877,11 +17885,11 @@ function RecurringRow({
       style: {
         fontFamily: "'IBM Plex Mono', monospace",
         fontWeight: 600,
-        fontSize: 13.5
+        fontSize: 14
       }
     }, fmt(r.amount)), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 10.5,
+        fontSize: 11,
         fontWeight: 600,
         color: tone
       }
@@ -17927,11 +17935,11 @@ function RecurringRow({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 600,
-      fontSize: 13.5
+      fontSize: 14
     }
   }, r.name), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)"
     }
   }, isStaffRow ? r.role : r.category, " · dia ", r.dueDay, " ", account && /*#__PURE__*/React.createElement(React.Fragment, null, "· ", account.bank.replace(/—.*/, "").trim()), isStaffRow && r.admissionDate && /*#__PURE__*/React.createElement(React.Fragment, null, " · desde ", r.admissionDate))), /*#__PURE__*/React.createElement("div", {
@@ -17944,11 +17952,11 @@ function RecurringRow({
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontWeight: 600,
-      fontSize: 13.5
+      fontSize: 14
     }
   }, fmt(r.amount)), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       fontWeight: 600,
       color: tone
     }
@@ -18143,7 +18151,7 @@ function PlanningTab({
     }
   }, scoreLabel), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "4px 0 12px"
     }
@@ -18159,7 +18167,7 @@ function PlanningTab({
     style: {
       display: "flex",
       justifyContent: "space-between",
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginBottom: 2
     }
@@ -18181,7 +18189,7 @@ function PlanningTab({
   }, translate(lang, "planning", "networth_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 14px"
     }
   }, translate(lang, "planning", "networth_desc_prefix"), fmt(netPerMonth), translate(lang, "planning", "networth_desc_suffix")), /*#__PURE__*/React.createElement("div", {
@@ -18221,7 +18229,7 @@ function PlanningTab({
   }, translate(lang, "planning", "health_indicators_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 14px"
     }
   }, translate(lang, "planning", "indicators_desc")), /*#__PURE__*/React.createElement("div", {
@@ -18258,7 +18266,7 @@ function PlanningTab({
     }
   }, savingsStatus.label), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 8
     }
@@ -18290,7 +18298,7 @@ function PlanningTab({
     }
   }, emergencyStatus.label), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 8
     }
@@ -18322,7 +18330,7 @@ function PlanningTab({
     }
   }, debtStatusHealth.label), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 8
     }
@@ -18335,7 +18343,7 @@ function PlanningTab({
   }, translate(lang, "planning", "invest_sim_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 14px"
     }
   }, translate(lang, "planning", "invest_sim_desc")), /*#__PURE__*/React.createElement("div", {
@@ -18375,7 +18383,7 @@ function PlanningTab({
         display: "flex",
         gap: 20,
         marginTop: 6,
-        fontSize: 12.5,
+        fontSize: 13,
         flexWrap: "wrap"
       }
     }, /*#__PURE__*/React.createElement("span", null, translate(lang, "planning", "today_short"), " ", /*#__PURE__*/React.createElement("strong", {
@@ -18460,7 +18468,7 @@ function AlertsTab({
     }
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       color: "var(--ink)"
     }
   }, a.text)))));
@@ -18656,7 +18664,7 @@ function BondModal({
     onChange: e => setNotas(e.target.value)
   })), isEditing && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
@@ -19268,7 +19276,7 @@ function EquityCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)",
       marginBottom: 2
     }
@@ -19287,7 +19295,7 @@ function EquityCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)",
       marginBottom: 2
     }
@@ -19845,7 +19853,7 @@ function FundCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)",
       marginBottom: 2
     }
@@ -19864,7 +19872,7 @@ function FundCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)",
       marginBottom: 2
     }
@@ -20316,7 +20324,7 @@ function IndicatorsTab({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, "Parâmetros de cálculo"), !editingRates && /*#__PURE__*/React.createElement("div", {
@@ -20339,7 +20347,7 @@ function IndicatorsTab({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)"
     }
   }, "Taxa livre de risco (%)"), /*#__PURE__*/React.createElement("input", {
@@ -20353,7 +20361,7 @@ function IndicatorsTab({
     onChange: e => setNewRisco(e.target.value)
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)"
     }
   }, "Inflação (%)"), /*#__PURE__*/React.createElement("input", {
@@ -20372,7 +20380,7 @@ function IndicatorsTab({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)"
     }
   }, "Imp. Cupões (%)"), /*#__PURE__*/React.createElement("input", {
@@ -20386,7 +20394,7 @@ function IndicatorsTab({
     onChange: e => setNewImpCupoes(e.target.value)
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)"
     }
   }, "Imp. Dividendos (%)"), /*#__PURE__*/React.createElement("input", {
@@ -20400,7 +20408,7 @@ function IndicatorsTab({
     onChange: e => setNewImpDiv(e.target.value)
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       color: "var(--slate)"
     }
   }, "Imp. Mais-valias (%)"), /*#__PURE__*/React.createElement("input", {
@@ -20439,7 +20447,7 @@ function IndicatorsTab({
     key: c.label
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginBottom: 4
     }
@@ -20529,7 +20537,7 @@ function InvestmentsTab({
       border: `1px solid ${subTab === p.id ? "var(--gold)" : "var(--line)"}`,
       background: subTab === p.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: subTab === p.id ? "var(--gold)" : "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       cursor: "pointer"
     }
@@ -20667,7 +20675,7 @@ function ExportsTab({
     }
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, item.title), /*#__PURE__*/React.createElement("div", {
@@ -20787,7 +20795,7 @@ function KPIsTab({
     style: {
       display: "flex",
       justifyContent: "space-between",
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginBottom: 2
     }
@@ -20955,7 +20963,7 @@ function SimResultRow({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)"
     }
   }, label), /*#__PURE__*/React.createElement("span", {
@@ -21046,7 +21054,7 @@ function SimIRT() {
     tone: "emerald"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21121,7 +21129,7 @@ function SimSalarioLiquido() {
     tone: "emerald"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21168,7 +21176,7 @@ function SimSubsidiosAnuais() {
     value: `${diasFerias} dias úteis`
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21226,7 +21234,7 @@ function SimHoraExtra() {
     tone: "emerald"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21278,7 +21286,7 @@ function SimRescisao() {
     tone: "emerald"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21523,7 +21531,7 @@ function SimRegraTres() {
   const x = va === 0 ? 0 : vb * vc / va;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -21716,7 +21724,7 @@ function SimEmprestimo() {
     tone: taxaEsforco <= 35 ? "emerald" : "rust"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21809,7 +21817,7 @@ function SimFinanciamento() {
     tone: taxaEsforco <= 35 ? "emerald" : "rust"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
@@ -21885,13 +21893,13 @@ function SimListRow({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600,
       color: "var(--ink)"
     }
   }, item.label), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)"
     }
   }, item.sub)), /*#__PURE__*/React.createElement(IconChevronRight, {
@@ -21983,7 +21991,7 @@ function SimuladoresTab({
     key: group.title
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       fontWeight: 700,
       textTransform: "uppercase",
@@ -22051,7 +22059,7 @@ function CloudSyncCard({
       }
     }, translate(lang, "settings", "cloud_sync")), /*#__PURE__*/React.createElement("p", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13,
         color: "var(--slate)",
         margin: "8px 0 0"
       }
@@ -22110,7 +22118,7 @@ function CloudSyncCard({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, cloudUser.email), /*#__PURE__*/React.createElement("div", {
@@ -22134,13 +22142,13 @@ function CloudSyncCard({
     onClick: onCloudSignOut
   }, translate(lang, "settings", "end_session"))), cloudError && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--rust)",
       marginTop: 8
     }
   }, cloudError), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 10
     }
@@ -22175,7 +22183,7 @@ function CloudSyncCard({
     placeholder: translate(lang, "settings", "password_placeholder")
   })), cloudError && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--rust)"
     }
   }, cloudError), /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -22274,7 +22282,7 @@ function SettingsTab({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, translate(lang, "settings", "dark_mode")), /*#__PURE__*/React.createElement("div", {
@@ -22320,7 +22328,7 @@ function SettingsTab({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, translate(lang, "settings", "pin_faceid")), /*#__PURE__*/React.createElement("div", {
@@ -22349,7 +22357,7 @@ function SettingsTab({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, translate(lang, "settings", "device_reminders")), /*#__PURE__*/React.createElement("div", {
@@ -22359,7 +22367,7 @@ function SettingsTab({
     }
   }, translate(lang, "settings", "device_reminders_desc")), permission === "denied" && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--rust)",
       marginTop: 4
     }
@@ -22388,12 +22396,12 @@ function PrivacyPolicyPage({
 }) {
   const h3Style = {
     fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    fontSize: 15.5,
+    fontSize: 16,
     margin: "0 0 8px",
     color: "var(--ink)"
   };
   const pStyle = {
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 1.6,
     color: "var(--slate)",
     margin: "0 0 10px"
@@ -22627,7 +22635,7 @@ function ReportTab({
       border: `1px solid ${reportMode === "mensal" ? "var(--gold)" : "var(--line)"}`,
       background: reportMode === "mensal" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: reportMode === "mensal" ? "var(--gold)" : "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       cursor: "pointer"
     }
@@ -22639,7 +22647,7 @@ function ReportTab({
       border: `1px solid ${reportMode === "anual" ? "var(--gold)" : "var(--line)"}`,
       background: reportMode === "anual" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       color: reportMode === "anual" ? "var(--gold)" : "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       cursor: "pointer"
     }
@@ -22670,7 +22678,7 @@ function ReportTab({
     size: 14
   }), " ", translate(lang, "report", "download_word"))), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: "0 0 14px"
     }
@@ -22732,7 +22740,7 @@ function ForecastTab({
   }, translate(lang, "forecast", "summary_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: 0
     }
   }, translate(lang, "forecast", "summary_desc")), /*#__PURE__*/React.createElement("div", {
@@ -22781,7 +22789,7 @@ function ForecastTab({
   }, translate(lang, "forecast", "projection_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 14px"
     }
   }, translate(lang, "forecast", "projection_desc").replace("{bal}", fmt(startingBalance))), /*#__PURE__*/React.createElement(ForecastLineChart, {
@@ -22789,7 +22797,7 @@ function ForecastTab({
     startingBalance: startingBalance
   }), firstNegative && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--rust)",
       background: "color-mix(in srgb, var(--rust) 14%, var(--card))",
       padding: "10px 12px",
@@ -22825,7 +22833,7 @@ function ForecastTab({
     }
   }, fmt(r.balance))))), otherCurrencies.length > 0 && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 14
     }
@@ -22957,7 +22965,7 @@ function BudgetTab({
     }
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 700
     }
   }, translate(lang, "budget", "recurring_detected_title")), /*#__PURE__*/React.createElement("div", {
@@ -22998,7 +23006,7 @@ function BudgetTab({
     }
   }, c.name), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)"
     }
   }, c.category, " · ~", fmtCompact(c.avgAmount), " · visto em ", c.monthsSeen, " meses")), /*#__PURE__*/React.createElement("button", {
@@ -23061,7 +23069,7 @@ function BudgetTab({
       border: "1px solid rgba(224,90,90,0.5)",
       borderRadius: 20,
       padding: "4px 10px",
-      fontSize: 11.5,
+      fontSize: 12,
       fontWeight: 700
     }
   }, /*#__PURE__*/React.createElement(IconAlertTriangle, {
@@ -23082,7 +23090,7 @@ function BudgetTab({
     }
   }, translate(lang, "budget", "summary_budgeted")), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 19,
+      fontSize: 20,
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace"
     }
@@ -23094,7 +23102,7 @@ function BudgetTab({
     }
   }, translate(lang, "budget", "summary_spent")), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 19,
+      fontSize: 20,
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace"
     }
@@ -23106,7 +23114,7 @@ function BudgetTab({
     }
   }, translate(lang, "budget", "summary_remaining")), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 19,
+      fontSize: 20,
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace",
       color: remaining < 0 ? "#FF8A80" : "#8EF0C0"
@@ -23169,7 +23177,7 @@ function BudgetTab({
         borderRadius: 7,
         border: "none",
         cursor: "pointer",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 600,
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         whiteSpace: "nowrap",
@@ -23196,7 +23204,7 @@ function BudgetTab({
   }, translate(lang, "budget", "category_limits_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 16px"
     }
   }, translate(lang, "budget", "category_limits_subtitle"))), /*#__PURE__*/React.createElement("button", {
@@ -23266,7 +23274,7 @@ function BudgetTab({
       }
     })), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 13.5,
+        fontSize: 14,
         fontWeight: 600,
         flex: 1,
         minWidth: 0,
@@ -23303,7 +23311,7 @@ function BudgetTab({
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)",
         fontFamily: "'IBM Plex Mono', monospace"
       }
@@ -23315,7 +23323,7 @@ function BudgetTab({
       }
     }, "(+", fmtCompact(rolloverIn), " ", translate(lang, "budget", "rollover_carried_suffix"), ")")), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         fontWeight: 700,
         color: toneColor,
         fontFamily: "'IBM Plex Mono', monospace"
@@ -23332,7 +23340,7 @@ function BudgetTab({
         border: "1px dashed var(--emerald)",
         borderRadius: 6,
         padding: "5px 9px",
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--emerald)",
         fontWeight: 600,
         cursor: "pointer",
@@ -23361,7 +23369,7 @@ function BudgetTab({
   }, translate(lang, "budget", "income_sources_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "0 0 16px"
     }
   }, translate(lang, "budget", "income_sources_subtitle"))), /*#__PURE__*/React.createElement("button", {
@@ -23430,14 +23438,14 @@ function BudgetTab({
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontWeight: 600,
-        fontSize: 13.5,
+        fontSize: 14,
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap"
       }
     }, i.label || i.type), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)"
       }
     }, i.type)), /*#__PURE__*/React.createElement("span", {
@@ -23445,7 +23453,7 @@ function BudgetTab({
         fontFamily: "'IBM Plex Mono', monospace",
         color: "var(--emerald)",
         fontWeight: 600,
-        fontSize: 13.5,
+        fontSize: 14,
         flexShrink: 0
       }
     }, fmt(i.amount)), /*#__PURE__*/React.createElement("button", {
@@ -23510,7 +23518,7 @@ function BudgetTab({
   }), " ", translate(lang, "budget", "add_income_source"))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14,
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)"
     }
   }, translate(lang, "budget", "expected_prefix"), " ", /*#__PURE__*/React.createElement("strong", {
@@ -23537,7 +23545,7 @@ function BudgetTab({
   }, translate(lang, "budget", "fixed_expenses_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 0"
     }
   }, translate(lang, "budget", "fixed_expenses_subtitle"))), /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -23550,7 +23558,7 @@ function BudgetTab({
   }), " ", translate(lang, "budget", "new_fixed_expense"))), fixedExpenses.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5,
+      fontSize: 14,
       marginTop: 14
     }
   }, translate(lang, "budget", "no_fixed_expenses")) : /*#__PURE__*/React.createElement("div", {
@@ -23587,7 +23595,7 @@ function BudgetTab({
   }, translate(lang, "budget", "staff_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 0"
     }
   }, translate(lang, "budget", "staff_subtitle"))), /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -23600,12 +23608,12 @@ function BudgetTab({
   }), " ", translate(lang, "budget", "new_staff"))), staff.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 13.5,
+      fontSize: 14,
       marginTop: 14
     }
   }, translate(lang, "budget", "no_staff")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: "14px 0 10px"
     }
@@ -23654,7 +23662,7 @@ function BudgetTab({
     }, translate(lang, "budget", "member_budget_title")), /*#__PURE__*/React.createElement("p", {
       style: {
         color: "var(--slate)",
-        fontSize: 12.5,
+        fontSize: 13,
         margin: "0 0 16px"
       }
     }, translate(lang, "budget", "member_budget_subtitle"))), /*#__PURE__*/React.createElement("button", {
@@ -23720,7 +23728,7 @@ function BudgetTab({
         }
       })), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 13.5,
+          fontSize: 14,
           fontWeight: 600,
           flex: 1,
           minWidth: 0,
@@ -23750,7 +23758,7 @@ function BudgetTab({
         tone: tone
       }), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 11.5,
+          fontSize: 12,
           color: "var(--slate)",
           marginTop: 3,
           fontFamily: "'IBM Plex Mono', monospace"
@@ -23833,7 +23841,7 @@ function GoalsTab({
       }
     }, g.name), g.category && /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)"
       }
     }, g.category), g.deadline && /*#__PURE__*/React.createElement("div", {
@@ -23884,13 +23892,13 @@ function GoalsTab({
       style: {
         display: "flex",
         justifyContent: "space-between",
-        fontSize: 12.5,
+        fontSize: 13,
         fontFamily: "'IBM Plex Mono', monospace",
         color: "var(--slate)"
       }
     }, /*#__PURE__*/React.createElement("span", null, fmt(g.current)), /*#__PURE__*/React.createElement("span", null, fmt(g.target))), monthly !== null && monthly > 0 && /*#__PURE__*/React.createElement("p", {
       style: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: "var(--slate)",
         marginTop: 8,
         marginBottom: 0
@@ -23943,7 +23951,7 @@ function DebtCard({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 10.5,
+      fontSize: 11,
       fontWeight: 700,
       color: typeTone,
       background: debt.type === "A pagar" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--emerald) 14%, var(--card))",
@@ -24004,7 +24012,7 @@ function DebtCard({
     }
   }, fmt(Math.max(balance, 0), debt.currency)), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 2
     }
@@ -24019,7 +24027,7 @@ function DebtCard({
     style: {
       display: "flex",
       justifyContent: "space-between",
-      fontSize: 11.5,
+      fontSize: 12,
       fontFamily: "'IBM Plex Mono', monospace",
       color: "var(--slate)"
     }
@@ -24042,7 +24050,7 @@ function DebtCard({
     }
   }, translate(lang, "debts", "due_date_prefix"), " ", debt.dueDate)), debt.interestRate ? /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--gold)",
       marginTop: 4
     }
@@ -24075,7 +24083,7 @@ function DebtPayoffSimulator({
   }, translate(lang, "debts", "simulator_title")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
-      fontSize: 12.5,
+      fontSize: 13,
       margin: "4px 0 14px"
     }
   }, translate(lang, "debts", "simulator_desc")), /*#__PURE__*/React.createElement("div", {
@@ -24156,7 +24164,7 @@ function DebtPayoffSimulator({
     tone: "rust"
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600,
       color: "var(--slate)",
       marginBottom: 8
@@ -24296,7 +24304,7 @@ function DebtModal({
       background: type === t ? t === "A pagar" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--emerald) 14%, var(--card))" : "var(--card)",
       color: type === t ? t === "A pagar" ? "var(--rust)" : "var(--emerald)" : "var(--slate)",
       fontWeight: 600,
-      fontSize: 13.5,
+      fontSize: 14,
       cursor: "pointer"
     }
   }, t))), /*#__PURE__*/React.createElement(Field, {
@@ -24384,7 +24392,7 @@ function DebtModal({
     value: sb.id
   }, sb.label || sb.type)))), currentAccount && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
@@ -24504,7 +24512,7 @@ function CreditCardModal({
     onChange: e => setDueDay(e.target.value)
   }))), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
@@ -24683,7 +24691,7 @@ function CardPaymentModal({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -24718,7 +24726,7 @@ function CardPaymentModal({
     value: a.id
   }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`))), usedRememberedAccount && accountId === rememberedAccount.id && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--gold)",
       marginTop: 4,
       display: "flex",
@@ -24832,7 +24840,7 @@ function CreditCardCard({
     tone: usedPct > 90 ? "rust" : usedPct > 70 ? "gold" : "emerald"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       marginTop: 4
     }
@@ -24847,7 +24855,7 @@ function CreditCardCard({
     style: {
       display: "flex",
       justifyContent: "space-between",
-      fontSize: 12.5
+      fontSize: 13
     }
   }, /*#__PURE__*/React.createElement("span", null, translate(lang, "cards", "current_statement_prefix"), monthShortLabel(currentCycle), translate(lang, "cards", "current_statement_suffix")), /*#__PURE__*/React.createElement("span", {
     style: {
@@ -24879,7 +24887,7 @@ function CreditCardCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       fontWeight: 600
     }
   }, translate(lang, "cards", "recent_purchases")), /*#__PURE__*/React.createElement("button", {
@@ -24996,7 +25004,7 @@ function DebtPaymentModal({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -25128,7 +25136,7 @@ function RecurringModal({
       background: isStaff === opt.key ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
       color: isStaff === opt.key ? "var(--ink)" : "var(--slate)",
       fontWeight: 600,
-      fontSize: 13.5,
+      fontSize: 14,
       cursor: "pointer"
     }
   }, opt.label))), /*#__PURE__*/React.createElement(Field, {
@@ -25238,7 +25246,7 @@ function CategoryManagerModal({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -25304,7 +25312,7 @@ function CategoryManagerModal({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 13.5
+      fontSize: 14
     }
   }, c), /*#__PURE__*/React.createElement("button", {
     onClick: () => onRemove(c),
@@ -25383,7 +25391,7 @@ function MembersManagerModal({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -25495,7 +25503,7 @@ function MembersManagerModal({
     size: 14
   })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 13.5
+      fontSize: 14
     }
   }, m), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25549,7 +25557,7 @@ function ShortcutsManagerModal({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12.5,
+      fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
@@ -25580,12 +25588,12 @@ function ShortcutsManagerModal({
     }
   }, s.emoji), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 600
     }
   }, s.name), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)"
     }
   }, s.category, " · ", fmt(s.amount)))), /*#__PURE__*/React.createElement("div", {
@@ -25781,7 +25789,7 @@ function GoalModal({
     onChange: e => setDeadline(e.target.value)
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11.5,
+      fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
