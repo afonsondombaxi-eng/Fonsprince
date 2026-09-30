@@ -1138,8 +1138,14 @@ function portfolioRiskProfile(breakdown) {
     detail: "Maioria do património em liquidez imediata ou baixo risco."
   };
 }
+function kpiTypeLabel(lang, type) {
+  const map = { "À ordem": "type_order", "Poupança": "type_savings", "Investimento": "type_investment" };
+  const k = map[type];
+  return k ? translate(lang, "kpis", k) : type;
+}
 function buildInsights(opts) {
   const {
+    lang,
     accounts,
     transactions,
     exchangeRates,
@@ -1151,9 +1157,10 @@ function buildInsights(opts) {
   if (consolidatedKzPrev !== 0) {
     const pct = (consolidatedKzNow - consolidatedKzPrev) / Math.abs(consolidatedKzPrev) * 100;
     if (Math.abs(pct) >= 1) {
+      const key = pct >= 0 ? "insight_networth_up" : "insight_networth_down";
       insights.push({
         icon: pct >= 0 ? IconTrendingUp : IconTrendingDown,
-        text: `Património ${pct >= 0 ? "cresceu" : "caiu"} ${Math.abs(pct).toFixed(0)}% face ao mês anterior.`
+        text: translate(lang, "kpis", key).replace("{pct}", Math.abs(pct).toFixed(0))
       });
     }
   }
@@ -1171,7 +1178,7 @@ function buildInsights(opts) {
     const share = top[1] / bankTotalSum * 100;
     if (share >= 40) insights.push({
       icon: IconBank,
-      text: `${top[0]} representa ${share.toFixed(0)}% dos ativos.`
+      text: translate(lang, "kpis", "insight_bank_share").replace("{bank}", top[0]).replace("{pct}", share.toFixed(0))
     });
   }
   const byType = {
@@ -1192,7 +1199,7 @@ function buildInsights(opts) {
     const domShare = byType[domType] / typeTotalSum * 100;
     if (domShare >= 60) insights.push({
       icon: IconAlertTriangle,
-      text: `Elevada concentração em ${domType.toLowerCase()} (${domShare.toFixed(0)}%).`
+      text: translate(lang, "kpis", "insight_concentration").replace("{type}", kpiTypeLabel(lang, domType)).replace("{pct}", domShare.toFixed(0))
     });
   }
   let monthlyInterest = 0;
@@ -1207,7 +1214,7 @@ function buildInsights(opts) {
   }
   if (monthlyInterest > 0) insights.push({
     icon: IconPig,
-    text: `Juros estimados este mês: ${fmt(monthlyInterest)}.`
+    text: translate(lang, "kpis", "insight_interest").replace("{amount}", fmt(monthlyInterest))
   });
   if (familyBreakdown.length > 0) {
     const total = familyBreakdown.reduce((s, [, v]) => s + v, 0);
@@ -1215,7 +1222,7 @@ function buildInsights(opts) {
     const share = total > 0 ? topM[1] / total * 100 : 0;
     if (share > 0) insights.push({
       icon: IconUsers,
-      text: `${topM[0]} representa ${share.toFixed(0)}% das despesas do mês.`
+      text: translate(lang, "kpis", "insight_member_share").replace("{member}", topM[0]).replace("{pct}", share.toFixed(0))
     });
   }
   return insights;
@@ -2081,6 +2088,7 @@ function monthLabelFull(month) {
 }
 function buildReportHtml(data) {
   const {
+    lang,
     month,
     accounts,
     transactions,
@@ -2094,21 +2102,22 @@ function buildReportHtml(data) {
     totalDespesas,
     balancesByCurrency
   } = data;
+  const t = k => translate(lang, "report", k);
   const saldo = totalReceitas - totalDespesas;
   const generatedAt = new Date().toLocaleDateString("pt-PT");
-  const balanceRows = Object.entries(balancesByCurrency).map(([cur, val]) => `<tr><td style="padding:6px 0;">Saldo disponível (${cur})</td><td style="padding:6px 0; text-align:right; font-weight:bold;">${fmt(val, cur)}</td></tr>`).join("");
+  const balanceRows = Object.entries(balancesByCurrency).map(([cur, val]) => `<tr><td style="padding:6px 0;">${t("bank_accounts")} (${cur})</td><td style="padding:6px 0; text-align:right; font-weight:bold;">${fmt(val, cur)}</td></tr>`).join("");
   const categoryRows = Object.keys(spentByCategory).length ? Object.entries(spentByCategory).map(([cat, val]) => {
     const limit = Number(categories[cat]) || 0;
     return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; color:#68707C;">${limit ? fmt(limit) : "—"}</td></tr>`;
-  }).join("") : `<tr><td colspan="3" style="padding:8px; color:#68707C;">Sem despesas registadas.</td></tr>`;
+  }).join("") : `<tr><td colspan="3" style="padding:8px; color:#68707C;">${t("no_expenses")}</td></tr>`;
   const fixedRows = recurringExpenses.length ? recurringExpenses.map(r => {
     const status = recurringStatus(r, month, transactions);
-    return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${r.name}${r.isStaff ? " (funcionário)" : ""}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(r.amount)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${status}</td></tr>`;
-  }).join("") : `<tr><td colspan="3" style="padding:8px; color:#68707C;">Sem despesas fixas registadas.</td></tr>`;
+    return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${r.name}${r.isStaff ? t("staff_suffix") : ""}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(r.amount)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${status}</td></tr>`;
+  }).join("") : `<tr><td colspan="3" style="padding:8px; color:#68707C;">${t("no_fixed_expenses")}</td></tr>`;
   const accountRows = accounts.length ? accounts.map(a => {
     const total = accountTotal(a, transactions);
     return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${a.bank.replace(/—.*/, "").trim()}${a.nickname ? " — " + a.nickname : ""}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(total, a.currency)}</td></tr>`;
-  }).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem contas cadastradas.</td></tr>`;
+  }).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">${t("no_accounts")}</td></tr>`;
   const activeDebts = debts.filter(d => debtBalance(d, debtPayments) > 0.005);
   const debtRows = activeDebts.map(d => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${d.creditor} (${d.type})</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(debtBalance(d, debtPayments), d.currency)}</td></tr>`).join("");
   const goalRows = goals.map(g => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${g.name}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(g.current)} / ${fmt(g.target)}</td></tr>`).join("");
@@ -2116,31 +2125,31 @@ function buildReportHtml(data) {
     <div style="font-family: 'Segoe UI', Calibri, Arial, sans-serif; color:#1B1F27; max-width:760px; margin:0 auto; position:relative;">
       <div style="position:relative; z-index:1;">
       <div style="text-align:center; border-bottom:3px solid #1B1F27; padding-bottom:16px; margin-bottom:24px;">
-        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">Relatório Financeiro — Fonsprince One</h1>
-        <p style="margin:6px 0 0; color:#68707C; font-size:13px;">${monthLabelFull(month)} · Gerado em ${generatedAt}</p>
+        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">${t("report_title")}</h1>
+        <p style="margin:6px 0 0; color:#68707C; font-size:13px;">${t("report_generated").replace("{month}", monthLabelFull(month)).replace("{date}", generatedAt)}</p>
       </div>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Resumo do mês</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("month_summary")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
         ${balanceRows}
-        <tr><td style="padding:6px 0;">Receitas do mês</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
-        <tr><td style="padding:6px 0;">Despesas do mês</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
-        <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">Resultado do mês</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
+        <tr><td style="padding:6px 0;">${t("income_month")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
+        <tr><td style="padding:6px 0;">${t("expenses_month")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
+        <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">${t("result_month")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
       </table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Despesas por categoria</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("expenses_by_category")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
-        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Categoria</th><th style="padding:6px 8px; text-align:right;">Gasto</th><th style="padding:6px 8px; text-align:right;">Limite</th></tr>
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">${t("col_category")}</th><th style="padding:6px 8px; text-align:right;">${t("col_spent")}</th><th style="padding:6px 8px; text-align:right;">${t("col_limit")}</th></tr>
         ${categoryRows}
       </table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Contas bancárias</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("bank_accounts")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${accountRows}</table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Despesas fixas e funcionários</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("fixed_expenses_staff")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
-        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Nome</th><th style="padding:6px 8px; text-align:right;">Valor</th><th style="padding:6px 8px; text-align:right;">Estado</th></tr>
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">${t("col_name")}</th><th style="padding:6px 8px; text-align:right;">${t("col_value")}</th><th style="padding:6px 8px; text-align:right;">${t("col_status")}</th></tr>
         ${fixedRows}
       </table>
-      ${activeDebts.length ? `<h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Dívidas em aberto</h2><table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${debtRows}</table>` : ""}
-      ${goals.length ? `<h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Metas de poupança</h2><table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${goalRows}</table>` : ""}
-      <p style="margin-top:32px; font-size:11px; color:#68707C; text-align:center;">Gerado automaticamente pelo Fonsprince One — Afonso Ndombaxi.</p>
+      ${activeDebts.length ? `<h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("open_debts")}</h2><table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${debtRows}</table>` : ""}
+      ${goals.length ? `<h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("savings_goals")}</h2><table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">${goalRows}</table>` : ""}
+      <p style="margin-top:32px; font-size:11px; color:#68707C; text-align:center;">${t("generated_footer")}</p>
       </div>
     </div>
   `;
@@ -2278,6 +2287,17 @@ function computeFinancialHealthScore(opts) {
     }]
   };
 }
+function healthFactorLabel(lang, name) {
+  const map = {
+    "Liquidez": "factor_liquidez",
+    "Poupança": "factor_poupanca",
+    "Endividamento": "factor_endividamento",
+    "Investimentos": "factor_investimentos",
+    "Evolução patrimonial": "factor_evolucao"
+  };
+  const k = map[name];
+  return k ? translate(lang, "kpis", k) : name;
+}
 function computeHealthScoreForApp(opts) {
   const {
     accounts,
@@ -2393,6 +2413,7 @@ function simulateDebtPayoff(debts, debtPayments, monthlyBudget, strategy) {
 }
 function buildAlerts(opts) {
   const {
+    lang,
     recurringExpenses,
     transactions,
     month,
@@ -2425,7 +2446,7 @@ function buildAlerts(opts) {
       if (avgDailyNet < 0 && projectedEndBalance < 0) {
         alerts.push({
           severity: "rust",
-          text: `A este ritmo de gastos, o saldo pode ficar negativo antes do fim do mês — previsão: ${fmt(projectedEndBalance)}.`
+          text: translate(lang, "alerts", "balance_negative_forecast").replace("{amount}", fmt(projectedEndBalance))
         });
       }
     }
@@ -2450,7 +2471,7 @@ function buildAlerts(opts) {
       const pctIncrease = Math.round((curVal - avg) / avg * 100);
       alerts.push({
         severity: "gold",
-        text: `Gastou ${pctIncrease}% mais em "${cat}" este mês, face à média dos últimos meses (${fmt(curVal)} vs. média de ${fmt(avg)}).`
+        text: translate(lang, "alerts", "category_spike").replace("{pct}", pctIncrease).replace("{cat}", cat).replace("{cur}", fmt(curVal)).replace("{avg}", fmt(avg))
       });
     }
   }
@@ -2460,12 +2481,12 @@ function buildAlerts(opts) {
     if (status === "Vencida") {
       alerts.push({
         severity: "rust",
-        text: `"${r.name}" está vencida (venceu dia ${r.dueDay}).`
+        text: translate(lang, "alerts", "recurring_overdue").replace("{name}", r.name).replace("{day}", r.dueDay)
       });
     } else if (status === "Pendente" && due <= in5daysStr) {
       alerts.push({
         severity: "gold",
-        text: `"${r.name}" vence em breve (dia ${r.dueDay}).`
+        text: translate(lang, "alerts", "recurring_due_soon").replace("{name}", r.name).replace("{day}", r.dueDay)
       });
     }
     const prevMonth1 = previousMonthKey(month);
@@ -2475,7 +2496,7 @@ function buildAlerts(opts) {
     if (missedPrev1 && missedPrev2) {
       alerts.push({
         severity: "rust",
-        text: `"${r.name}" não é paga há pelo menos 2 meses — pode ser uma subscrição esquecida.`
+        text: translate(lang, "alerts", "recurring_forgotten").replace("{name}", r.name)
       });
     }
   }
@@ -2484,7 +2505,7 @@ function buildAlerts(opts) {
     if (limit > 0 && val > limit) {
       alerts.push({
         severity: "rust",
-        text: `A categoria "${cat}" já ultrapassou o limite mensal (${fmt(val)} de ${fmt(limit)}).`
+        text: translate(lang, "alerts", "category_limit_exceeded").replace("{cat}", cat).replace("{spent}", fmt(val)).replace("{limit}", fmt(limit))
       });
     }
   }
@@ -2501,7 +2522,7 @@ function buildAlerts(opts) {
       if (limit > 0 && spent > limit) {
         alerts.push({
           severity: "rust",
-          text: `${member} já ultrapassou o orçamento mensal (${fmt(spent)} de ${fmt(limit)}).`
+          text: translate(lang, "alerts", "member_limit_exceeded").replace("{member}", member).replace("{spent}", fmt(spent)).replace("{limit}", fmt(limit))
         });
       }
     }
@@ -2510,7 +2531,7 @@ function buildAlerts(opts) {
     if (debtStatus(d, debtPayments) === "Vencida") {
       alerts.push({
         severity: "rust",
-        text: `A dívida com "${d.creditor}" está vencida.`
+        text: translate(lang, "alerts", "debt_overdue").replace("{creditor}", d.creditor)
       });
     }
   }
@@ -2520,7 +2541,7 @@ function buildAlerts(opts) {
     if (!hasContribThisMonth) {
       alerts.push({
         severity: "slate",
-        text: `Ainda não contribuiu para a meta "${g.name}" este mês.`
+        text: translate(lang, "alerts", "goal_no_contribution").replace("{goal}", g.name)
       });
     }
   }
@@ -2529,13 +2550,13 @@ function buildAlerts(opts) {
     if (daysSince > 21) {
       alerts.push({
         severity: "gold",
-        text: `Já não exporta os dados há ${daysSince} dias — considere fazer uma cópia de segurança.`
+        text: translate(lang, "alerts", "export_reminder_days").replace("{days}", daysSince)
       });
     }
   } else if (transactions.length > 5) {
     alerts.push({
       severity: "gold",
-      text: "Ainda não fez nenhuma exportação de dados — considere guardar uma cópia de segurança."
+      text: translate(lang, "alerts", "export_reminder_never")
     });
   }
   return alerts;
@@ -3340,6 +3361,186 @@ const TRANSLATIONS = {
       disclaimer_suffix: ". A atualização automática usa uma API comunitária que espelha dados do BNA e pode nem sempre estar disponível, sobretudo para ZAR e GBP — nesse caso, insira o valor manualmente.",
       preview_title: "Pré-visualização",
     },
+    forecast: {
+      summary_title: "Resumo mensal previsto",
+      summary_desc: "Baseado nas fontes de rendimento (Orçamento) e nas despesas fixas + funcionários cadastrados.",
+      expected_income: "Receitas previstas",
+      fixed_staff_expenses: "Despesas fixas + funcionários",
+      variable_expenses: "Despesas variáveis (média 3 meses)",
+      variable_expenses_sub: "Compras, lazer, etc.",
+      projected_result: "Resultado mensal previsto",
+      include_variable_checkbox: "Incluir despesas variáveis médias na projeção",
+      projection_title: "Projeção do saldo — próximos 6 meses",
+      projection_desc: "Parte do saldo disponível atual em Kz ({bal}) e soma o resultado mensal previsto a cada mês.",
+      negative_warning: "Ao ritmo atual, o saldo pode ficar negativo em {month} (≈ {balance}). Talvez valha a pena rever despesas ou fontes de rendimento.",
+      other_currencies_note: "Esta previsão considera apenas saldos em Kz. Contas em {currencies} não estão incluídas.",
+    },
+    investments: {
+      pill_bonds: "Obrigações",
+      pill_equities: "Ações",
+      pill_funds: "Fundos",
+      pill_calendar: "Calendário",
+      pill_income: "Rendimentos",
+      pill_performance: "Performance",
+      coming_soon: "{name} — em breve, numa próxima etapa.",
+    },
+    report: {
+      tab_monthly: "Mensal",
+      tab_annual: "Anual / Fiscal",
+      save_pdf: "Guardar como PDF / Imprimir",
+      download_word: "Descarregar Word",
+      pdf_hint: "\"Guardar como PDF\" abre a janela de impressão do navegador — escolha \"Guardar como PDF\" no destino da impressão.",
+      report_title: "Relatório Financeiro — Fonsprince One",
+      report_generated: "{month} · Gerado em {date}",
+      annual_report_title: "Relatório Anual — Fonsprince One",
+      annual_report_generated: "Ano de {year} · Gerado em {date}",
+      month_summary: "Resumo do mês",
+      year_summary: "Resumo do ano",
+      income_month: "Receitas do mês",
+      expenses_month: "Despesas do mês",
+      result_month: "Resultado do mês",
+      income_total: "Receitas totais",
+      expenses_total: "Despesas totais",
+      result_year: "Resultado líquido do ano",
+      monthly_evolution: "Evolução mensal",
+      col_month: "Mês",
+      col_income: "Receitas",
+      col_expenses: "Despesas",
+      col_result: "Resultado",
+      income_by_category: "Receitas por categoria",
+      expenses_by_category: "Despesas por categoria",
+      col_category: "Categoria",
+      col_total: "Total",
+      col_spent: "Gasto",
+      col_limit: "Limite",
+      bank_accounts: "Contas bancárias",
+      year_end_balances: "Saldos de contas em 31/12/{year}",
+      fixed_expenses_staff: "Despesas fixas e funcionários",
+      col_name: "Nome",
+      col_value: "Valor",
+      col_status: "Estado",
+      open_debts: "Dívidas em aberto",
+      savings_goals: "Metas de poupança",
+      no_expenses: "Sem despesas registadas.",
+      no_income: "Sem receitas registadas.",
+      no_accounts: "Sem contas cadastradas.",
+      no_fixed_expenses: "Sem despesas fixas registadas.",
+      generated_footer: "Gerado automaticamente pelo Fonsprince One — Afonso Ndombaxi.",
+      fiscal_summary_title: "Resumo Fiscal de Investimentos (estimativa)",
+      col_type: "Tipo",
+      col_received_in: "Valor recebido em {year}",
+      col_rate: "Taxa",
+      col_estimated_tax: "Imposto estimado",
+      bond_coupons: "Cupões de obrigações",
+      equity_dividends: "Dividendos de ações",
+      total_coupons_dividends: "Total (cupões + dividendos)",
+      unrealized_gains_note: "Mais-valias não realizadas em ações: {gains} (imposto potencial de {tax} a {rate}%, aplicável apenas no momento da venda — não incluído no total acima). Taxas editáveis em Investimentos → Performance.",
+      fiscal_disclaimer: "Este relatório é um resumo informativo preparado a partir dos dados registados na app. Para efeitos fiscais (ex: declaração de IRT), confirme sempre os valores com os extratos oficiais dos bancos e outros documentos de suporte. Juros bancários não estão incluídos neste resumo — consulte o extrato do banco para esse valor.",
+      staff_suffix: " (funcionário)",
+    },
+    kpis: {
+      financial_health: "Saúde Financeira",
+      auto_insights: "Insights automáticos",
+      score_excellent: "Excelente",
+      score_good: "Boa",
+      score_fair: "Razoável",
+      score_attention: "Requer atenção",
+      factor_liquidez: "Liquidez",
+      factor_poupanca: "Poupança",
+      factor_endividamento: "Endividamento",
+      factor_investimentos: "Investimentos",
+      factor_evolucao: "Evolução patrimonial",
+      type_order: "à ordem",
+      type_savings: "poupança",
+      type_investment: "investimento",
+      insight_networth_up: "Património cresceu {pct}% face ao mês anterior.",
+      insight_networth_down: "Património caiu {pct}% face ao mês anterior.",
+      insight_bank_share: "{bank} representa {pct}% dos ativos.",
+      insight_concentration: "Elevada concentração em {type} ({pct}%).",
+      insight_interest: "Juros estimados este mês: {amount}.",
+      insight_member_share: "{member} representa {pct}% das despesas do mês.",
+    },
+    exports: {
+      csv_transactions_title: "Movimentos (CSV)",
+      csv_transactions_text: "Todos os movimentos registados, um por linha — abre em Excel.",
+      csv_accounts_title: "Contas (Excel)",
+      csv_accounts_text: "Consolidado das suas contas bancárias, por banco e por conta.",
+      pdf_accounts_title: "Contas (PDF)",
+      pdf_accounts_text: "Resumo de contas pronto a imprimir ou guardar como PDF.",
+      backup_title: "Cópia de segurança completa",
+      backup_text: "Todos os dados da app num único ficheiro — para guardar ou transferir para outro aparelho.",
+      import_title: "Importar dados",
+      import_text: "Restaura uma cópia de segurança exportada anteriormente por esta app.",
+      export_cta: "Exportar",
+      import_cta: "Importar",
+    },
+    alerts: {
+      empty: "Sem alertas de momento — está tudo em dia.",
+      balance_negative_forecast: "A este ritmo de gastos, o saldo pode ficar negativo antes do fim do mês — previsão: {amount}.",
+      category_spike: "Gastou {pct}% mais em \"{cat}\" este mês, face à média dos últimos meses ({cur} vs. média de {avg}).",
+      recurring_overdue: "\"{name}\" está vencida (venceu dia {day}).",
+      recurring_due_soon: "\"{name}\" vence em breve (dia {day}).",
+      recurring_forgotten: "\"{name}\" não é paga há pelo menos 2 meses — pode ser uma subscrição esquecida.",
+      category_limit_exceeded: "A categoria \"{cat}\" já ultrapassou o limite mensal ({spent} de {limit}).",
+      member_limit_exceeded: "{member} já ultrapassou o orçamento mensal ({spent} de {limit}).",
+      debt_overdue: "A dívida com \"{creditor}\" está vencida.",
+      goal_no_contribution: "Ainda não contribuiu para a meta \"{goal}\" este mês.",
+      export_reminder_days: "Já não exporta os dados há {days} dias — considere fazer uma cópia de segurança.",
+      export_reminder_never: "Ainda não fez nenhuma exportação de dados — considere guardar uma cópia de segurança.",
+    },
+    simulators: {
+      group_tax_salary: "Impostos & Salário",
+      group_interest_savings: "Juros & Poupança",
+      group_utilities: "Utilitários",
+      group_credit: "Crédito",
+      sim_irt_label: "IRT (novo, 2026)",
+      sim_irt_sub: "Imposto sobre o Rendimento do Trabalho",
+      sim_salarioLiquido_label: "Salário Líquido",
+      sim_salarioLiquido_sub: "Bruto → líquido, com subsídios (INSS + IRT)",
+      sim_subsidiosAnuais_label: "Subsídios de Férias e Natal",
+      sim_subsidiosAnuais_sub: "50% do salário, proporcional aos meses",
+      sim_horaExtra_label: "Hora Extra",
+      sim_horaExtra_sub: "150% / 175% / 200% conforme a lei",
+      sim_rescisao_label: "Rescisão de Contrato",
+      sim_rescisao_sub: "Indemnização e proporcionais",
+      sim_jurosComposto_label: "Juros Composto",
+      sim_jurosComposto_sub: "Capitalização composta",
+      sim_jurosSimples_label: "Juros Simples",
+      sim_jurosSimples_sub: "Capitalização linear",
+      sim_conversaoTaxa_label: "Conversão de Taxa",
+      sim_conversaoTaxa_sub: "Mensal ↔ Anual",
+      sim_rendimentoPoupanca_label: "Rendimento da Poupança",
+      sim_rendimentoPoupanca_sub: "Projeção de saldo poupado",
+      sim_porcentagem_label: "Porcentagem",
+      sim_porcentagem_sub: "Percentagens e variações",
+      sim_regraTres_label: "Regra de Três Simples",
+      sim_regraTres_sub: "Proporção direta",
+      sim_contadorDias_label: "Contador de Dias",
+      sim_contadorDias_sub: "Dias entre duas datas",
+      sim_diasFaltam_label: "Quantos Dias Faltam",
+      sim_diasFaltam_sub: "Até uma data futura",
+      sim_emprestimo_label: "Crédito Pessoal",
+      sim_emprestimo_sub: "TAN, TAEG e Imposto de Selo (regras BFA)",
+      sim_financiamento_label: "Leasing Automóvel",
+      sim_financiamento_sub: "Valor residual e taxa de esforço (regras BAI)",
+    },
+    privacy: {
+      last_updated: "Última atualização: {date}",
+      s1_title: "1. O que esta política cobre",
+      s1_body: "A Fonsprince One é uma app de gestão financeira pessoal e familiar. Esta página explica, em linguagem simples, que dados a app guarda, onde ficam guardados e o que fazemos — e não fazemos — com eles.",
+      s2_title: "2. Onde ficam os seus dados",
+      s2_body: "Por predefinição, todos os seus dados financeiros (contas, movimentos, orçamento, metas, dívidas, cartões) ficam guardados apenas neste aparelho, no armazenamento local do navegador (localStorage). Não são enviados para nenhum servidor a menos que ative a sincronização na nuvem descrita abaixo.",
+      s3_title: "3. Sincronização na nuvem (opcional)",
+      s3_body: "Se optar por iniciar sessão para sincronizar entre aparelhos, os seus dados passam a ser também guardados de forma encriptada em trânsito nos servidores do Firebase (Google), sob a conta do projeto Fonsprince One. O acesso é protegido pela sua palavra-passe (ou fornecedor de login escolhido) e apenas a sua conta consegue ler os seus próprios dados. Pode deixar de sincronizar a qualquer momento terminando sessão — os dados guardados localmente no aparelho não são apagados por essa ação.",
+      s4_title: "4. O que nunca fazemos",
+      s4_body: "Não vendemos, alugamos nem partilhamos os seus dados financeiros com terceiros para fins publicitários ou comerciais. Não existem anúncios nem rastreadores de terceiros na app.",
+      s5_title: "5. Serviços externos que a app consulta",
+      s5_body: "Para converter moedas, a app pode consultar uma API pública de taxas de câmbio de referência do BNA (angolaapi.onrender.com). Esta consulta não envia os seus dados financeiros — apenas pede a taxa de câmbio do dia. Nenhum outro serviço externo é contactado com os seus dados.",
+      s6_title: "6. O controlo é seu",
+      s6_body: "Pode exportar todos os seus dados a qualquer momento (secção Exportações) em formato JSON, Excel, CSV ou PDF. Pode também apagar todos os dados guardados neste aparelho limpando os dados da app nas definições do navegador ou do telemóvel. Ao terminar sessão da conta na nuvem, pode pedir a eliminação definitiva dos dados sincronizados contactando-nos pelo meio indicado abaixo.",
+      s7_title: "7. Contacto",
+      s7_body: "Para questões sobre privacidade ou pedidos de eliminação de dados da conta na nuvem, contacte o titular da conta através do email associado à sua conta Fonsprince One.",
+    },
   },
   en: {
     nav: {
@@ -3794,6 +3995,186 @@ const TRANSLATIONS = {
       disclaimer_prefix: "Indicative values only. For the official rate of the day, check",
       disclaimer_suffix: ". Automatic updates use a community API that mirrors BNA data and may not always be available, especially for ZAR and GBP — in that case, enter the value manually.",
       preview_title: "Preview",
+    },
+    forecast: {
+      summary_title: "Forecast monthly summary",
+      summary_desc: "Based on income sources (Budget) and registered fixed expenses + staff.",
+      expected_income: "Expected income",
+      fixed_staff_expenses: "Fixed expenses + staff",
+      variable_expenses: "Variable expenses (3-month average)",
+      variable_expenses_sub: "Shopping, leisure, etc.",
+      projected_result: "Projected monthly result",
+      include_variable_checkbox: "Include average variable expenses in the projection",
+      projection_title: "Balance projection — next 6 months",
+      projection_desc: "Starts from the current available balance in Kz ({bal}) and adds the projected monthly result each month.",
+      negative_warning: "At the current pace, the balance may turn negative by {month} (≈ {balance}). It may be worth reviewing expenses or income sources.",
+      other_currencies_note: "This forecast only considers Kz balances. Accounts in {currencies} are not included.",
+    },
+    investments: {
+      pill_bonds: "Bonds",
+      pill_equities: "Equities",
+      pill_funds: "Funds",
+      pill_calendar: "Calendar",
+      pill_income: "Income",
+      pill_performance: "Performance",
+      coming_soon: "{name} — coming soon, in a future update.",
+    },
+    report: {
+      tab_monthly: "Monthly",
+      tab_annual: "Annual / Tax",
+      save_pdf: "Save as PDF / Print",
+      download_word: "Download Word",
+      pdf_hint: "\"Save as PDF\" opens the browser's print window — choose \"Save as PDF\" as the print destination.",
+      report_title: "Financial Report — Fonsprince One",
+      report_generated: "{month} · Generated on {date}",
+      annual_report_title: "Annual Report — Fonsprince One",
+      annual_report_generated: "Year {year} · Generated on {date}",
+      month_summary: "Month summary",
+      year_summary: "Year summary",
+      income_month: "Income this month",
+      expenses_month: "Expenses this month",
+      result_month: "Result this month",
+      income_total: "Total income",
+      expenses_total: "Total expenses",
+      result_year: "Net result for the year",
+      monthly_evolution: "Monthly evolution",
+      col_month: "Month",
+      col_income: "Income",
+      col_expenses: "Expenses",
+      col_result: "Result",
+      income_by_category: "Income by category",
+      expenses_by_category: "Expenses by category",
+      col_category: "Category",
+      col_total: "Total",
+      col_spent: "Spent",
+      col_limit: "Limit",
+      bank_accounts: "Bank accounts",
+      year_end_balances: "Account balances on 12/31/{year}",
+      fixed_expenses_staff: "Fixed expenses and staff",
+      col_name: "Name",
+      col_value: "Amount",
+      col_status: "Status",
+      open_debts: "Outstanding debts",
+      savings_goals: "Savings goals",
+      no_expenses: "No expenses recorded.",
+      no_income: "No income recorded.",
+      no_accounts: "No accounts registered.",
+      no_fixed_expenses: "No fixed expenses recorded.",
+      generated_footer: "Automatically generated by Fonsprince One — Afonso Ndombaxi.",
+      fiscal_summary_title: "Investment Tax Summary (estimate)",
+      col_type: "Type",
+      col_received_in: "Amount received in {year}",
+      col_rate: "Rate",
+      col_estimated_tax: "Estimated tax",
+      bond_coupons: "Bond coupons",
+      equity_dividends: "Equity dividends",
+      total_coupons_dividends: "Total (coupons + dividends)",
+      unrealized_gains_note: "Unrealized gains on equities: {gains} (potential tax of {tax} at {rate}%, applicable only when sold — not included in the total above). Rates editable under Investments → Performance.",
+      fiscal_disclaimer: "This report is an informative summary prepared from the data recorded in the app. For tax purposes (e.g. tax return), always confirm the figures against official bank statements and other supporting documents. Bank interest is not included in this summary — check your bank statement for that amount.",
+      staff_suffix: " (staff)",
+    },
+    kpis: {
+      financial_health: "Financial Health",
+      auto_insights: "Automatic insights",
+      score_excellent: "Excellent",
+      score_good: "Good",
+      score_fair: "Fair",
+      score_attention: "Needs attention",
+      factor_liquidez: "Liquidity",
+      factor_poupanca: "Savings",
+      factor_endividamento: "Debt",
+      factor_investimentos: "Investments",
+      factor_evolucao: "Net worth trend",
+      type_order: "checking",
+      type_savings: "savings",
+      type_investment: "investment",
+      insight_networth_up: "Net worth grew {pct}% compared to last month.",
+      insight_networth_down: "Net worth fell {pct}% compared to last month.",
+      insight_bank_share: "{bank} accounts for {pct}% of your assets.",
+      insight_concentration: "High concentration in {type} ({pct}%).",
+      insight_interest: "Estimated interest this month: {amount}.",
+      insight_member_share: "{member} accounts for {pct}% of this month's expenses.",
+    },
+    exports: {
+      csv_transactions_title: "Transactions (CSV)",
+      csv_transactions_text: "All recorded transactions, one per line — opens in Excel.",
+      csv_accounts_title: "Accounts (Excel)",
+      csv_accounts_text: "Consolidated view of your bank accounts, by bank and by account.",
+      pdf_accounts_title: "Accounts (PDF)",
+      pdf_accounts_text: "Account summary ready to print or save as PDF.",
+      backup_title: "Full backup",
+      backup_text: "All the app's data in a single file — to keep or transfer to another device.",
+      import_title: "Import data",
+      import_text: "Restores a backup previously exported by this app.",
+      export_cta: "Export",
+      import_cta: "Import",
+    },
+    alerts: {
+      empty: "No alerts right now — everything is up to date.",
+      balance_negative_forecast: "At this spending pace, the balance may turn negative before the end of the month — forecast: {amount}.",
+      category_spike: "You spent {pct}% more on \"{cat}\" this month compared to the recent average ({cur} vs. an average of {avg}).",
+      recurring_overdue: "\"{name}\" is overdue (was due on day {day}).",
+      recurring_due_soon: "\"{name}\" is due soon (day {day}).",
+      recurring_forgotten: "\"{name}\" hasn't been paid in at least 2 months — it may be a forgotten subscription.",
+      category_limit_exceeded: "The \"{cat}\" category has already exceeded its monthly limit ({spent} of {limit}).",
+      member_limit_exceeded: "{member} has already exceeded their monthly budget ({spent} of {limit}).",
+      debt_overdue: "The debt with \"{creditor}\" is overdue.",
+      goal_no_contribution: "You haven't contributed to the \"{goal}\" goal this month yet.",
+      export_reminder_days: "You haven't exported your data in {days} days — consider making a backup.",
+      export_reminder_never: "You haven't exported any data yet — consider keeping a backup.",
+    },
+    simulators: {
+      group_tax_salary: "Taxes & Salary",
+      group_interest_savings: "Interest & Savings",
+      group_utilities: "Utilities",
+      group_credit: "Credit",
+      sim_irt_label: "IRT (new, 2026)",
+      sim_irt_sub: "Angolan Labor Income Tax",
+      sim_salarioLiquido_label: "Net Salary",
+      sim_salarioLiquido_sub: "Gross → net, with allowances (social security + IRT)",
+      sim_subsidiosAnuais_label: "Vacation and Christmas Bonuses",
+      sim_subsidiosAnuais_sub: "50% of salary, prorated by months",
+      sim_horaExtra_label: "Overtime",
+      sim_horaExtra_sub: "150% / 175% / 200% as required by law",
+      sim_rescisao_label: "Contract Termination",
+      sim_rescisao_sub: "Severance and prorated amounts",
+      sim_jurosComposto_label: "Compound Interest",
+      sim_jurosComposto_sub: "Compound capitalization",
+      sim_jurosSimples_label: "Simple Interest",
+      sim_jurosSimples_sub: "Linear capitalization",
+      sim_conversaoTaxa_label: "Rate Conversion",
+      sim_conversaoTaxa_sub: "Monthly ↔ Annual",
+      sim_rendimentoPoupanca_label: "Savings Returns",
+      sim_rendimentoPoupanca_sub: "Projection of saved balance",
+      sim_porcentagem_label: "Percentage",
+      sim_porcentagem_sub: "Percentages and changes",
+      sim_regraTres_label: "Rule of Three",
+      sim_regraTres_sub: "Direct proportion",
+      sim_contadorDias_label: "Day Counter",
+      sim_contadorDias_sub: "Days between two dates",
+      sim_diasFaltam_label: "Days Remaining",
+      sim_diasFaltam_sub: "Until a future date",
+      sim_emprestimo_label: "Personal Loan",
+      sim_emprestimo_sub: "APR, APRC and stamp duty (BFA rules)",
+      sim_financiamento_label: "Car Leasing",
+      sim_financiamento_sub: "Residual value and debt-to-income ratio (BAI rules)",
+    },
+    privacy: {
+      last_updated: "Last updated: {date}",
+      s1_title: "1. What this policy covers",
+      s1_body: "Fonsprince One is a personal and family finance management app. This page explains, in plain language, what data the app stores, where it is stored, and what we do — and don't do — with it.",
+      s2_title: "2. Where your data is stored",
+      s2_body: "By default, all your financial data (accounts, transactions, budget, goals, debts, cards) is stored only on this device, in the browser's local storage (localStorage). It is not sent to any server unless you enable the cloud sync described below.",
+      s3_title: "3. Cloud sync (optional)",
+      s3_body: "If you choose to sign in to sync across devices, your data is also stored, encrypted in transit, on Firebase (Google) servers under the Fonsprince One project account. Access is protected by your password (or chosen login provider) and only your account can read your own data. You can stop syncing at any time by signing out — data stored locally on the device is not deleted by that action.",
+      s4_title: "4. What we never do",
+      s4_body: "We do not sell, rent or share your financial data with third parties for advertising or commercial purposes. There are no ads or third-party trackers in the app.",
+      s5_title: "5. External services the app consults",
+      s5_body: "To convert currencies, the app may query a public reference exchange-rate API sourced from Banco Nacional de Angola (BNA) data (angolaapi.onrender.com). This request does not send your financial data — it only asks for the day's exchange rate. No other external service is contacted with your data.",
+      s6_title: "6. You are in control",
+      s6_body: "You can export all your data at any time (Exports section) as JSON, Excel, CSV or PDF. You can also delete all data stored on this device by clearing the app's data in your browser or phone settings. After signing out of your cloud account, you can request permanent deletion of your synced data by contacting us through the method below.",
+      s7_title: "7. Contact",
+      s7_body: "For privacy questions or requests to delete cloud account data, please contact the account holder through the email associated with your Fonsprince One account.",
     },
   },
   fr: {
@@ -4252,6 +4633,186 @@ const TRANSLATIONS = {
       disclaimer_suffix: ". La mise à jour automatique utilise une API communautaire qui reflète les données de la BNA et peut ne pas toujours être disponible, surtout pour le ZAR et le GBP — dans ce cas, saisissez la valeur manuellement.",
       preview_title: "Aperçu",
     },
+    forecast: {
+      summary_title: "Résumé mensuel prévu",
+      summary_desc: "Basé sur les sources de revenus (Budget) et les dépenses fixes + le personnel enregistrés.",
+      expected_income: "Revenus prévus",
+      fixed_staff_expenses: "Dépenses fixes + personnel",
+      variable_expenses: "Dépenses variables (moyenne sur 3 mois)",
+      variable_expenses_sub: "Achats, loisirs, etc.",
+      projected_result: "Résultat mensuel prévu",
+      include_variable_checkbox: "Inclure les dépenses variables moyennes dans la projection",
+      projection_title: "Projection du solde — 6 prochains mois",
+      projection_desc: "Part du solde disponible actuel en Kz ({bal}) et ajoute le résultat mensuel prévu chaque mois.",
+      negative_warning: "Au rythme actuel, le solde pourrait devenir négatif en {month} (≈ {balance}). Il peut être utile de revoir les dépenses ou les sources de revenus.",
+      other_currencies_note: "Cette prévision ne prend en compte que les soldes en Kz. Les comptes en {currencies} ne sont pas inclus.",
+    },
+    investments: {
+      pill_bonds: "Obligations",
+      pill_equities: "Actions",
+      pill_funds: "Fonds",
+      pill_calendar: "Calendrier",
+      pill_income: "Revenus",
+      pill_performance: "Performance",
+      coming_soon: "{name} — bientôt disponible, dans une prochaine étape.",
+    },
+    report: {
+      tab_monthly: "Mensuel",
+      tab_annual: "Annuel / Fiscal",
+      save_pdf: "Enregistrer en PDF / Imprimer",
+      download_word: "Télécharger Word",
+      pdf_hint: "« Enregistrer en PDF » ouvre la fenêtre d'impression du navigateur — choisissez « Enregistrer en PDF » comme destination.",
+      report_title: "Rapport Financier — Fonsprince One",
+      report_generated: "{month} · Généré le {date}",
+      annual_report_title: "Rapport Annuel — Fonsprince One",
+      annual_report_generated: "Année {year} · Généré le {date}",
+      month_summary: "Résumé du mois",
+      year_summary: "Résumé de l'année",
+      income_month: "Revenus du mois",
+      expenses_month: "Dépenses du mois",
+      result_month: "Résultat du mois",
+      income_total: "Revenus totaux",
+      expenses_total: "Dépenses totales",
+      result_year: "Résultat net de l'année",
+      monthly_evolution: "Évolution mensuelle",
+      col_month: "Mois",
+      col_income: "Revenus",
+      col_expenses: "Dépenses",
+      col_result: "Résultat",
+      income_by_category: "Revenus par catégorie",
+      expenses_by_category: "Dépenses par catégorie",
+      col_category: "Catégorie",
+      col_total: "Total",
+      col_spent: "Dépensé",
+      col_limit: "Limite",
+      bank_accounts: "Comptes bancaires",
+      year_end_balances: "Soldes des comptes au 31/12/{year}",
+      fixed_expenses_staff: "Dépenses fixes et personnel",
+      col_name: "Nom",
+      col_value: "Montant",
+      col_status: "État",
+      open_debts: "Dettes en cours",
+      savings_goals: "Objectifs d'épargne",
+      no_expenses: "Aucune dépense enregistrée.",
+      no_income: "Aucun revenu enregistré.",
+      no_accounts: "Aucun compte enregistré.",
+      no_fixed_expenses: "Aucune dépense fixe enregistrée.",
+      generated_footer: "Généré automatiquement par Fonsprince One — Afonso Ndombaxi.",
+      fiscal_summary_title: "Résumé Fiscal des Investissements (estimation)",
+      col_type: "Type",
+      col_received_in: "Montant reçu en {year}",
+      col_rate: "Taux",
+      col_estimated_tax: "Impôt estimé",
+      bond_coupons: "Coupons d'obligations",
+      equity_dividends: "Dividendes d'actions",
+      total_coupons_dividends: "Total (coupons + dividendes)",
+      unrealized_gains_note: "Plus-values non réalisées sur actions : {gains} (impôt potentiel de {tax} à {rate}%, applicable uniquement au moment de la vente — non inclus dans le total ci-dessus). Taux modifiables dans Investissements → Performance.",
+      fiscal_disclaimer: "Ce rapport est un résumé informatif préparé à partir des données enregistrées dans l'application. À des fins fiscales (ex. déclaration d'impôts), confirmez toujours les montants avec les relevés officiels des banques et autres pièces justificatives. Les intérêts bancaires ne sont pas inclus dans ce résumé — consultez votre relevé bancaire pour ce montant.",
+      staff_suffix: " (personnel)",
+    },
+    kpis: {
+      financial_health: "Santé Financière",
+      auto_insights: "Analyses automatiques",
+      score_excellent: "Excellente",
+      score_good: "Bonne",
+      score_fair: "Correcte",
+      score_attention: "Nécessite attention",
+      factor_liquidez: "Liquidité",
+      factor_poupanca: "Épargne",
+      factor_endividamento: "Endettement",
+      factor_investimentos: "Investissements",
+      factor_evolucao: "Évolution du patrimoine",
+      type_order: "compte courant",
+      type_savings: "épargne",
+      type_investment: "investissement",
+      insight_networth_up: "Le patrimoine a augmenté de {pct}% par rapport au mois dernier.",
+      insight_networth_down: "Le patrimoine a baissé de {pct}% par rapport au mois dernier.",
+      insight_bank_share: "{bank} représente {pct}% des actifs.",
+      insight_concentration: "Forte concentration en {type} ({pct}%).",
+      insight_interest: "Intérêts estimés ce mois-ci : {amount}.",
+      insight_member_share: "{member} représente {pct}% des dépenses du mois.",
+    },
+    exports: {
+      csv_transactions_title: "Transactions (CSV)",
+      csv_transactions_text: "Toutes les transactions enregistrées, une par ligne — s'ouvre dans Excel.",
+      csv_accounts_title: "Comptes (Excel)",
+      csv_accounts_text: "Vue consolidée de vos comptes bancaires, par banque et par compte.",
+      pdf_accounts_title: "Comptes (PDF)",
+      pdf_accounts_text: "Résumé des comptes prêt à imprimer ou à enregistrer en PDF.",
+      backup_title: "Sauvegarde complète",
+      backup_text: "Toutes les données de l'application dans un seul fichier — à conserver ou transférer vers un autre appareil.",
+      import_title: "Importer des données",
+      import_text: "Restaure une sauvegarde précédemment exportée par cette application.",
+      export_cta: "Exporter",
+      import_cta: "Importer",
+    },
+    alerts: {
+      empty: "Aucune alerte pour le moment — tout est à jour.",
+      balance_negative_forecast: "À ce rythme de dépenses, le solde pourrait devenir négatif avant la fin du mois — prévision : {amount}.",
+      category_spike: "Vous avez dépensé {pct}% de plus en « {cat} » ce mois-ci par rapport à la moyenne récente ({cur} contre une moyenne de {avg}).",
+      recurring_overdue: "« {name} » est en retard (échéance le {day}).",
+      recurring_due_soon: "« {name} » arrive bientôt à échéance (le {day}).",
+      recurring_forgotten: "« {name} » n'a pas été payée depuis au moins 2 mois — il pourrait s'agir d'un abonnement oublié.",
+      category_limit_exceeded: "La catégorie « {cat} » a déjà dépassé sa limite mensuelle ({spent} sur {limit}).",
+      member_limit_exceeded: "{member} a déjà dépassé son budget mensuel ({spent} sur {limit}).",
+      debt_overdue: "La dette envers « {creditor} » est en retard.",
+      goal_no_contribution: "Vous n'avez pas encore contribué à l'objectif « {goal} » ce mois-ci.",
+      export_reminder_days: "Vous n'avez pas exporté vos données depuis {days} jours — pensez à faire une sauvegarde.",
+      export_reminder_never: "Vous n'avez encore fait aucune exportation de données — pensez à conserver une sauvegarde.",
+    },
+    simulators: {
+      group_tax_salary: "Impôts & Salaire",
+      group_interest_savings: "Intérêts & Épargne",
+      group_utilities: "Utilitaires",
+      group_credit: "Crédit",
+      sim_irt_label: "IRT (nouveau, 2026)",
+      sim_irt_sub: "Impôt angolais sur le revenu du travail",
+      sim_salarioLiquido_label: "Salaire Net",
+      sim_salarioLiquido_sub: "Brut → net, avec allocations (sécurité sociale + IRT)",
+      sim_subsidiosAnuais_label: "Primes de Vacances et de Noël",
+      sim_subsidiosAnuais_sub: "50% du salaire, au prorata des mois",
+      sim_horaExtra_label: "Heures Supplémentaires",
+      sim_horaExtra_sub: "150% / 175% / 200% selon la loi",
+      sim_rescisao_label: "Rupture de Contrat",
+      sim_rescisao_sub: "Indemnités et montants proportionnels",
+      sim_jurosComposto_label: "Intérêts Composés",
+      sim_jurosComposto_sub: "Capitalisation composée",
+      sim_jurosSimples_label: "Intérêts Simples",
+      sim_jurosSimples_sub: "Capitalisation linéaire",
+      sim_conversaoTaxa_label: "Conversion de Taux",
+      sim_conversaoTaxa_sub: "Mensuel ↔ Annuel",
+      sim_rendimentoPoupanca_label: "Rendement de l'Épargne",
+      sim_rendimentoPoupanca_sub: "Projection du solde épargné",
+      sim_porcentagem_label: "Pourcentage",
+      sim_porcentagem_sub: "Pourcentages et variations",
+      sim_regraTres_label: "Règle de Trois Simple",
+      sim_regraTres_sub: "Proportion directe",
+      sim_contadorDias_label: "Compteur de Jours",
+      sim_contadorDias_sub: "Jours entre deux dates",
+      sim_diasFaltam_label: "Jours Restants",
+      sim_diasFaltam_sub: "Jusqu'à une date future",
+      sim_emprestimo_label: "Crédit Personnel",
+      sim_emprestimo_sub: "TAN, TAEG et droit de timbre (règles BFA)",
+      sim_financiamento_label: "Leasing Automobile",
+      sim_financiamento_sub: "Valeur résiduelle et taux d'effort (règles BAI)",
+    },
+    privacy: {
+      last_updated: "Dernière mise à jour : {date}",
+      s1_title: "1. Ce que couvre cette politique",
+      s1_body: "Fonsprince One est une application de gestion financière personnelle et familiale. Cette page explique, en langage simple, quelles données l'application conserve, où elles sont stockées et ce que nous faisons — et ne faisons pas — avec elles.",
+      s2_title: "2. Où sont stockées vos données",
+      s2_body: "Par défaut, toutes vos données financières (comptes, transactions, budget, objectifs, dettes, cartes) sont stockées uniquement sur cet appareil, dans le stockage local du navigateur (localStorage). Elles ne sont envoyées à aucun serveur, sauf si vous activez la synchronisation cloud décrite ci-dessous.",
+      s3_title: "3. Synchronisation cloud (optionnelle)",
+      s3_body: "Si vous choisissez de vous connecter pour synchroniser entre appareils, vos données sont également stockées, chiffrées en transit, sur les serveurs de Firebase (Google), sous le compte du projet Fonsprince One. L'accès est protégé par votre mot de passe (ou fournisseur de connexion choisi) et seul votre compte peut lire vos propres données. Vous pouvez arrêter la synchronisation à tout moment en vous déconnectant — les données stockées localement sur l'appareil ne sont pas supprimées par cette action.",
+      s4_title: "4. Ce que nous ne faisons jamais",
+      s4_body: "Nous ne vendons, ne louons ni ne partageons vos données financières avec des tiers à des fins publicitaires ou commerciales. Il n'y a ni publicité ni traqueurs tiers dans l'application.",
+      s5_title: "5. Services externes consultés par l'application",
+      s5_body: "Pour convertir les devises, l'application peut consulter une API publique de taux de change de référence issue des données de la Banco Nacional de Angola (BNA) (angolaapi.onrender.com). Cette requête n'envoie pas vos données financières — elle demande seulement le taux de change du jour. Aucun autre service externe n'est contacté avec vos données.",
+      s6_title: "6. Vous gardez le contrôle",
+      s6_body: "Vous pouvez exporter toutes vos données à tout moment (section Exportations) au format JSON, Excel, CSV ou PDF. Vous pouvez également supprimer toutes les données stockées sur cet appareil en effaçant les données de l'application dans les paramètres du navigateur ou du téléphone. Après vous être déconnecté de votre compte cloud, vous pouvez demander la suppression définitive de vos données synchronisées en nous contactant via le moyen indiqué ci-dessous.",
+      s7_title: "7. Contact",
+      s7_body: "Pour toute question de confidentialité ou demande de suppression des données du compte cloud, veuillez contacter le titulaire du compte via l'e-mail associé à votre compte Fonsprince One.",
+    },
   },
   es: {
     nav: {
@@ -4708,6 +5269,186 @@ const TRANSLATIONS = {
       disclaimer_prefix: "Valores meramente indicativos. Para la tasa oficial del día, consulte",
       disclaimer_suffix: ". La actualización automática usa una API comunitaria que refleja datos del BNA y puede no estar siempre disponible, sobre todo para ZAR y GBP — en ese caso, introduzca el valor manualmente.",
       preview_title: "Vista previa",
+    },
+    forecast: {
+      summary_title: "Resumen mensual previsto",
+      summary_desc: "Basado en las fuentes de ingresos (Presupuesto) y en los gastos fijos + personal registrados.",
+      expected_income: "Ingresos previstos",
+      fixed_staff_expenses: "Gastos fijos + personal",
+      variable_expenses: "Gastos variables (promedio de 3 meses)",
+      variable_expenses_sub: "Compras, ocio, etc.",
+      projected_result: "Resultado mensual previsto",
+      include_variable_checkbox: "Incluir gastos variables promedio en la proyección",
+      projection_title: "Proyección del saldo — próximos 6 meses",
+      projection_desc: "Parte del saldo disponible actual en Kz ({bal}) y suma el resultado mensual previsto cada mes.",
+      negative_warning: "Al ritmo actual, el saldo podría volverse negativo en {month} (≈ {balance}). Podría valer la pena revisar los gastos o las fuentes de ingresos.",
+      other_currencies_note: "Esta previsión solo considera los saldos en Kz. Las cuentas en {currencies} no están incluidas.",
+    },
+    investments: {
+      pill_bonds: "Obligaciones",
+      pill_equities: "Acciones",
+      pill_funds: "Fondos",
+      pill_calendar: "Calendario",
+      pill_income: "Rendimientos",
+      pill_performance: "Rendimiento",
+      coming_soon: "{name} — próximamente, en una etapa futura.",
+    },
+    report: {
+      tab_monthly: "Mensual",
+      tab_annual: "Anual / Fiscal",
+      save_pdf: "Guardar como PDF / Imprimir",
+      download_word: "Descargar Word",
+      pdf_hint: "\"Guardar como PDF\" abre la ventana de impresión del navegador — elija \"Guardar como PDF\" como destino de impresión.",
+      report_title: "Informe Financiero — Fonsprince One",
+      report_generated: "{month} · Generado el {date}",
+      annual_report_title: "Informe Anual — Fonsprince One",
+      annual_report_generated: "Año {year} · Generado el {date}",
+      month_summary: "Resumen del mes",
+      year_summary: "Resumen del año",
+      income_month: "Ingresos del mes",
+      expenses_month: "Gastos del mes",
+      result_month: "Resultado del mes",
+      income_total: "Ingresos totales",
+      expenses_total: "Gastos totales",
+      result_year: "Resultado neto del año",
+      monthly_evolution: "Evolución mensual",
+      col_month: "Mes",
+      col_income: "Ingresos",
+      col_expenses: "Gastos",
+      col_result: "Resultado",
+      income_by_category: "Ingresos por categoría",
+      expenses_by_category: "Gastos por categoría",
+      col_category: "Categoría",
+      col_total: "Total",
+      col_spent: "Gastado",
+      col_limit: "Límite",
+      bank_accounts: "Cuentas bancarias",
+      year_end_balances: "Saldos de cuentas al 31/12/{year}",
+      fixed_expenses_staff: "Gastos fijos y personal",
+      col_name: "Nombre",
+      col_value: "Importe",
+      col_status: "Estado",
+      open_debts: "Deudas pendientes",
+      savings_goals: "Metas de ahorro",
+      no_expenses: "No hay gastos registrados.",
+      no_income: "No hay ingresos registrados.",
+      no_accounts: "No hay cuentas registradas.",
+      no_fixed_expenses: "No hay gastos fijos registrados.",
+      generated_footer: "Generado automáticamente por Fonsprince One — Afonso Ndombaxi.",
+      fiscal_summary_title: "Resumen Fiscal de Inversiones (estimación)",
+      col_type: "Tipo",
+      col_received_in: "Importe recibido en {year}",
+      col_rate: "Tasa",
+      col_estimated_tax: "Impuesto estimado",
+      bond_coupons: "Cupones de obligaciones",
+      equity_dividends: "Dividendos de acciones",
+      total_coupons_dividends: "Total (cupones + dividendos)",
+      unrealized_gains_note: "Plusvalías no realizadas en acciones: {gains} (impuesto potencial de {tax} al {rate}%, aplicable solo al momento de la venta — no incluido en el total anterior). Tasas editables en Inversiones → Rendimiento.",
+      fiscal_disclaimer: "Este informe es un resumen informativo preparado a partir de los datos registrados en la aplicación. Para fines fiscales (por ejemplo, la declaración de impuestos), confirme siempre las cifras con los extractos oficiales de los bancos y otros documentos de respaldo. Los intereses bancarios no están incluidos en este resumen — consulte el extracto de su banco para ese importe.",
+      staff_suffix: " (personal)",
+    },
+    kpis: {
+      financial_health: "Salud Financiera",
+      auto_insights: "Perspectivas automáticas",
+      score_excellent: "Excelente",
+      score_good: "Buena",
+      score_fair: "Razonable",
+      score_attention: "Requiere atención",
+      factor_liquidez: "Liquidez",
+      factor_poupanca: "Ahorro",
+      factor_endividamento: "Endeudamiento",
+      factor_investimentos: "Inversiones",
+      factor_evolucao: "Evolución patrimonial",
+      type_order: "cuenta corriente",
+      type_savings: "ahorro",
+      type_investment: "inversión",
+      insight_networth_up: "El patrimonio creció un {pct}% respecto al mes anterior.",
+      insight_networth_down: "El patrimonio cayó un {pct}% respecto al mes anterior.",
+      insight_bank_share: "{bank} representa el {pct}% de los activos.",
+      insight_concentration: "Alta concentración en {type} ({pct}%).",
+      insight_interest: "Intereses estimados este mes: {amount}.",
+      insight_member_share: "{member} representa el {pct}% de los gastos del mes.",
+    },
+    exports: {
+      csv_transactions_title: "Movimientos (CSV)",
+      csv_transactions_text: "Todos los movimientos registrados, uno por línea — se abre en Excel.",
+      csv_accounts_title: "Cuentas (Excel)",
+      csv_accounts_text: "Vista consolidada de sus cuentas bancarias, por banco y por cuenta.",
+      pdf_accounts_title: "Cuentas (PDF)",
+      pdf_accounts_text: "Resumen de cuentas listo para imprimir o guardar como PDF.",
+      backup_title: "Copia de seguridad completa",
+      backup_text: "Todos los datos de la aplicación en un único archivo — para guardar o transferir a otro dispositivo.",
+      import_title: "Importar datos",
+      import_text: "Restaura una copia de seguridad exportada previamente por esta aplicación.",
+      export_cta: "Exportar",
+      import_cta: "Importar",
+    },
+    alerts: {
+      empty: "Sin alertas por el momento — todo está al día.",
+      balance_negative_forecast: "A este ritmo de gasto, el saldo podría volverse negativo antes de fin de mes — previsión: {amount}.",
+      category_spike: "Gastó un {pct}% más en \"{cat}\" este mes, comparado con el promedio reciente ({cur} frente a un promedio de {avg}).",
+      recurring_overdue: "\"{name}\" está vencida (venció el día {day}).",
+      recurring_due_soon: "\"{name}\" vence pronto (día {day}).",
+      recurring_forgotten: "\"{name}\" no se paga desde hace al menos 2 meses — podría ser una suscripción olvidada.",
+      category_limit_exceeded: "La categoría \"{cat}\" ya superó el límite mensual ({spent} de {limit}).",
+      member_limit_exceeded: "{member} ya superó su presupuesto mensual ({spent} de {limit}).",
+      debt_overdue: "La deuda con \"{creditor}\" está vencida.",
+      goal_no_contribution: "Aún no ha contribuido a la meta \"{goal}\" este mes.",
+      export_reminder_days: "No exporta sus datos desde hace {days} días — considere hacer una copia de seguridad.",
+      export_reminder_never: "Aún no ha hecho ninguna exportación de datos — considere guardar una copia de seguridad.",
+    },
+    simulators: {
+      group_tax_salary: "Impuestos y Salario",
+      group_interest_savings: "Intereses y Ahorro",
+      group_utilities: "Utilidades",
+      group_credit: "Crédito",
+      sim_irt_label: "IRT (nuevo, 2026)",
+      sim_irt_sub: "Impuesto angoleño sobre la Renta del Trabajo",
+      sim_salarioLiquido_label: "Salario Neto",
+      sim_salarioLiquido_sub: "Bruto → neto, con subsidios (seguridad social + IRT)",
+      sim_subsidiosAnuais_label: "Pagas de Vacaciones y Navidad",
+      sim_subsidiosAnuais_sub: "50% del salario, prorrateado por meses",
+      sim_horaExtra_label: "Hora Extra",
+      sim_horaExtra_sub: "150% / 175% / 200% según la ley",
+      sim_rescisao_label: "Rescisión de Contrato",
+      sim_rescisao_sub: "Indemnización y montos proporcionales",
+      sim_jurosComposto_label: "Interés Compuesto",
+      sim_jurosComposto_sub: "Capitalización compuesta",
+      sim_jurosSimples_label: "Interés Simple",
+      sim_jurosSimples_sub: "Capitalización lineal",
+      sim_conversaoTaxa_label: "Conversión de Tasa",
+      sim_conversaoTaxa_sub: "Mensual ↔ Anual",
+      sim_rendimentoPoupanca_label: "Rendimiento del Ahorro",
+      sim_rendimentoPoupanca_sub: "Proyección de saldo ahorrado",
+      sim_porcentagem_label: "Porcentaje",
+      sim_porcentagem_sub: "Porcentajes y variaciones",
+      sim_regraTres_label: "Regla de Tres Simple",
+      sim_regraTres_sub: "Proporción directa",
+      sim_contadorDias_label: "Contador de Días",
+      sim_contadorDias_sub: "Días entre dos fechas",
+      sim_diasFaltam_label: "Cuántos Días Faltan",
+      sim_diasFaltam_sub: "Hasta una fecha futura",
+      sim_emprestimo_label: "Crédito Personal",
+      sim_emprestimo_sub: "TAN, TAEG e Impuesto de Timbre (reglas BFA)",
+      sim_financiamento_label: "Leasing de Automóvil",
+      sim_financiamento_sub: "Valor residual y tasa de esfuerzo (reglas BAI)",
+    },
+    privacy: {
+      last_updated: "Última actualización: {date}",
+      s1_title: "1. Qué cubre esta política",
+      s1_body: "Fonsprince One es una aplicación de gestión financiera personal y familiar. Esta página explica, en lenguaje sencillo, qué datos guarda la aplicación, dónde se almacenan y qué hacemos — y no hacemos — con ellos.",
+      s2_title: "2. Dónde se guardan sus datos",
+      s2_body: "Por defecto, todos sus datos financieros (cuentas, movimientos, presupuesto, metas, deudas, tarjetas) se guardan únicamente en este dispositivo, en el almacenamiento local del navegador (localStorage). No se envían a ningún servidor a menos que active la sincronización en la nube descrita a continuación.",
+      s3_title: "3. Sincronización en la nube (opcional)",
+      s3_body: "Si opta por iniciar sesión para sincronizar entre dispositivos, sus datos también se guardarán, cifrados en tránsito, en los servidores de Firebase (Google), bajo la cuenta del proyecto Fonsprince One. El acceso está protegido por su contraseña (o proveedor de inicio de sesión elegido) y solo su cuenta puede leer sus propios datos. Puede dejar de sincronizar en cualquier momento cerrando sesión — los datos guardados localmente en el dispositivo no se eliminan con esa acción.",
+      s4_title: "4. Lo que nunca hacemos",
+      s4_body: "No vendemos, alquilamos ni compartimos sus datos financieros con terceros con fines publicitarios o comerciales. No hay anuncios ni rastreadores de terceros en la aplicación.",
+      s5_title: "5. Servicios externos que consulta la aplicación",
+      s5_body: "Para convertir divisas, la aplicación puede consultar una API pública de tasas de cambio de referencia basada en datos del Banco Nacional de Angola (BNA) (angolaapi.onrender.com). Esta consulta no envía sus datos financieros — solo solicita la tasa de cambio del día. No se contacta a ningún otro servicio externo con sus datos.",
+      s6_title: "6. Usted tiene el control",
+      s6_body: "Puede exportar todos sus datos en cualquier momento (sección Exportaciones) en formato JSON, Excel, CSV o PDF. También puede eliminar todos los datos guardados en este dispositivo borrando los datos de la aplicación en los ajustes del navegador o del teléfono. Al cerrar sesión en la cuenta en la nube, puede solicitar la eliminación definitiva de los datos sincronizados contactándonos por el medio indicado a continuación.",
+      s7_title: "7. Contacto",
+      s7_body: "Para preguntas sobre privacidad o solicitudes de eliminación de datos de la cuenta en la nube, contacte al titular de la cuenta a través del correo electrónico asociado a su cuenta de Fonsprince One.",
     },
   },
 };
@@ -9080,11 +9821,13 @@ function FinanceApp() {
     rates: exchangeRates,
     onSave: updateExchangeRates
   }), tab === "forecast" && React.createElement(ForecastTab, {
+    lang: lang,
     balancesByCurrency: balancesByCurrency,
     expectedIncome: expectedIncome,
     recurringExpenses: recurringExpenses,
     transactions: transactions
   }), tab === "report" && React.createElement(ReportTab, {
+    lang: lang,
     month: month,
     accounts: accounts,
     transactions: transactions,
@@ -9113,6 +9856,7 @@ function FinanceApp() {
     recurringExpenses: recurringExpenses,
     expectedIncome: expectedIncome
   }), tab === "alerts" && React.createElement(AlertsTab, {
+    lang: lang,
     recurringExpenses: recurringExpenses,
     transactions: transactions,
     month: month,
@@ -9127,6 +9871,7 @@ function FinanceApp() {
     totalReceitas: totalReceitas,
     totalDespesas: totalDespesas
   }), tab === "investments" && React.createElement(InvestmentsTab, {
+    lang: lang,
     bonds: bonds,
     onAddBond: () => {
       setEditingBond(null);
@@ -9185,12 +9930,14 @@ function FinanceApp() {
       setTaxaImpostoMaisValias(maisValias);
     }
   }), tab === "exports" && React.createElement(ExportsTab, {
+    lang: lang,
     onExportTransactionsCSV: exportTransactionsCSV,
     onExportAccountsCSV: exportAccountsCSV,
     onExportAccountsPDF: printAccountsSummary,
     onExportBackup: exportAllData,
     onImport: () => fileInputRef.current && fileInputRef.current.click()
   }), tab === "kpis" && React.createElement(KPIsTab, {
+    lang: lang,
     accounts: accounts,
     transactions: transactions,
     exchangeRates: exchangeRates,
@@ -9200,7 +9947,7 @@ function FinanceApp() {
     recurringExpenses: recurringExpenses,
     expectedIncome: expectedIncome,
     month: month
-  }), tab === "simulators" && React.createElement(SimuladoresTab, null), tab === "settings" && React.createElement(SettingsTab, {
+  }), tab === "simulators" && React.createElement(SimuladoresTab, { lang: lang }), tab === "settings" && React.createElement(SettingsTab, {
     darkMode: darkMode,
     onToggleDarkMode: () => setDarkMode(d => !d),
     lang: lang,
@@ -9218,7 +9965,7 @@ function FinanceApp() {
     onCloudSignUp: handleCloudSignUp,
     onCloudSignIn: handleCloudSignIn,
     onCloudSignOut: handleCloudSignOut
-  }), tab === "privacy" && React.createElement(PrivacyPolicyPage, null)))), isMobile && React.createElement("nav", {
+  }), tab === "privacy" && React.createElement(PrivacyPolicyPage, { lang: lang })))), isMobile && React.createElement("nav", {
     "aria-label": "Navegação principal",
     style: {
       position: "fixed",
@@ -11853,13 +12600,14 @@ function Overview({
   const liquidityPct = consolidatedKzNow > 0 ? liquidKzNow / consolidatedKzNow * 100 : null;
   const balanceTrend12m = useMemo(() => consolidatedBalanceHistory(accounts, transactions, exchangeRates, rateHistory, 12), [accounts, transactions, exchangeRates, rateHistory]);
   const insights = useMemo(() => buildInsights({
+    lang,
     accounts,
     transactions,
     exchangeRates,
     consolidatedKzNow,
     consolidatedKzPrev,
     familyBreakdown
-  }), [accounts, transactions, exchangeRates, consolidatedKzNow, consolidatedKzPrev, familyBreakdown]);
+  }), [lang, accounts, transactions, exchangeRates, consolidatedKzNow, consolidatedKzPrev, familyBreakdown]);
   const memberTrend = useMemo(() => memberMonthlyHistory(transactions, 6), [transactions]);
   const cockpitDecisions = useMemo(() => buildCockpitDecisions({
     recurringExpenses: recurringExpenses || [],
@@ -16931,7 +17679,7 @@ function PlanningTab({
       color: "var(--slate)",
       marginBottom: 2
     }
-  }, React.createElement("span", null, f.name), React.createElement("span", {
+  }, React.createElement("span", null, healthFactorLabel(lang, f.name)), React.createElement("span", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontWeight: 600,
@@ -17166,6 +17914,7 @@ function PlanningTab({
   }))));
 }
 function AlertsTab({
+  lang,
   recurringExpenses,
   transactions,
   month,
@@ -17181,6 +17930,7 @@ function AlertsTab({
   totalDespesas
 }) {
   const alerts = useMemo(() => buildAlerts({
+    lang,
     recurringExpenses,
     transactions,
     month,
@@ -17194,14 +17944,14 @@ function AlertsTab({
     balancesByCurrency,
     totalReceitas,
     totalDespesas
-  }), [recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate, memberLimits, balancesByCurrency, totalReceitas, totalDespesas]);
+  }), [lang, recurringExpenses, transactions, month, spentByCategory, categories, debts, debtPayments, goals, lastExportDate, memberLimits, balancesByCurrency, totalReceitas, totalDespesas]);
   return React.createElement("div", null, alerts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 14,
       margin: 0
     }
-  }, "Sem alertas de momento — está tudo em dia.")) : React.createElement("div", {
+  }, translate(lang, "alerts", "empty"))) : React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -19220,6 +19970,7 @@ function IndicatorsTab({
   }, c.desc))))));
 }
 function InvestmentsTab({
+  lang,
   bonds,
   onAddBond,
   onEditBond,
@@ -19256,22 +20007,22 @@ function InvestmentsTab({
   const [subTab, setSubTab] = useState("bonds");
   const pills = [{
     id: "bonds",
-    label: "Obrigações"
+    label: translate(lang, "investments", "pill_bonds")
   }, {
     id: "equities",
-    label: "Ações"
+    label: translate(lang, "investments", "pill_equities")
   }, {
     id: "funds",
-    label: "Fundos"
+    label: translate(lang, "investments", "pill_funds")
   }, {
     id: "calendar",
-    label: "Calendário"
+    label: translate(lang, "investments", "pill_calendar")
   }, {
     id: "income",
-    label: "Rendimentos"
+    label: translate(lang, "investments", "pill_income")
   }, {
     id: "performance",
-    label: "Performance"
+    label: translate(lang, "investments", "pill_performance")
   }];
   return React.createElement("div", null, React.createElement("div", {
     style: {
@@ -19340,11 +20091,12 @@ function InvestmentsTab({
       fontSize: 14,
       margin: 0
     }
-  }, {
-    income: "Rendimentos"
-  }[subTab], " — em breve, numa próxima etapa.")));
+  }, translate(lang, "investments", "coming_soon").replace("{name}", {
+    income: translate(lang, "investments", "pill_income")
+  }[subTab]))));
 }
 function ExportsTab({
+  lang,
   onExportTransactionsCSV,
   onExportAccountsCSV,
   onExportAccountsPDF,
@@ -19353,34 +20105,34 @@ function ExportsTab({
 }) {
   const items = [{
     icon: IconReceipt,
-    title: "Movimentos (CSV)",
-    text: "Todos os movimentos registados, um por linha — abre em Excel.",
+    title: translate(lang, "exports", "csv_transactions_title"),
+    text: translate(lang, "exports", "csv_transactions_text"),
     action: onExportTransactionsCSV,
-    cta: "Exportar"
+    cta: translate(lang, "exports", "export_cta")
   }, {
     icon: IconBank,
-    title: "Contas (Excel)",
-    text: "Consolidado das suas contas bancárias, por banco e por conta.",
+    title: translate(lang, "exports", "csv_accounts_title"),
+    text: translate(lang, "exports", "csv_accounts_text"),
     action: onExportAccountsCSV,
-    cta: "Exportar"
+    cta: translate(lang, "exports", "export_cta")
   }, {
     icon: IconPrinter,
-    title: "Contas (PDF)",
-    text: "Resumo de contas pronto a imprimir ou guardar como PDF.",
+    title: translate(lang, "exports", "pdf_accounts_title"),
+    text: translate(lang, "exports", "pdf_accounts_text"),
     action: onExportAccountsPDF,
-    cta: "Exportar"
+    cta: translate(lang, "exports", "export_cta")
   }, {
     icon: IconDownload,
-    title: "Cópia de segurança completa",
-    text: "Todos os dados da app num único ficheiro — para guardar ou transferir para outro aparelho.",
+    title: translate(lang, "exports", "backup_title"),
+    text: translate(lang, "exports", "backup_text"),
     action: onExportBackup,
-    cta: "Exportar"
+    cta: translate(lang, "exports", "export_cta")
   }, {
     icon: IconUpload,
-    title: "Importar dados",
-    text: "Restaura uma cópia de segurança exportada anteriormente por esta app.",
+    title: translate(lang, "exports", "import_title"),
+    text: translate(lang, "exports", "import_text"),
     action: onImport,
-    cta: "Importar"
+    cta: translate(lang, "exports", "import_cta")
   }];
   return React.createElement("div", {
     style: {
@@ -19437,6 +20189,7 @@ function ExportsTab({
   }, item.cta)))));
 }
 function KPIsTab({
+  lang,
   accounts,
   transactions,
   exchangeRates,
@@ -19459,7 +20212,7 @@ function KPIsTab({
     recurringExpenses,
     expectedIncome
   });
-  const scoreLabel = healthScore.total >= 80 ? "Excelente" : healthScore.total >= 60 ? "Boa" : healthScore.total >= 40 ? "Razoável" : "Requer atenção";
+  const scoreLabel = healthScore.total >= 80 ? translate(lang, "kpis", "score_excellent") : healthScore.total >= 60 ? translate(lang, "kpis", "score_good") : healthScore.total >= 40 ? translate(lang, "kpis", "score_fair") : translate(lang, "kpis", "score_attention");
   const scoreTone = healthScore.total >= 80 ? "emerald" : healthScore.total >= 60 ? "gold" : healthScore.total >= 40 ? "gold" : "rust";
   const consolidatedKzNow = Object.entries(balancesByCurrency).reduce((sum, [cur, val]) => {
     const kz = toKz(val, cur, exchangeRates);
@@ -19481,6 +20234,7 @@ function KPIsTab({
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   })();
   const insights = buildInsights({
+    lang,
     accounts,
     transactions,
     exchangeRates,
@@ -19500,7 +20254,7 @@ function KPIsTab({
       fontSize: 17,
       margin: "0 0 14px"
     }
-  }, "Saúde Financeira"), React.createElement("div", {
+  }, translate(lang, "kpis", "financial_health")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 24,
@@ -19537,7 +20291,7 @@ function KPIsTab({
       color: "var(--slate)",
       marginBottom: 2
     }
-  }, React.createElement("span", null, f.name), React.createElement("span", {
+  }, React.createElement("span", null, healthFactorLabel(lang, f.name)), React.createElement("span", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontWeight: 600,
@@ -19558,7 +20312,7 @@ function KPIsTab({
       margin: "0 0 12px",
       color: "#fff"
     }
-  }, "Insights automáticos"), React.createElement("div", {
+  }, translate(lang, "kpis", "auto_insights")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -19581,94 +20335,97 @@ function KPIsTab({
     }
   }), React.createElement("span", null, ins.text))))));
 }
-const SIM_GROUPS = [{
-  title: "Impostos & Salário",
-  items: [{
-    id: "irt",
-    label: "IRT (novo, 2026)",
-    sub: "Imposto sobre o Rendimento do Trabalho",
-    icon: IconBank
+function getSimGroups(lang) {
+  const t = k => translate(lang, "simulators", k);
+  return [{
+    title: t("group_tax_salary"),
+    items: [{
+      id: "irt",
+      label: t("sim_irt_label"),
+      sub: t("sim_irt_sub"),
+      icon: IconBank
+    }, {
+      id: "salarioLiquido",
+      label: t("sim_salarioLiquido_label"),
+      sub: t("sim_salarioLiquido_sub"),
+      icon: IconWallet
+    }, {
+      id: "subsidiosAnuais",
+      label: t("sim_subsidiosAnuais_label"),
+      sub: t("sim_subsidiosAnuais_sub"),
+      icon: IconGift
+    }, {
+      id: "horaExtra",
+      label: t("sim_horaExtra_label"),
+      sub: t("sim_horaExtra_sub"),
+      icon: IconClock
+    }, {
+      id: "rescisao",
+      label: t("sim_rescisao_label"),
+      sub: t("sim_rescisao_sub"),
+      icon: IconGavel
+    }]
   }, {
-    id: "salarioLiquido",
-    label: "Salário Líquido",
-    sub: "Bruto → líquido, com subsídios (INSS + IRT)",
-    icon: IconWallet
+    title: t("group_interest_savings"),
+    items: [{
+      id: "jurosComposto",
+      label: t("sim_jurosComposto_label"),
+      sub: t("sim_jurosComposto_sub"),
+      icon: IconTrendingUp
+    }, {
+      id: "jurosSimples",
+      label: t("sim_jurosSimples_label"),
+      sub: t("sim_jurosSimples_sub"),
+      icon: IconBarChart3
+    }, {
+      id: "conversaoTaxa",
+      label: t("sim_conversaoTaxa_label"),
+      sub: t("sim_conversaoTaxa_sub"),
+      icon: IconRefreshCw
+    }, {
+      id: "rendimentoPoupanca",
+      label: t("sim_rendimentoPoupanca_label"),
+      sub: t("sim_rendimentoPoupanca_sub"),
+      icon: IconPig
+    }]
   }, {
-    id: "subsidiosAnuais",
-    label: "Subsídios de Férias e Natal",
-    sub: "50% do salário, proporcional aos meses",
-    icon: IconGift
+    title: t("group_utilities"),
+    items: [{
+      id: "porcentagem",
+      label: t("sim_porcentagem_label"),
+      sub: t("sim_porcentagem_sub"),
+      icon: IconPercent
+    }, {
+      id: "regraTres",
+      label: t("sim_regraTres_label"),
+      sub: t("sim_regraTres_sub"),
+      icon: IconScale
+    }, {
+      id: "contadorDias",
+      label: t("sim_contadorDias_label"),
+      sub: t("sim_contadorDias_sub"),
+      icon: IconCalendarDays
+    }, {
+      id: "diasFaltam",
+      label: t("sim_diasFaltam_label"),
+      sub: t("sim_diasFaltam_sub"),
+      icon: IconCalendarClock
+    }]
   }, {
-    id: "horaExtra",
-    label: "Hora Extra",
-    sub: "150% / 175% / 200% conforme a lei",
-    icon: IconClock
-  }, {
-    id: "rescisao",
-    label: "Rescisão de Contrato",
-    sub: "Indemnização e proporcionais",
-    icon: IconGavel
-  }]
-}, {
-  title: "Juros & Poupança",
-  items: [{
-    id: "jurosComposto",
-    label: "Juros Composto",
-    sub: "Capitalização composta",
-    icon: IconTrendingUp
-  }, {
-    id: "jurosSimples",
-    label: "Juros Simples",
-    sub: "Capitalização linear",
-    icon: IconBarChart3
-  }, {
-    id: "conversaoTaxa",
-    label: "Conversão de Taxa",
-    sub: "Mensal ↔ Anual",
-    icon: IconRefreshCw
-  }, {
-    id: "rendimentoPoupanca",
-    label: "Rendimento da Poupança",
-    sub: "Projeção de saldo poupado",
-    icon: IconPig
-  }]
-}, {
-  title: "Utilitários",
-  items: [{
-    id: "porcentagem",
-    label: "Porcentagem",
-    sub: "Percentagens e variações",
-    icon: IconPercent
-  }, {
-    id: "regraTres",
-    label: "Regra de Três Simples",
-    sub: "Proporção direta",
-    icon: IconScale
-  }, {
-    id: "contadorDias",
-    label: "Contador de Dias",
-    sub: "Dias entre duas datas",
-    icon: IconCalendarDays
-  }, {
-    id: "diasFaltam",
-    label: "Quantos Dias Faltam",
-    sub: "Até uma data futura",
-    icon: IconCalendarClock
-  }]
-}, {
-  title: "Crédito",
-  items: [{
-    id: "emprestimo",
-    label: "Crédito Pessoal",
-    sub: "TAN, TAEG e Imposto de Selo (regras BFA)",
-    icon: IconBanknote
-  }, {
-    id: "financiamento",
-    label: "Leasing Automóvel",
-    sub: "Valor residual e taxa de esforço (regras BAI)",
-    icon: IconCar
-  }]
-}];
+    title: t("group_credit"),
+    items: [{
+      id: "emprestimo",
+      label: t("sim_emprestimo_label"),
+      sub: t("sim_emprestimo_sub"),
+      icon: IconBanknote
+    }, {
+      id: "financiamento",
+      label: t("sim_financiamento_label"),
+      sub: t("sim_financiamento_sub"),
+      icon: IconCar
+    }]
+  }];
+}
 function SimResultRow({
   label,
   value,
@@ -20616,9 +21373,12 @@ function SimListRow({
     }
   }));
 }
-function SimuladoresTab() {
+function SimuladoresTab({
+  lang
+}) {
   const [stack, setStack] = useState([]);
   const [pressedKey, setPressedKey] = useState(null);
+  const simGroups = useMemo(() => getSimGroups(lang), [lang]);
   const depth = stack.length;
   function pressRow(key) {
     setPressedKey(key);
@@ -20664,7 +21424,7 @@ function SimuladoresTab() {
     };
   }
   const activeId = stack[0];
-  const activeItem = SIM_GROUPS.flatMap(g => g.items).find(it => it.id === activeId);
+  const activeItem = simGroups.flatMap(g => g.items).find(it => it.id === activeId);
   const ActiveComponent = activeId ? SIM_COMPONENTS[activeId] : null;
   return React.createElement("div", {
     style: {
@@ -20690,7 +21450,7 @@ function SimuladoresTab() {
       flexDirection: "column",
       gap: 20
     }
-  }, SIM_GROUPS.map(group => React.createElement("div", {
+  }, simGroups.map(group => React.createElement("div", {
     key: group.title
   }, React.createElement("div", {
     style: {
@@ -20901,7 +21661,9 @@ function CloudSyncCard({
     }
   }, mode === "signup" ? translate(lang, "settings", "have_account_signin") : translate(lang, "settings", "no_account_create"))));
 }
-function PrivacyPolicyPage() {
+function PrivacyPolicyPage({
+  lang
+}) {
   const h3Style = {
     fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontSize: 15.5,
@@ -20914,6 +21676,7 @@ function PrivacyPolicyPage() {
     color: "var(--slate)",
     margin: "0 0 10px"
   };
+  const t = k => translate(lang, "privacy", k);
   return React.createElement("div", {
     style: {
       display: "flex",
@@ -20923,35 +21686,35 @@ function PrivacyPolicyPage() {
     }
   }, React.createElement(Card, null, React.createElement("p", {
     style: { ...pStyle, margin: "0 0 4px", fontSize: 12, color: "var(--slate)" }
-  }, "Última atualização: ", todayISO()), React.createElement("h3", {
+  }, t("last_updated").replace("{date}", todayISO())), React.createElement("h3", {
     style: h3Style
-  }, "1. O que esta política cobre"), React.createElement("p", {
+  }, t("s1_title")), React.createElement("p", {
     style: pStyle
-  }, "A Fonsprince One é uma app de gestão financeira pessoal e familiar. Esta página explica, em linguagem simples, que dados a app guarda, onde ficam guardados e o que fazemos — e não fazemos — com eles."), React.createElement("h3", {
+  }, t("s1_body")), React.createElement("h3", {
     style: h3Style
-  }, "2. Onde ficam os seus dados"), React.createElement("p", {
+  }, t("s2_title")), React.createElement("p", {
     style: pStyle
-  }, "Por predefinição, todos os seus dados financeiros (contas, movimentos, orçamento, metas, dívidas, cartões) ficam guardados apenas neste aparelho, no armazenamento local do navegador (localStorage). Não são enviados para nenhum servidor a menos que ative a sincronização na nuvem descrita abaixo."), React.createElement("h3", {
+  }, t("s2_body")), React.createElement("h3", {
     style: h3Style
-  }, "3. Sincronização na nuvem (opcional)"), React.createElement("p", {
+  }, t("s3_title")), React.createElement("p", {
     style: pStyle
-  }, "Se optar por iniciar sessão para sincronizar entre aparelhos, os seus dados passam a ser também guardados de forma encriptada em trânsito nos servidores do Firebase (Google), sob a conta do projeto Fonsprince One. O acesso é protegido pela sua palavra-passe (ou fornecedor de login escolhido) e apenas a sua conta consegue ler os seus próprios dados. Pode deixar de sincronizar a qualquer momento terminando sessão — os dados guardados localmente no aparelho não são apagados por essa ação."), React.createElement("h3", {
+  }, t("s3_body")), React.createElement("h3", {
     style: h3Style
-  }, "4. O que nunca fazemos"), React.createElement("p", {
+  }, t("s4_title")), React.createElement("p", {
     style: pStyle
-  }, "Não vendemos, alugamos nem partilhamos os seus dados financeiros com terceiros para fins publicitários ou comerciais. Não existem anúncios nem rastreadores de terceiros na app."), React.createElement("h3", {
+  }, t("s4_body")), React.createElement("h3", {
     style: h3Style
-  }, "5. Serviços externos que a app consulta"), React.createElement("p", {
+  }, t("s5_title")), React.createElement("p", {
     style: pStyle
-  }, "Para converter moedas, a app pode consultar uma API pública de taxas de câmbio de referência do BNA (angolaapi.onrender.com). Esta consulta não envia os seus dados financeiros — apenas pede a taxa de câmbio do dia. Nenhum outro serviço externo é contactado com os seus dados."), React.createElement("h3", {
+  }, t("s5_body")), React.createElement("h3", {
     style: h3Style
-  }, "6. O controlo é seu"), React.createElement("p", {
+  }, t("s6_title")), React.createElement("p", {
     style: pStyle
-  }, "Pode exportar todos os seus dados a qualquer momento (secção Exportações) em formato JSON, Excel, CSV ou PDF. Pode também apagar todos os dados guardados neste aparelho limpando os dados da app nas definições do navegador ou do telemóvel. Ao terminar sessão da conta na nuvem, pode pedir a eliminação definitiva dos dados sincronizados contactando-nos pelo meio indicado abaixo."), React.createElement("h3", {
+  }, t("s6_body")), React.createElement("h3", {
     style: h3Style
-  }, "7. Contacto"), React.createElement("p", {
+  }, t("s7_title")), React.createElement("p", {
     style: { ...pStyle, margin: 0 }
-  }, "Para questões sobre privacidade ou pedidos de eliminação de dados da conta na nuvem, contacte o titular da conta através do email associado à sua conta Fonsprince One.")));
+  }, t("s7_body"))));
 }
 function SettingsTab({
   darkMode,
@@ -21138,6 +21901,7 @@ function SettingsTab({
 }
 function buildAnnualReportHtml(data) {
   const {
+    lang,
     year,
     transactions,
     accounts,
@@ -21147,6 +21911,7 @@ function buildAnnualReportHtml(data) {
     taxaImpostoDividendos,
     taxaImpostoMaisValias
   } = data;
+  const t = k => translate(lang, "report", k);
   const yearTx = transactions.filter(t => t.date.startsWith(year));
   const totalReceitas = yearTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
   const totalDespesas = yearTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0);
@@ -21157,13 +21922,13 @@ function buildAnnualReportHtml(data) {
     if (t.kind !== "despesa") continue;
     byCategory[t.category] = (byCategory[t.category] || 0) + Number(t.amount);
   }
-  const categoryRows = Object.keys(byCategory).length ? Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem despesas registadas.</td></tr>`;
+  const categoryRows = Object.keys(byCategory).length ? Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">${t("no_expenses")}</td></tr>`;
   const byIncomeCategory = {};
   for (const t of yearTx) {
     if (t.kind !== "receita") continue;
     byIncomeCategory[t.category || "Outros"] = (byIncomeCategory[t.category || "Outros"] || 0) + Number(t.amount);
   }
-  const incomeRows = Object.keys(byIncomeCategory).length ? Object.entries(byIncomeCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem receitas registadas.</td></tr>`;
+  const incomeRows = Object.keys(byIncomeCategory).length ? Object.entries(byIncomeCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">${t("no_income")}</td></tr>`;
   const monthlyRows = [];
   for (let m = 1; m <= 12; m++) {
     const mKey = `${year}-${String(m).padStart(2, "0")}`;
@@ -21176,7 +21941,7 @@ function buildAnnualReportHtml(data) {
   const accountRows = accounts.length ? accounts.map(a => {
     const total = accountTotal(a, transactions, yearEndDate < todayISO() ? yearEndDate : undefined);
     return `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${a.bank.replace(/—.*/, "").trim()}${a.nickname ? " — " + a.nickname : ""}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(total, a.currency)}</td></tr>`;
-  }).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">Sem contas cadastradas.</td></tr>`;
+  }).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">${t("no_accounts")}</td></tr>`;
   const yearBonds = bonds || [];
   const yearEquities = equities || [];
   const cuponsAno = yearBonds.reduce((sum, b) => sum + (b.coupons || []).filter(c => c.recebido && c.data.startsWith(year)).reduce((s, c) => s + Number(c.valor), 0), 0);
@@ -21193,61 +21958,59 @@ function buildAnnualReportHtml(data) {
   const impMVPotencial = maisValiasNaoRealizadas * taxaMV;
   const hasInvestments = yearBonds.length > 0 || yearEquities.length > 0;
   const fiscalSectionHtml = hasInvestments ? `
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Resumo Fiscal de Investimentos (estimativa)</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("fiscal_summary_title")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:8px; font-size:13px;">
-        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Tipo</th><th style="padding:6px 8px; text-align:right;">Valor recebido em ${year}</th><th style="padding:6px 8px; text-align:right;">Taxa</th><th style="padding:6px 8px; text-align:right;">Imposto estimado</th></tr>
-        <tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">Cupões de obrigações</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(cuponsAno)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${(taxaCupoes * 100).toFixed(0)}%</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(impCupoes)}</td></tr>
-        <tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">Dividendos de ações</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(dividendosAno)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${(taxaDiv * 100).toFixed(0)}%</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(impDiv)}</td></tr>
-        <tr><td style="padding:6px 0; font-weight:bold;">Total (cupões + dividendos)</td><td></td><td></td><td style="padding:6px 0; text-align:right; font-weight:bold;">${fmt(impCupoes + impDiv)}</td></tr>
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">${t("col_type")}</th><th style="padding:6px 8px; text-align:right;">${t("col_received_in").replace("{year}", year)}</th><th style="padding:6px 8px; text-align:right;">${t("col_rate")}</th><th style="padding:6px 8px; text-align:right;">${t("col_estimated_tax")}</th></tr>
+        <tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${t("bond_coupons")}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(cuponsAno)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${(taxaCupoes * 100).toFixed(0)}%</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(impCupoes)}</td></tr>
+        <tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${t("equity_dividends")}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(dividendosAno)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${(taxaDiv * 100).toFixed(0)}%</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(impDiv)}</td></tr>
+        <tr><td style="padding:6px 0; font-weight:bold;">${t("total_coupons_dividends")}</td><td></td><td></td><td style="padding:6px 0; text-align:right; font-weight:bold;">${fmt(impCupoes + impDiv)}</td></tr>
       </table>
       <p style="font-size:11px; color:#68707C; margin:0 0 22px;">
-        Mais-valias não realizadas em ações: ${fmt(maisValiasNaoRealizadas)} (imposto potencial de ${fmt(impMVPotencial)} a ${(taxaMV * 100).toFixed(0)}%, aplicável apenas no momento da venda — não incluído no total acima).
-        Taxas editáveis em Investimentos → Performance.
+        ${t("unrealized_gains_note").replace("{gains}", fmt(maisValiasNaoRealizadas)).replace("{tax}", fmt(impMVPotencial)).replace("{rate}", (taxaMV * 100).toFixed(0))}
       </p>
     ` : "";
   return `
     <div style="font-family: 'Segoe UI', Calibri, Arial, sans-serif; color:#1B1F27; max-width:760px; margin:0 auto; position:relative;">
       <div style="position:relative; z-index:1;">
       <div style="text-align:center; border-bottom:3px solid #1B1F27; padding-bottom:16px; margin-bottom:24px;">
-        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">Relatório Anual — Fonsprince One</h1>
-        <p style="margin:6px 0 0; color:#68707C; font-size:13px;">Ano de ${year} · Gerado em ${generatedAt}</p>
+        <h1 style="margin:0; font-size:22px; letter-spacing:0.5px;">${t("annual_report_title")}</h1>
+        <p style="margin:6px 0 0; color:#68707C; font-size:13px;">${t("annual_report_generated").replace("{year}", year).replace("{date}", generatedAt)}</p>
       </div>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Resumo do ano</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("year_summary")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
-        <tr><td style="padding:6px 0;">Receitas totais</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
-        <tr><td style="padding:6px 0;">Despesas totais</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
-        <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">Resultado líquido do ano</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
+        <tr><td style="padding:6px 0;">${t("income_total")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
+        <tr><td style="padding:6px 0;">${t("expenses_total")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
+        <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">${t("result_year")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
       </table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Evolução mensal</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("monthly_evolution")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
-        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Mês</th><th style="padding:6px 8px; text-align:right;">Receitas</th><th style="padding:6px 8px; text-align:right;">Despesas</th><th style="padding:6px 8px; text-align:right;">Resultado</th></tr>
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">${t("col_month")}</th><th style="padding:6px 8px; text-align:right;">${t("col_income")}</th><th style="padding:6px 8px; text-align:right;">${t("col_expenses")}</th><th style="padding:6px 8px; text-align:right;">${t("col_result")}</th></tr>
         ${monthlyRows.join("")}
       </table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Receitas por categoria</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("income_by_category")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
-        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Categoria</th><th style="padding:6px 8px; text-align:right;">Total</th></tr>
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">${t("col_category")}</th><th style="padding:6px 8px; text-align:right;">${t("col_total")}</th></tr>
         ${incomeRows}
       </table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Despesas por categoria</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("expenses_by_category")}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
-        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">Categoria</th><th style="padding:6px 8px; text-align:right;">Total</th></tr>
+        <tr style="color:#68707C;"><th style="padding:6px 8px; text-align:left;">${t("col_category")}</th><th style="padding:6px 8px; text-align:right;">${t("col_total")}</th></tr>
         ${categoryRows}
       </table>
-      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">Saldos de contas em 31/12/${year}</h2>
+      <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("year_end_balances").replace("{year}", year)}</h2>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
         ${accountRows}
       </table>
       ${fiscalSectionHtml}
       <p style="font-size:11px; color:#68707C; margin-top:26px; border-top:1px solid #E3E5E9; padding-top:10px;">
-        Este relatório é um resumo informativo preparado a partir dos dados registados na app. Para efeitos fiscais (ex: declaração de IRT),
-        confirme sempre os valores com os extratos oficiais dos bancos e outros documentos de suporte. Juros bancários não estão incluídos
-        neste resumo — consulte o extrato do banco para esse valor.
+        ${t("fiscal_disclaimer")}
       </p>
       </div>
     </div>
   `;
 }
 function ReportTab({
+  lang,
   month,
   accounts,
   transactions,
@@ -21274,6 +22037,7 @@ function ReportTab({
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [transactions]);
   const reportHtml = useMemo(() => reportMode === "mensal" ? buildReportHtml({
+    lang,
     month,
     accounts,
     transactions,
@@ -21287,6 +22051,7 @@ function ReportTab({
     totalDespesas,
     balancesByCurrency
   }) : buildAnnualReportHtml({
+    lang,
     year,
     transactions,
     accounts,
@@ -21295,7 +22060,7 @@ function ReportTab({
     taxaImpostoCupoes,
     taxaImpostoDividendos,
     taxaImpostoMaisValias
-  }), [reportMode, year, month, accounts, transactions, spentByCategory, categories, recurringExpenses, debts, debtPayments, goals, totalReceitas, totalDespesas, balancesByCurrency, bonds, equities, taxaImpostoCupoes, taxaImpostoDividendos, taxaImpostoMaisValias]);
+  }), [lang, reportMode, year, month, accounts, transactions, spentByCategory, categories, recurringExpenses, debts, debtPayments, goals, totalReceitas, totalDespesas, balancesByCurrency, bonds, equities, taxaImpostoCupoes, taxaImpostoDividendos, taxaImpostoMaisValias]);
   return React.createElement("div", null, React.createElement("div", {
     style: {
       display: "flex",
@@ -21314,7 +22079,7 @@ function ReportTab({
       fontWeight: 600,
       cursor: "pointer"
     }
-  }, "Mensal"), React.createElement("button", {
+  }, translate(lang, "report", "tab_monthly")), React.createElement("button", {
     onClick: () => setReportMode("anual"),
     style: {
       padding: "6px 14px",
@@ -21326,7 +22091,7 @@ function ReportTab({
       fontWeight: 600,
       cursor: "pointer"
     }
-  }, "Anual / Fiscal"), reportMode === "anual" && React.createElement("select", {
+  }, translate(lang, "report", "tab_annual")), reportMode === "anual" && React.createElement("select", {
     value: year,
     onChange: e => setYear(e.target.value),
     style: {
@@ -21347,17 +22112,17 @@ function ReportTab({
     onClick: () => window.print()
   }, React.createElement(IconPrinter, {
     size: 14
-  }), " Guardar como PDF / Imprimir"), React.createElement(GhostButton, {
+  }), " " + translate(lang, "report", "save_pdf")), React.createElement(GhostButton, {
     onClick: () => downloadWordReport(reportHtml, `relatorio-${reportMode === "mensal" ? month : year}.doc`)
   }, React.createElement(IconFileText, {
     size: 14
-  }), " Descarregar Word")), React.createElement("p", {
+  }), " " + translate(lang, "report", "download_word"))), React.createElement("p", {
     style: {
       fontSize: 12.5,
       color: "var(--slate)",
       margin: "0 0 14px"
     }
-  }, "\"Guardar como PDF\" abre a janela de impressão do navegador — escolha \"Guardar como PDF\" no destino da impressão."), React.createElement(Card, {
+  }, translate(lang, "report", "pdf_hint")), React.createElement(Card, {
     style: {
       padding: 0,
       overflow: "hidden"
@@ -21374,6 +22139,7 @@ function ReportTab({
   })));
 }
 function ForecastTab({
+  lang,
   balancesByCurrency,
   expectedIncome,
   recurringExpenses,
@@ -21406,13 +22172,13 @@ function ForecastTab({
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Resumo mensal previsto"), React.createElement("p", {
+  }, translate(lang, "forecast", "summary_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: 0
     }
-  }, "Baseado nas fontes de rendimento (Orçamento) e nas despesas fixas + funcionários cadastrados."), React.createElement("div", {
+  }, translate(lang, "forecast", "summary_desc")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 14,
@@ -21420,20 +22186,20 @@ function ForecastTab({
       marginTop: 16
     }
   }, React.createElement(StatCard, {
-    label: "Receitas previstas",
+    label: translate(lang, "forecast", "expected_income"),
     value: fmt(expectedIncome),
     tone: "emerald"
   }), React.createElement(StatCard, {
-    label: "Despesas fixas + funcionários",
+    label: translate(lang, "forecast", "fixed_staff_expenses"),
     value: fmt(monthlyFixed),
     tone: "rust"
   }), React.createElement(StatCard, {
-    label: "Despesas variáveis (média 3 meses)",
+    label: translate(lang, "forecast", "variable_expenses"),
     value: fmt(avgVariable),
     tone: "ink",
-    sub: "Compras, lazer, etc."
+    sub: translate(lang, "forecast", "variable_expenses_sub")
   }), React.createElement(StatCard, {
-    label: "Resultado mensal previsto",
+    label: translate(lang, "forecast", "projected_result"),
     value: fmt(netPerMonth),
     tone: netPerMonth >= 0 ? "emerald" : "rust"
   })), React.createElement("label", {
@@ -21449,19 +22215,19 @@ function ForecastTab({
     type: "checkbox",
     checked: includeVariable,
     onChange: e => setIncludeVariable(e.target.checked)
-  }), "Incluir despesas variáveis médias na projeção")), React.createElement(Card, null, React.createElement("h3", {
+  }), translate(lang, "forecast", "include_variable_checkbox"))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Projeção do saldo — próximos 6 meses"), React.createElement("p", {
+  }, translate(lang, "forecast", "projection_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 14px"
     }
-  }, "Parte do saldo disponível atual em Kz (", fmt(startingBalance), ") e soma o resultado mensal previsto a cada mês."), React.createElement(ForecastLineChart, {
+  }, translate(lang, "forecast", "projection_desc").replace("{bal}", fmt(startingBalance))), React.createElement(ForecastLineChart, {
     rows: rows,
     startingBalance: startingBalance
   }), firstNegative && React.createElement("p", {
@@ -21473,7 +22239,7 @@ function ForecastTab({
       borderRadius: 8,
       marginTop: 14
     }
-  }, "Ao ritmo atual, o saldo pode ficar negativo em ", React.createElement("strong", null, firstNegative.label), " (≈ ", fmt(firstNegative.balance), "). Talvez valha a pena rever despesas ou fontes de rendimento."), React.createElement("div", {
+  }, translate(lang, "forecast", "negative_warning").replace("{month}", firstNegative.label).replace("{balance}", fmt(firstNegative.balance))), React.createElement("div", {
     style: {
       marginTop: 16,
       display: "flex",
@@ -21506,7 +22272,7 @@ function ForecastTab({
       color: "var(--slate)",
       marginTop: 14
     }
-  }, "Esta previsão considera apenas saldos em Kz. Contas em ", otherCurrencies.join(", "), " não estão incluídas.")));
+  }, translate(lang, "forecast", "other_currencies_note").replace("{currencies}", otherCurrencies.join(", ")))));
 }
 function BudgetTab({
   lang,
