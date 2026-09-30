@@ -916,8 +916,73 @@ const IconShieldCheck = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE
 // ══════════════════════════════════════════════════════════════════════
 
 const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAgAElEQVR42q19B3gU2ZUuu16n8SSCEMoEkWGGNMHjsZ/XXq/X9rN3IjmnAYaccwYhlHNCAqEEIieRs5AASSCByMOQMwLlTtV93n/OrWq1BONnv7d8309VV3eXuv6Tz711q1Gjf/AfEf0L8CPjdWkp/cRiqe5htVqn2Gy2NKvNXlRrczyp1ewWs01zaJpGNs1CFksNWW0mwExmiwmvzYCNrGa8b7YrWBx4bSeryeWYHLcCZsDiApfXVgUrjmlmBl5ja8COzxjQdNjMJmxfA6tZwO/LZ8w1ZGeY8Nvx2mK1OPD7LWar6YnZZiqyWs3pmlWbiuvvWVpa+hODl+zs7B+Bp39t9D/5j0/IAuB9E1HLWrO2yGyzXbRpNgfV+2cnTWOyq8gOaLYKcvC+hgux1ZBmByl2GzmwJQfO5DAr2E3kwGu7g7dmgfGew+UYw86ftdcC+nFs5ZjDir9v0b9nknMqmHUYr2vV9zV9q4PIrKB/32F8D8qj2WoBXAN/1lGr/g6pS7fb7Q6z2VRqNtcuMplMLV+nrP8/xDtPVFNDXlCgSCh2pc42tNzi0KyVUPQXNrv1BVT4hYPs5XjrOX74PSLTDaLKUhw6T7YXhWR7WSRb64t8IE/f5pOFUZZHluen6kOOAWWnBFaG8z2Xzz3jbb7AzHiWh20emZ4ZOI3Xp9V7/Lln+LsNwMf4+1bjPGVnyYTfasZv1nANDr4W620wfg/MP7NrWjkMv8pms5gchjRwoBIWHoVdL52/HxmK+/+q9WJKmql6lN1meyYS18hutdph+SbNbq1yOLQKHC3DGw9AcAnV3D5IT86l0c0jq+nq7tlUmj2OLmQOofPpfak4sw8VZ/Wmi5lf0YUMV3zZ4HXd8ZL0L6g47XMqAYrTPhNcwLELaV8KStK+oJL1n9P5tK/oHF6fW/8lFa3/QlC47nPgMx2f123XfkHn1uKzsjWA7/GxddimfklncZ7c1C/oVOrXdDZzKJ3P/pYubJ9N3x0No6elW8j08CyEAiXTKhx2zQwvZ4FD0AxBPINrGu2ixP/6T5Ovb9+xmqs36N4F3gN/wgr/brWSw1qDYy9JM92hp9+foMtHo+hc1hA6veZPdCb+91SQ8GsqSviAzsf3ohJsi+O7U3FcD9m/mPAhXYr/kErjP6BLCb3oUuKHgitJjI/pypqP6fIa3v6SriR/LLgElAIX13xEF/G5i0k4T+JHVILvleB8JUm/Aj6h4sRfOnEu/mMqAgrjP6LCuA+Bj6goDq9jPxUUxeI3OrcK5/Rj52I/oTNRH9Lp8A/pTPjHdCroI8oN+YROhP6WDof/Fx1PHEBFW2bQnYIUqim7CRtAfNHMDliEjf0SUwYhZDGHrpz+w+TX1tb62GzWQj6RxVZrw8nsdqsNL6pB/DMI4CqVXUmn0i1j6Uzc/6bTEZ9SQcz7dD7pfbqQ3I1K13QFcUBSZ7qa0ImuCHj/fWzfp8uJeA+4lvQeXVvTHXifrgK8f31NN7qe1INurOmF/Z441kP/THe6msToppDYA+dQuITjl5J6Ar10sKB70IUEFno3upDYDdvudCG+J45/hOMf0oW4D15BSRwUBopSHNudzvP1RCmci+xG56L52Id0Lu6XdDryIzoW3JOOhv2STsT1pu8OB8ONnQZbT5EgVNjNphqbsgaNOfT5h4RQp/m1PppmvcQnMEHdLTazw2pFsLPA/WtPqOrRUSrZPRN/+A90NqobXYvtSjdiO9KV+E5UmtARF9cRF9kRGt6RLsV1EFyO60iX412A91koVxMhlKSuwHtOsFCuQ5CMa4k4JuisC1F950r8e/VQCqGWgmBXXIwH8YyErsB7IPZ9wYV4bHUUx71XH7iW87Gd6FxMJyqM7kBFQEFkR6AzFUa+h+PdnEIpie1GhRFdKD/oPToY8AEdTxhI90s2wBjuwk+XQRDVVrEEm3YJCu37d4VgBAts30WEOat/0WqBW7NaEP3N8PPaA3p4fgOdiB1IxyJ+R2dh3sXQrFKQeym2PV0E0Rfi2+HC2kGb2uF1OyrFcYZTEBBS3X7HOstI7ALrgCASFa7pgjBeX3GxoivxXfHd9yDUrvi7XYCuILxbfeKZ6Di1LcFnGcVxrxJ+nsGkx3QFuV0AEB3VEcQz6e3pbEQ7uKAOdDa8MxVEdKUiIR/WgG1RZFc6E9aRToV2ptzwnnRw9ce0O/CPVLxzGVkrLyBLeYIUtkKEYNO0AubWlevXC8BmzxTyLcw/fxEuzfoCO3fo++PRdCT4z1QQ9WuQCv8e2Q4aA8T5g3gmvxMutCO0DPsAC+QiLuQitKkUWnUptjOI74L9DvWEIILAd68yuQldROOv6VAC6OIk/3J8FxfiFUpB2gUQycQbUAJQcCX+nJPo16GzTnwHnXwgvKOQfDaik2g7g4kvjOgq+2dC29PJMH/KDWtNZ8PaQ0gf0r5Vv6bTGZPIUg7O7c9RZ1RajZjwWgEYqSZi6xj+IDiHz2fyHdivwoE7dDM/gQ6GMvkfU0l4a7oY5kMXI1tTcZQ/Lqwdfnx7EA8BwBqKQXAJcIERDcuI7iBgoi5GMzrJPoMJvAyhXNLB+5eh4Q1dDJN+OfZV4hW6CtGuAnAVQrGh5S7u5VUorWftN8g/Ha6IF4R1AtmwBAijILwTFYTiWEgXOh3SgXJD21BemB8VBHtTUXBLKGYPWMOndCp9PFkqz6OmgDvSYwJc+RhXzhstWrRID7rkq2n2x/IhOyc8SOtRIbLbeXAuhfaG/oVORX4C02tPxaHuVBLmS8Xh/nQuvC1MEm4nppMugA4igGK4nRJGNNyRE7pFRHfWCawjsyG5AhYKLOIyXFMpNL8UVnIxDoSzy8F3L7JABV3EAgTxOnTyS1zIVxrO6OqCLoLCKEZn8fdnIzqI2zkd1kEsgEl3IpwF0YnyV+P91dgP7gzyO1B+qD8VhfjT+ZA2VBzSDufoTntWfkR5mVNIq74KL1Jut2tWFKo2cKzigXBvSAKJUwSTXwNnZdFQltuQ7VA5Vd3JoWNRf6Zj4b9C5H8PJ25DheEtqQjmVhjRGdLuQsWMqE5UDM0uRjA+H8OAEBjQphKY9IUo3RrwniK+86uEu2p2NJPdCcGTAzu2EIC4t3gQHgtyofUX8VlGCVAMYZW4Iva9ehbA5LOmF4Fo9uMGCnBNBRHv4VreEx/PwZY1/gyIPx1Wn3y2gNMh7RF0O1He6o6UH4j9QAgrGAIJRjwIfp8KsS3EZ84GtYZQ3qNtS5ES5wTCndyHQpfrmZEtop4VoIT21+yOlxa7CMBh00C+hnSq9hrlZ4yh48HdkGZ2ozw+MQekCN0nRiotOo/9Yhw/jwt0AppewkLBZy9AswRMarRyQ6UiAAVxTfgOC0cgnwPpcBfFElM61idXRzG++yoU+QaKxed3dfHvKpsRsgVd6pHuhE46uxtDAKdDO4L4DoL8Ve0Fp1kAgXz8fQjmA1hGDzrDlhHkSydXudGhwK60beUf6fHFzWD+iUNDTwye5qXJVO7vjAFoLyySlNNq1yw2K/o2CLp0j26dXU/7gn6HH9hJpFwUAgmHdqOzoV3FTNlXcqp2DiSfC28P99SxvgBA4vlwtgAWQicdncUC2G9fgmZeiuuqv3aFEkoJ9s+D1JK4zq8hHtsYFzhfd8X+ewrYPx+tB1fWfl0AQroOcSk66azx7HYYrO3i63UBnAnBe0HQemh+XqBBPm/bUe7qtnQSpJ9a1V2QG9gJx7zpOARweFUrylnWk05G9yPtxUXUVBZN4qymLTIC8E/sNnuxKrhQa1lrpdAyow9yNHkcHQ3+FdxNOwQXuJvg7goQREEo0rNIXzoLFEYiFiBoFSIrKoKrKUScKIJwzsP1sACKISwDLASxgijluy/G1hFvWIcBjiscNBtqOQvYSbZOsrE1cA7nN8DEK7CLURpf39WwD2/vJN8QgNP18LHgDqLtTHxeQDs6tbIdtm1BuD+dCPSh44Et6WQArGMl3FNgWwjAl47DCo4FtcFnetCBue/R3ZPryKiSsTnP3LMAenF7AZ1fWIDVoZmR9dgf0oOiJNq3+j/henqBbH/4NmgQCo5CRnBHOXY23A9oCU1qB7C2gHwWRASnYyhiIpR1nIcFnQfxvL2ICy+BpRSDkGLZqthRIq87yHvsuthqJK7wd+U7IB/ElkTBt0ejqmVEQRmwPR+NShUCqyMevxXfL4QCsEI0FMBZI9AC+VCu/NC2lAfkC9rB1eBYGB+DUEIhMPjys8Hs91uBeB8IAWnnSn/sQ/NXgvhVPiC/JZ0KwLEAJZjcgFYQCsMfcaIznVwMwa0ZSdaa++gKo8Nql3DQE+5Hm8x7teDehP49unzkqL6MptkIOr4alR4u+AwynTP4cWc4uotmdNJ9ZAdBARcpgGvAYtPlIM3gwHeOY4UEbPhjBGNOW5mUcyCfcV4EAStBRnUeQjjH34GPPgfyiyMYXSEUBFUDXIlGdVNFUTSUgomOVMQXRXaQ1yIAgM8vKSbeF9cjboW1HGTjmvKBvGBoM7Q1F8gLBpGhrVFctYYQkGoGdQeQ7QT6Ut4qdzq1wo9OLgP5IPs4iM5d2RrHQDqO5a5op7CSraM95a5qi+/ibwS1pX2Bn9Dza9vA9kvlhkibxIXXevH/yP05+0H/mKpvH0PO/wfktxysQCwEcBopFv9YznuNbMDYN6COKdTLmaWI4TgBciI6iVZyvCgCuUUI7kURXFV2q0sLueRHGlcAcs+A3AIogRDL2h2tcvbzMSgAo9vgdRscxxbWdw4VaSFQEMYkIxsJf09QJFkOtD8M5wqD+wzBNhhaHdQVqWRn+PXOoqV5yG5Owbp5expCOBvqjeuAC4F/zw/qgm17OhXYBhoPLG9Lx5f50/EV/nRyRWu8VscMnFrZAYDWQwD5Qa3EjXEsuHYkFBw/sSk3RKmN7Fa7NNwwkmW3YPCBqILu5afSgcDfIL9FZOe0K5jNsn0d0cF8TD8ehONBMGX4SNYk9qXiT1kAobo16JbAQihkIkFWEY6fAyHnQnuCLADFy5lITgsR6EF+UfgHkkufgSUURHWV7xaxENmlseuSGNMKr1uC/DZ0HucrCoGw2T1iWwjNLQTRhSEQKisSuxEUTmdDuXoF8Tiex24FZJ+Adh9frYP3g7tQLiziTJAnrL4Vsr/3oIwf0uGAnrRncUc6tKI9HV8O4pdhu7QDBMCar4g/vkLhBKzgJD6Tt4pdkr9YwMGVvSg3bRI5ar7T9HT0ZCO72f7Y4XDAAqwOK0Z+CHVCyfaltGdFD8qHW2GzPIUoz+SyEHh7CifLg1kJoBV5CE6nIIg8CIVT1bwQFoZK21yziQJYQCFbAZPFBIVyVtUDWtkTVsapLmdXSoMLQVihuLe22LbF51Ft41wlOM9FfO4CNLwEn2MU41zncM5Crk3wGzlBOIutKABbBVuEWEUXyeDOiBA6Q5Gg9SD7JHL348AxQTc6EvQ+gud7yGK6IovpRnsCPqatS39NuwL+k4pTB9CxkI9p/zL49+Xt6cSSLop8WMIJXQDHlvvrQkCsgJtiN8SZ0uFVH9CBsH5kfnoOgRgux2a+0UgzazySQKz9Nh52q7hBJ9d8Q/sD3oc54gTB8G/Q9FPsI3nLAuAtCM9djZMH1YGPnYI15LEZAyyEfHFHKl6wGRYifjAKwuDaWCsZYV11l9UWx1HoId4UhYB4CL8Qwmbiz4dxrYFGGLssCKwgDC4qFBYSylbaVf1NVgL+Dfy7kC6ehGLkInXMZdei4yQHxFUgHeSeCOhKR1a8TweXv0/7l3enfctA9pJutAPYhQJq54o/U05YXzqaOp4u7ltNLy9vovJLKbR/1af4bGtlBcu7iqYfx2sm3sBRuKcjS9tg24aOrwSQGR1Z1ZN2BPyJnl3fi4EbDNHaTLWNNAtrvg0WgHYzxnNNT0roaFRvOhSAH7oaASnIXye2AVa3F6nmBirpKrwqBC5aJIVziQuS2iFTOhNhFDr+MHVfpKwtkW14wo34QuOh/agsz4R8gL/1IcjqScfQ8j28+hM6FPQpKvNf08GI39C+sE+hVb+mQyG/pYPB/w78ng4F/4EOh/4nHQn/Ix2P+TOdjPnfdALIjfsrnUj4go7Gf0nHEr6mY4kgN7EfHUmAVicPpZOpoyk/81u6tGsu3ToaSfeLdtDLW7kYNr1AlpdXiNBSuAEfvnkhxgHgWk6uQNBe3lG5HsSAo0K8Iv3wklaCI0tb4TiAoMzC3r74U5w3Q1y9A0VZI83K2m8lM7sfDGxX3jtNB0L/CH/XThG6Wtd0nVyl6XrxAQ1rCNa83NUdRAgiCGjgKRQsShDInuCfxT3BXZwJR/rKNQYyjoIQH7znpzIQaPTx1T1hhb+knODf0bG4L6kAQ5tXDy2j+6dj6VlpJlV+v5cq7h6iijtHqOr+CeAUVd7Pwzafqh6ewZhFAVU9K6LqFxgmfXkBuEi1L0uptvwy9q9h/ypwHfs3sP2Oal/cxPY2WarukwOwlj+kqrJnVF72mJ4/uUsvHlwj29NiOpEygbYt6k4nkOGcXNFS3AxbwAkXARxe0poOLvKjQ4tbCg4vARa3hjA60ZZ5vei74zEQwAsUvBZHIxsLwM4CwBCjw0Yvbh5DuvS/EIwgYSEZ28C2TiHkiutpL8dPrOrQAO11AXR0WgLjJLSFhZCvV5LyngR1pKIMWEcBxw64o8OrP6KdK39Dh6L7UOmuFfTw0l6qelyENO17/L6n0t4lx0tkEC8xQ6FcaZIDA0V27tq6olrBzkOn1XXHubuLPpcD4JrHXF1JtZXlVFNeThVlL4CX9AIoe/6CHj1llNPDx4+p8sUdpJB7aevyv0CTe8HlIDaiBjiODOgEu6NlTHBrIZzJP7DQF2hF+xf4AT60f74Pjrej7Lnd6cr+IDWci+k0jays/SgKajX+oRZ6fuMQ5UDzTkAAx1cxyW1FAAYU+R2F7NdBWYKyAkNQLIBcFoIuCOmlQBAFEMg5BMHznBaGfkCH0D08Ev0lXcXAd83jkxhZuq+mksA9OthF4gfbef6OTcGmxy2bFWRijNph4bk81QLe57k9mrlWYMM+A2PcZNFRW1tJVVUvqbKigqoqKqmivALkA88rqexFJT16UU5PXlbTkyfPyVr1gAr3BNKmuR/QsaVISSXthItZ3hKa3xLHWNsN4kH4Al/aN8+P9s3Hdr434EX7F7ah7Nlore9fDSUql4EuJQAMKJu4+wlLeH7jIO0OwHgnNJoFYFhAHZjQDj8ggLZKCHg/N7CjCOI4HwPpJ8Ri/OUcp1Yhzw5EVoKAeD6kF/z+p8gQfksXtk6n2kcHoNVMPEzUyloCbYfm8pwhrh4xDYfzZ7yWPBq9dgcsgOcMYOzCwfOSbDKIhKYucWyzwMLNVjv3uQSYvSATxGpqa6i6upqqqmuoorKGysqrBc9fVNFzkP78ZSU9KX9Jz8rKYB3P4N7O0vbVX9HuBV3oBILryaV+cCtwLSD+yDJ2Mb50SMj3FY3fN8/XBfzam/Yv8qeMmegG7wsQy+Vh3kYys0zjmV9sATaxgJ0rPqGjAV1AXgOCA15HejsFqQoR7VGGn1ipv8b7R9EfObaqI9AeQRQ+chWyBXzuJD6Tj2zkxKqPEDj/SjdyY0H2HVSH1TIOwbPYHFAIG882ANCjBekOIV5I14l3aDJVBu9r8hmNv2PDd2xWgQU9FhECemAmzLYzY/ac2VQL7a+l6ioIobKWykH4M5D/pLyKHoP4py/L6WkF9iurEAMeIvhep4s7ltGmmT1BNK5pkQ+2IHQJNBxB9uBCfxDfBhoOlzO/JeAnxO+d60M5cxjesr8X74sA9gZxNYzKt4aDsFXNZtMFUHb9IO1Y8UtEbQhgBZPKaC8wSFevjffaCqHHVurpFkg+gYh/DN89hoKFcQJCqPtOGzFbFsahld1o38rf04OCJPygu1CEKi4IMREARPN4KAYwuEZx6LPQZF/UvT5YGHaHXfpcaPWSTIu0AjYMKmErwHRIk8lCtS6oqTHBBbEFsPaD+BfQ+BdlVPbyBZXBLZWVYTix9gG9uL6Ttiz+PeUseJ8OLWhDB0HygYV+lLPYB4UZfPzC1gBaDXjPIL4hcmAFOYsggBkYgs0JliCMQXslAJurBVw/QNuXfUSHV6IoWd5eJ1LhuA7ZR5ktkNeq+DiKtOwYsoJj6IkotKOjMFcu14+t1N9H3+QwAte+FR1p97Jf0cO8ODCrZhFo0FgrkwgyHYhHDs2i5pw5FPkkAuD3NMCmPgON5307hAYDYC/KchOgtgT5Nh6LFUtg7a+pNYN8K2CjmmoTVRoCqCiH339JFS8rqBqWUAPXYyt/QKayc3Qw6RvaPL8nCO9I++dCAHPaYduO9kIQOfM9lZ8H+Xvnt36V+Dn1BZA+HePge4JkMpsNnedXBXBtP21b9iHqgK4ILjC3pYpIRWZbJ4xjTiAXZivg7dGl7ZAR+As4Fz66vDXIN4ALCOhEmxb2oKv7lqEH/h0CJrSBg6XVrrsWdje1EmjZxTjsddrPWq7It8r8TZkjyvvQfHFHNocOTQa2LVaeDFwLF1QDF1RNJvj+WsyzrKmGC6o0U3mVicoQB54jDjyvqKaXcD2VzxEgkX46yq/SqY0LaP3cXrQDGcyeeR4gEz5+VgfaO6c97ZvbCq+95Ng+Jn9+K6ffdxUAu6A9+MzuBa0pfRomJxgCgKvFQDxPf6jFj6wWh/rs6j7atgR+eeX7yGk70NEl/vWIP7KE0UZSriPO4xAONP4wrEGAY4cXcyHiR0eQkh2VgqSN+h5c0paFKPXXjSJbDQasbc9BFI8SOcR92Fm7RQD6RF6deIFduRn+jF0CMgaPYAVqa3Me13jsFcKxYQKuBRmSiYHrqzFVkqmmgsxV5SC/iioqzPSyCm5XYKEXiAcvXrxAalqB+aB36PTG+bR+xi9pK37v9nktQKIbNNkThLaiPXP8sW0LQbAQ/HSifUQYObowGHvmtgT8aM/slrR7fhsRQOlu5YI0ZxB2CsBGT6/uh7/7CL2OLiCtPR1ZDE3mIkLHYQEIBY6xli9RxB5G6X1oeTvBYSG7FdIyZAaLfCU3PoDPH4JgDiztLOV4GQopcjxBsK1GGuxALcIzMOxKm/E72O/bObdh9dejAENlOvgsf14XGvt8Dr44iwhEQ1fXhi0mlAlMsIBayXyg9TVIPSsrqZKDL6bslJXbYQUOuKFaqql4DgqeoFi7SofWz6a0qe/Ttnkgf2Zb2jUbGjynGayA4Q5S4f9n+dPeWSwEuKI5Xs5gu2ceXs9rJdgDK8kB9sxuTTvn+dP6KZiYsIvrgDJVB9jZ74oAaqRD/fTaAdrEAgBRh9HpOwjSDrErccGhJYw29fYPwg0dhMUcgts6zNXg4rq8eC/83/7F7Wjfko60ZQ7aEZsXwdgewfVUSLqI2wJU4NWUW2ESbQ5OK5l0tghN0kyHTFFVsVfNWcIv5raWCMHiYgE2EQrHBQ1xwIJ7ERi1VVaqgMt5VlVNLypqoO219LIMrgk1ALtB0u7S4ytbaVv4QEqd3YN2LWxHO5i46f60e3ob2j3Lk3bNfZd2zX+bds91B/FQqNkdKWd2KxHA3rneINtbBCCaP6e1YDesZNesVrRzrj+tm9ReCcDxQuqaBgKwo1F0SBcAptst7UgHhNj64GMHRJvrsB9uaP8y/jwEAKEchuvhinA/BLAPKdruBe1xQSjF5/egJ1eg/bh3QINmWuBSWPttksXofl3TxO9rbAVMvt0qGs51AMOmpncIONfndBNz+CSI23FMvs8CQAB2IP3UavF+NSwBqWY5Usxn0PQKwFJZhhnOqKgxSlV2Yz/lZc+h7IWf0iaQugdKtRMuZ9cMuJaZHbBtC41vTbvmuNOOeY1FADkgdx8UKkcswFsHLIFdDgSwG8eF+JmtaMd0P9qG/eSJmJ6zEy4I0/g13PjRiH80Jt9KkHIVwL4lXUUA++Hz94PQ16NOAPuwv3dJexHEocVtUJQo7d+/CNnBwo60a1EXXBgKtNgv0RG4yjOJJV9XBNoljdQ0ldEIgXrAFfciaaVF6gMLV7P4rZIBkRIYpmhLH0tANhdYFbiatqIFYcFon/kZBHKPNPSCqjCr+9qRJDqSPIGyFvwOGUpX2jWvEx2Ar94zy4O2z24O19MSFgDi2QpmthFt3gkt3znHE24FLmc2a7qPUwC7Z3vguA+2viDfj3bMaEnbpvnQtqktaeuMVpT0LWYR7mQXVCF39UgMMIsAqkUAT10EcGBJB7gOkIs40BB7FyHQgFxDGHv5mC6AgxDAwYWs/agA+XOLO0MA71PmdEwvzJkj9xLUIiCKAKw2SRfFl9s0XYNBLN6z25Q1SMWlIoAi1lGN7sRT9HBwnpf3qPrZ92i83aKqpzepAih/eoPKH1+hF/dL6OmdQnr0fT7du3qYruRnU8HuaDqVuYx2Bg+ndTN/S0kTutDaiW1o8+x2tHshazOuD5q+d1YbCKA1bZvpBwH40e4ZbWAFEMRMf9o5m2MC/PqsFpQzq7m4pjp44DNeYjms9dun+4J8P9o62Ye2TG9JSeNYAGhF2CuhN9wLQgZilkBVLRf3DIXYpoUfgLROILI9HVjEhLd5BUoArWV/Px+DMHLw+sDC9nRwAYSwkDuCKM3ZFUFA2xd0osy5n9DDYswexr0eFjTCpOLlgglKauH7xJCGcuroQEpKnBajKnbwdG/TLSq/l0/X8zLo9LYAOpg4kbYE9qYNS/5K2Uv+RlmL/kKZC/9MGxb+Cfgv2qhjw/w/UMbs31LqjE8peepHFDWuK4WObEfhI/wpelQrShnfmjZMb0WbZ3nRVmj7ttnu0HBUuNDynNlKADtmwo3Ahexk8oHdCLy7Z0FYs3nfWyfdG7HCh7bP0jHTl7bPYPKh9RDCFghgMwSwCfuJ49ooC3Ag/qEuQS8I2QJnDHLBZljAAdo4vxe0Ga5lUVvpX+xd3PpV8kA3WqsAACAASURBVBsIYu9C+EEmfAEC9wLEAgiA27CHFrWUTGjbvHa0PfALjAZd5MmquM2gWn6A1WyVG/KsZvRtakG4Vinj0raKu5jqvROp4GzasvprWjvrNxQ/pi3FDW9BSUOaUPKwN2n98HcpfXhjSsU2bVRTyhjjRhvGudOmb71oy8SWtHkiLnySL7Y+tGGCN2VN9KY07K+d4EOpE7woY4IHbZjkQRunutEWaPL2OXAfcC05otk+QvJO+G12IztA5k6QunNGyzrg2I5p8O0gfCtjhi+0nLctRdu3gPDNIH/TFPz9yd60Ee8lwgJKdrAAquRGw0acpuEGG3FBGJikJ9cO0gYUHjms2Siv9y9oW0dyA+Sgt+EEun+GAA7Mh+tagKIE/ZJDLAQEtE0zUCskj5E7arSaKrKY4HKg9Votgmkt/Dnycw5M1oprdPFIIqUHDKT4CR9TwnB/ShndmjLwwzfBVWya4EubxnnSlvHelD3OG/utcByaDHI34SK3ToH2TWPC2kID/eF/4V6m4P3JfpQxyZtSx3vROnw/fWwLCKsFZUMImye505YpEMAMb0kp2a/vm8VZj7KAHTP8BNt1l+LcTmP3wq5FB3w9E75lmo6pvkJ+Nn7XhkletGGaN5QIc0d3rBYBYDAMAoALMmlmVQcgj36CNDRrDqdg0Pr5IB/IWcAa3kaQg5J7D14LUHDsRq7L2DOfKz1uu8Jtze2EzAeFyCJvWFFrKeg2zcGMhu0L4FoeQ9u5JYAMBsRrNbj3gP+25SndPLuVUhf3oZVD28JV+FHy2FaUOa4lbRwPksf7UfZ4T9owtjltBHEbxnpR5rd+lDUeHUa8nzXenbInNocwPGjLJE/aNln53i0QSDb2M0FAOj6TBgFkfOsr388e54XzeuPzPiK0XSB9FwLtHuT9+5Df82sWgCJdgS2BoXw7vjcF34cgmPDNU1kATLqvbGUfrmfzJBYAfvtUL4obgxnl2zFXFGMYdhaAVQRg0YOwEkAmcuCdIDdnHghH7spEu2L3vPrk70bKtQsV4K75XIgg35/TUX0WgXjvAgxQIP/fNB+3HR0Jl/xX7he28v245dIXNz+7SAdT5lHAsB4UPNSfEr9pSeu+8aS13zSnlDHulDrOAyT7AJ60kX0pCN0I17JxamvKntoBW3/Rss1ToM2TPRDwPECON23HBTO2TAbZTACEkznRF+dpSVkQQhYEmPmtNwTiDeFAoHBLbDH75nalndOY/Da0jbMYaPxW1nbdn28VgHQh3Mep5Rsh5OzJnoKNk7wFbJkbcV4lAO96ApBCzAYicNOjHgOUADJmdUeuy0VEGym5nUS/BruEfCWAndxwQqNqD9LN3RDcTpTiu9Gq3YeZA1lzutGtk/EiAEttOXJ0vrvyGb24dYQyV/SlgMFtKH5cW0oe50vJw5tR6rBmtHaEG635xp3WwGWsA2Fpk1rTuvG+EAgA8lLHAuP8KAXb5G+8aS20et2YFrRudHPAnVJGNsU5GlPyiKa0hoHXCaNbUPxYb1ozFrEA58mc3p62LehBR0N/R+dSe9Pz3PlUEI1gDle3HRmP8uN1Gp09RREu2q2Tz2DyN05kIStBb5joJeQbyGIBwAXFfdOKzm9bpYKwxaQEYHHY6izg6kFKn9mdts9F1OeIzymXEKzIVqTXEb9zjgGYI4qQXTBdzhJ2oUjZjoJkJ3Lq3Ys6U/aCXvTg7DoZirNWPZNhxSc3jtGa2X+iyNHtUCF6weX8nFK+eYPWjmoG0jwpGW4oYZQvRQzxotBB3hQ9oi2tmdgdCvIb2rzkL7Q18HPajWkeOZEDKCd6EB2IHUL74wbQgbi+dDi2D52I7025GHjPW9Of8tcOoDOpg+nchhF0eec4ur1vKj06OpvKziyjqkuhpF2PJPo+jkzXo9D76UXrIYDNcDVCsg4mny2Qt9n6a3VMaXs2riELAshiATDhk1TgF7AV4Duxo/yoaOtKiQF8B79TAM4YcPkgpc3oQdvmcM7bVrADOS9j51x2O/CTwE68z9iBgLVjNoISCo9tSOF2cJ6MqnEbgtbWWTDTWfCXyIAyZrxPd0+nIJXHmK6ljCoenqe0+X0pYVx3DHR0oPQJb9D68f9Ka7/9KY55UvhQXwrs25LChndD+voXOrF2BpUei0cVvYdMD07j9tzLCN43gJuos27gBnjcTF2L5l71GcRyDGe+OIL7xfdjEtoeosfbyfEQUwIf7SDHY0wTf5iGyd+pRHfWEt1MIOu1KKopDSHtWiTdOjCJ4sZ60nq4uSzOXkDaxmns7vxkn92I2ipkTQHpiANZcHOMTLifTJCfKftwbxMZPoJMnC96pI9TAJoSAAKwg/vlVVI1Prl8iNZP7w4y/YX83TPqBCB9kTn14RQAqr6tyIV3IFfeMc0f+S80CMXIFvahyKnXTW5Pt08lSYqpVVykPSHDKeXbj/HdXpK5bJ3iTlnTPeCG3Gn1MD+KnY6pJuum0/3irWR+gnutzLfFZZH1CQpe7qCihW3CtgY1BcZrbZVXSStHiluGO/KfnCTro0Nke7gXN+zvIPOdTWS5lU22W7xNJ+v3a8kGWL9bQ6Zr8VR7JZZMpRGwgmg6Hvc3ioWrSoMLyWBtnqI0d8MUX53s+hDCgQwBYhXS2gz5rrds04G0CZ4AjsFCokZ4UeGWAIkBkobyuKTMipAYYBMLSJ3WDQKAliMIsTZvZy2GNjPRdcIwAAHMYn+JFBAFzTaU7dunInixv5zmofwlrGHNhNZ0KzdRxkLzsqZT8rfsxlD6T0EpzwEOmUjyaG9Knv4R5W9diOkxh2EpV1CUXcPEhuvo5XwP13UbC3o8RMH2FEWcDgjEaroPQXyH9y9jOsl59PLzMIXkMGmP9uIOqx2k3dsCZGOVgY1ku5tFttuZpN3KhABSyXwtCX8mDoihypJgypzRmZIQP4S8SS2EXNFwaH7mFM96pBvEp09sAejk4ztMfrqONCQOjPXfekCoLSgSrrWBAGABPDPOWi0W8PjSAQigB8hEDs3p1gxsUQlySb5NBNFSCg8Gaz1j20wfFB/IQlCCb0FluXVaK6R/IJ595CQuQnwR9FrSPczpeXIlh5Imt8P5m8FdoXU7uz0CWnu4ns50JG4EJkLtgh7gFmXTFcweuQJSL4Hc60hZv0cNcQ+kP4DpPsBn0E213kMKexsNte/wGczbqbyEEHMOM1dO4Xbmg2R/nAO3A/fzYDOwEUIA+XeyQP4GWEAmWW6mYzwohcyXosjxfRJd3DaaEkaCwG/hLpDqcqGWOUkhiwUxWbkacTFABpOOzygB6ODXEzydxKeN94BrbYFkwV1eRwzzpoItKyT748EwuCA1bqpigFm5oKkf0paZIGkGEwuCZ7AA0Bfh/gjnxVJy+zrBAtgiAkAxhO0myX+9kP8ieE1sJXl60je+9Pj4EtzM3A+p5ZsI1s3gsjqgVdCLEmf8igpzglCMlYjWm8uL0Ym4jFuk4FZqv4N/B8lmkG1+iMCFQXLrI4HDcg9TUG7j/e9QT1zG1KASXFcRObCQhwYLcDxBDHi0m+jBdmj/FpDPbgiC+D4LbigDU41SyQQ3ZL2RCDcUhQlXPZH6wuUg0+KqOuNbN9QXCKgTWkhms3ECV9QIriA5C8j41p3SGROUBRiEC+nftgDcBUz+urFu2HpRxFDcT7FpuWpH20QAPHZq12OAiR6zC5r6AQhtC232kvKaBcCdPN5uhyVsFY33rQcWwCZ2OdNV0Mqa4imp2Ea4nsyJ/kj5MN8+8jME+K7yY7eiasya0YVS8Leun8ICI5YLsqqKVonbeHB/grXmCki9hsB6A7iDn/YAmv5AhCACgBWwABzmOxDADbmngUQAhRBAHjmeIQg/ZQHAou5vhQA2ieZrt2AFN1n715P5u2SyXE+QgFy8cThSXs7hUTWjlZE+thkUx02IZsI3gtRsJh/bzPEthHwlgOb1SGeyU8cZ2+ZIld1VTcPpMdLfMAjgLAtAzYxzFUC1EgBc0NopvSgbZfzmqZ60eZrq4hnltTSXpjPhfjr5yv1s5VKc0zXOGIBMFEAZbK7owWRO8EOh0wYXiG4gXFHGJAzNTULOP/E9unkcvfHaAtKwXIz24jy0+JIQb+NbO3GToMN0HcCsOPN9HUoIbBF2tDXsaNRpcFGO6ksiALtTAEeRAe2XDIjub4EAskm7nUHWm2lkvpkKC1iH7Afk302lh7kLMVSIgg7kb0S2wlV11oTmEEBzIdsQQBYIzoS2Z45n8lkIIH5cC514g3RD44ExHlKXrP2mBeKbu9QpIUNwV1E2xsIdZbL41CsCeHRpPyVP6YmMBL0XkLjZWWarQkQEwUKY0VIJgJtPIJ81etsUP3E/G1m7EbTSp3AgA1DJpo7xghZw8YQqd3x7ZBqYSr5pOhqeubgl7QTWETqD2/tLAKwvhPECexWCbxWCsOma+Hgy34XW31UCMLEA7ooAOA3luzntVUhDKy6IAOhlPjmeH4MFHIQF7BQBaLoALDdT4PfXkBmBV7udQi8vhtPWxR/AT3Nl2wpWyyQ3Re7upjQdyAI2OjVfBwhPH8s9JQ9FOLR93djm4mp4u3aMrvlMPir65FFc1XtS0CBfOpO9tE4A6MNJG9iIAQ9LD1DypJ5o0/qDSG/VXJqiN5WkIPEVoRjbzSycaX5SqGzVP8ffYwtIgxtK58wAPzx9HFepPkBLFFYI3oH/TXa4B/vjfRDAcaSmBWSuPIdRKqyxgGyGKjn7wcANBGCHBdhBuEPXfg2uiF/ba7mxdxO4qoI10lsb4of2Emv5lEGwTw+R/UkOhh+2iQCsyH4s3yWR+WoMOW4lUxmyni2Yhp6Mpt7maa0Rr9AbmsxBtzGstIlOuIeKA/Dv6d+2EMIzgHQQnDamuSAVWDemuU68G0h3F5ez9hsPQcoodxFAMgtgoA+dZgsgXQBY4gYDIw41MQuF2GME4TUQQAZSSS46Nk5hcB7sU68AYS3PhvYbYIFsRcdxM4TAn80A+YYA0iawf4Q2jPZEluFB0d+0o4cFmCH8BHn6g91Yseowpn/nYmz2NIhEMQVLkJW2qlkAIB9zRDW4HxuIt0EINl0AWs33iA/fiaCsyIBsLISqi2TFKle8ipb1yRFkQ/txz+F2aPsGuJ50ssHv050UunN0Hq3FLLXYURxAW0m7ehPy/o0T4V4mvYPf3RjHOcBCkfDb075VPp7317O7GdvcCdZyJjwF25TRrPlMOjR/pCe2XpSC1HPNCA9ag+tf3d+rTgAYDBML4KXfeJIrW8CjK0cocfIHlIFm1AbOf4ENQqorlABcwSX5lkmc/fg5BSAuiC8AHcd1Y7if44OWwtt0LGUYMpTdKJI2k/Z4NwqtvVga7ChZKnKRShbAleAOTgRjB9yQDRmQhjzfgezHDvK12vvY3hOrcFTDPYF0ezl8P2v/S2RPuL1WKztDtmcnQT5qAQjYfncLORCE6cEWhIlIyk/+miJBUAR6TsnjfOB+YLEgNpvdDfv+iQjAcEFp8PeSwzuzmhYSWNeNbSFgN8NIgcazjxctZ1fDGo90NhmkM9bwGMaIFrRmlAcFsgA2Lv0hAVjo4ZXDlDCpF7S3LawAQXSqt5TkWZN9VB5slN5GNSilucJGAZfcXqoyhPans+bAxFNBfgIuOnFCK3peGksO5OeW+9lkQYvA9jwHHYqDiANwReV5cEfw43BFGtcBNbeg8RjDrYULqoHbwWutCi2ISqSdLxG0y9jdoP2AxZIciCOE9ecI1kTlJ3CNh7DlQLyNKs5H0dn0UZQ6pRMF9/sFKlI3SkRDLhG/KRXKkYkAqVrcEACEwLn8etF6D0kl13FwHWMQD4xW2i6az8SPdNOB/REQABM+XCFpmDsloLmYBKG8VgBqDqUugMuHKW4C8uHJyFRAdAaIz5xkwFvvc3g4K0FnSc6kO6EqxMyJ7Dc9oTWocNHNDBn8Dh2J/2+4Hqy5dgcp4UMERwhAe7oHWQsKp2fHQCgE8OIshkxLUFxxMXZLKmANliBZkMYzp5GW2q7jNVxVFQgvh79/eQJCPIZF9w5T9YNdmM+ZSY8Ko6h053Q6EPk3SkUrJHpYE4ofDjJH+cAdeFE8NHIN8v51Y9FpHcO5vw98O1zm2BY68XXppPh39ukgPhkanqJru2Ckwhru3g5vUQ+JQ92B5hBAc0pkAfTzhACW1AlA4/U5bXZnM+7hpcMUO6EXBNCa0riZNMlVAD4ysOEqgFfKcmOf+yEw7XSQvx7aH48sKBJZwd3cxXAN2WS6i2r0IfLzhzvEDbEAtKdHUcXmilZLTYDeDhdZZGe3c5Ne3s6ly/kbKHdXGB1cP5d2x4+jreEDaBOGOjcFfkbZAX+jDcv/TKnz/x1utAdFj2lHMWh+JcAXJ8M/r+dqdAzc4fA6n5yM3DwZQliLdnYqft96kMzbVMlumosA1iKzWTtGZTbJo0DyiGZOJIN05WY86hFvuB4mX8BWAAEE9POg/OwlanKuCACRWLIgs0ViwAMUYjHjetJ65Ok8hJchpbiXUwCqz6F8uwGj8SRuR9/n/D+LBQDz5UZUDEw9a8mvyXI7jax31yP4ZmABEVSlEIL2eCcGyuCrnx+SCtb+/ARuD8CiXaZiqkUqeXnvStq+4nOMC3RHBuVPgb1b0PIvm9HirxoDb9DiL39My758kwJ6vwsNa0Khg5tTNJv+aHZ9qDsmtBRfLtmKobE8XqDn5yl6EGWkQgAihDGK+HVGgOXX7OdHuilNFwE01YVQJwB2N65IHAZXB/fDFhAPAaxkARguSOaGOgVgdQogeuyHtB4TiLh75+zuOclXDSanAJhkjFbJ/kQPvQmF8Vf002UgXBpaPhQ53I1OrBuK4LtTOpK2e2iIQQB2dkOPYQlPtgno+V7cibQPbuUkViRMRKviU4oa5EmxA5tSyhA3ShmMi+eLGdKMYga/S9GD3qLIwW9SxODGFD2kKUUPbUaxw9ncQcAIBES4DCmGkB6uG9MM0P32N0bwbO705Wv1oomFsI5TSeTvTHqKEWCdfp4F0NwJRTbIbyAAIX+oIYBmYgEr+npQni4AK+Y4STNOXJBTAAcoasyHtG6Cv+pvcJ9jQn2NT5PMxlNSSw6waTxaBUGs53QT/ZL1mJGQjupXeifiknwoBmZ9LWcWevFbUQxlYBGuLKlOpVH2MBuBEsJ4lImuMwZt7mTQtb2LKAwDMBFD2E9jlAz+ei00LQXmHD+4GUUPdKOo/k0psl8ziurnRhGDmlD4oMbYNqYoCCIOAk/SyUqB20gZ3QRorLuSurRRBMDkjlYQwbBAdD/vijrtZ1+vkz6sIem6y9GJF/KHNqV4BgLzin4sgCWyuC1PMJPZ0VwHKAGY6AEq4chvPqC1aB2kceo13t2ls6e3VvX2KgdXrnDXw4+u53RO8mXessnDAr5VY6UcS5KRVT0uCkNVupms6MnY74J4tIcd97G05sMMCGMN1VxcTbXnllN53kIMG7aiYBC8Bm4kcRi0n4cWMQUlEZoeO6gpxQxtQbGDMcQ3wIfi+nvASpqKFUQNbkJxsA4WQAJISxJLQAbCKedICOGbZvW0n326q2a/CiPIqn0mXpHvLgG2HvkccHXCXclnxMEy45AdrejriSnvS3UB4P4AWQSbBWCyyJrJLICoMR9gsKS16uQhLZMCRG84iRDQrGLy143xEqQKPCVgrUfFm4Yx2nRkFjzgzUN165DSZc3tRuVXE0D4JgggS5pjdvTmHffTyH4znqqLMDSYh1lzxUvpVNR/0qov/hVEImsZ+C6tGfIuJQ99C5qP0TLsx0G7Yod6UNxgL0oa5EWJA9whlGbqIofoWwgtFllP3HAmozEE0ET57ZE8Nsxbtzq4BFVXJOG7/D21xWtod9JQV8KVi0nA3zP2mfSk4W71yI8fiusYjP3hHAO8YAHLdBeEGGDnGzQQA8wsAFjA/cv7KGJ0LxQoreoJwIASADQeOXTqGGUB3POQYAWtSsXxNPR8MpHWZSGv5tkLKRhi3L7sEzLdWgfS0RK+nSW9ece9dJCfSNWFy6kifw5ZCuaROW82LKw1Bf73zyh2QGOK6wfy4F6SUMAlDoEQhr4jxMYO4wuHNoLwJFxcHLsd7MeDhHi8FwcCYoeyADj1hBCERJA/nP22ytMNyDEgyQC7kREqjiRCQAkMvE7A9xLwecFwd5VaAixswfBmgnje8t8XJdDBVoBAvaIvC2C5EoBYgE0JwHBB9y7lUPio7nUCGOcmpberANjdpI711jVfCYDbDBzw1vKx0b6UDmSO8RILWIO8+gDuXKcHPBrFAyNwOffT0Y9ZS6YLQVRTsJCq82eT7ew8erxnDAX3+QUFf/k2RfRxp5i+uPgBwMDGFA8hJAx9Fxf0rlwU+9UkCCVp8FtiLWwZLAAmJkGIcatHCmtm0nB3Z4Uq2YuewXAATRyhB9LhLRThIxXinVAC4M8lsgAA3rK7a4jYYc3q7ccMaUwxiBcr+ngjC1omaahTAJoszqoLoHQPhUEAPILFfY5145o5ixERBPv9sT7K/Uj+rDecRnvoAQ2vR8JCgPTRnpIJJSHzOBaHAuwRux8EW9b8e+vIcjWaKouWkqloIdXmzyTtzFy6sXEILfnsDQrp25xC+3hQRD+klAOaU8wAEIwAG4cLiWPN5qIKgkgc+nPgF3BHeI0sibMjpwDgGuKHNROLiB+ukDi8eT2/LXn7MJ1QJpiJHsGoEx4jAd8zCE/UtV9SSxF6c+frhuD34iRja4K4BQvozQJY/hoBGBZQmkNhI7uBNF8hf+24Jnqbtbne33Z1O55KAGO45eou/pR7ICkYeE5FAyoNjbdMxIuE0c1wA/ZfIYAtIgDHnXTSuCtZjPWWzy8n85k5VHtqMjkKZtP5lM9o8Wc/plXIFlajagzq34TCQH70gLcpZiDcz+DGuqvRiR32NvCWEC8V51CDlPpga4gFkYlD2I/rbsYAZy3DlZbHgfj4EYp0w32wO3ntOXW87r14Jt8QkAgAicMwD1reGytubVght6lapRtqdXVBZrp/aR9c0PsigLVjMLFpTGPVA5H8WHc5htsBUkT7PSVNTMGP51RxLQtgOAsBQRkDEzHIXo5E/Q0uCBZwE77/Foqx0nCyFAaQvXAxWU/PJFPueOzPoDMJf6JFn/8brervrjDwFxQy8A1kOb9QAhgITRrijnxfIUYPuAl6xWkIwBkPGgJWksTCGqICZKKesXCeHuck/l2JH/E/QK5xbpUMKA1XcBMYn3H9DbFD+LyesAAfytuwsk4AfJuMJuMB6gkU9y/vp/DRPVBFtkL+3UJmphluRmm7pwI3o0bpvn8UT6LykLI8ZaS7CINfS7CDkCJB0JFIWMBdaP4NBOJrmIVwLoBMhUvJAr9vOwsBnJpCVLgAS97/lVZ+8TMKhfYHI8cPGfAWhQ54kyJBfjTIZ8Qg44nGhcbwxQ+t07REF///98jjgJ3Armqobkk6WNMlgzLSxiH1vxerkxo7uKnzdSyTjrokFolC7KDGaisaryBuUASF13Bdy/sgCG9YJWuyWkyoA/A/borQ5EYJnhXx4MpBCKCXCCCJNXt0XdUoroYLGPRJ5BgLAP1uhmQTnNIhr07Cd7jzGYceTPxotKBxwQeC/0h0O5kc12LJXrqKLEXzMRI5F1aA4Fswk8yIAQSBFGBZmeAvf04x/SE4xIHIfu9SRH8AbigS5HO+H80XOrjpD5JsBOJ4F3fk1FpJU93+7nfrC6uO9NeBhRk76B0ohQHUIlCQqEFu8ltj9OyMs6BY1CXLoVj5GwNlcREr7oNo5OAFMHiZYquKAY+/O07hqITjR+J+JhC7ZlRd0eIs16UdCyGA4HUolJQAPFSxwpkEtJ87jbHY5wGPwL5v0t7A30EAiaTB9ViR9VjOTMcWmp8/VVyQ+dQMCGAJ5Uf/F63u829oLzQB8Y0pEohAOsrkG4hGbRDDmja42Sum/vdIdBVCHYHNXvs59RloLZMof+v1AuD36wSA1shg/o1NhXxRFo5ZbCGcCSG4rxrgR+d2RKj7A/gWJTukYLeqm5p5WZfyh4UUO+X3aN22BLGeUs4bFiCCkK2HjPQ4tR+CSBpu5NUe0veOH8G+H9kLtqv6/pT2rv4N0a14shQHkuX0LNLyJpENgdeWN41MJ6cqARSvoLNxf6bggT/BXSzvUvjgtykS2hTJVS4uSi4MlhAl7uhd0TbOLmKHNP2HBSAayxmJjtghuha/Qi4EPYiF3Vj9Hd3q5LuDDOjv4fcIIIDIgbrCCPB79e+zW4pCEA4Y7E9XDqPd4qhRzTh+9JOdbw3ixzxhxrIZK0OtW/glLh5pKASQwlXhqLo+SdI37JY8RftT9CE3o/WqcmsIA1sWABdLMSAhEALYxwK4EUM1Z5eSNQ9af2IcablTyHx8Kmn5c8lesIQe7PmWsjGxN3LYG5hB9gYmMb0pJswZRBQuOGoALrD/O7JlYhhs7jFMrK7NrtbQ0IXIvu6bow2IhhuaXgd2c1ED38bfUMSKdhuEQ9ujB7keb6LHJ0V+BH5jJNxmZF9dCGwN+FsRw3xw70NnulWwXboOvPROI15Jl7MgnihqNb3AoPdtyg4aBS30pzT477UjmojWJ492k3ggPXQJuuipc+AdqXrrSSM4DfUUJEEIiRAIB8cYmF5gn5/Q/tW/hgCiqPr0Aqo9CeJPjIcFTCft9Hx6tm8yHQ36DdLEd6XKjYf2x414Cy6ssa6hzUTjmIzIAe/Uc0eRA5nEZpKeCsmDX+dKdK3mbulgJtcN2+YCFqCKL7rf5i3HGtZgJhJ/MwqkM8mRINvYl9/DSjFIxSW2UtF6Jh4I7/u22gJhOF8YPrcSo2GBoz+hsltn5M5Ofl4ZmnE8IO+Q22U0E98w8ZyOZwfSyoHt0ReHFaBvwlkPky9kS8VYV7QouEuZzpqfNFxVlwm6AOLgwoL6/QxL0vyW6FoEVedBAKdmk6Nw69EnxgAAEBBJREFUPkYMJ9Ox0H8HMe9ScO+fSqaQPBJ1wzDVX4kf1sQpAFfzV0GuqS6ApkJctK61bC3ROmJeA9ZE+b5YgBJAOCwqfICyJj5fxECOPwAnABJ/lAuMMDQc+9H8d3Wh1VMIQwD93qEwCDAU+0F934BHaUILv/KkuFlfka3sFsKtmZUeS5bh9iwrjwtjORdZtpiq6HrBNgoYjmFJBOIMdjcYLUoZXedquGhxlvgjVIWZMNy9ri8ulWUL6X9zRsRp5MGgfye6HEa2c6vQdlhIpzELOQqNsWWf/QuF9HkTRENguA8ggQslpHbJUjA103s89QOnyjCaib9lciIHNXdmHdGD67T7hyDfkYxKnSdc11Q+xgSL1g5gzWXgNY6Hy7axvK4DH+ffgb8/0B3Euwn5nLWxQIP7vUUhEEQI+lmhA5rRjL/iXrS4OXKTur3GIqvxNEL9xXNzYQ64Yx5LeHFwqHpyieJn/RWa2Jqy0BNah3782lHeKsCCXCnzDQEM03NvLtUbjAZJXwXZUvjAN+lo5H8hCCfStc0jMdzpT8s//xEFfPVjaAkuehD385Xpx+CC4kFiwuBm0kGMRSdTupqGOxliaG5TcRuRg9yx7+50R1EDDdfi9ncFEN6/fmYVoZPvFMKAxk7SncRDKKGMBscjWAD9lQAi+jdTwhNgdA7XF9z3HWR2TWh+77ZUmreVC15eJ5o9Ty0L4DHfBw0L4Gdg4U4Z9aSko2nzYbKYYjK2NVJOX5XpMNFG4TJcdSSlEJIK1KUtK8NwqsxnC4gc8g7tx5KSZ9Z8gRbDj0H8zykMPZ4w/Oiwfk1RdEFj4GsjMMIVhaZa9NCmElhjsB8z7B2BYQl1AmDt5W0L2UYaWdKgZi55eEM0c2q/a2prZC3h/d91Hg/TrUBpfxMXUhmNBYZlRGA8IrIffgfID++nPhsq7qcpyOfXTVFcImBP+wOWS8Azx/jBmXa+N9r+XSPE4AJZSBpr18sSliZeXbAMN2wfoLhxH8L1tMHYKAdXNeDAfj2WK7th3FxC0ByitDNeNJYbYk1dBKFautzcSkTqGjroDQobwu1k3KgwwIvC0OmMEG3kC0X3E7MmIhEPlCB0IeBvMF4VQDMVAEXrmylr0As1hVfJr4sbOngUTSfe6TqMwOkUQFMXAbwNC/iFjrd0K+HPuuE9N3yPBcDgGPC2bEP6QckG+dDC/25CpzcHys3nVlOtLF1ssWgnG+GRAbJ4Ny+zZseKIvz0UA0LWJDlMeUkL6VVw9pQyoQmqkGFPDZmiC8CGEag0CuJRBMshgdKcCHxg/RSnS1hiJtzNoD0aMRtcduWB8ubKz89qLmukfUJYRgBkj9Xl6ur1oBrnq5SQpWNhA9qIsOSP4RIPVP5e595VcvZl7OCNNWFg2Da/6cgn/EztEnepmBkZcEDfy4CCcPQaGjfFhT2NT7fGwLqy7WMHy3t3YpiJ/4HmR5fktVczCaTvni3PdW5fL0Fboktg9drcJirRVKPb5+j8Mm/xSQmdxnRj4MFRGEsNpKLIRASOZR7Mk2kFRzHAhiqBCA5+SB1nC2DU0PVD4EmyndUe1ZpZAOtdGY2eo4+uEldDq9Xp65VqMrD360nAFff7Tz2A6TX8/Mu5IcORAAdAIuFZYYjgDK5Yf3fhkb/QiZ2sYsJgbYHw5VyxzYInwmCtq/u40YhX8P99GYrgf/HPc9zv8YTRA6skQRHPc7X+RQNLF9vtfbCgiUOeUohPyJSFs3A0gV8Dy+EULA7igL6t6ao4a2gQciBB6BPg6wmRppiaDUM8XDm3jEuDSujQpTu5UC9chysz1oYqoQiZbuRR78iBNcqtIlofB10AYgVNBDAwPrBs6EwGgrKIN3YD9eznjC4mTBoehgSiDAoXQiGPUP6NwfpGKfgsYq+7hiv8KQwNNdCgCCMXazu05wCQf7qr39MK7/+Nwoa6kkzv8S4eBg6vZjZx4UuzwWStYzUgzR6yiNMsFKJPMKkBvNTeP0efoJbLS92ilVnHdW3aXvIWFr0VWsKx+01ETDBmAE/xmA4XA9+WJwIwe2Vcp5bBdHSMnjHWU0axVDD5pby2XUNrDqX1FgKnyi95WAgWsAD8PyeKv9/yAL+b3AVQB2UACJYAHAzIchyQgZ6wd14Q9s9IQgPEI/sDgjrDXyNY1+1oNVfoej86h0K+Prn6Pk0pTlfu1P4tD9RxeNiLKtTJdNQ+JmcuvYXyyNM1EN8NP0hPhaNH11o5qmKGo8R8IOPK8j0tJQS5/WheV/6IUhyAP05iP8pJaJHnzBIDTiLa3DR/iiuWPu/JYjiwRRDAINf7SyKZYgAmrtkKk316tQonNzqoB9z5vMDX+9ifpjwhsfq76t08w1RtjBcR8jAFrAAH5APTR/gAQHAz3Ow7Q2rwmSwsK8hsK+aUhB8f0DvphjH8Ka5X3jT8hEf0Z3SfXJjIh74jBsh+V68Bg/xUU/JNrXBYkkveckvfngktyfsqI55xSmpjnFz9ct7hRQ/py8swR9NJV8VfIf9CKnpG5QMjUwYrPoxrOGROuFMfkQ/JYC6DmbTep1IpxU4Ca/LXCL1XD7KKK4G1c/njSo0or9RMP0DGv9aoTSuZwVcvYb2exNBFG4IRRRrPGt/MMhfDX8fAv8fPpCD7M8gADQO0WoJ/gqDSMj1V/T3o3mft6HlQz+lm4W7pO9vBYc18O/VWKleLUylveRHh9V7jCHWaZMHuVn5gfD8QDGzCgo8eaimFj0irPBU8aCU0pePooV922HY0g/rHmA0acTbmJmAZh0sI54JMrINVIBReuMskiHZCggfWL8VbAhBtRDcBE4BDDaAPH+Igqsl8HtSQP2D2h/urGqb6XCTHJ0LJoYcQzANRZEWinw+HDVKGPx+aH/WegwQId0MhlKFDXoTKfVPxUVF9Ec21O+nmPX8Ni3r50szP2tNYRP+Rg9Kj8vCUnasTY2sB0tDw62rQRf2/3UPcnN5iqqPPD6JzcOMFdzQnuZb6fk+YhMWGK2thiVggW9L+fd0MHMFrfzmQ3T2WsnCR0loWSTgzo/YgaoYiejXWHr5XG1GDDRayUgpEchiBrgJ2a4CcI4uDdU7laLpyLhAeAQTP1QH7w92awD8PRY6tsb+3xNEBM4dgd/JCMfvkRxeR/iA5kI474dKbq8Xi+Jymos1RCArCoPrDRvMgkCGhN8QOMgPmY4PLRiEVRajp1PloxIZcLFjlUY7FJknPIB7u0O5nkcuj7b9l3pWgDflYZ4WfmS5rOdmLP1olfTJZuZVyivFJd25sJ/SA4firvZuaDfDJQ3iWWpoQQ9gAeBH9n1LmfUgRUwMB2yQH4eAFvsaAdSzBmmu1VlB1BCFyCFuTqLroNoYdWiY6zeuB1aEOgEw8c1eBWu+aH8TqWbZOliholBYxXELmlNw9K7CUBPxGO/ivpjEsGgIXcnbhDTyIdbDK8cyyZXQfIy3W9RiVPxUZv2JqvUf5tnwcbZISTPUY62g+1jGhhtFaulfZQ283K5NmnbY1tzGU1YzaFfwIDTWOlDg5+9SwGdvIhNAgdK3KQIXCIEmR3OqOhSNNqz/kIhlCBK5XS2TmzBuwF1TNPLih3MH1VPvoqJoG8bjCbidCYP70TgeA/A2ehiDj3uo10AUCr0oTFWMHKq2UahXIrlmEbSoh2hOIriYHOItiMTsOgMRgxiegvDBEBBcXziKzjAWGDfauG0CPx/wJVoLX2EBEfT2t60cRNeP4UaTynvK32P5y1ozlj/mZeBkuo+DJ73pz5C0ZvxfnyeMGvhdLIoqD3S28NO0OXIL+Wo1ck1/1i2qNqz9ViPFhb32MT2+epwKd4bR5pCRFDPlPyhoRE+Mf/rTMmjIij5+QCtMy8OMt35tMELmRQGoGAMwTzIAs4VXAbwN6OMhx1diQtaK3u60EineSqR4jBW96yDHenvVAXm48/2vPRSwvxzb5fr+yj78vgd+jxfgrW89BUtwviVfetCSrzww1b0F4IFkowUtQhq5pA80vE9LWjwADcTh71MYri09aCTlbg2hx9cxld50V5TRzs8yMPMyZLXwHLwOHxYLl3WrNat6RLDl7z/QucEjzX0RKEp1qfE/h02Wl2RosuVCgp++UYMVryy8gqqsaoi01fQMzwC4jKVoTtB3+ZuoeG8cbkoLoFNZAXRmcwhmBKym3Ex+vQLb5XQifakTJzOWCZyv07GftpyOM9Yvp2OpS4Fl8vpk+krKTQ8Q5GUF4rGxCrkZOJaxUr0v+zoyV8nfzc0Motys1fg7q+g4vnt0/Qo6nLqCjqTi/Gkrce6VdAzfPYHvnML8nTNbguh8TjzcSzbdwf1zFU9xC63lmYyf8yqTVhsvpYkp/hblsg1+8NphVQPt7PcvYRlC33/yufKE58rLA+n5BHwuuyEEPq9Vlr1Xf4zjA9IqrMlvln1edBv9DMkCFCoV7Ab0R4s4avRHjOiPGTFgPHrEUStDd+pctXUgHa6veWs3YNJh1qEfl/OY6j7rui+Eup4Hf58XEORHntjVLbyyPDvcMD/30YZ+vg09NavJIctuunKDVdqZK4N85tDnHyL/NUJ4ByfaoKdOSIywzCpuJjD+EG81mdKC5eDh5qpRP9Sg0KvBOHMthtt4OUxeEJYfF8JrRGtWHfriq7JiOj5nkwc2vAqeumfGZ828wq7VBXxOY6u/xw8h5c+rrUkgq4ExLDX6e+o5Ca7gW7OsDJfXvGwDz1zm2YK8vp2avGaRVR55rU+NV3rkFXl5LF1u8dLUAyOQ6XCfx673GcxmM3P3zj9FvqsQjC/hpKNA9lNXQQAajjkMa2BXp8CZEx6JovGzaTRZCsfC4592Xo6eZ2DATXH8sHADSlNbHfgyBx4oqk2BR+l02Lk45IvGPg8eqWPquMP4jkUtVcznMc5dt6+fm70Cr03KsCjYeWICoF7zVk1W446AWWPw+tZQOn7QNV+PVSmHTd9CsCAen+LVZ9UT8p7BI4w2/P0/Tb5rYDbSpZqaGi+cOBKoIPWPyXdwesUCkR9gqcWYgslhk/RV48fjqidicDBiDdGUe+Iag28Q5zs0+YELAov+modH5b2613JM4Kj/Pf2zzmMurwUm3r563C5bu8DGy2ea6/8t/tuymKxVtWXMNjVsCAGgaWmyc36I9bZx3TVQQpOxrC8TXwllxcoj5OWixP/S6P/3n+uJINlWIHwRcNGQuPMfr3ZuBCG+6cPGDT4HP6kVF+GQJp/Vph4vYuz/PbBpq6WNbfIIEgP8WtPPY0CW3LG5AForvRc+h1Z3zCJL8/DWrsB5uizZ46gHWU7ZotbRsOm/QR6r0uAfKLDrXCxibhoq7v/Yv4YnxeLaP4W0u+OPTwbSYAK5Nov1JvZrrZq68BrkwbWASQfGe+SJRmYu8vBwhR8CLybO4FXd2S/bXKD8eY24M1e8/jw1srUhINcdN4mbrHOZr4eMi4h7092UuEJcm8V2E2HwpNlsS4fQp1hrrD2ZCxeefvTPaP3/AbVY3flSYvQrAAAAAElFTkSuQmCC";
-const BANKS = ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Outro"];
-const CURRENCIES = ["Kz", "USD", "EUR", "ZAR", "GBP"];
+const MARKETS = {
+  AO: {
+    name: "Angola",
+    currency: "Kz",
+    numberLocale: "pt-PT",
+    lang: "pt",
+    banks: ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Banco Yetu", "Banco Comercial Angolano (BCA)", "Banco Angolano de Negócios e Comércio (BANC)", "Standard Chartered Angola", "Bank of China Angola", "Outro"],
+    bondTypes: ["OT-NR", "OT-TXC", "OT-ME", "Obrigação Corporativa"],
+    equitySuggestions: ["BAI", "BFA", "UNITEL", "ENSA", "BODIVA"]
+  },
+  BR: {
+    name: "Brasil",
+    currency: "BRL",
+    numberLocale: "pt-BR",
+    lang: "pt-BR",
+    banks: ["Banco do Brasil", "Itaú Unibanco", "Bradesco", "Santander Brasil", "Caixa Econômica Federal", "Nubank", "Banco Inter", "BTG Pactual", "C6 Bank", "Banco Original", "Banco Safra", "Sicredi", "Sicoob", "PicPay", "Mercado Pago", "XP Investimentos", "Neon", "Banco Pan", "Outro"],
+    bondTypes: ["Tesouro Selic", "Tesouro Prefixado", "Tesouro IPCA+", "CDB", "LCI", "LCA", "Debênture"],
+    equitySuggestions: ["PETR4", "VALE3", "ITUB4", "BBDC4", "WEGE3", "ABEV3"]
+  },
+  PT: {
+    name: "Portugal",
+    currency: "EUR",
+    numberLocale: "pt-PT",
+    lang: "pt",
+    banks: ["Caixa Geral de Depósitos", "Millennium BCP", "Santander Totta", "Novo Banco", "BPI", "Crédito Agrícola", "ActivoBank", "Bankinter Portugal", "Abanca", "Banco CTT", "Banco Montepio", "EuroBic", "Revolut", "N26", "Outro"],
+    bondTypes: ["Obrigação do Tesouro (OT)", "Certificados de Aforro", "PPR", "Obrigação Corporativa"],
+    equitySuggestions: ["EDP", "GALP", "JMT", "BCP", "NOS", "SONAE"]
+  },
+  GB: {
+    name: "Reino Unido",
+    currency: "GBP",
+    numberLocale: "en-GB",
+    lang: "en",
+    banks: ["Barclays", "HSBC UK", "Lloyds Bank", "NatWest", "Santander UK", "Monzo", "Revolut", "Nationwide", "TSB", "Halifax", "Metro Bank", "Starling Bank", "First Direct", "Co-operative Bank", "Outro"],
+    bondTypes: ["UK Gilt", "Premium Bonds (NS&I)", "Corporate Bond", "Cash ISA"],
+    equitySuggestions: ["HSBA", "BARC", "VOD", "BP", "GSK", "ULVR"]
+  }
+};
+let BANKS = MARKETS.AO.banks;
+let CURRENT_NUMBER_LOCALE = MARKETS.AO.numberLocale;
+const CURRENCY_SYMBOLS = {
+  Kz: {
+    symbol: "Kz",
+    position: "suffix"
+  },
+  USD: {
+    symbol: "$",
+    position: "prefix"
+  },
+  EUR: {
+    symbol: "€",
+    position: "prefix"
+  },
+  ZAR: {
+    symbol: "R",
+    position: "prefix"
+  },
+  GBP: {
+    symbol: "£",
+    position: "prefix"
+  },
+  BRL: {
+    symbol: "R$",
+    position: "prefix"
+  }
+};
+const CURRENCIES = ["Kz", "USD", "EUR", "ZAR", "GBP", "BRL"];
 const SUB_TYPES = ["À ordem", "Poupança", "Investimento"];
 const IRT_BRACKETS_2026 = [{
   min: 0,
@@ -992,6 +1057,147 @@ function calcIRT(materiaColetavel) {
   };
 }
 const INSS_RATE_TRABALHADOR = 0.03;
+
+/* Tabela mensal do IRPF/IRRF 2026 (Brasil) — Receita Federal.
+   Fórmula oficial: imposto = base de cálculo × alíquota − parcela a deduzir. */
+const IRPF_BRACKETS_2026_BR = [{
+  min: 0,
+  max: 2428.8,
+  rate: 0,
+  deducao: 0
+}, {
+  min: 2428.8,
+  max: 2826.65,
+  rate: 0.075,
+  deducao: 182.16
+}, {
+  min: 2826.65,
+  max: 3751.05,
+  rate: 0.15,
+  deducao: 394.16
+}, {
+  min: 3751.05,
+  max: 4664.68,
+  rate: 0.225,
+  deducao: 675.49
+}, {
+  min: 4664.68,
+  max: Infinity,
+  rate: 0.275,
+  deducao: 908.73
+}];
+const IRPF_DEDUCAO_POR_DEPENDENTE_BR = 189.59;
+function calcIRPF(baseCalculo) {
+  const v = Math.max(0, Number(baseCalculo) || 0);
+  const idx = IRPF_BRACKETS_2026_BR.findIndex(b => v <= b.max);
+  const index = idx >= 0 ? idx : IRPF_BRACKETS_2026_BR.length - 1;
+  const bracket = IRPF_BRACKETS_2026_BR[index];
+  const imposto = Math.max(0, v * bracket.rate - bracket.deducao);
+  return {
+    imposto,
+    bracket,
+    index
+  };
+}
+
+/* Escalões anuais do IRS 2026 (Portugal, Continente) — OE2026.
+   Estimativa simplificada sobre o rendimento coletável (já após deduções específicas); não inclui quociente conjugal, adicional de solidariedade nem deduções à coleta. */
+const IRS_BANDS_2026_PT = [{
+  min: 0,
+  max: 8342,
+  rate: 0.125
+}, {
+  min: 8342,
+  max: 12587,
+  rate: 0.157
+}, {
+  min: 12587,
+  max: 17838,
+  rate: 0.212
+}, {
+  min: 17838,
+  max: 23089,
+  rate: 0.241
+}, {
+  min: 23089,
+  max: 29397,
+  rate: 0.311
+}, {
+  min: 29397,
+  max: 43090,
+  rate: 0.349
+}, {
+  min: 43090,
+  max: 46566,
+  rate: 0.431
+}, {
+  min: 46566,
+  max: 86634,
+  rate: 0.446
+}, {
+  min: 86634,
+  max: Infinity,
+  rate: 0.48
+}];
+function calcIRS(rendColetavel) {
+  const v = Math.max(0, Number(rendColetavel) || 0);
+  let imposto = 0;
+  let marginalRate = 0;
+  for (const b of IRS_BANDS_2026_PT) {
+    if (v > b.min) {
+      imposto += (Math.min(v, b.max) - b.min) * b.rate;
+      marginalRate = b.rate;
+    }
+  }
+  return {
+    imposto,
+    marginalRate
+  };
+}
+
+/* Income Tax + National Insurance (Reino Unido, ano fiscal 2026/27).
+   Simplificado: assume rendimento anual até £100.000 (sem redução do "personal allowance" para rendimentos elevados). */
+const UK_TAX_BANDS_2026 = [{
+  min: 0,
+  max: 12570,
+  rate: 0
+}, {
+  min: 12570,
+  max: 50270,
+  rate: 0.2
+}, {
+  min: 50270,
+  max: 125140,
+  rate: 0.4
+}, {
+  min: 125140,
+  max: Infinity,
+  rate: 0.45
+}];
+function calcUKIncomeTax(gross) {
+  const g = Math.max(0, Number(gross) || 0);
+  let tax = 0;
+  let marginalRate = 0;
+  for (const b of UK_TAX_BANDS_2026) {
+    if (g > b.min) {
+      tax += (Math.min(g, b.max) - b.min) * b.rate;
+      marginalRate = b.rate;
+    }
+  }
+  return {
+    tax,
+    marginalRate
+  };
+}
+function calcUKNationalInsurance(gross) {
+  const g = Math.max(0, Number(gross) || 0);
+  const primaryThreshold = 12584;
+  const upperEarningsLimit = 50284;
+  let ni = 0;
+  if (g > primaryThreshold) ni += (Math.min(g, upperEarningsLimit) - primaryThreshold) * 0.08;
+  if (g > upperEarningsLimit) ni += (g - upperEarningsLimit) * 0.02;
+  return ni;
+}
 function solveTaxaMensalEfetiva(principalLiquido, prestacao, meses, valorFinal) {
   valorFinal = valorFinal || 0;
   if (principalLiquido <= 0 || prestacao <= 0 || meses <= 0) return 0;
@@ -1125,29 +1331,34 @@ function parseFlexibleAmount(str) {
   const num = parseFloat(normalized);
   return isNaN(num) ? null : num;
 }
+function applyCurrencySymbol(s, currency) {
+  const def = CURRENCY_SYMBOLS[currency];
+  if (!def) return `${currency} ${s}`;
+  return def.position === "suffix" ? `${s} ${def.symbol}` : `${def.symbol} ${s}`;
+}
 function fmt(amount, currency = "Kz") {
   const n = Number(amount) || 0;
-  const s = n.toLocaleString("pt-PT", {
+  const s = n.toLocaleString(CURRENT_NUMBER_LOCALE, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-  return currency === "Kz" ? `${s} Kz` : `${currency} ${s}`;
+  return applyCurrencySymbol(s, currency);
 }
 function fmtCompact(amount, currency = "Kz") {
   const n = Number(amount) || 0;
   const abs = Math.abs(n);
   let s;
-  if (abs >= 1e9) s = (n / 1e9).toLocaleString("pt-PT", {
+  if (abs >= 1e9) s = (n / 1e9).toLocaleString(CURRENT_NUMBER_LOCALE, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }) + " mM";else if (abs >= 1e6) s = (n / 1e6).toLocaleString("pt-PT", {
+  }) + " mM";else if (abs >= 1e6) s = (n / 1e6).toLocaleString(CURRENT_NUMBER_LOCALE, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }) + " M";else s = n.toLocaleString("pt-PT", {
+  }) + " M";else s = n.toLocaleString(CURRENT_NUMBER_LOCALE, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-  return currency === "Kz" ? `${s} Kz` : `${currency} ${s}`;
+  return applyCurrencySymbol(s, currency);
 }
 function monthShortLabel(monthKeyStr) {
   const d = new Date(monthKeyStr + "-02");
@@ -1688,7 +1899,7 @@ function creditCardDueDateForCycle(card, cycleMonth) {
 // SECTION 36: INVESTMENTS CALCULATIONS (bonds, equities, funds, portfolio)
 // ══════════════════════════════════════════════════════════════════════
 
-const BOND_TYPES = ["OT-NR", "OT-TXC", "OT-ME", "Obrigação Corporativa"];
+let BOND_TYPES = MARKETS.AO.bondTypes;
 function addMonthsClampedDate(date, months) {
   const day = date.getDate();
   const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
@@ -1742,7 +1953,7 @@ function bondNextCoupon(bond) {
   const pending = (bond.coupons || []).filter(c => !c.recebido).sort((a, b) => a.data < b.data ? -1 : 1);
   return pending.find(c => c.data >= today) || pending[0] || null;
 }
-const EQUITY_SUGGESTIONS = ["BAI", "BFA", "UNITEL", "ENSA", "BODIVA"];
+let EQUITY_SUGGESTIONS = MARKETS.AO.equitySuggestions;
 function equityDividendosTotal(eq) {
   return (eq.dividends || []).reduce((s, d) => s + Number(d.valor), 0);
 }
@@ -3056,7 +3267,7 @@ function saveKey(key, value) {
 // SECTION 24: INTERNATIONALIZATION (i18n)
 // ══════════════════════════════════════════════════════════════════════
 
-const SUPPORTED_LANGS = ["pt", "en", "fr", "es"];
+const SUPPORTED_LANGS = ["pt", "pt-BR", "en", "fr", "es"];
 const TRANSLATIONS = {
   pt: {
     nav: {
@@ -3127,6 +3338,7 @@ const TRANSLATIONS = {
     ui: {
       language: "Idioma",
       lang_pt: "Português",
+      "lang_pt-BR": "Português (Brasil)",
       lang_en: "Inglês",
       lang_fr: "Francês",
       lang_es: "Espanhol"
@@ -3711,6 +3923,12 @@ const TRANSLATIONS = {
       group_credit: "Crédito",
       sim_irt_label: "IRT (novo, 2026)",
       sim_irt_sub: "Imposto sobre o Rendimento do Trabalho",
+      sim_irpf_label: "IRPF (2026)",
+      sim_irpf_sub: "Imposto de Renda Retido na Fonte",
+      sim_irs_label: "IRS (2026)",
+      sim_irs_sub: "Imposto sobre o Rendimento das Pessoas Singulares",
+      sim_ukTax_label: "Income Tax (2026/27)",
+      sim_ukTax_sub: "Imposto sobre o rendimento e Contribuição Nacional (NI)",
       sim_salarioLiquido_label: "Salário Líquido",
       sim_salarioLiquido_sub: "Bruto → líquido, com subsídios (INSS + IRT)",
       sim_subsidiosAnuais_label: "Subsídios de Férias e Natal",
@@ -3755,6 +3973,713 @@ const TRANSLATIONS = {
       s6_title: "6. O controlo é seu",
       s6_body: "Pode exportar todos os seus dados a qualquer momento (secção Exportações) em formato JSON, Excel, CSV ou PDF. Pode também apagar todos os dados guardados neste aparelho limpando os dados da app nas definições do navegador ou do telemóvel. Ao terminar sessão da conta na nuvem, pode pedir a eliminação definitiva dos dados sincronizados contactando-nos pelo meio indicado abaixo.",
       s7_title: "7. Contacto",
+      s7_body: "Para questões sobre privacidade ou pedidos de eliminação de dados da conta na nuvem, contacte o titular da conta através do email associado à sua conta Fonsprince One."
+    }
+  },
+  "pt-BR": {
+    nav: {
+      overview: "Visão Geral",
+      accounts: "Contas",
+      transactions: "Transações",
+      charts: "Gráficos",
+      budget: "Orçamento",
+      goals: "Metas",
+      planning: "Planeamento",
+      debts: "Empréstimos",
+      cards: "Cartões",
+      exchange: "Câmbio",
+      forecast: "Fluxo de Caixa",
+      investments: "Investimentos",
+      report: "Financeiros",
+      kpis: "KPI's",
+      exports: "Exportações",
+      alerts: "Alertas",
+      simulators: "Simuladores",
+      settings: "Configurações",
+      privacy: "Privacidade"
+    },
+    title: {
+      overview: "Visão Geral",
+      accounts: "Contas Bancárias",
+      transactions: "Transações",
+      charts: "Gráficos",
+      budget: "Orçamento Mensal",
+      goals: "Metas de Poupança",
+      planning: "Planeamento Financeiro",
+      debts: "Empréstimos",
+      cards: "Cartões",
+      exchange: "Câmbio",
+      forecast: "Fluxo de Caixa",
+      investments: "Investimentos",
+      report: "Relatório Financeiro",
+      kpis: "KPI's",
+      exports: "Exportações",
+      alerts: "Central de Alertas",
+      simulators: "Simuladores",
+      tools: "Ferramentas",
+      settings: "Configurações",
+      privacy: "Política de Privacidade"
+    },
+    subtitle: {
+      overview: "O saldo disponível reflete as receitas e despesas registadas até hoje.",
+      accounts: "Cada conta pode dividir o dinheiro entre à ordem, poupança e investimento.",
+      transactions: "Receitas e despesas registadas.",
+      charts: "Todos os gráficos e análises num só sítio.",
+      budget: "Limites por categoria e fontes de receita.",
+      goals: "Objetivos de poupança e o seu progresso.",
+      planning: "Património líquido, saúde financeira e simulações.",
+      debts: "Empréstimos a pagar ou a receber, com juros e pagamentos.",
+      cards: "Faturas, parcelas e limite dos seus cartões de crédito.",
+      exchange: "Taxas de câmbio de referência (USD, EUR, ZAR e GBP face ao Kwanza).",
+      forecast: "Projeção do fluxo de caixa com base nas receitas e despesas fixas previstas.",
+      investments: "Carteira, renda e desempenho dos seus investimentos.",
+      report: "Resumo do mês pronto para imprimir, salvar em PDF ou partilhar.",
+      kpis: "Score Financeiro e indicadores automáticos sobre a sua situação.",
+      exports: "Exporte os seus dados em CSV, Excel, PDF ou como cópia de segurança.",
+      alerts: "Avisos automáticos sobre contas, orçamento, dívidas e metas.",
+      simulators: "Calculadoras e simuladores financeiros, incluindo o IRT angolano.",
+      tools: "Atalhos para gerir categorias e atalhos de despesa.",
+      settings: "Segurança, aparência e notificações da app.",
+      privacy: "Como tratamos os seus dados na Fonsprince One."
+    },
+    ui: {
+      language: "Idioma",
+      lang_pt: "Português",
+      "lang_pt-BR": "Português (Brasil)",
+      lang_en: "Inglês",
+      lang_fr: "Francês",
+      lang_es: "Espanhol"
+    },
+    overview: {
+      dashboard_title: "Dashboard Executivo",
+      tab_interest: "Juros",
+      tab_liquidity: "Liquidez",
+      tab_debts: "Dívidas",
+      tab_goals: "Metas",
+      no_interest_balances: "Sem saldos com juro definido",
+      liquidity_subtitle: "À ordem + poupança",
+      insights_title: "Insights automáticos",
+      categories_title: "Categorias",
+      view_all_charts: "Ver todos os gráficos",
+      no_expenses_month: "Ainda sem despesas registadas este mês.",
+      financial_summary_title: "Resumo Financeiro",
+      no_interest_month: "Sem juros a acumular este mês.",
+      accrued_estimate: "Acumulado estimado:",
+      annual_projection: "Projeção anual:",
+      accrued: "acumulado",
+      no_debts: "Sem dívidas registadas.",
+      to_pay: "A pagar",
+      to_receive: "A receber",
+      no_goals: "Sem metas criadas.",
+      first_steps: "Primeiros passos",
+      done_suffix: "feito",
+      action_income: "Receita",
+      action_expense: "Despesa",
+      action_transfer: "Transferência",
+      action_new_account: "Nova conta",
+      monthly_savings: "Economia mensal",
+      congrats: "Parabéns!",
+      budget_attention: "Atenção ao orçamento",
+      savings_prefix: "A sua economia este mês é de ",
+      deficit_prefix: "O seu défice este mês é de ",
+      saved_prefix: "Economizou ",
+      spent_prefix: "Gastou ",
+      of_earnings: "dos seus ganhos.",
+      more_than_earned: "a mais do que ganhou.",
+      effort_worth_it: "O seu esforço vale a pena — está cada vez mais perto da sua liberdade financeira!",
+      review_expenses: "Reveja as suas despesas este mês para voltar a poupar.",
+      current_balance: "Saldo atual em contas",
+      show_balance: "Mostrar saldo",
+      hide_balance: "Ocultar saldo",
+      monthly_balance: "Balanço mensal",
+      income: "Receitas",
+      expenses: "Despesas",
+      balance: "Balanço",
+      details: "Detalhes",
+      greeting_morning: "Bom dia",
+      greeting_afternoon: "Boa tarde",
+      greeting_evening: "Boa noite",
+      attention_needed: "O que precisa da sua atenção",
+      view_all_alerts: "Ver todos os alertas",
+      all_good: "Está tudo em dia. Nenhuma decisão urgente agora."
+    },
+    accounts: {
+      add_account: "Adicionar conta",
+      add_first_account: "Adicionar a primeira conta",
+      export: "Exportar",
+      export_excel: "Exportar Excel",
+      export_pdf: "Exportar PDF",
+      no_accounts_title: "Ainda não tem contas cadastradas",
+      no_accounts_subtitle: "Adicione o seu primeiro banco comercial para começar a acompanhar o seu dinheiro.",
+      consolidated_by_bank: "Consolidado por banco",
+      consolidated_subtitle: "Onde está o dinheiro, de relance.",
+      high_concentration: "Concentração de risco elevada",
+      moderate_concentration: "Concentração moderada",
+      search_placeholder: "Procurar conta…",
+      sort_balance: "Ordenar: maior saldo",
+      sort_recent: "Ordenar: movimentação recente",
+      sort_alerts: "Ordenar: alertas primeiro",
+      filter_all: "Todos",
+      type_checking: "À ordem",
+      type_savings: "Poupança",
+      type_investment: "Investimento",
+      no_match: "Nenhuma conta corresponde à pesquisa/filtro.",
+      modal_title_edit: "Editar conta",
+      modal_title_new: "Nova conta bancária",
+      field_bank: "Banco comercial",
+      field_bank_name: "Nome do banco",
+      field_bank_name_placeholder: "ex: Banco XYZ",
+      field_nickname: "Apelido da conta (opcional)",
+      field_nickname_placeholder: "ex: Conta principal",
+      field_currency: "Moeda",
+      balances_of_account: "Saldos desta conta",
+      balances_note_before: "O ",
+      balances_note_bold: "saldo inicial",
+      balances_note_after: " é o valor com que a conta começa. O saldo disponível é depois calculado automaticamente (inicial + receitas − despesas até hoje), por isso não precisa de o atualizar manualmente.",
+      field_type: "Tipo",
+      field_opening_balance: "Saldo inicial",
+      field_description_optional: "Descrição (opcional)",
+      field_description_placeholder: "ex: Depósito a prazo 12 meses",
+      field_interest_rate: "Taxa de juro anual (%)",
+      field_interest_rate_placeholder: "ex: 12",
+      field_start_date: "Data de início",
+      field_maturity_date: "Vencimento (opcional)",
+      add_balance_button: "Adicionar saldo (à ordem / poupança / investimento)",
+      save_changes: "Salvar alterações",
+      save_account: "Salvar conta"
+    },
+    transactions: {
+      new_transaction: "Novo movimento",
+      transfer_between_accounts: "Transferir entre contas",
+      export_csv: "Exportar CSV",
+      import_statement: "Importar extrato",
+      expense_shortcuts: "Atalhos de despesa",
+      manage_shortcuts: "Gerir atalhos",
+      no_shortcuts: "Nenhum atalho criado. Crie atalhos para despesas frequentes, como \"Combustível\" ou \"Mercado\", e lance-as com um clique.",
+      add_account_first: "Adicione primeiro uma conta bancária na aba Contas.",
+      view_timeline: "Timeline",
+      view_list: "Lista",
+      search_placeholder: "Procurar por descrição ou categoria…",
+      all_accounts: "Todas as contas",
+      all_categories: "Todas as categorias",
+      clear_filters: "Limpar filtros",
+      no_transactions_month: "Nenhum movimento este mês.",
+      no_match_filters: "Nenhum movimento corresponde aos filtros.",
+      th_date: "Data",
+      th_account_balance: "Conta / saldo",
+      th_category: "Categoria",
+      th_description: "Descrição",
+      th_value: "Valor",
+      th_account: "Conta",
+      th_movement: "Movimento",
+      edit_transaction: "Editar transação",
+      remove_transaction: "Remover transação",
+      transfer_fallback: "Transferência",
+      modal_new: "Novo movimento",
+      modal_edit: "Editar movimento",
+      scan_receipt: "Digitalizar recibo (OCR)",
+      scanning_receipt: "A ler recibo…",
+      receipt_applied: "Valor e data preenchidos a partir do recibo — confirme antes de salvar.",
+      receipt_error_no_amount: "Não foi possível identificar o valor automaticamente. Confirme os campos abaixo.",
+      receipt_error_read: "Não foi possível ler o recibo. Tente novamente ou preencha manualmente.",
+      field_account: "Conta",
+      field_balance_type: "Saldo (à ordem / poupança / investimento)",
+      available_label: "disponível",
+      field_description_placeholder2: "ex: Compras no mercado",
+      field_category: "Categoria",
+      suggested_from_history: "Sugerido a partir do histórico",
+      field_amount: "Valor",
+      field_date: "Data",
+      field_member: "Membro da família (opcional)",
+      field_member_placeholder: "ex: Afonso, Casa, Cozinha",
+      balance_recalc_note: "O saldo disponível é recalculado automaticamente assim que salvar este movimento.",
+      save_changes: "Salvar alterações",
+      save_transaction: "Salvar movimento",
+      transfer_modal_edit: "Editar transferência",
+      recent_pairs: "Últimas usadas",
+      from_label: "De",
+      to_label: "Para",
+      source_account: "Conta de origem",
+      source_balance: "Saldo de origem",
+      dest_account: "Conta de destino",
+      dest_balance: "Saldo de destino",
+      same_balance_error: "A origem e o destino não podem ser o mesmo saldo.",
+      no_rate_error: "Sem taxa de câmbio {cur} definida — configure-a em Câmbio para poder converter automaticamente, ou indique o valor creditado manualmente abaixo.",
+      diff_currency_note: "Moedas diferentes ({from} → {to}) — o valor creditado é convertido à taxa atual e pode ser ajustado abaixo.",
+      debited_value_label: "Valor debitado",
+      value_label: "Valor",
+      credited_value_label: "Valor creditado",
+      description_optional: "Descrição (opcional)",
+      description_placeholder3: "ex: Aprovisionamento para poupança",
+      transfer_note: "Não conta como receita nem despesa — apenas move o dinheiro entre os saldos.",
+      save_transfer: "Transferir"
+    },
+    settings: {
+      profile: "Perfil",
+      name_label: "O seu nome (usado na saudação da Visão Geral)",
+      name_placeholder: "ex: Afonso",
+      save: "Salvar",
+      appearance: "Aparência",
+      dark_mode: "Modo escuro",
+      dark_mode_desc: "Alterna entre o tema claro e escuro da app.",
+      enable: "Ativar",
+      disable: "Desativar",
+      language_note: "Traduz a navegação e os títulos das páginas. O resto do conteúdo continua em Português por agora.",
+      security: "Segurança",
+      pin_faceid: "PIN e Face ID / Touch ID",
+      lock_enabled: "Bloqueio ativado ao abrir a app.",
+      lock_not_set: "Nenhum bloqueio definido ainda.",
+      manage: "Gerir",
+      notifications: "Notificações",
+      device_reminders: "Lembretes no aparelho",
+      device_reminders_desc: "Avisa 3 dias antes de uma despesa fixa, dívida ou fatura de cartão vencer. Só funciona enquanto a app está aberta ou foi aberta recentemente.",
+      blocked_by_browser: "Bloqueado nas configurações do navegador.",
+      cloud_sync: "Sincronização na nuvem",
+      end_session: "Sair",
+      sync_auto_desc: "Os seus dados sincronizam automaticamente entre todos os dispositivos onde entrar com esta conta.",
+      cloud_login_prompt: "Inicie sessão para salvar os seus dados na nuvem e aceder a partir de outro celular ou computador.",
+      email_label: "Email",
+      email_placeholder: "oseuemail@exemplo.com",
+      password_label: "Senha",
+      password_placeholder: "mínimo 6 caracteres",
+      processing: "A processar…",
+      create_account: "Criar conta",
+      sign_in: "Entrar",
+      have_account_signin: "Já tenho conta — entrar",
+      no_account_create: "Ainda não tenho conta — criar uma",
+      status_idle: "Por sincronizar",
+      status_syncing: "A sincronizar…",
+      status_synced: "Sincronizado",
+      status_error: "Erro ao sincronizar"
+    },
+    budget: {
+      recurring_detected_title: "Detetámos possíveis despesas recorrentes",
+      recurring_detected_desc: "Estas despesas repetem-se todo mês, com valores parecidos. Quer marcá-las como fixas?",
+      mark_as_fixed: "Marcar como fixa",
+      dismiss: "Dispensar",
+      fixed_expenses_title: "Despesas Fixas",
+      fixed_expenses_subtitle: "Renda, subscrições e outras contas que se repetem todo mês.",
+      new_fixed_expense: "Nova despesa fixa",
+      no_fixed_expenses: "Ainda não tem despesas fixas registadas.",
+      staff_title: "Funcionários — Ordenados",
+      staff_subtitle: "Salários dos funcionários da casa, pagos todo mês.",
+      new_staff: "Novo funcionário",
+      no_staff: "Ainda não tem funcionários registados.",
+      staff_total_prefix: "Total mensal em ordenados:",
+      category_limits_title: "Limites por categoria",
+      category_limits_subtitle: "Defina um limite mensal para acompanhar cada categoria de despesa.",
+      manage_categories: "Gerir categorias",
+      limit_placeholder: "Limite",
+      rollover_carried_suffix: "transportado",
+      rollover_leftover_prefix: "Sobraram",
+      rollover_leftover_suffix: "no mês anterior — transportar para este mês",
+      income_sources_title: "Fontes de receita",
+      income_sources_subtitle: "Salário e outras receitas previstas por mês.",
+      no_income_sources: "Nenhuma fonte cadastrada.",
+      remove_income_source: "Remover fonte de receita",
+      field_income_type: "Tipo",
+      field_name_optional: "Nome (opcional)",
+      field_name_placeholder: "ex: Salário — Empresa X",
+      field_monthly_amount: "Valor mensal previsto",
+      add_income_source: "Adicionar fonte",
+      expected_prefix: "Previsto:",
+      received_this_month_prefix: "Recebido este mês:",
+      member_budget_title: "Orçamento por membro",
+      member_budget_subtitle: "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento.",
+      summary_title: "Resumo de",
+      summary_budgeted: "Orçamentado",
+      summary_spent: "Gasto",
+      summary_remaining: "Saldo restante",
+      summary_over_badge: "acima do limite",
+      pacing_ahead: "Está a gastar mais depressa do que o previsto para esta altura do mês.",
+      pacing_ok: "O ritmo de despesas está alinhado com o mês.",
+      pacing_under: "Está a gastar menos do que o previsto — bom trabalho.",
+      section_limits: "Categorias",
+      section_income: "Receitas",
+      section_fixed: "Fixas & Equipa",
+      section_members: "Membros",
+      remaining_of_prefix: "restam",
+      add_income_source_toggle: "Nova fonte"
+    },
+    members: {
+      manage_members: "Gerir membros",
+      manage_members_intro: "Os membros da família são escolhidos numa lista, para evitar que o mesmo membro apareça duas vezes por causa de maiúsculas ou espaços a mais.",
+      member_name_placeholder: "Nome do membro",
+      add_member: "Adicionar",
+      your_members: "Os seus membros",
+      no_members_yet: "Ainda não criou nenhum membro.",
+      none_option: "Nenhum",
+      rename: "Renomear membro",
+      remove_member: "Remover membro",
+      save: "Salvar",
+      cancel: "Cancelar",
+      duplicate_error: "Já existe um membro com esse nome.",
+      delete_blocked: "Este membro tem movimentos associados e não pode ser removido. Renomeie-o em vez disso, ou edite esses movimentos primeiro.",
+      delete_confirm: "Remover o membro \"{member}\"?"
+    },
+    goals: {
+      new_goal: "Nova meta",
+      no_goals: "Ainda não criou nenhuma meta de poupança.",
+      deadline_prefix: "Prazo:",
+      edit_goal: "Editar meta",
+      remove_goal: "Remover meta",
+      save_monthly_prefix: "Poupe",
+      save_monthly_suffix: "/mês para atingir a meta no prazo.",
+      add_contribution: "Adicionar contribuição",
+      modal_edit_title: "Editar meta",
+      modal_new_title: "Nova meta de poupança",
+      field_goal_name: "Nome da meta",
+      field_goal_name_placeholder: "ex: Fundo de emergência",
+      field_category: "Categoria",
+      field_target_value: "Valor alvo",
+      field_deadline_optional: "Prazo (opcional)",
+      deadline_hint: "Com um prazo definido, o app calcula quanto precisa de poupar por mês.",
+      save_changes: "Salvar alterações",
+      create_goal: "Criar meta",
+      contribute_title_prefix: "Contribuir para \"",
+      contribute_title_suffix: "\"",
+      field_amount_to_add: "Valor a adicionar",
+      confirm: "Confirmar"
+    },
+    planning: {
+      health_score_title: "Saúde Financeira",
+      health_desc: "Combina liquidez, taxa de poupança, endividamento, peso de investimentos e evolução do património — 20 pontos cada.",
+      networth_title: "Património líquido — projeção",
+      networth_desc_prefix: "Saldos em todas as contas (convertidos para Kz) mais dívidas a receber, menos dívidas a pagar. Projetado com base no resultado mensal médio atual (",
+      networth_desc_suffix: "/mês).",
+      today: "Hoje",
+      in_1_year: "Em 1 ano",
+      in_5_years: "Em 5 anos",
+      in_10_years: "Em 10 anos",
+      projection_note: "Projeção linear e indicativa — assume que as receitas e despesas médias se mantêm. Não considera valorização de investimentos além da taxa de juro já definida nas contas.",
+      health_indicators_title: "Saúde financeira",
+      indicators_desc: "Três indicadores simples, calculados a partir dos seus dados.",
+      savings_rate: "Taxa de poupança",
+      savings_rate_desc: "Percentagem da receita que sobra depois das despesas fixas e variáveis médias. O ideal costuma ser acima de 20%.",
+      emergency_fund: "Fundo de emergência",
+      emergency_fund_desc: "Quantos meses de despesas o seu saldo em contas à ordem/poupança cobre. O recomendado costuma ser 3 a 6 meses.",
+      debt_level: "Nível de endividamento",
+      debt_level_desc: "Total de dívidas a pagar em relação à receita anual prevista. Abaixo de 20% costuma ser considerado saudável.",
+      status_healthy: "Saudável",
+      status_reasonable: "Razoável",
+      status_attention: "Atenção",
+      status_no_data: "Sem dados",
+      score_excellent: "Excelente",
+      score_good: "Boa",
+      score_reasonable: "Razoável",
+      score_needs_attention: "Requer atenção",
+      invest_sim_title: "Simulação de rendimento — investimentos",
+      invest_sim_desc: "Projeção com juro composto, à taxa anual definida em cada saldo de investimento.",
+      today_short: "Hoje:",
+      year_1: "1 ano:",
+      year_5: "5 anos:",
+      year_10: "10 anos:"
+    },
+    debts: {
+      new_debt: "Nova dívida",
+      no_debts: "Ainda não tem dívidas registadas. Adicione uma dívida a pagar ou a receber para começar a acompanhar.",
+      edit_debt: "Editar dívida",
+      remove_debt: "Remover dívida",
+      balance_due: "saldo devedor",
+      paid_prefix: "Pago:",
+      total_prefix: "Total:",
+      due_date_prefix: "Vencimento:",
+      interest_accrued_suffix: "juros acumulados:",
+      register_payment: "Registrar pagamento",
+      simulator_title: "Simulador de pagamento",
+      simulator_desc: "Simule quanto tempo demora a ficar livre de dívidas, consoante o valor mensal que consegue dedicar e a estratégia escolhida.",
+      strategy_avalanche: "Avalanche (maior juro primeiro)",
+      strategy_snowball: "Snowball (menor saldo primeiro)",
+      field_monthly_budget: "Valor mensal disponível para pagar dívidas",
+      infeasible_msg: "Com este valor mensal, os juros crescem mais depressa do que consegue pagar. Tente um valor maior.",
+      debt_free_in: "Livre de dívidas em",
+      months_suffix: "meses",
+      total_interest_est: "Juros totais estimados",
+      payoff_order: "Ordem de pagamento",
+      month_label: "mês",
+      field_creditor_to_pay: "A quem deve (credor)",
+      field_creditor_to_receive: "Quem lhe deve",
+      field_creditor_placeholder: "ex: Banco XYZ, João, Loja ABC",
+      field_category: "Categoria",
+      field_original_amount: "Valor original",
+      field_currency: "Moeda",
+      field_interest_rate_optional: "Taxa de juro anual % (opcional)",
+      field_interest_rate_placeholder: "ex: 15",
+      field_start_date: "Data de início",
+      field_due_date_optional: "Data de vencimento (opcional)",
+      field_linked_account_optional: "Conta associada (opcional)",
+      no_account_option: "Nenhuma — não atualizar saldo automaticamente",
+      field_balance: "Saldo",
+      note_pay_reduces: "Ao registrar um pagamento, o saldo desta conta será automaticamente reduzido.",
+      note_receive_increases: "Ao registrar um recebimento, o saldo desta conta será automaticamente aumentado.",
+      field_description_optional: "Descrição (opcional)",
+      field_description_placeholder: "ex: Empréstimo para o carro",
+      save_changes: "Salvar alterações",
+      save_debt: "Salvar dívida",
+      word_payment: "pagamento",
+      word_receipt: "recebimento",
+      register_prefix: "Registrar",
+      current_balance_prefix: "Saldo devedor atual:",
+      field_amount: "Valor",
+      field_date: "Data",
+      field_description_placeholder_payment: "ex: Prestação de janeiro",
+      will_reduce: "Vai reduzir",
+      will_increase: "Vai aumentar",
+      balance_of: "o saldo de",
+      amount_prefix: "em",
+      no_account_note: "Esta dívida não tem conta associada — o saldo não é atualizado automaticamente. Pode associar uma conta ao editar a dívida.",
+      confirm_prefix: "Confirmar"
+    },
+    cards: {
+      new_card: "Adicionar cartão de crédito",
+      no_cards: "Ainda não tem cartões de crédito registados. Adicione o primeiro para começar a acompanhar faturas e parcelas.",
+      edit_card_modal_title: "Editar cartão de crédito",
+      new_card_modal_title: "Novo cartão de crédito",
+      field_bank: "Banco",
+      field_nickname_optional: "Apelido (opcional)",
+      field_nickname_placeholder: "ex: Cartão Gold",
+      field_currency: "Moeda",
+      field_credit_limit: "Limite de crédito",
+      field_closing_day: "Dia de fecho da fatura",
+      field_due_day: "Dia de vencimento",
+      closing_day_note: "Compras feitas até ao dia de fecho entram na fatura desse mês; depois disso, entram na fatura seguinte.",
+      save_changes: "Salvar alterações",
+      add_card: "Adicionar cartão",
+      edit_purchase_modal_title: "Editar compra",
+      new_purchase_modal_title: "Nova compra no cartão",
+      field_description: "Descrição",
+      field_description_placeholder: "ex: Supermercado",
+      field_category: "Categoria",
+      field_total_amount: "Valor total",
+      field_installments: "Nº de parcelas",
+      field_purchase_date: "Data da compra",
+      field_member_optional: "Membro da família (opcional)",
+      field_member_placeholder: "ex: Afonso",
+      distribution_title: "Distribuição pelas faturas:",
+      add_purchase: "Adicionar compra",
+      pay_statement_modal_title_prefix: "Pagar fatura — ",
+      statement_amount_prefix: "Valor da fatura:",
+      field_amount_to_pay: "Valor a pagar",
+      field_date: "Data",
+      field_pay_from_optional: "Pagar a partir de (opcional)",
+      no_account_linked_option: "— sem conta associada —",
+      field_balance: "Saldo",
+      usual_account_hint: "Conta habitual, usada da última vez",
+      confirm_payment: "Confirmar pagamento",
+      edit_card: "Editar cartão",
+      remove_card: "Remover cartão",
+      limit_used: "Limite usado",
+      available_prefix: "Disponível:",
+      current_statement_prefix: "Fatura atual (",
+      current_statement_suffix: ")",
+      due_date_prefix2: "Vencimento:",
+      pay_statement: "Pagar fatura",
+      recent_purchases: "Compras recentes",
+      new_purchase_short: "+ Nova compra",
+      no_purchases: "Nenhuma compra registada."
+    },
+    exchange: {
+      rates_title: "Taxas de câmbio de referência",
+      rates_desc: "Usadas para converter os saldos em USD/EUR/ZAR/GBP para Kwanza na Visão Geral.",
+      update_automatically: "Atualizar automaticamente",
+      updating: "A obter…",
+      fetch_error: "Não foi possível obter as taxas automaticamente. Pode inserir manualmente abaixo — consulte www.bna.ao para o valor de referência do dia.",
+      field_usd: "1 USD em Kz",
+      field_eur: "1 EUR em Kz",
+      field_zar: "1 ZAR em Kz",
+      field_gbp: "1 GBP em Kz",
+      save_rates: "Salvar taxas",
+      last_update_prefix: "Última atualização:",
+      source_prefix: "Fonte:",
+      no_rate_set: "Ainda não definiu nenhuma taxa de câmbio.",
+      disclaimer_prefix: "Valores meramente indicativos. Para a taxa oficial do dia, consulte",
+      disclaimer_suffix: ". A atualização automática usa uma API comunitária que espelha dados do BNA e pode nem sempre estar disponível, sobretudo para ZAR e GBP — nesse caso, insira o valor manualmente.",
+      preview_title: "Pré-visualização"
+    },
+    forecast: {
+      summary_title: "Resumo mensal previsto",
+      summary_desc: "Baseado nas fontes de receita (Orçamento) e nas despesas fixas + funcionários cadastrados.",
+      expected_income: "Receitas previstas",
+      fixed_staff_expenses: "Despesas fixas + funcionários",
+      variable_expenses: "Despesas variáveis (média 3 meses)",
+      variable_expenses_sub: "Compras, lazer, etc.",
+      projected_result: "Resultado mensal previsto",
+      include_variable_checkbox: "Incluir despesas variáveis médias na projeção",
+      projection_title: "Projeção do saldo — próximos 6 meses",
+      projection_desc: "Parte do saldo disponível atual em Kz ({bal}) e soma o resultado mensal previsto a cada mês.",
+      negative_warning: "Ao ritmo atual, o saldo pode ficar negativo em {month} (≈ {balance}). Talvez valha a pena rever despesas ou fontes de receita.",
+      other_currencies_note: "Esta previsão considera apenas saldos em Kz. Contas em {currencies} não estão incluídas."
+    },
+    investments: {
+      pill_bonds: "Obrigações",
+      pill_equities: "Ações",
+      pill_funds: "Fundos",
+      pill_calendar: "Calendário",
+      pill_income: "Receitas",
+      pill_performance: "Performance",
+      coming_soon: "{name} — em breve, numa próxima etapa."
+    },
+    report: {
+      tab_monthly: "Mensal",
+      tab_annual: "Anual / Fiscal",
+      save_pdf: "Salvar como PDF / Imprimir",
+      download_word: "Descarregar Word",
+      pdf_hint: "\"Salvar como PDF\" abre a janela de impressão do navegador — escolha \"Salvar como PDF\" no destino da impressão.",
+      report_title: "Relatório Financeiro — Fonsprince One",
+      report_generated: "{month} · Gerado em {date}",
+      annual_report_title: "Relatório Anual — Fonsprince One",
+      annual_report_generated: "Ano de {year} · Gerado em {date}",
+      month_summary: "Resumo do mês",
+      year_summary: "Resumo do ano",
+      income_month: "Receitas do mês",
+      expenses_month: "Despesas do mês",
+      result_month: "Resultado do mês",
+      income_total: "Receitas totais",
+      expenses_total: "Despesas totais",
+      result_year: "Resultado líquido do ano",
+      monthly_evolution: "Evolução mensal",
+      col_month: "Mês",
+      col_income: "Receitas",
+      col_expenses: "Despesas",
+      col_result: "Resultado",
+      income_by_category: "Receitas por categoria",
+      expenses_by_category: "Despesas por categoria",
+      col_category: "Categoria",
+      col_total: "Total",
+      col_spent: "Gasto",
+      col_limit: "Limite",
+      bank_accounts: "Contas bancárias",
+      year_end_balances: "Saldos de contas em 31/12/{year}",
+      fixed_expenses_staff: "Despesas fixas e funcionários",
+      col_name: "Nome",
+      col_value: "Valor",
+      col_status: "Estado",
+      open_debts: "Dívidas em aberto",
+      savings_goals: "Metas de poupança",
+      no_expenses: "Sem despesas registadas.",
+      no_income: "Sem receitas registadas.",
+      no_accounts: "Sem contas cadastradas.",
+      no_fixed_expenses: "Sem despesas fixas registadas.",
+      generated_footer: "Gerado automaticamente pelo Fonsprince One — Afonso Ndombaxi.",
+      fiscal_summary_title: "Resumo Fiscal de Investimentos (estimativa)",
+      col_type: "Tipo",
+      col_received_in: "Valor recebido em {year}",
+      col_rate: "Taxa",
+      col_estimated_tax: "Imposto estimado",
+      bond_coupons: "Cupões de obrigações",
+      equity_dividends: "Dividendos de ações",
+      total_coupons_dividends: "Total (cupões + dividendos)",
+      unrealized_gains_note: "Mais-valias não realizadas em ações: {gains} (imposto potencial de {tax} a {rate}%, aplicável apenas no momento da venda — não incluído no total acima). Taxas editáveis em Investimentos → Performance.",
+      fiscal_disclaimer: "Este relatório é um resumo informativo preparado a partir dos dados registados na app. Para efeitos fiscais (ex: declaração de IRT), confirme sempre os valores com os extratos oficiais dos bancos e outros documentos de suporte. Juros bancários não estão incluídos neste resumo — consulte o extrato do banco para esse valor.",
+      staff_suffix: " (funcionário)"
+    },
+    kpis: {
+      financial_health: "Saúde Financeira",
+      auto_insights: "Insights automáticos",
+      score_excellent: "Excelente",
+      score_good: "Boa",
+      score_fair: "Razoável",
+      score_attention: "Requer atenção",
+      factor_liquidez: "Liquidez",
+      factor_poupanca: "Poupança",
+      factor_endividamento: "Endividamento",
+      factor_investimentos: "Investimentos",
+      factor_evolucao: "Evolução patrimonial",
+      type_order: "à ordem",
+      type_savings: "poupança",
+      type_investment: "investimento",
+      insight_networth_up: "Património cresceu {pct}% face ao mês anterior.",
+      insight_networth_down: "Património caiu {pct}% face ao mês anterior.",
+      insight_bank_share: "{bank} representa {pct}% dos ativos.",
+      insight_concentration: "Elevada concentração em {type} ({pct}%).",
+      insight_interest: "Juros estimados este mês: {amount}.",
+      insight_member_share: "{member} representa {pct}% das despesas do mês."
+    },
+    exports: {
+      csv_transactions_title: "Movimentos (CSV)",
+      csv_transactions_text: "Todos os movimentos registados, um por linha — abre em Excel.",
+      csv_accounts_title: "Contas (Excel)",
+      csv_accounts_text: "Consolidado das suas contas bancárias, por banco e por conta.",
+      pdf_accounts_title: "Contas (PDF)",
+      pdf_accounts_text: "Resumo de contas pronto a imprimir ou salvar como PDF.",
+      backup_title: "Cópia de segurança completa",
+      backup_text: "Todos os dados da app num único arquivo — para salvar ou transferir para outro aparelho.",
+      import_title: "Importar dados",
+      import_text: "Restaura uma cópia de segurança exportada anteriormente por esta app.",
+      export_cta: "Exportar",
+      import_cta: "Importar"
+    },
+    alerts: {
+      empty: "Sem alertas de momento — está tudo em dia.",
+      balance_negative_forecast: "A este ritmo de gastos, o saldo pode ficar negativo antes do fim do mês — previsão: {amount}.",
+      category_spike: "Gastou {pct}% mais em \"{cat}\" este mês, face à média dos últimos meses ({cur} vs. média de {avg}).",
+      recurring_overdue: "\"{name}\" está vencida (venceu dia {day}).",
+      recurring_due_soon: "\"{name}\" vence em breve (dia {day}).",
+      recurring_forgotten: "\"{name}\" não é paga há pelo menos 2 meses — pode ser uma subscrição esquecida.",
+      category_limit_exceeded: "A categoria \"{cat}\" já ultrapassou o limite mensal ({spent} de {limit}).",
+      member_limit_exceeded: "{member} já ultrapassou o orçamento mensal ({spent} de {limit}).",
+      debt_overdue: "A dívida com \"{creditor}\" está vencida.",
+      goal_no_contribution: "Ainda não contribuiu para a meta \"{goal}\" este mês.",
+      export_reminder_days: "Já não exporta os dados há {days} dias — considere fazer uma cópia de segurança.",
+      export_reminder_never: "Ainda não fez nenhuma exportação de dados — considere salvar uma cópia de segurança."
+    },
+    simulators: {
+      group_tax_salary: "Impostos & Salário",
+      group_interest_savings: "Juros & Poupança",
+      group_utilities: "Utilitários",
+      group_credit: "Crédito",
+      sim_irt_label: "IRT (novo, 2026)",
+      sim_irt_sub: "Imposto sobre o Rendimento do Trabalho",
+      sim_irpf_label: "IRPF (2026)",
+      sim_irpf_sub: "Imposto de Renda Retido na Fonte",
+      sim_irs_label: "IRS (2026)",
+      sim_irs_sub: "Imposto sobre o Rendimento das Pessoas Singulares",
+      sim_ukTax_label: "Income Tax (2026/27)",
+      sim_ukTax_sub: "Imposto sobre o rendimento e Contribuição Nacional (NI)",
+      sim_salarioLiquido_label: "Salário Líquido",
+      sim_salarioLiquido_sub: "Bruto → líquido, com subsídios (INSS + IRT)",
+      sim_subsidiosAnuais_label: "Subsídios de Férias e Natal",
+      sim_subsidiosAnuais_sub: "50% do salário, proporcional aos meses",
+      sim_horaExtra_label: "Hora Extra",
+      sim_horaExtra_sub: "150% / 175% / 200% conforme a lei",
+      sim_rescisao_label: "Rescisão de Contrato",
+      sim_rescisao_sub: "Indemnização e proporcionais",
+      sim_jurosComposto_label: "Juros Composto",
+      sim_jurosComposto_sub: "Capitalização composta",
+      sim_jurosSimples_label: "Juros Simples",
+      sim_jurosSimples_sub: "Capitalização linear",
+      sim_conversaoTaxa_label: "Conversão de Taxa",
+      sim_conversaoTaxa_sub: "Mensal ↔ Anual",
+      sim_rendimentoPoupanca_label: "Rendimento da Poupança",
+      sim_rendimentoPoupanca_sub: "Projeção de saldo poupado",
+      sim_porcentagem_label: "Porcentagem",
+      sim_porcentagem_sub: "Percentagens e variações",
+      sim_regraTres_label: "Regra de Três Simples",
+      sim_regraTres_sub: "Proporção direta",
+      sim_contadorDias_label: "Contador de Dias",
+      sim_contadorDias_sub: "Dias entre duas datas",
+      sim_diasFaltam_label: "Quantos Dias Faltam",
+      sim_diasFaltam_sub: "Até uma data futura",
+      sim_emprestimo_label: "Crédito Pessoal",
+      sim_emprestimo_sub: "TAN, TAEG e Imposto de Selo (regras BFA)",
+      sim_financiamento_label: "Leasing Automóvel",
+      sim_financiamento_sub: "Valor residual e taxa de esforço (regras BAI)"
+    },
+    privacy: {
+      last_updated: "Última atualização: {date}",
+      s1_title: "1. O que esta política cobre",
+      s1_body: "A Fonsprince One é uma app de gestão financeira pessoal e familiar. Esta página explica, em linguagem simples, que dados a app guarda, onde ficam guardados e o que fazemos — e não fazemos — com eles.",
+      s2_title: "2. Onde ficam os seus dados",
+      s2_body: "Por predefinição, todos os seus dados financeiros (contas, movimentos, orçamento, metas, dívidas, cartões) ficam guardados apenas neste aparelho, no armazenamento local do navegador (localStorage). Não são enviados para nenhum servidor a menos que ative a sincronização na nuvem descrita abaixo.",
+      s3_title: "3. Sincronização na nuvem (opcional)",
+      s3_body: "Se optar por entrar para sincronizar entre aparelhos, os seus dados passam a ser também guardados de forma encriptada em trânsito nos servidores do Firebase (Google), sob a conta do projeto Fonsprince One. O acesso é protegido pela sua senha (ou fornecedor de login escolhido) e apenas a sua conta consegue ler os seus próprios dados. Pode deixar de sincronizar a qualquer momento terminando sessão — os dados guardados localmente no aparelho não são apagados por essa ação.",
+      s4_title: "4. O que nunca fazemos",
+      s4_body: "Não vendemos, alugamos nem partilhamos os seus dados financeiros com terceiros para fins publicitários ou comerciais. Não existem anúncios nem rastreadores de terceiros na app.",
+      s5_title: "5. Serviços externos que a app consulta",
+      s5_body: "Para converter moedas, a app pode consultar uma API pública de taxas de câmbio de referência do BNA (angolaapi.onrender.com). Esta consulta não envia os seus dados financeiros — apenas pede a taxa de câmbio do dia. Nenhum outro serviço externo é contactado com os seus dados.",
+      s6_title: "6. O controlo é seu",
+      s6_body: "Pode exportar todos os seus dados a qualquer momento (secção Exportações) em formato JSON, Excel, CSV ou PDF. Pode também excluir todos os dados guardados neste aparelho limpando os dados da app nas configurações do navegador ou do celular. Ao sair da conta na nuvem, pode pedir a eliminação definitiva dos dados sincronizados contactando-nos pelo meio indicado abaixo.",
+      s7_title: "7. Contato",
       s7_body: "Para questões sobre privacidade ou pedidos de eliminação de dados da conta na nuvem, contacte o titular da conta através do email associado à sua conta Fonsprince One."
     }
   },
@@ -3827,6 +4752,7 @@ const TRANSLATIONS = {
     ui: {
       language: "Language",
       lang_pt: "Portuguese",
+      "lang_pt-BR": "Portuguese (Brazil)",
       lang_en: "English",
       lang_fr: "French",
       lang_es: "Spanish"
@@ -4411,6 +5337,12 @@ const TRANSLATIONS = {
       group_credit: "Credit",
       sim_irt_label: "IRT (new, 2026)",
       sim_irt_sub: "Angolan Labor Income Tax",
+      sim_irpf_label: "IRPF (2026)",
+      sim_irpf_sub: "Brazilian Withholding Income Tax",
+      sim_irs_label: "IRS (2026)",
+      sim_irs_sub: "Portuguese Personal Income Tax",
+      sim_ukTax_label: "Income Tax (2026/27)",
+      sim_ukTax_sub: "Income Tax & National Insurance",
       sim_salarioLiquido_label: "Net Salary",
       sim_salarioLiquido_sub: "Gross → net, with allowances (social security + IRT)",
       sim_subsidiosAnuais_label: "Vacation and Christmas Bonuses",
@@ -4527,6 +5459,7 @@ const TRANSLATIONS = {
     ui: {
       language: "Langue",
       lang_pt: "Portugais",
+      "lang_pt-BR": "Portugais (Brésil)",
       lang_en: "Anglais",
       lang_fr: "Français",
       lang_es: "Espagnol"
@@ -5111,6 +6044,12 @@ const TRANSLATIONS = {
       group_credit: "Crédit",
       sim_irt_label: "IRT (nouveau, 2026)",
       sim_irt_sub: "Impôt angolais sur le revenu du travail",
+      sim_irpf_label: "IRPF (2026)",
+      sim_irpf_sub: "Impôt brésilien sur le revenu (retenue à la source)",
+      sim_irs_label: "IRS (2026)",
+      sim_irs_sub: "Impôt portugais sur le revenu des personnes physiques",
+      sim_ukTax_label: "Income Tax (2026/27)",
+      sim_ukTax_sub: "Impôt sur le revenu et cotisation nationale (NI) britanniques",
       sim_salarioLiquido_label: "Salaire Net",
       sim_salarioLiquido_sub: "Brut → net, avec allocations (sécurité sociale + IRT)",
       sim_subsidiosAnuais_label: "Primes de Vacances et de Noël",
@@ -5227,6 +6166,7 @@ const TRANSLATIONS = {
     ui: {
       language: "Idioma",
       lang_pt: "Portugués",
+      "lang_pt-BR": "Portugués (Brasil)",
       lang_en: "Inglés",
       lang_fr: "Francés",
       lang_es: "Español"
@@ -5811,6 +6751,12 @@ const TRANSLATIONS = {
       group_credit: "Crédito",
       sim_irt_label: "IRT (nuevo, 2026)",
       sim_irt_sub: "Impuesto angoleño sobre la Renta del Trabajo",
+      sim_irpf_label: "IRPF (2026)",
+      sim_irpf_sub: "Impuesto brasileño sobre la renta (retención en la fuente)",
+      sim_irs_label: "IRS (2026)",
+      sim_irs_sub: "Impuesto portugués sobre la renta de las personas físicas",
+      sim_ukTax_label: "Income Tax (2026/27)",
+      sim_ukTax_sub: "Impuesto sobre la renta y contribución nacional (NI) del Reino Unido",
       sim_salarioLiquido_label: "Salario Neto",
       sim_salarioLiquido_sub: "Bruto → neto, con subsidios (seguridad social + IRT)",
       sim_subsidiosAnuais_label: "Pagas de Vacaciones y Navidad",
@@ -8394,6 +9340,7 @@ function FinanceApp() {
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
   const [lang, setLang] = useState(() => loadKey("lang", "pt"));
   const [userName, setUserName] = useState(() => loadKey("user-name", ""));
+  const [country, setCountry] = useState(() => loadKey("country", "AO"));
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
   const [cloudUser, setCloudUser] = useState(null);
   const [cloudAuthChecked, setCloudAuthChecked] = useState(false);
@@ -8582,6 +9529,14 @@ function FinanceApp() {
   useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
   useEffect(() => saveKey("lang", lang), [lang]);
   useEffect(() => saveKey("user-name", userName), [userName]);
+  useEffect(() => {
+    saveKey("country", country);
+    const market = MARKETS[country] || MARKETS.AO;
+    BANKS = market.banks;
+    CURRENT_NUMBER_LOCALE = market.numberLocale;
+    BOND_TYPES = market.bondTypes;
+    EQUITY_SUGGESTIONS = market.equitySuggestions;
+  }, [country]);
   useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
   useEffect(() => {
@@ -10513,7 +11468,8 @@ function FinanceApp() {
     expectedIncome: expectedIncome,
     month: month
   }), tab === "simulators" && /*#__PURE__*/React.createElement(SimuladoresTab, {
-    lang: lang
+    lang: lang,
+    country: country
   }), tab === "settings" && /*#__PURE__*/React.createElement(SettingsTab, {
     darkMode: darkMode,
     onToggleDarkMode: () => setDarkMode(d => !d),
@@ -10526,6 +11482,11 @@ function FinanceApp() {
     onToggleNotifications: setNotificationsEnabled,
     userName: userName,
     onSetUserName: setUserName,
+    country: country,
+    onSetCountry: c => {
+      setCountry(c);
+      setLang((MARKETS[c] || MARKETS.AO).lang);
+    },
     cloudUser: cloudUser,
     cloudSyncStatus: cloudSyncStatus,
     cloudError: cloudError,
@@ -10536,6 +11497,7 @@ function FinanceApp() {
     lang: lang
   })))), showAccountModal && /*#__PURE__*/React.createElement(AccountModal, {
     lang: lang,
+    country: country,
     initial: editingAccount,
     onClose: () => {
       setShowAccountModal(false);
@@ -10609,6 +11571,7 @@ function FinanceApp() {
     }
   }), showDebtModal && /*#__PURE__*/React.createElement(DebtModal, {
     lang: lang,
+    country: country,
     initial: editingDebt,
     accounts: accounts,
     onClose: () => {
@@ -10632,6 +11595,7 @@ function FinanceApp() {
     }
   }), showCreditCardModal && /*#__PURE__*/React.createElement(CreditCardModal, {
     lang: lang,
+    country: country,
     initial: editingCreditCard,
     onClose: () => {
       setShowCreditCardModal(false);
@@ -15417,6 +16381,7 @@ function emptySubBalance(type = "À ordem") {
 }
 function AccountModal({
   lang,
+  country,
   initial,
   onClose,
   onSave
@@ -15426,7 +16391,7 @@ function AccountModal({
   const [bank, setBank] = useState(initialIsCustom ? "Outro" : initial && initial.bank || BANKS[0]);
   const [customBank, setCustomBank] = useState(initialIsCustom ? initial.bank : "");
   const [nickname, setNickname] = useState(initial && initial.nickname || "");
-  const [currency, setCurrency] = useState(initial && initial.currency || "Kz");
+  const [currency, setCurrency] = useState(initial && initial.currency || (MARKETS[country] || MARKETS.AO).currency);
   const [subBalances, setSubBalances] = useState(initial && initial.subBalances && initial.subBalances.length ? initial.subBalances.map(sb => ({
     ...sb,
     openingBalance: String(sb.openingBalance),
@@ -20888,16 +21853,39 @@ function KPIsTab({
 // SECTION 10: SIMULATORS TAB
 // ══════════════════════════════════════════════════════════════════════
 
-function getSimGroups(lang) {
+const TAX_SIM_BY_COUNTRY = {
+  AO: {
+    id: "irt",
+    labelKey: "sim_irt_label",
+    subKey: "sim_irt_sub"
+  },
+  BR: {
+    id: "irpf",
+    labelKey: "sim_irpf_label",
+    subKey: "sim_irpf_sub"
+  },
+  PT: {
+    id: "irs",
+    labelKey: "sim_irs_label",
+    subKey: "sim_irs_sub"
+  },
+  GB: {
+    id: "ukTax",
+    labelKey: "sim_ukTax_label",
+    subKey: "sim_ukTax_sub"
+  }
+};
+function getSimGroups(lang, country) {
   const t = k => translate(lang, "simulators", k);
-  return [{
-    title: t("group_tax_salary"),
-    items: [{
-      id: "irt",
-      label: t("sim_irt_label"),
-      sub: t("sim_irt_sub"),
-      icon: IconBank
-    }, {
+  const taxSim = TAX_SIM_BY_COUNTRY[country] || TAX_SIM_BY_COUNTRY.AO;
+  const taxItems = [{
+    id: taxSim.id,
+    label: t(taxSim.labelKey),
+    sub: t(taxSim.subKey),
+    icon: IconBank
+  }];
+  if (!country || country === "AO") {
+    taxItems.push({
       id: "salarioLiquido",
       label: t("sim_salarioLiquido_label"),
       sub: t("sim_salarioLiquido_sub"),
@@ -20917,7 +21905,11 @@ function getSimGroups(lang) {
       label: t("sim_rescisao_label"),
       sub: t("sim_rescisao_sub"),
       icon: IconGavel
-    }]
+    });
+  }
+  return [{
+    title: t("group_tax_salary"),
+    items: taxItems
   }, {
     title: t("group_interest_savings"),
     items: [{
@@ -21098,6 +22090,147 @@ function SimIRT() {
       margin: "6px 0 0"
     }
   }, "Tabela oficial 2026 (Lei n.º 14/25, OGE 2026) — isenção até 150.000 Kz. Fórmula: Parcela Fixa + (Rendimento − Limite Inferior) × Taxa do escalão."));
+}
+
+/* --- IRPF/IRRF (Brasil) --- */
+function SimIRPF() {
+  const [renda, setRenda] = useState("3500");
+  const [dependentes, setDependentes] = useState("0");
+  const v = Number(renda) || 0;
+  const dep = Math.max(0, Number(dependentes) || 0);
+  const base = Math.max(0, v - dep * IRPF_DEDUCAO_POR_DEPENDENTE_BR);
+  const {
+    imposto,
+    bracket,
+    index
+  } = calcIRPF(base);
+  const liquido = v - imposto;
+  return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
+    label: "Rendimento tributável mensal (após INSS)",
+    value: renda,
+    onChange: setRenda,
+    suffix: "R$"
+  }), /*#__PURE__*/React.createElement(SimNumberField, {
+    label: "Número de dependentes",
+    value: dependentes,
+    onChange: setDependentes,
+    suffix: "pessoas"
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Base de cálculo (após dedução por dependentes)",
+    value: fmt(base, "BRL")
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: `Alíquota aplicada (${index + 1}º escalão)`,
+    value: index === 0 ? "Isento" : `${(bracket.rate * 100).toFixed(1)}%`
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "IRPF a reter",
+    value: "− " + fmt(imposto, "BRL"),
+    tone: "rust"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Valor líquido",
+    value: fmt(liquido, "BRL"),
+    big: true,
+    tone: "emerald"
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Tabela mensal do IRPF/IRRF 2026 (Receita Federal) — isenção até R$ 2.428,80. Fórmula oficial: (Base de cálculo × Alíquota) − Parcela a deduzir. Dedução de R$ 189,59 por dependente. Não inclui o redutor adicional para rendimentos entre R$ 5.000 e R$ 7.350 nem outras deduções (previdência privada, pensão alimentícia, etc.)."));
+}
+
+/* --- IRS (Portugal) --- */
+function SimIRS() {
+  const [rendimento, setRendimento] = useState("18000");
+  const v = Number(rendimento) || 0;
+  const {
+    imposto,
+    marginalRate
+  } = calcIRS(v);
+  const liquido = v - imposto;
+  return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
+    label: "Rendimento coletável anual",
+    value: rendimento,
+    onChange: setRendimento,
+    suffix: "€"
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Taxa marginal do escalão",
+    value: `${(marginalRate * 100).toFixed(1)}%`
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "IRS estimado (anual)",
+    value: "− " + fmt(imposto, "EUR"),
+    tone: "rust"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "IRS estimado (mensal, ÷12)",
+    value: "− " + fmt(imposto / 12, "EUR"),
+    tone: "rust"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Rendimento líquido estimado (anual)",
+    value: fmt(liquido, "EUR"),
+    big: true,
+    tone: "emerald"
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Escalões de IRS 2026 (Continente, OE2026). Estimativa simplificada sobre o rendimento coletável (após a dedução específica) para um trabalhador solteiro sem dependentes — não inclui quociente conjugal/familiar, adicional de solidariedade nem deduções à coleta (saúde, educação, habitação). A retenção mensal efetiva no seu recibo de vencimento pode diferir por usar as tabelas de retenção na fonte, que seguem uma lógica diferente desta estimativa anual."));
+}
+
+/* --- Income Tax + National Insurance (Reino Unido) --- */
+function SimUKTax() {
+  const [rendimento, setRendimento] = useState("32000");
+  const v = Number(rendimento) || 0;
+  const {
+    tax,
+    marginalRate
+  } = calcUKIncomeTax(v);
+  const ni = calcUKNationalInsurance(v);
+  const liquido = v - tax - ni;
+  return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
+    label: "Rendimento bruto anual",
+    value: rendimento,
+    onChange: setRendimento,
+    suffix: "£"
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Taxa marginal (Income Tax)",
+    value: `${(marginalRate * 100).toFixed(0)}%`
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Income Tax (anual)",
+    value: "− " + fmt(tax, "GBP"),
+    tone: "rust"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "National Insurance — Classe 1 (anual)",
+    value: "− " + fmt(ni, "GBP"),
+    tone: "rust"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Rendimento líquido estimado (anual)",
+    value: fmt(liquido, "GBP"),
+    big: true,
+    tone: "emerald"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: "Rendimento líquido estimado (mensal, ÷12)",
+    value: fmt(liquido / 12, "GBP")
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Ano fiscal 2026/27: \"Personal Allowance\" de £12.570 (0%), 20% até £50.270, 40% até £125.140, 45% acima disso. National Insurance Classe 1: 8% entre £12.584 e £50.284, 2% acima. Estimativa simplificada — não modela a redução do Personal Allowance para rendimentos acima de £100.000 nem outras deduções (pensão, Gift Aid, etc.)."));
 }
 
 /* --- Salário Líquido --- */
@@ -21864,6 +22997,9 @@ function SimFinanciamento() {
 }
 const SIM_COMPONENTS = {
   irt: SimIRT,
+  irpf: SimIRPF,
+  irs: SimIRS,
+  ukTax: SimUKTax,
   salarioLiquido: SimSalarioLiquido,
   subsidiosAnuais: SimSubsidiosAnuais,
   horaExtra: SimHoraExtra,
@@ -21950,12 +23086,13 @@ function SimListRow({
   }));
 }
 function SimuladoresTab({
-  lang
+  lang,
+  country
 }) {
   const [stack, setStack] = useState([]);
   const [pressedKey, setPressedKey] = useState(null);
   const depth = stack.length;
-  const simGroups = useMemo(() => getSimGroups(lang), [lang]);
+  const simGroups = useMemo(() => getSimGroups(lang, country), [lang, country]);
   function pressRow(key) {
     setPressedKey(key);
     try {
@@ -22069,7 +23206,9 @@ function SimuladoresTab({
     style: {
       padding: 18
     }
-  }, /*#__PURE__*/React.createElement(ActiveComponent, null)))));
+  }, /*#__PURE__*/React.createElement(ActiveComponent, {
+    country: country
+  })))));
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -22254,6 +23393,8 @@ function SettingsTab({
   onToggleNotifications,
   userName,
   onSetUserName,
+  country,
+  onSetCountry,
   cloudUser,
   cloudSyncStatus,
   cloudError,
@@ -22306,7 +23447,26 @@ function SettingsTab({
     placeholder: translate(lang, "settings", "name_placeholder")
   })), /*#__PURE__*/React.createElement(GhostButton, {
     onClick: () => onSetUserName(nameDraft.trim())
-  }, translate(lang, "settings", "save")))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+  }, translate(lang, "settings", "save"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "País / Mercado"
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: country,
+    onChange: e => onSetCountry(e.target.value)
+  }, Object.entries(MARKETS).map(([code, m]) => /*#__PURE__*/React.createElement("option", {
+    key: code,
+    value: code
+  }, m.name)))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, "Define a moeda por defeito e a lista de bancos disponíveis ao criar contas."))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 15,
@@ -24283,6 +25443,7 @@ function DebtsTab({
 }
 function DebtModal({
   lang,
+  country,
   initial,
   accounts,
   onClose,
@@ -24292,7 +25453,7 @@ function DebtModal({
   const [type, setType] = useState(initial && initial.type || "A pagar");
   const [creditor, setCreditor] = useState(initial && initial.creditor || "");
   const [category, setCategory] = useState(initial && initial.category || DEBT_CATEGORIES[0]);
-  const [currency, setCurrency] = useState(initial && initial.currency || "Kz");
+  const [currency, setCurrency] = useState(initial && initial.currency || (MARKETS[country] || MARKETS.AO).currency);
   const [originalAmount, setOriginalAmount] = useState(initial ? String(initial.originalAmount) : "");
   const [interestRate, setInterestRate] = useState(initial && initial.interestRate ? String(initial.interestRate) : "");
   const [startDate, setStartDate] = useState(initial && initial.startDate || todayISO());
@@ -24455,6 +25616,7 @@ function DebtModal({
 }
 function CreditCardModal({
   lang,
+  country,
   initial,
   onClose,
   onSave
@@ -24462,7 +25624,7 @@ function CreditCardModal({
   const isEditing = !!initial;
   const [bank, setBank] = useState(initial?.bank || BANKS[0]);
   const [nickname, setNickname] = useState(initial?.nickname || "");
-  const [currency, setCurrency] = useState(initial?.currency || "Kz");
+  const [currency, setCurrency] = useState(initial?.currency || (MARKETS[country] || MARKETS.AO).currency);
   const [limit, setLimit] = useState(initial ? String(initial.limit) : "");
   const [closingDay, setClosingDay] = useState(initial ? String(initial.closingDay) : "20");
   const [dueDay, setDueDay] = useState(initial ? String(initial.dueDay) : "5");
