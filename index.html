@@ -8393,7 +8393,7 @@ function FinanceApp() {
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [darkMode, setDarkMode] = useState(() => loadKey("dark-mode", false));
   const [lang, setLang] = useState(() => loadKey("lang", "pt"));
-  const [userName, setUserName] = useState(() => loadKey("user-name", "Afonso"));
+  const [userName, setUserName] = useState(() => loadKey("user-name", ""));
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
   const [cloudUser, setCloudUser] = useState(null);
   const [cloudAuthChecked, setCloudAuthChecked] = useState(false);
@@ -9975,7 +9975,9 @@ function FinanceApp() {
       flexShrink: 0,
       cursor: "pointer"
     }
-  }, "AN"))), isMobile && (ptrPull > 0 || ptrRefreshing) && /*#__PURE__*/React.createElement("div", {
+  }, (userName || "").trim().slice(0, 2).toUpperCase() || /*#__PURE__*/React.createElement(IconUser, {
+    size: 16
+  })))), isMobile && (ptrPull > 0 || ptrRefreshing) && /*#__PURE__*/React.createElement("div", {
     className: `ptr-indicator${ptrRefreshing ? " spinning" : ""}`,
     style: {
       position: "absolute",
