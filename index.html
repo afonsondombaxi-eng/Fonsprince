@@ -21875,6 +21875,72 @@ const TAX_SIM_BY_COUNTRY = {
     subKey: "sim_ukTax_sub"
   }
 };
+const CREDIT_SUB_TEXT = {
+  emprestimo: {
+    AO: {
+      pt: "TAN, TAEG e Imposto de Selo (regras BFA)",
+      "pt-BR": "TAN, TAEG e Imposto de Selo (regras BFA)",
+      en: "APR, APRC and stamp duty (BFA rules)",
+      fr: "TAN, TAEG et droit de timbre (règles BFA)",
+      es: "TAN, TAEG e Impuesto de Timbre (reglas BFA)"
+    },
+    BR: {
+      pt: "CET, IOF e juros (crédito pessoal)",
+      "pt-BR": "CET, IOF e juros (crédito pessoal)",
+      en: "CET, IOF tax and interest (personal credit)",
+      fr: "CET, taxe IOF et intérêts (crédit personnel)",
+      es: "CET, impuesto IOF e intereses (crédito personal)"
+    },
+    PT: {
+      pt: "TAN, TAEG e Imposto do Selo",
+      "pt-BR": "TAN, TAEG e Imposto do Selo",
+      en: "APR, APRC and stamp duty",
+      fr: "TAN, TAEG et droit de timbre",
+      es: "TAN, TAEG e Impuesto de Timbre"
+    },
+    GB: {
+      pt: "Representative APR (empréstimo pessoal)",
+      "pt-BR": "Representative APR (empréstimo pessoal)",
+      en: "Representative APR (personal loan)",
+      fr: "APR représentatif (prêt personnel)",
+      es: "APR representativo (préstamo personal)"
+    }
+  },
+  financiamento: {
+    AO: {
+      pt: "Valor residual e taxa de esforço (regras BAI)",
+      "pt-BR": "Valor residual e taxa de esforço (regras BAI)",
+      en: "Residual value and debt-to-income ratio (BAI rules)",
+      fr: "Valeur résiduelle et taux d'effort (règles BAI)",
+      es: "Valor residual y tasa de esfuerzo (reglas BAI)"
+    },
+    BR: {
+      pt: "Financiamento de veículo (CDC)",
+      "pt-BR": "Financiamento de veículo (CDC)",
+      en: "Vehicle financing (CDC)",
+      fr: "Financement de véhicule (CDC)",
+      es: "Financiamiento de vehículo (CDC)"
+    },
+    PT: {
+      pt: "Locação financeira / ALD automóvel",
+      "pt-BR": "Locação financeira / ALD automóvel",
+      en: "Finance lease / car ALD",
+      fr: "Location financière / LLD automobile",
+      es: "Arrendamiento financiero / ALD de coche"
+    },
+    GB: {
+      pt: "PCP — valor residual (balloon payment)",
+      "pt-BR": "PCP — valor residual (balloon payment)",
+      en: "PCP — residual value (balloon payment)",
+      fr: "PCP — valeur résiduelle (paiement final)",
+      es: "PCP — valor residual (pago final)"
+    }
+  }
+};
+function creditSub(simId, country, lang) {
+  const byCountry = CREDIT_SUB_TEXT[simId][country] || CREDIT_SUB_TEXT[simId].AO;
+  return byCountry[lang] || byCountry.pt;
+}
 function getSimGroups(lang, country) {
   const t = k => translate(lang, "simulators", k);
   const taxSim = TAX_SIM_BY_COUNTRY[country] || TAX_SIM_BY_COUNTRY.AO;
@@ -21961,12 +22027,12 @@ function getSimGroups(lang, country) {
     items: [{
       id: "emprestimo",
       label: t("sim_emprestimo_label"),
-      sub: t("sim_emprestimo_sub"),
+      sub: creditSub("emprestimo", country, lang),
       icon: IconBanknote
     }, {
       id: "financiamento",
       label: t("sim_financiamento_label"),
-      sub: t("sim_financiamento_sub"),
+      sub: creditSub("financiamento", country, lang),
       icon: IconCar
     }]
   }];
@@ -22810,13 +22876,50 @@ function SimDiasFaltam() {
     tone: dias >= 0 ? "emerald" : "rust"
   })));
 }
-
+const CREDIT_CONFIG_BY_COUNTRY = {
+  AO: {
+    valor: "1500000",
+    taxa: "23.5",
+    comissao: "5000",
+    prazo: "24",
+    currency: "Kz",
+    esforcoLimite: 35
+  },
+  BR: {
+    valor: "15000",
+    taxa: "42",
+    comissao: "150",
+    prazo: "24",
+    currency: "BRL",
+    esforcoLimite: null
+  },
+  PT: {
+    valor: "10000",
+    taxa: "9.5",
+    comissao: "100",
+    prazo: "48",
+    currency: "EUR",
+    esforcoLimite: null
+  },
+  GB: {
+    valor: "10000",
+    taxa: "8.9",
+    comissao: "0",
+    prazo: "48",
+    currency: "GBP",
+    esforcoLimite: null
+  }
+};
 /* --- Empréstimo Pessoal --- */
-function SimEmprestimo() {
-  const [valor, setValor] = useState("1500000");
-  const [taxa, setTaxa] = useState("23.5");
-  const [comissao, setComissao] = useState("5000");
-  const [prazo, setPrazo] = useState("24");
+function SimEmprestimo({
+  country
+}) {
+  const cfg = CREDIT_CONFIG_BY_COUNTRY[country] || CREDIT_CONFIG_BY_COUNTRY.AO;
+  const cc = country || "AO";
+  const [valor, setValor] = useState(cfg.valor);
+  const [taxa, setTaxa] = useState(cfg.taxa);
+  const [comissao, setComissao] = useState(cfg.comissao);
+  const [prazo, setPrazo] = useState(cfg.prazo);
   const [rendimento, setRendimento] = useState("");
   const p = Number(valor) || 0;
   const tan = (Number(taxa) || 0) / 100;
@@ -22826,21 +22929,63 @@ function SimEmprestimo() {
   const pmt = im === 0 ? n > 0 ? p / n : 0 : p * im / (1 - Math.pow(1 + im, -n));
   const totalPago = pmt * n;
   const jurosTotais = totalPago - p;
-  const isMontante = p * 0.001;
-  const isComissao = comissaoAbertura * 0.007;
-  const isJurosTotal = jurosTotais * 0.002;
-  const valorLiquido = p - comissaoAbertura - isMontante - isComissao;
-  const custoTotalCredito = jurosTotais + comissaoAbertura + isMontante + isComissao + isJurosTotal;
-  const taeg = taegAnualEstimada(valorLiquido, pmt + (n > 0 ? isJurosTotal / n : 0), n);
+  let impostoLinhas = [];
+  let impostoTotal = 0;
+  if (cc === "AO") {
+    const isMontante = p * 0.001;
+    const isComissao = comissaoAbertura * 0.007;
+    const isJurosTotal = jurosTotais * 0.002;
+    impostoTotal = isMontante + isComissao + isJurosTotal;
+    impostoLinhas = [{
+      label: "Imposto de Selo sobre o montante (0,1%)",
+      value: isMontante
+    }, {
+      label: "Imposto de Selo sobre a comissão (0,7%)",
+      value: isComissao
+    }, {
+      label: "Imposto de Selo sobre juros (0,2%, total)",
+      value: isJurosTotal
+    }];
+  } else if (cc === "PT") {
+    const isMontante = n < 12 ? p * 0.00141 * n : p * 0.0176;
+    const isJurosEComissao = (jurosTotais + comissaoAbertura) * 0.04;
+    impostoTotal = isMontante + isJurosEComissao;
+    impostoLinhas = [{
+      label: n < 12 ? "Imposto de Selo sobre o montante (0,141%/mês)" : "Imposto de Selo sobre o montante (1,76%)",
+      value: isMontante
+    }, {
+      label: "Imposto de Selo sobre juros e comissões (4%)",
+      value: isJurosEComissao
+    }];
+  } else if (cc === "BR") {
+    const dias = Math.min(365, n * 30);
+    const iofFixo = p * 0.0038;
+    const iofDiario = p * 0.000082 * dias;
+    impostoTotal = iofFixo + iofDiario;
+    impostoLinhas = [{
+      label: "IOF fixo (0,38% sobre o montante)",
+      value: iofFixo
+    }, {
+      label: `IOF diário (0,0082%/dia × ${dias} dias)`,
+      value: iofDiario
+    }];
+  }
+  // GB: sem imposto equivalente sobre crédito pessoal — impostoLinhas fica vazio.
+
+  const valorLiquido = p - comissaoAbertura - impostoTotal;
+  const custoTotalCredito = jurosTotais + comissaoAbertura + impostoTotal;
+  const taeg = taegAnualEstimada(valorLiquido, pmt + (n > 0 ? impostoTotal / n : 0), n);
   const rend = Number(rendimento) || 0;
   const taxaEsforco = rend > 0 ? pmt / rend * 100 : null;
+  const taegLabel = cc === "GB" ? "APR estimada" : "TAEG estimada";
+  const currency = cfg.currency;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
     label: "Valor do crédito",
     value: valor,
     onChange: setValor,
-    suffix: "Kz"
+    suffix: currency
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "TAN — Taxa Anual Nominal",
+    label: cc === "GB" ? "Taxa de juro anual (fixa)" : "TAN — Taxa Anual Nominal",
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
@@ -22848,7 +22993,7 @@ function SimEmprestimo() {
     label: "Comissão de abertura",
     value: comissao,
     onChange: setComissao,
-    suffix: "Kz"
+    suffix: currency
   }), /*#__PURE__*/React.createElement(SimNumberField, {
     label: "Prazo",
     value: prazo,
@@ -22858,56 +23003,98 @@ function SimEmprestimo() {
     label: "Rendimento líquido mensal (opcional)",
     value: rendimento,
     onChange: setRendimento,
-    suffix: "Kz"
+    suffix: currency
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Prestação mensal (capital + juros)",
-    value: fmt(pmt),
+    value: fmt(pmt, currency),
     big: true,
     tone: "emerald"
-  }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Imposto de Selo sobre o montante (0,1%)",
-    value: fmt(isMontante)
-  }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Imposto de Selo sobre a comissão (0,7%)",
-    value: fmt(isComissao)
-  }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Imposto de Selo sobre juros (0,2%, total)",
-    value: fmt(isJurosTotal)
-  }), /*#__PURE__*/React.createElement(SimResultRow, {
+  }), impostoLinhas.map(l => /*#__PURE__*/React.createElement(SimResultRow, {
+    key: l.label,
+    label: l.label,
+    value: fmt(l.value, currency)
+  })), /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Valor líquido a receber",
-    value: fmt(valorLiquido),
+    value: fmt(valorLiquido, currency),
     tone: "gold"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "TAEG estimada",
+    label: taegLabel,
     value: (taeg * 100).toFixed(2) + "%",
     big: true,
     tone: "emerald"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Custo total do crédito",
-    value: fmt(custoTotalCredito),
+    value: fmt(custoTotalCredito, currency),
     tone: "rust"
   }), taxaEsforco !== null && /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Taxa de esforço",
-    value: `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= 35 ? "(dentro do limite)" : "(acima de 35%)"}`,
-    tone: taxaEsforco <= 35 ? "emerald" : "rust"
+    value: cfg.esforcoLimite ? `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= cfg.esforcoLimite ? "(dentro do limite)" : `(acima de ${cfg.esforcoLimite}%)`}` : `${taxaEsforco.toFixed(1)}%`,
+    tone: !cfg.esforcoLimite ? "ink" : taxaEsforco <= cfg.esforcoLimite ? "emerald" : "rust"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, "Segue as regras praticadas pela banca angolana (ex. BFA — Crédito Pessoal/Solução): sistema de prestações constantes, Imposto de Selo (0,1% sobre o montante financiado, 0,7% sobre a comissão, 0,2% sobre os juros) e taxa de esforço máxima habitual de 35%. Valores indicativos — consulte a Ficha Técnica Informativa do seu banco."));
+  }, cc === "AO" && "Segue as regras praticadas pela banca angolana (ex. BFA — Crédito Pessoal/Solução): sistema de prestações constantes, Imposto de Selo (0,1% sobre o montante financiado, 0,7% sobre a comissão, 0,2% sobre os juros) e taxa de esforço máxima habitual de 35%. Valores indicativos — consulte a Ficha Técnica Informativa do seu banco.", cc === "PT" && "Imposto do Selo sobre crédito ao consumo (Verba 17 da Tabela Geral): 0,141% por mês para prazos inferiores a 1 ano, ou 1,76% para prazos de 1 ano ou mais, mais 4% sobre juros e comissões. Estimativa simplificada — consulte a Ficha de Informação Normalizada (FIN) do seu banco.", cc === "BR" && "IOF sobre crédito pessoa física: alíquota fixa de 0,38% + 0,0082% ao dia (máximo 365 dias / 3% ao ano), incidente sobre o montante financiado. Não substitui o Custo Efetivo Total (CET) divulgado pela instituição financeira, que pode incluir outras tarifas.", cc === "GB" && "Modelo de empréstimo pessoal no Reino Unido: não existe um imposto equivalente ao Imposto de Selo sobre crédito ao consumo; o custo do crédito reflete-se na Representative APR. Estimativa simplificada — a taxa real depende do perfil de crédito (\"personalised APR\")."));
 }
-function SimFinanciamento() {
-  const [valorBem, setValorBem] = useState("8000000");
-  const [entradaPct, setEntradaPct] = useState("20");
-  const [residualPct, setResidualPct] = useState("30");
-  const [taxa, setTaxa] = useState("19");
-  const [prazo, setPrazo] = useState("48");
+const FINANCING_CONFIG_BY_COUNTRY = {
+  AO: {
+    valorBem: "8000000",
+    entradaPct: "20",
+    residualPct: "30",
+    taxa: "19",
+    prazo: "48",
+    currency: "Kz",
+    esforcoLimite: 35,
+    isRate: 0.001
+  },
+  BR: {
+    valorBem: "80000",
+    entradaPct: "20",
+    residualPct: "0",
+    taxa: "24",
+    prazo: "48",
+    currency: "BRL",
+    esforcoLimite: null,
+    isRate: 0
+  },
+  PT: {
+    valorBem: "25000",
+    entradaPct: "20",
+    residualPct: "35",
+    taxa: "8.5",
+    prazo: "48",
+    currency: "EUR",
+    esforcoLimite: null,
+    isRate: 0.0176
+  },
+  GB: {
+    valorBem: "20000",
+    entradaPct: "10",
+    residualPct: "40",
+    taxa: "7.9",
+    prazo: "48",
+    currency: "GBP",
+    esforcoLimite: null,
+    isRate: 0
+  }
+};
+/* --- Financiamento / Leasing Automóvel --- */
+function SimFinanciamento({
+  country
+}) {
+  const cfg = FINANCING_CONFIG_BY_COUNTRY[country] || FINANCING_CONFIG_BY_COUNTRY.AO;
+  const cc = country || "AO";
+  const [valorBem, setValorBem] = useState(cfg.valorBem);
+  const [entradaPct, setEntradaPct] = useState(cfg.entradaPct);
+  const [residualPct, setResidualPct] = useState(cfg.residualPct);
+  const [taxa, setTaxa] = useState(cfg.taxa);
+  const [prazo, setPrazo] = useState(cfg.prazo);
   const [rendimento, setRendimento] = useState("");
   const vb = Number(valorBem) || 0;
   const ep = (Number(entradaPct) || 0) / 100;
@@ -22921,15 +23108,17 @@ function SimFinanciamento() {
   const renda = im === 0 ? n > 0 ? (financiado - valorResidual) / n : 0 : (financiado - valorResidual / Math.pow(1 + im, n)) * im / (1 - Math.pow(1 + im, -n));
   const totalRendas = renda * n;
   const jurosTotais = totalRendas + valorResidual - financiado;
-  const isMontante = financiado * 0.001;
+  const isMontante = financiado * cfg.isRate;
   const taeg = taegAnualEstimada(financiado - isMontante, renda, n, valorResidual);
   const rend = Number(rendimento) || 0;
   const taxaEsforco = rend > 0 ? renda / rend * 100 : null;
+  const taegLabel = cc === "GB" ? "APR estimada" : "TAEG estimada";
+  const currency = cfg.currency;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
     label: "Valor da viatura / bem",
     value: valorBem,
     onChange: setValorBem,
-    suffix: "Kz"
+    suffix: currency
   }), /*#__PURE__*/React.createElement(SimNumberField, {
     label: "Entrada (comparticipação)",
     value: entradaPct,
@@ -22941,7 +23130,7 @@ function SimFinanciamento() {
     onChange: setResidualPct,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "TAN — Taxa Anual Nominal",
+    label: cc === "GB" ? "Taxa de juro anual (fixa)" : "TAN — Taxa Anual Nominal",
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
@@ -22954,46 +23143,46 @@ function SimFinanciamento() {
     label: "Rendimento líquido mensal (opcional)",
     value: rendimento,
     onChange: setRendimento,
-    suffix: "Kz"
+    suffix: currency
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Valor de entrada",
-    value: fmt(entrada)
+    value: fmt(entrada, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Montante financiado",
-    value: fmt(financiado)
+    value: fmt(financiado, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Valor residual (opção de compra final)",
-    value: fmt(valorResidual)
+    value: fmt(valorResidual, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Renda mensal",
-    value: fmt(renda),
+    value: fmt(renda, currency),
     big: true,
     tone: "emerald"
+  }), cfg.isRate > 0 && /*#__PURE__*/React.createElement(SimResultRow, {
+    label: `Imposto de Selo sobre o montante (${(cfg.isRate * 100).toFixed(3).replace(/0+$/, "").replace(/\.$/, "")}%)`,
+    value: fmt(isMontante, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Imposto de Selo sobre o montante (0,1%)",
-    value: fmt(isMontante)
-  }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "TAEG estimada",
+    label: taegLabel,
     value: (taeg * 100).toFixed(2) + "%"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Total de juros",
-    value: fmt(jurosTotais),
+    value: fmt(jurosTotais, currency),
     tone: "gold"
   }), taxaEsforco !== null && /*#__PURE__*/React.createElement(SimResultRow, {
     label: "Taxa de esforço",
-    value: `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= 35 ? "(dentro do limite)" : "(acima de 35%)"}`,
-    tone: taxaEsforco <= 35 ? "emerald" : "rust"
+    value: cfg.esforcoLimite ? `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= cfg.esforcoLimite ? "(dentro do limite)" : `(acima de ${cfg.esforcoLimite}%)`}` : `${taxaEsforco.toFixed(1)}%`,
+    tone: !cfg.esforcoLimite ? "ink" : taxaEsforco <= cfg.esforcoLimite ? "emerald" : "rust"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, "Modelo de Leasing Automóvel praticado pela banca angolana (ex. BAI): financia normalmente 70%-90% do valor do bem, prazos até 50 meses, valor residual pago no final para exercer a opção de compra, e taxa de esforço máxima habitual de 35%."));
+  }, cc === "AO" && "Modelo de Leasing Automóvel praticado pela banca angolana (ex. BAI): financia normalmente 70%-90% do valor do bem, prazos até 50 meses, valor residual pago no final para exercer a opção de compra, e taxa de esforço máxima habitual de 35%.", cc === "PT" && "Modelo de Locação Financeira / ALD automóvel: valor residual pago (ou renovado) no final do contrato, com Imposto do Selo de 1,76% sobre o montante financiado (Verba 17). Estimativa simplificada — consulte a Ficha de Informação Normalizada (FIN) do seu banco ou sociedade de locação financeira.", cc === "BR" && "Financiamento de veículo (CDC — Crédito Direto ao Consumidor): normalmente sem valor residual (pode definir 0%); ajuste o campo se estiver a simular um consórcio ou arrendamento mercantil com balão. Sujeito a IOF sobre o crédito, não incluído nesta estimativa — consulte o Custo Efetivo Total (CET) do seu banco.", cc === "GB" && "Modelo PCP (Personal Contract Purchase): entrada inicial, rendas mensais mais baixas por excluírem o valor residual (\"balloon/optional final payment\"), pago apenas se decidir ficar com o veículo no final. Não existe imposto equivalente ao Imposto de Selo neste tipo de crédito no Reino Unido."));
 }
 const SIM_COMPONENTS = {
   irt: SimIRT,
