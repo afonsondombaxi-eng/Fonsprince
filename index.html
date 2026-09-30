@@ -75,6 +75,19 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  @keyframes sheetSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes sheetFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .sheet-overlay { animation: sheetFadeIn 0.18s ease; }
+  .sheet-panel { animation: sheetSlideUp 0.24s cubic-bezier(0.22, 1, 0.36, 1); }
+  .sheet-tile { transition: transform 0.1s ease; }
+  .sheet-tile:active { transform: scale(0.96); }
+  .sheet-row:active { background: var(--paper) !important; }
   .brand-gate {
     position: fixed;
     inset: 0;
@@ -6561,7 +6574,8 @@ function Modal({
   title,
   onClose,
   children,
-  wide
+  wide,
+  sheet
 }) {
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -6584,22 +6598,33 @@ function Modal({
     };
   }, []);
   return /*#__PURE__*/React.createElement("div", {
-    className: "modal-overlay",
+    className: sheet ? "modal-overlay sheet-overlay" : "modal-overlay",
     style: {
       position: "fixed",
       inset: 0,
       background: "rgba(16,32,60,0.45)",
       display: "flex",
-      alignItems: "center",
+      alignItems: sheet ? "flex-end" : "center",
       justifyContent: "center",
       zIndex: 50,
-      padding: 16
+      padding: sheet ? 0 : 16
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
-    className: "modal-panel",
+    className: sheet ? "modal-panel sheet-panel" : "modal-panel",
     onClick: e => e.stopPropagation(),
-    style: {
+    style: sheet ? {
+      background: "var(--card)",
+      borderRadius: "20px 20px 0 0",
+      padding: "10px 20px calc(20px + env(safe-area-inset-bottom))",
+      width: "100%",
+      maxWidth: "100%",
+      maxHeight: "85vh",
+      overflowY: "auto",
+      overscrollBehavior: "contain",
+      WebkitOverflowScrolling: "touch",
+      boxShadow: "0 -8px 30px rgba(16,32,60,0.22)"
+    } : {
       background: "var(--card)",
       borderRadius: 8,
       padding: 24,
@@ -6618,21 +6643,21 @@ function Modal({
       height: 4,
       borderRadius: 2,
       background: "var(--line)",
-      margin: "0 auto 14px",
-      display: "none"
+      margin: sheet ? "2px auto 12px" : "0 auto 14px",
+      display: sheet ? "block" : "none"
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 18
+      marginBottom: sheet ? 14 : 18
     }
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 19,
-      fontWeight: 600,
+      fontSize: sheet ? 17 : 19,
+      fontWeight: 700,
       color: "var(--ink)",
       margin: 0
     }
@@ -6641,14 +6666,20 @@ function Modal({
     title: "Fechar",
     "aria-label": "Fechar",
     style: {
-      background: "none",
+      background: sheet ? "var(--paper)" : "none",
+      borderRadius: sheet ? "50%" : 0,
+      width: sheet ? 30 : "auto",
+      height: sheet ? 30 : "auto",
+      display: sheet ? "flex" : "inline-block",
+      alignItems: "center",
+      justifyContent: "center",
       border: "none",
       cursor: "pointer",
       color: "var(--slate)",
-      padding: 4
+      padding: sheet ? 0 : 4
     }
   }, /*#__PURE__*/React.createElement(IconX, {
-    size: 18
+    size: sheet ? 16 : 18
   }))), children));
 }
 function OnboardingModal({
@@ -10900,383 +10931,261 @@ function FinanceApp() {
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 26,
     "aria-hidden": "true"
-  })), showMoreSheet && /*#__PURE__*/React.createElement(Modal, {
-    title: "Mais opções",
-    onClose: () => setShowMoreSheet(false)
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 18
-    }
-  }, favoriteTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 8
-    }
-  }, "Favoritos"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)",
-      gap: 8
-    }
-  }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(t => /*#__PURE__*/React.createElement("button", {
-    key: t.id,
-    onClick: () => {
-      selectTab(t.id);
-      setShowMoreSheet(false);
-    },
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      padding: "12px 4px",
-      borderRadius: 12,
-      border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
-      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
-      cursor: "pointer"
-    }
-  }, /*#__PURE__*/React.createElement(t.icon, {
-    size: 20,
-    style: {
-      color: tab === t.id ? "var(--gold)" : "var(--slate)"
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 10.5,
-      fontWeight: 600,
-      color: "var(--ink)",
-      textAlign: "center",
-      lineHeight: 1.2
-    }
-  }, t.label))))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 8
-    }
-  }, "Mais usados"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)",
-      gap: 8
-    }
-  }, mostUsedTabs.map(t => /*#__PURE__*/React.createElement("button", {
-    key: t.id,
-    onClick: () => {
-      selectTab(t.id);
-      setShowMoreSheet(false);
-    },
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      padding: "12px 4px",
-      borderRadius: 12,
-      border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
-      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
-      cursor: "pointer"
-    }
-  }, /*#__PURE__*/React.createElement(t.icon, {
-    size: 20,
-    style: {
-      color: tab === t.id ? "var(--gold)" : "var(--slate)"
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 10.5,
-      fontWeight: 600,
-      color: "var(--ink)",
-      textAlign: "center",
-      lineHeight: 1.2
-    }
-  }, t.label))))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 8
-    }
-  }, "Principal"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 6
-    }
-  }, [{
-    id: "charts",
-    label: "Gráficos",
-    icon: IconBarChart3
-  }, {
-    id: "budget",
-    label: "Orçamento",
-    icon: IconWallet
-  }, {
-    id: "cards",
-    label: "Cartões",
-    icon: IconBanknote
-  }, {
-    id: "investments",
-    label: "Investimentos",
-    icon: IconPieChart
-  }, {
-    id: "simulators",
-    label: "Simuladores",
-    icon: IconCalculator
-  }].map(t => /*#__PURE__*/React.createElement("button", {
-    key: t.id,
-    onClick: () => {
-      selectTab(t.id);
-      setShowMoreSheet(false);
-    },
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "12px 14px",
-      borderRadius: 8,
-      border: "1px solid var(--line)",
-      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
-      color: "var(--ink)",
-      fontFamily: "Inter, sans-serif",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer",
-      textAlign: "left"
-    }
-  }, /*#__PURE__*/React.createElement(t.icon, {
-    size: 17,
-    style: {
-      color: tab === t.id ? "var(--gold)" : "var(--slate)"
-    }
-  }), t.label)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 8
-    }
-  }, "Atalhos"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)",
-      gap: 8
-    }
-  }, [{
-    id: "goals",
-    label: "Metas",
-    icon: IconTarget
-  }, {
-    id: "planning",
-    label: "Planeamento",
-    icon: IconCompass
-  }, {
-    id: "exchange",
-    label: "Câmbio",
-    icon: IconRepeat
-  }, {
-    id: "forecast",
-    label: "Fluxo Caixa",
-    icon: IconTrendingUp
-  }, {
-    id: "report",
-    label: "Relatório",
-    icon: IconFileText
-  }, {
-    id: "kpis",
-    label: "KPI's",
-    icon: IconActivity
-  }, {
-    id: "exports",
-    label: "Exportações",
-    icon: IconDownload
-  }, {
-    id: "__categories",
-    label: "Categorias",
-    icon: IconSettings,
-    onClick: () => {
-      setShowCategoryManager(true);
-      setShowMoreSheet(false);
-    }
-  }, {
-    id: "__shortcuts",
-    label: "Atalhos",
-    icon: IconZap,
-    onClick: () => {
-      setShowShortcutsModal(true);
-      setShowMoreSheet(false);
-    }
-  }, {
-    id: "settings",
-    label: "Definições",
-    icon: IconSettings
-  }].map(t => /*#__PURE__*/React.createElement("button", {
-    key: t.id,
-    onClick: t.onClick || (() => {
-      selectTab(t.id);
-      setShowMoreSheet(false);
-    }),
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-      padding: "12px 4px",
-      borderRadius: 12,
-      border: `1px solid ${tab === t.id ? "var(--gold)" : "var(--line)"}`,
-      background: tab === t.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
-      cursor: "pointer"
-    }
-  }, /*#__PURE__*/React.createElement(t.icon, {
-    size: 20,
-    style: {
-      color: tab === t.id ? "var(--gold)" : "var(--slate)"
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 10.5,
-      fontWeight: 600,
-      color: "var(--ink)",
-      textAlign: "center",
-      lineHeight: 1.2
-    }
-  }, t.label))))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: "var(--slate)",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 8
-    }
-  }, "Dados"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
+  })), showMoreSheet && (() => {
+    const sheetTile = t => {
+      const active = tab === t.id;
+      return /*#__PURE__*/React.createElement("button", {
+        key: t.id,
+        onClick: t.onClick || (() => {
+          selectTab(t.id);
+          setShowMoreSheet(false);
+        }),
+        className: "sheet-tile a11y-focusable",
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 7,
+          padding: "10px 4px 4px",
+          border: "none",
+          background: "none",
+          cursor: "pointer"
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: active ? "var(--gold)" : "color-mix(in srgb, var(--ink) 7%, var(--card))"
+        }
+      }, /*#__PURE__*/React.createElement(t.icon, {
+        size: 19,
+        style: {
+          color: active ? "#fff" : "var(--ink)"
+        }
+      })), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 10.5,
+          fontWeight: 600,
+          color: active ? "var(--gold)" : "var(--ink)",
+          textAlign: "center",
+          lineHeight: 1.2
+        }
+      }, t.label));
+    };
+    const sheetSectionLabel = text => /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: 0.6,
+        margin: "0 2px 10px"
+      }
+    }, text);
+    const dataRow = (icon, label, onClick) => {
+      const Icon = icon;
+      return /*#__PURE__*/React.createElement("button", {
+        onClick: onClick,
+        className: "sheet-row a11y-focusable",
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "13px 14px",
+          border: "none",
+          borderBottom: "1px solid var(--line)",
+          background: "none",
+          color: "var(--ink)",
+          fontFamily: "Inter, sans-serif",
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: "pointer",
+          textAlign: "left",
+          width: "100%"
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          width: 30,
+          height: 30,
+          borderRadius: "50%",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "color-mix(in srgb, var(--ink) 7%, var(--card))"
+        }
+      }, /*#__PURE__*/React.createElement(Icon, {
+        size: 15,
+        style: {
+          color: "var(--ink)"
+        }
+      })), label);
+    };
+    return /*#__PURE__*/React.createElement(Modal, {
+      title: "Mais opções",
+      onClose: () => setShowMoreSheet(false),
+      sheet: isMobile
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 22
+      }
+    }, favoriteTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Favoritos"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)"
+      }
+    }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(sheetTile))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Mais usados"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)"
+      }
+    }, mostUsedTabs.map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Principal"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)"
+      }
+    }, [{
+      id: "charts",
+      label: "Gráficos",
+      icon: IconBarChart3
+    }, {
+      id: "budget",
+      label: "Orçamento",
+      icon: IconWallet
+    }, {
+      id: "cards",
+      label: "Cartões",
+      icon: IconBanknote
+    }, {
+      id: "investments",
+      label: "Investimentos",
+      icon: IconPieChart
+    }, {
+      id: "simulators",
+      label: "Simuladores",
+      icon: IconCalculator
+    }].map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Atalhos"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)"
+      }
+    }, [{
+      id: "goals",
+      label: "Metas",
+      icon: IconTarget
+    }, {
+      id: "planning",
+      label: "Planeamento",
+      icon: IconCompass
+    }, {
+      id: "exchange",
+      label: "Câmbio",
+      icon: IconRepeat
+    }, {
+      id: "forecast",
+      label: "Fluxo Caixa",
+      icon: IconTrendingUp
+    }, {
+      id: "report",
+      label: "Relatório",
+      icon: IconFileText
+    }, {
+      id: "kpis",
+      label: "KPI's",
+      icon: IconActivity
+    }, {
+      id: "exports",
+      label: "Exportações",
+      icon: IconDownload
+    }, {
+      id: "__categories",
+      label: "Categorias",
+      icon: IconSettings,
+      onClick: () => {
+        setShowCategoryManager(true);
+        setShowMoreSheet(false);
+      }
+    }, {
+      id: "__shortcuts",
+      label: "Atalhos",
+      icon: IconZap,
+      onClick: () => {
+        setShowShortcutsModal(true);
+        setShowMoreSheet(false);
+      }
+    }, {
+      id: "settings",
+      label: "Definições",
+      icon: IconSettings
+    }].map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Dados"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 14,
+        overflow: "hidden",
+        border: "1px solid var(--line)"
+      }
+    }, dataRow(IconDownload, "Exportar dados", () => {
       exportAllData();
       setShowMoreSheet(false);
-    },
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "12px 14px",
-      borderRadius: 8,
-      border: "1px solid var(--line)",
-      background: "var(--card)",
-      color: "var(--ink)",
-      fontFamily: "Inter, sans-serif",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer",
-      textAlign: "left"
-    }
-  }, /*#__PURE__*/React.createElement(IconDownload, {
-    size: 17,
-    style: {
-      color: "var(--slate)"
-    }
-  }), " Exportar dados"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
+    }), dataRow(IconDownload, "Exportar movimentos (CSV)", () => {
       exportTransactionsCSV();
       setShowMoreSheet(false);
-    },
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "12px 14px",
-      borderRadius: 8,
-      border: "1px solid var(--line)",
-      background: "var(--card)",
-      color: "var(--ink)",
-      fontFamily: "Inter, sans-serif",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer",
-      textAlign: "left"
-    }
-  }, /*#__PURE__*/React.createElement(IconDownload, {
-    size: 17,
-    style: {
-      color: "var(--slate)"
-    }
-  }), " Exportar movimentos (CSV)"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
+    }), dataRow(IconUpload, "Importar extrato (CSV)", () => {
       setShowMoreSheet(false);
       setShowCsvImportModal(true);
-    },
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "12px 14px",
-      borderRadius: 8,
-      border: "1px solid var(--line)",
-      background: "var(--card)",
-      color: "var(--ink)",
-      fontFamily: "Inter, sans-serif",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer",
-      textAlign: "left"
-    }
-  }, /*#__PURE__*/React.createElement(IconUpload, {
-    size: 17,
-    style: {
-      color: "var(--slate)"
-    }
-  }), " Importar extrato (CSV)"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setShowMoreSheet(false);
-      fileInputRef.current && fileInputRef.current.click();
-    },
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "12px 14px",
-      borderRadius: 8,
-      border: "1px solid var(--line)",
-      background: "var(--card)",
-      color: "var(--ink)",
-      fontFamily: "Inter, sans-serif",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer",
-      textAlign: "left"
-    }
-  }, /*#__PURE__*/React.createElement(IconUpload, {
-    size: 17,
-    style: {
-      color: "var(--slate)"
-    }
-  }), " Importar dados"), importError && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11.5,
-      color: "var(--rust)"
-    }
-  }, importError))))), showPinSetup && /*#__PURE__*/React.createElement(PinSetupModal, {
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setShowMoreSheet(false);
+        fileInputRef.current && fileInputRef.current.click();
+      },
+      className: "sheet-row a11y-focusable",
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "13px 14px",
+        border: "none",
+        background: "none",
+        color: "var(--ink)",
+        fontFamily: "Inter, sans-serif",
+        fontSize: 14,
+        fontWeight: 600,
+        cursor: "pointer",
+        textAlign: "left",
+        width: "100%"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        width: 30,
+        height: 30,
+        borderRadius: "50%",
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "color-mix(in srgb, var(--ink) 7%, var(--card))"
+      }
+    }, /*#__PURE__*/React.createElement(IconUpload, {
+      size: 15,
+      style: {
+        color: "var(--ink)"
+      }
+    })), "Importar dados")), importError && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11.5,
+        color: "var(--rust)",
+        marginTop: 8
+      }
+    }, importError))));
+  })(), showPinSetup && /*#__PURE__*/React.createElement(PinSetupModal, {
     currentPin: pin,
     onClose: () => setShowPinSetup(false),
     onSave: newPin => {
