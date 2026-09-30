@@ -16059,7 +16059,7 @@ function TransactionsTab({
     });
   }, [transactions, search, filterAccount, filterCategory]);
   const hasActiveFilters = search !== "" || filterAccount !== "" || filterCategory !== "";
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", null, !isMobile && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 10,
