@@ -31,6 +31,7 @@
     #root { padding: 0; align-items: stretch; justify-content: stretch; min-height: 100vh; min-height: 100dvh; }
     html, body { background: var(--paper, #F4F6FA); }
     input, select, textarea { font-size: 16px !important; }
+    .resp-grid-2col, .resp-grid-3col { grid-template-columns: 1fr !important; }
   }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: #C9C7BB; border-radius: 4px; }
@@ -10254,7 +10255,8 @@ function FinanceApp() {
     memberLimits: budgetIncome.memberLimits,
     onSetMemberLimit: setMemberLimit,
     members: members,
-    onManageMembers: () => setShowMembersManager(true)
+    onManageMembers: () => setShowMembersManager(true),
+    isMobile: isMobile
   }), tab === "goals" && /*#__PURE__*/React.createElement(GoalsTab, {
     lang: lang,
     goals: goals,
@@ -22801,7 +22803,8 @@ function BudgetTab({
   memberLimits,
   onSetMemberLimit,
   members,
-  onManageMembers
+  onManageMembers,
+  isMobile
 }) {
   const [newIncomeType, setNewIncomeType] = useState(INCOME_TYPES[0]);
   const [newIncomeLabel, setNewIncomeLabel] = useState("");
@@ -23027,7 +23030,7 @@ function BudgetTab({
   }))))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "1.2fr 1fr",
+      gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1fr",
       gap: 18
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
