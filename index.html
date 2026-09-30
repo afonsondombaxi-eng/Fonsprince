@@ -3126,6 +3126,220 @@ const TRANSLATIONS = {
       status_synced: "Sincronizado",
       status_error: "Erro ao sincronizar",
     },
+    budget: {
+      recurring_detected_title: "Detetámos possíveis despesas recorrentes",
+      recurring_detected_desc: "Estas despesas repetem-se todo mês, com valores parecidos. Quer marcá-las como fixas?",
+      mark_as_fixed: "Marcar como fixa",
+      dismiss: "Dispensar",
+      fixed_expenses_title: "Despesas Fixas",
+      fixed_expenses_subtitle: "Renda, subscrições e outras contas que se repetem todo mês.",
+      new_fixed_expense: "Nova despesa fixa",
+      no_fixed_expenses: "Ainda não tem despesas fixas registadas.",
+      staff_title: "Funcionários — Ordenados",
+      staff_subtitle: "Salários dos funcionários da casa, pagos todo mês.",
+      new_staff: "Novo funcionário",
+      no_staff: "Ainda não tem funcionários registados.",
+      staff_total_prefix: "Total mensal em ordenados:",
+      category_limits_title: "Limites por categoria",
+      category_limits_subtitle: "Defina um limite mensal para acompanhar cada categoria de despesa.",
+      manage_categories: "Gerir categorias",
+      limit_placeholder: "Limite",
+      rollover_carried_suffix: "transportado",
+      rollover_leftover_prefix: "Sobraram",
+      rollover_leftover_suffix: "no mês anterior — transportar para este mês",
+      income_sources_title: "Fontes de rendimento",
+      income_sources_subtitle: "Salário e outras receitas previstas por mês.",
+      no_income_sources: "Nenhuma fonte cadastrada.",
+      remove_income_source: "Remover fonte de rendimento",
+      field_income_type: "Tipo",
+      field_name_optional: "Nome (opcional)",
+      field_name_placeholder: "ex: Salário — Empresa X",
+      field_monthly_amount: "Valor mensal previsto",
+      add_income_source: "Adicionar fonte",
+      expected_prefix: "Previsto:",
+      received_this_month_prefix: "Recebido este mês:",
+      member_budget_title: "Orçamento por membro",
+      member_budget_subtitle: "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento.",
+    },
+    goals: {
+      new_goal: "Nova meta",
+      no_goals: "Ainda não criou nenhuma meta de poupança.",
+      deadline_prefix: "Prazo:",
+      edit_goal: "Editar meta",
+      remove_goal: "Remover meta",
+      save_monthly_prefix: "Poupe",
+      save_monthly_suffix: "/mês para atingir a meta no prazo.",
+      add_contribution: "Adicionar contribuição",
+      modal_edit_title: "Editar meta",
+      modal_new_title: "Nova meta de poupança",
+      field_goal_name: "Nome da meta",
+      field_goal_name_placeholder: "ex: Fundo de emergência",
+      field_category: "Categoria",
+      field_target_value: "Valor alvo",
+      field_deadline_optional: "Prazo (opcional)",
+      deadline_hint: "Com um prazo definido, o app calcula quanto precisa de poupar por mês.",
+      save_changes: "Guardar alterações",
+      create_goal: "Criar meta",
+      contribute_title_prefix: "Contribuir para \"",
+      contribute_title_suffix: "\"",
+      field_amount_to_add: "Valor a adicionar",
+      confirm: "Confirmar",
+    },
+    planning: {
+      health_score_title: "Saúde Financeira",
+      health_desc: "Combina liquidez, taxa de poupança, endividamento, peso de investimentos e evolução do património — 20 pontos cada.",
+      networth_title: "Património líquido — projeção",
+      networth_desc_prefix: "Saldos em todas as contas (convertidos para Kz) mais dívidas a receber, menos dívidas a pagar. Projetado com base no resultado mensal médio atual (",
+      networth_desc_suffix: "/mês).",
+      today: "Hoje",
+      in_1_year: "Em 1 ano",
+      in_5_years: "Em 5 anos",
+      in_10_years: "Em 10 anos",
+      projection_note: "Projeção linear e indicativa — assume que as receitas e despesas médias se mantêm. Não considera valorização de investimentos além da taxa de juro já definida nas contas.",
+      health_indicators_title: "Saúde financeira",
+      indicators_desc: "Três indicadores simples, calculados a partir dos seus dados.",
+      savings_rate: "Taxa de poupança",
+      savings_rate_desc: "Percentagem do rendimento que sobra depois das despesas fixas e variáveis médias. O ideal costuma ser acima de 20%.",
+      emergency_fund: "Fundo de emergência",
+      emergency_fund_desc: "Quantos meses de despesas o seu saldo em contas à ordem/poupança cobre. O recomendado costuma ser 3 a 6 meses.",
+      debt_level: "Nível de endividamento",
+      debt_level_desc: "Total de dívidas a pagar face ao rendimento anual previsto. Abaixo de 20% costuma ser considerado saudável.",
+      status_healthy: "Saudável",
+      status_reasonable: "Razoável",
+      status_attention: "Atenção",
+      status_no_data: "Sem dados",
+      score_excellent: "Excelente",
+      score_good: "Boa",
+      score_reasonable: "Razoável",
+      score_needs_attention: "Requer atenção",
+      invest_sim_title: "Simulação de rendimento — investimentos",
+      invest_sim_desc: "Projeção com juro composto, à taxa anual definida em cada saldo de investimento.",
+      today_short: "Hoje:",
+      year_1: "1 ano:",
+      year_5: "5 anos:",
+      year_10: "10 anos:",
+    },
+    debts: {
+      new_debt: "Nova dívida",
+      no_debts: "Ainda não tem dívidas registadas. Adicione uma dívida a pagar ou a receber para começar a acompanhar.",
+      edit_debt: "Editar dívida",
+      remove_debt: "Remover dívida",
+      balance_due: "saldo devedor",
+      paid_prefix: "Pago:",
+      total_prefix: "Total:",
+      due_date_prefix: "Vencimento:",
+      interest_accrued_suffix: "juros acumulados:",
+      register_payment: "Registar pagamento",
+      simulator_title: "Simulador de pagamento",
+      simulator_desc: "Simule quanto tempo demora a ficar livre de dívidas, consoante o valor mensal que consegue dedicar e a estratégia escolhida.",
+      strategy_avalanche: "Avalanche (maior juro primeiro)",
+      strategy_snowball: "Snowball (menor saldo primeiro)",
+      field_monthly_budget: "Valor mensal disponível para pagar dívidas",
+      infeasible_msg: "Com este valor mensal, os juros crescem mais depressa do que consegue pagar. Tente um valor maior.",
+      debt_free_in: "Livre de dívidas em",
+      months_suffix: "meses",
+      total_interest_est: "Juros totais estimados",
+      payoff_order: "Ordem de pagamento",
+      month_label: "mês",
+      field_creditor_to_pay: "A quem deve (credor)",
+      field_creditor_to_receive: "Quem lhe deve",
+      field_creditor_placeholder: "ex: Banco XYZ, João, Loja ABC",
+      field_category: "Categoria",
+      field_original_amount: "Valor original",
+      field_currency: "Moeda",
+      field_interest_rate_optional: "Taxa de juro anual % (opcional)",
+      field_interest_rate_placeholder: "ex: 15",
+      field_start_date: "Data de início",
+      field_due_date_optional: "Data de vencimento (opcional)",
+      field_linked_account_optional: "Conta associada (opcional)",
+      no_account_option: "Nenhuma — não atualizar saldo automaticamente",
+      field_balance: "Saldo",
+      note_pay_reduces: "Ao registar um pagamento, o saldo desta conta será automaticamente reduzido.",
+      note_receive_increases: "Ao registar um recebimento, o saldo desta conta será automaticamente aumentado.",
+      field_description_optional: "Descrição (opcional)",
+      field_description_placeholder: "ex: Empréstimo para o carro",
+      save_changes: "Guardar alterações",
+      save_debt: "Guardar dívida",
+      word_payment: "pagamento",
+      word_receipt: "recebimento",
+      register_prefix: "Registar",
+      current_balance_prefix: "Saldo devedor atual:",
+      field_amount: "Valor",
+      field_date: "Data",
+      field_description_placeholder_payment: "ex: Prestação de janeiro",
+      will_reduce: "Vai reduzir",
+      will_increase: "Vai aumentar",
+      balance_of: "o saldo de",
+      amount_prefix: "em",
+      no_account_note: "Esta dívida não tem conta associada — o saldo não é atualizado automaticamente. Pode associar uma conta ao editar a dívida.",
+      confirm_prefix: "Confirmar",
+    },
+    cards: {
+      new_card: "Adicionar cartão de crédito",
+      no_cards: "Ainda não tem cartões de crédito registados. Adicione o primeiro para começar a acompanhar faturas e parcelas.",
+      edit_card_modal_title: "Editar cartão de crédito",
+      new_card_modal_title: "Novo cartão de crédito",
+      field_bank: "Banco",
+      field_nickname_optional: "Apelido (opcional)",
+      field_nickname_placeholder: "ex: Cartão Gold",
+      field_currency: "Moeda",
+      field_credit_limit: "Limite de crédito",
+      field_closing_day: "Dia de fecho da fatura",
+      field_due_day: "Dia de vencimento",
+      closing_day_note: "Compras feitas até ao dia de fecho entram na fatura desse mês; depois disso, entram na fatura seguinte.",
+      save_changes: "Guardar alterações",
+      add_card: "Adicionar cartão",
+      edit_purchase_modal_title: "Editar compra",
+      new_purchase_modal_title: "Nova compra no cartão",
+      field_description: "Descrição",
+      field_description_placeholder: "ex: Supermercado",
+      field_category: "Categoria",
+      field_total_amount: "Valor total",
+      field_installments: "Nº de parcelas",
+      field_purchase_date: "Data da compra",
+      field_member_optional: "Membro da família (opcional)",
+      field_member_placeholder: "ex: Afonso",
+      distribution_title: "Distribuição pelas faturas:",
+      add_purchase: "Adicionar compra",
+      pay_statement_modal_title_prefix: "Pagar fatura — ",
+      statement_amount_prefix: "Valor da fatura:",
+      field_amount_to_pay: "Valor a pagar",
+      field_date: "Data",
+      field_pay_from_optional: "Pagar a partir de (opcional)",
+      no_account_linked_option: "— sem conta associada —",
+      field_balance: "Saldo",
+      usual_account_hint: "Conta habitual, usada da última vez",
+      confirm_payment: "Confirmar pagamento",
+      edit_card: "Editar cartão",
+      remove_card: "Remover cartão",
+      limit_used: "Limite usado",
+      available_prefix: "Disponível:",
+      current_statement_prefix: "Fatura atual (",
+      current_statement_suffix: ")",
+      due_date_prefix2: "Vencimento:",
+      pay_statement: "Pagar fatura",
+      recent_purchases: "Compras recentes",
+      new_purchase_short: "+ Nova compra",
+      no_purchases: "Nenhuma compra registada.",
+    },
+    exchange: {
+      rates_title: "Taxas de câmbio de referência",
+      rates_desc: "Usadas para converter os saldos em USD/EUR/ZAR/GBP para Kwanza na Visão Geral.",
+      update_automatically: "Atualizar automaticamente",
+      updating: "A obter…",
+      fetch_error: "Não foi possível obter as taxas automaticamente. Pode inserir manualmente abaixo — consulte www.bna.ao para o valor de referência do dia.",
+      field_usd: "1 USD em Kz",
+      field_eur: "1 EUR em Kz",
+      field_zar: "1 ZAR em Kz",
+      field_gbp: "1 GBP em Kz",
+      save_rates: "Guardar taxas",
+      last_update_prefix: "Última atualização:",
+      source_prefix: "Fonte:",
+      no_rate_set: "Ainda não definiu nenhuma taxa de câmbio.",
+      disclaimer_prefix: "Valores meramente indicativos. Para a taxa oficial do dia, consulte",
+      disclaimer_suffix: ". A atualização automática usa uma API comunitária que espelha dados do BNA e pode nem sempre estar disponível, sobretudo para ZAR e GBP — nesse caso, insira o valor manualmente.",
+      preview_title: "Pré-visualização",
+    },
   },
   en: {
     nav: {
@@ -3366,6 +3580,220 @@ const TRANSLATIONS = {
       status_syncing: "Syncing…",
       status_synced: "Synced",
       status_error: "Sync error",
+    },
+    budget: {
+      recurring_detected_title: "We detected possible recurring expenses",
+      recurring_detected_desc: "These expenses repeat every month with similar amounts. Want to mark them as fixed?",
+      mark_as_fixed: "Mark as fixed",
+      dismiss: "Dismiss",
+      fixed_expenses_title: "Fixed Expenses",
+      fixed_expenses_subtitle: "Rent, subscriptions and other bills that repeat every month.",
+      new_fixed_expense: "New fixed expense",
+      no_fixed_expenses: "You don't have any fixed expenses yet.",
+      staff_title: "Staff — Salaries",
+      staff_subtitle: "Household staff salaries, paid every month.",
+      new_staff: "New staff member",
+      no_staff: "You don't have any staff registered yet.",
+      staff_total_prefix: "Monthly salaries total:",
+      category_limits_title: "Category limits",
+      category_limits_subtitle: "Set a monthly limit to track each expense category.",
+      manage_categories: "Manage categories",
+      limit_placeholder: "Limit",
+      rollover_carried_suffix: "carried over",
+      rollover_leftover_prefix: "You had",
+      rollover_leftover_suffix: "left over last month — carry it over to this month",
+      income_sources_title: "Income sources",
+      income_sources_subtitle: "Salary and other income expected per month.",
+      no_income_sources: "No source registered.",
+      remove_income_source: "Remove income source",
+      field_income_type: "Type",
+      field_name_optional: "Name (optional)",
+      field_name_placeholder: "e.g. Salary — Company X",
+      field_monthly_amount: "Expected monthly amount",
+      add_income_source: "Add source",
+      expected_prefix: "Expected:",
+      received_this_month_prefix: "Received this month:",
+      member_budget_title: "Budget by member",
+      member_budget_subtitle: "Set a monthly expense limit per family member, based on the member label used on each transaction.",
+    },
+    goals: {
+      new_goal: "New goal",
+      no_goals: "You haven't created any savings goal yet.",
+      deadline_prefix: "Deadline:",
+      edit_goal: "Edit goal",
+      remove_goal: "Remove goal",
+      save_monthly_prefix: "Save",
+      save_monthly_suffix: "/month to reach the goal on time.",
+      add_contribution: "Add contribution",
+      modal_edit_title: "Edit goal",
+      modal_new_title: "New savings goal",
+      field_goal_name: "Goal name",
+      field_goal_name_placeholder: "e.g. Emergency fund",
+      field_category: "Category",
+      field_target_value: "Target amount",
+      field_deadline_optional: "Deadline (optional)",
+      deadline_hint: "With a deadline set, the app calculates how much you need to save per month.",
+      save_changes: "Save changes",
+      create_goal: "Create goal",
+      contribute_title_prefix: "Contribute to \"",
+      contribute_title_suffix: "\"",
+      field_amount_to_add: "Amount to add",
+      confirm: "Confirm",
+    },
+    planning: {
+      health_score_title: "Financial Health",
+      health_desc: "Combines liquidity, savings rate, debt level, investment share and net worth trend — 20 points each.",
+      networth_title: "Net worth — projection",
+      networth_desc_prefix: "Balances across all accounts (converted to Kz) plus debts receivable, minus debts payable. Projected based on the current average monthly result (",
+      networth_desc_suffix: "/month).",
+      today: "Today",
+      in_1_year: "In 1 year",
+      in_5_years: "In 5 years",
+      in_10_years: "In 10 years",
+      projection_note: "Linear, indicative projection — assumes average income and expenses stay constant. Does not account for investment appreciation beyond the interest rate already set on accounts.",
+      health_indicators_title: "Financial health",
+      indicators_desc: "Three simple indicators, calculated from your data.",
+      savings_rate: "Savings rate",
+      savings_rate_desc: "Percentage of income left over after average fixed and variable expenses. The ideal is usually above 20%.",
+      emergency_fund: "Emergency fund",
+      emergency_fund_desc: "How many months of expenses your checking/savings balance covers. 3 to 6 months is usually recommended.",
+      debt_level: "Debt level",
+      debt_level_desc: "Total debts payable relative to expected annual income. Below 20% is usually considered healthy.",
+      status_healthy: "Healthy",
+      status_reasonable: "Reasonable",
+      status_attention: "Needs attention",
+      status_no_data: "No data",
+      score_excellent: "Excellent",
+      score_good: "Good",
+      score_reasonable: "Reasonable",
+      score_needs_attention: "Needs attention",
+      invest_sim_title: "Return simulation — investments",
+      invest_sim_desc: "Compound interest projection, at the annual rate set on each investment balance.",
+      today_short: "Today:",
+      year_1: "1 year:",
+      year_5: "5 years:",
+      year_10: "10 years:",
+    },
+    debts: {
+      new_debt: "New debt",
+      no_debts: "You don't have any debts registered yet. Add a debt payable or receivable to start tracking.",
+      edit_debt: "Edit debt",
+      remove_debt: "Remove debt",
+      balance_due: "outstanding balance",
+      paid_prefix: "Paid:",
+      total_prefix: "Total:",
+      due_date_prefix: "Due date:",
+      interest_accrued_suffix: "accrued interest:",
+      register_payment: "Register payment",
+      simulator_title: "Payoff simulator",
+      simulator_desc: "Simulate how long it takes to become debt-free, based on the monthly amount you can dedicate and the chosen strategy.",
+      strategy_avalanche: "Avalanche (highest interest first)",
+      strategy_snowball: "Snowball (smallest balance first)",
+      field_monthly_budget: "Monthly amount available to pay debts",
+      infeasible_msg: "At this monthly amount, interest grows faster than you can pay it off. Try a higher amount.",
+      debt_free_in: "Debt-free in",
+      months_suffix: "months",
+      total_interest_est: "Estimated total interest",
+      payoff_order: "Payoff order",
+      month_label: "month",
+      field_creditor_to_pay: "Who you owe (creditor)",
+      field_creditor_to_receive: "Who owes you",
+      field_creditor_placeholder: "e.g. Bank XYZ, John, Store ABC",
+      field_category: "Category",
+      field_original_amount: "Original amount",
+      field_currency: "Currency",
+      field_interest_rate_optional: "Annual interest rate % (optional)",
+      field_interest_rate_placeholder: "e.g. 15",
+      field_start_date: "Start date",
+      field_due_date_optional: "Due date (optional)",
+      field_linked_account_optional: "Linked account (optional)",
+      no_account_option: "None — don't update balance automatically",
+      field_balance: "Balance",
+      note_pay_reduces: "Registering a payment will automatically reduce this account's balance.",
+      note_receive_increases: "Registering a receipt will automatically increase this account's balance.",
+      field_description_optional: "Description (optional)",
+      field_description_placeholder: "e.g. Car loan",
+      save_changes: "Save changes",
+      save_debt: "Save debt",
+      word_payment: "payment",
+      word_receipt: "receipt",
+      register_prefix: "Register",
+      current_balance_prefix: "Current outstanding balance:",
+      field_amount: "Amount",
+      field_date: "Date",
+      field_description_placeholder_payment: "e.g. January installment",
+      will_reduce: "Will reduce",
+      will_increase: "Will increase",
+      balance_of: "the balance of",
+      amount_prefix: "by",
+      no_account_note: "This debt has no linked account — the balance is not updated automatically. You can link an account by editing the debt.",
+      confirm_prefix: "Confirm",
+    },
+    cards: {
+      new_card: "Add credit card",
+      no_cards: "You don't have any credit cards registered yet. Add your first one to start tracking statements and installments.",
+      edit_card_modal_title: "Edit credit card",
+      new_card_modal_title: "New credit card",
+      field_bank: "Bank",
+      field_nickname_optional: "Nickname (optional)",
+      field_nickname_placeholder: "e.g. Gold Card",
+      field_currency: "Currency",
+      field_credit_limit: "Credit limit",
+      field_closing_day: "Statement closing day",
+      field_due_day: "Due day",
+      closing_day_note: "Purchases made up to the closing day go into that month's statement; after that, they go into the next one.",
+      save_changes: "Save changes",
+      add_card: "Add card",
+      edit_purchase_modal_title: "Edit purchase",
+      new_purchase_modal_title: "New card purchase",
+      field_description: "Description",
+      field_description_placeholder: "e.g. Groceries",
+      field_category: "Category",
+      field_total_amount: "Total amount",
+      field_installments: "No. of installments",
+      field_purchase_date: "Purchase date",
+      field_member_optional: "Family member (optional)",
+      field_member_placeholder: "e.g. Afonso",
+      distribution_title: "Distribution across statements:",
+      add_purchase: "Add purchase",
+      pay_statement_modal_title_prefix: "Pay statement — ",
+      statement_amount_prefix: "Statement amount:",
+      field_amount_to_pay: "Amount to pay",
+      field_date: "Date",
+      field_pay_from_optional: "Pay from (optional)",
+      no_account_linked_option: "— no linked account —",
+      field_balance: "Balance",
+      usual_account_hint: "Usual account, used last time",
+      confirm_payment: "Confirm payment",
+      edit_card: "Edit card",
+      remove_card: "Remove card",
+      limit_used: "Limit used",
+      available_prefix: "Available:",
+      current_statement_prefix: "Current statement (",
+      current_statement_suffix: ")",
+      due_date_prefix2: "Due date:",
+      pay_statement: "Pay statement",
+      recent_purchases: "Recent purchases",
+      new_purchase_short: "+ New purchase",
+      no_purchases: "No purchases registered.",
+    },
+    exchange: {
+      rates_title: "Reference exchange rates",
+      rates_desc: "Used to convert USD/EUR/ZAR/GBP balances to Kwanza in the Overview.",
+      update_automatically: "Update automatically",
+      updating: "Fetching…",
+      fetch_error: "Couldn't fetch the rates automatically. You can enter them manually below — check www.bna.ao for the day's reference value.",
+      field_usd: "1 USD in Kz",
+      field_eur: "1 EUR in Kz",
+      field_zar: "1 ZAR in Kz",
+      field_gbp: "1 GBP in Kz",
+      save_rates: "Save rates",
+      last_update_prefix: "Last updated:",
+      source_prefix: "Source:",
+      no_rate_set: "You haven't set any exchange rate yet.",
+      disclaimer_prefix: "Indicative values only. For the official rate of the day, check",
+      disclaimer_suffix: ". Automatic updates use a community API that mirrors BNA data and may not always be available, especially for ZAR and GBP — in that case, enter the value manually.",
+      preview_title: "Preview",
     },
   },
   fr: {
@@ -3610,6 +4038,220 @@ const TRANSLATIONS = {
       status_synced: "Synchronisé",
       status_error: "Erreur de synchronisation",
     },
+    budget: {
+      recurring_detected_title: "Nous avons détecté d'éventuelles dépenses récurrentes",
+      recurring_detected_desc: "Ces dépenses se répètent chaque mois, avec des montants similaires. Voulez-vous les marquer comme fixes ?",
+      mark_as_fixed: "Marquer comme fixe",
+      dismiss: "Ignorer",
+      fixed_expenses_title: "Dépenses Fixes",
+      fixed_expenses_subtitle: "Loyer, abonnements et autres factures qui se répètent chaque mois.",
+      new_fixed_expense: "Nouvelle dépense fixe",
+      no_fixed_expenses: "Vous n'avez pas encore de dépenses fixes enregistrées.",
+      staff_title: "Personnel — Salaires",
+      staff_subtitle: "Salaires du personnel de maison, payés chaque mois.",
+      new_staff: "Nouveau membre du personnel",
+      no_staff: "Vous n'avez pas encore de personnel enregistré.",
+      staff_total_prefix: "Total mensuel des salaires :",
+      category_limits_title: "Limites par catégorie",
+      category_limits_subtitle: "Définissez une limite mensuelle pour suivre chaque catégorie de dépense.",
+      manage_categories: "Gérer les catégories",
+      limit_placeholder: "Limite",
+      rollover_carried_suffix: "reporté",
+      rollover_leftover_prefix: "Il restait",
+      rollover_leftover_suffix: "le mois dernier — reporter sur ce mois",
+      income_sources_title: "Sources de revenus",
+      income_sources_subtitle: "Salaire et autres revenus prévus par mois.",
+      no_income_sources: "Aucune source enregistrée.",
+      remove_income_source: "Supprimer la source de revenu",
+      field_income_type: "Type",
+      field_name_optional: "Nom (facultatif)",
+      field_name_placeholder: "ex : Salaire — Entreprise X",
+      field_monthly_amount: "Montant mensuel prévu",
+      add_income_source: "Ajouter une source",
+      expected_prefix: "Prévu :",
+      received_this_month_prefix: "Reçu ce mois-ci :",
+      member_budget_title: "Budget par membre",
+      member_budget_subtitle: "Définissez une limite de dépense mensuelle par membre de la famille, selon l'étiquette de membre utilisée sur chaque mouvement.",
+    },
+    goals: {
+      new_goal: "Nouvel objectif",
+      no_goals: "Vous n'avez encore créé aucun objectif d'épargne.",
+      deadline_prefix: "Échéance :",
+      edit_goal: "Modifier l'objectif",
+      remove_goal: "Supprimer l'objectif",
+      save_monthly_prefix: "Épargnez",
+      save_monthly_suffix: "/mois pour atteindre l'objectif dans les délais.",
+      add_contribution: "Ajouter une contribution",
+      modal_edit_title: "Modifier l'objectif",
+      modal_new_title: "Nouvel objectif d'épargne",
+      field_goal_name: "Nom de l'objectif",
+      field_goal_name_placeholder: "ex : Fonds d'urgence",
+      field_category: "Catégorie",
+      field_target_value: "Montant cible",
+      field_deadline_optional: "Échéance (facultatif)",
+      deadline_hint: "Avec une échéance définie, l'application calcule combien vous devez épargner par mois.",
+      save_changes: "Enregistrer les modifications",
+      create_goal: "Créer l'objectif",
+      contribute_title_prefix: "Contribuer à \"",
+      contribute_title_suffix: "\"",
+      field_amount_to_add: "Montant à ajouter",
+      confirm: "Confirmer",
+    },
+    planning: {
+      health_score_title: "Santé Financière",
+      health_desc: "Combine liquidité, taux d'épargne, endettement, part des investissements et évolution du patrimoine — 20 points chacun.",
+      networth_title: "Patrimoine net — projection",
+      networth_desc_prefix: "Soldes de tous les comptes (convertis en Kz) plus les créances, moins les dettes à payer. Projeté sur la base du résultat mensuel moyen actuel (",
+      networth_desc_suffix: "/mois).",
+      today: "Aujourd'hui",
+      in_1_year: "Dans 1 an",
+      in_5_years: "Dans 5 ans",
+      in_10_years: "Dans 10 ans",
+      projection_note: "Projection linéaire et indicative — suppose que les revenus et dépenses moyens restent constants. Ne tient pas compte de l'appréciation des investissements au-delà du taux d'intérêt déjà défini sur les comptes.",
+      health_indicators_title: "Santé financière",
+      indicators_desc: "Trois indicateurs simples, calculés à partir de vos données.",
+      savings_rate: "Taux d'épargne",
+      savings_rate_desc: "Pourcentage du revenu qui reste après les dépenses fixes et variables moyennes. L'idéal est généralement au-dessus de 20 %.",
+      emergency_fund: "Fonds d'urgence",
+      emergency_fund_desc: "Combien de mois de dépenses votre solde courant/épargne couvre. 3 à 6 mois est généralement recommandé.",
+      debt_level: "Niveau d'endettement",
+      debt_level_desc: "Total des dettes à payer par rapport au revenu annuel prévu. En dessous de 20 %, c'est généralement considéré comme sain.",
+      status_healthy: "Sain",
+      status_reasonable: "Raisonnable",
+      status_attention: "Attention requise",
+      status_no_data: "Aucune donnée",
+      score_excellent: "Excellent",
+      score_good: "Bon",
+      score_reasonable: "Raisonnable",
+      score_needs_attention: "Attention requise",
+      invest_sim_title: "Simulation de rendement — investissements",
+      invest_sim_desc: "Projection à intérêts composés, au taux annuel défini sur chaque solde d'investissement.",
+      today_short: "Aujourd'hui :",
+      year_1: "1 an :",
+      year_5: "5 ans :",
+      year_10: "10 ans :",
+    },
+    debts: {
+      new_debt: "Nouvelle dette",
+      no_debts: "Vous n'avez pas encore de dettes enregistrées. Ajoutez une dette à payer ou à recevoir pour commencer le suivi.",
+      edit_debt: "Modifier la dette",
+      remove_debt: "Supprimer la dette",
+      balance_due: "solde restant dû",
+      paid_prefix: "Payé :",
+      total_prefix: "Total :",
+      due_date_prefix: "Échéance :",
+      interest_accrued_suffix: "intérêts courus :",
+      register_payment: "Enregistrer un paiement",
+      simulator_title: "Simulateur de remboursement",
+      simulator_desc: "Simulez combien de temps il faudra pour être libre de dettes, selon le montant mensuel que vous pouvez y consacrer et la stratégie choisie.",
+      strategy_avalanche: "Avalanche (taux d'intérêt le plus élevé en premier)",
+      strategy_snowball: "Boule de neige (plus petit solde en premier)",
+      field_monthly_budget: "Montant mensuel disponible pour rembourser les dettes",
+      infeasible_msg: "Avec ce montant mensuel, les intérêts augmentent plus vite que vous ne pouvez les rembourser. Essayez un montant plus élevé.",
+      debt_free_in: "Libre de dettes dans",
+      months_suffix: "mois",
+      total_interest_est: "Intérêts totaux estimés",
+      payoff_order: "Ordre de remboursement",
+      month_label: "mois",
+      field_creditor_to_pay: "À qui vous devez (créancier)",
+      field_creditor_to_receive: "Qui vous doit",
+      field_creditor_placeholder: "ex : Banque XYZ, Jean, Magasin ABC",
+      field_category: "Catégorie",
+      field_original_amount: "Montant initial",
+      field_currency: "Devise",
+      field_interest_rate_optional: "Taux d'intérêt annuel % (facultatif)",
+      field_interest_rate_placeholder: "ex : 15",
+      field_start_date: "Date de début",
+      field_due_date_optional: "Date d'échéance (facultatif)",
+      field_linked_account_optional: "Compte associé (facultatif)",
+      no_account_option: "Aucun — ne pas mettre à jour le solde automatiquement",
+      field_balance: "Solde",
+      note_pay_reduces: "L'enregistrement d'un paiement réduira automatiquement le solde de ce compte.",
+      note_receive_increases: "L'enregistrement d'une réception augmentera automatiquement le solde de ce compte.",
+      field_description_optional: "Description (facultatif)",
+      field_description_placeholder: "ex : Prêt automobile",
+      save_changes: "Enregistrer les modifications",
+      save_debt: "Enregistrer la dette",
+      word_payment: "paiement",
+      word_receipt: "réception",
+      register_prefix: "Enregistrer",
+      current_balance_prefix: "Solde restant dû actuel :",
+      field_amount: "Montant",
+      field_date: "Date",
+      field_description_placeholder_payment: "ex : Mensualité de janvier",
+      will_reduce: "Réduira",
+      will_increase: "Augmentera",
+      balance_of: "le solde de",
+      amount_prefix: "de",
+      no_account_note: "Cette dette n'a pas de compte associé — le solde n'est pas mis à jour automatiquement. Vous pouvez associer un compte en modifiant la dette.",
+      confirm_prefix: "Confirmer",
+    },
+    cards: {
+      new_card: "Ajouter une carte de crédit",
+      no_cards: "Vous n'avez pas encore de carte de crédit enregistrée. Ajoutez la première pour commencer à suivre les relevés et les mensualités.",
+      edit_card_modal_title: "Modifier la carte de crédit",
+      new_card_modal_title: "Nouvelle carte de crédit",
+      field_bank: "Banque",
+      field_nickname_optional: "Surnom (facultatif)",
+      field_nickname_placeholder: "ex : Carte Gold",
+      field_currency: "Devise",
+      field_credit_limit: "Plafond de crédit",
+      field_closing_day: "Jour de clôture du relevé",
+      field_due_day: "Jour d'échéance",
+      closing_day_note: "Les achats effectués jusqu'au jour de clôture entrent dans le relevé de ce mois-là ; après, ils entrent dans le relevé suivant.",
+      save_changes: "Enregistrer les modifications",
+      add_card: "Ajouter la carte",
+      edit_purchase_modal_title: "Modifier l'achat",
+      new_purchase_modal_title: "Nouvel achat par carte",
+      field_description: "Description",
+      field_description_placeholder: "ex : Supermarché",
+      field_category: "Catégorie",
+      field_total_amount: "Montant total",
+      field_installments: "Nombre de mensualités",
+      field_purchase_date: "Date d'achat",
+      field_member_optional: "Membre de la famille (facultatif)",
+      field_member_placeholder: "ex : Afonso",
+      distribution_title: "Répartition sur les relevés :",
+      add_purchase: "Ajouter l'achat",
+      pay_statement_modal_title_prefix: "Payer le relevé — ",
+      statement_amount_prefix: "Montant du relevé :",
+      field_amount_to_pay: "Montant à payer",
+      field_date: "Date",
+      field_pay_from_optional: "Payer depuis (facultatif)",
+      no_account_linked_option: "— aucun compte associé —",
+      field_balance: "Solde",
+      usual_account_hint: "Compte habituel, utilisé la dernière fois",
+      confirm_payment: "Confirmer le paiement",
+      edit_card: "Modifier la carte",
+      remove_card: "Supprimer la carte",
+      limit_used: "Plafond utilisé",
+      available_prefix: "Disponible :",
+      current_statement_prefix: "Relevé actuel (",
+      current_statement_suffix: ")",
+      due_date_prefix2: "Échéance :",
+      pay_statement: "Payer le relevé",
+      recent_purchases: "Achats récents",
+      new_purchase_short: "+ Nouvel achat",
+      no_purchases: "Aucun achat enregistré.",
+    },
+    exchange: {
+      rates_title: "Taux de change de référence",
+      rates_desc: "Utilisés pour convertir les soldes en USD/EUR/ZAR/GBP en Kwanza dans la Vue d'ensemble.",
+      update_automatically: "Mettre à jour automatiquement",
+      updating: "Récupération…",
+      fetch_error: "Impossible de récupérer les taux automatiquement. Vous pouvez les saisir manuellement ci-dessous — consultez www.bna.ao pour la valeur de référence du jour.",
+      field_usd: "1 USD en Kz",
+      field_eur: "1 EUR en Kz",
+      field_zar: "1 ZAR en Kz",
+      field_gbp: "1 GBP en Kz",
+      save_rates: "Enregistrer les taux",
+      last_update_prefix: "Dernière mise à jour :",
+      source_prefix: "Source :",
+      no_rate_set: "Vous n'avez encore défini aucun taux de change.",
+      disclaimer_prefix: "Valeurs purement indicatives. Pour le taux officiel du jour, consultez",
+      disclaimer_suffix: ". La mise à jour automatique utilise une API communautaire qui reflète les données de la BNA et peut ne pas toujours être disponible, surtout pour le ZAR et le GBP — dans ce cas, saisissez la valeur manuellement.",
+      preview_title: "Aperçu",
+    },
   },
   es: {
     nav: {
@@ -3852,6 +4494,220 @@ const TRANSLATIONS = {
       status_syncing: "Sincronizando…",
       status_synced: "Sincronizado",
       status_error: "Error al sincronizar",
+    },
+    budget: {
+      recurring_detected_title: "Detectamos posibles gastos recurrentes",
+      recurring_detected_desc: "Estos gastos se repiten cada mes, con montos similares. ¿Quiere marcarlos como fijos?",
+      mark_as_fixed: "Marcar como fijo",
+      dismiss: "Descartar",
+      fixed_expenses_title: "Gastos Fijos",
+      fixed_expenses_subtitle: "Alquiler, suscripciones y otras facturas que se repiten cada mes.",
+      new_fixed_expense: "Nuevo gasto fijo",
+      no_fixed_expenses: "Aún no tiene gastos fijos registrados.",
+      staff_title: "Personal — Salarios",
+      staff_subtitle: "Salarios del personal doméstico, pagados cada mes.",
+      new_staff: "Nuevo empleado",
+      no_staff: "Aún no tiene personal registrado.",
+      staff_total_prefix: "Total mensual en salarios:",
+      category_limits_title: "Límites por categoría",
+      category_limits_subtitle: "Defina un límite mensual para seguir cada categoría de gasto.",
+      manage_categories: "Gestionar categorías",
+      limit_placeholder: "Límite",
+      rollover_carried_suffix: "trasladado",
+      rollover_leftover_prefix: "Sobraron",
+      rollover_leftover_suffix: "el mes pasado — trasladar a este mes",
+      income_sources_title: "Fuentes de ingresos",
+      income_sources_subtitle: "Salario y otros ingresos previstos por mes.",
+      no_income_sources: "Ninguna fuente registrada.",
+      remove_income_source: "Eliminar fuente de ingreso",
+      field_income_type: "Tipo",
+      field_name_optional: "Nombre (opcional)",
+      field_name_placeholder: "ej: Salario — Empresa X",
+      field_monthly_amount: "Monto mensual previsto",
+      add_income_source: "Añadir fuente",
+      expected_prefix: "Previsto:",
+      received_this_month_prefix: "Recibido este mes:",
+      member_budget_title: "Presupuesto por miembro",
+      member_budget_subtitle: "Defina un límite mensual de gasto por miembro de la familia, según la etiqueta de miembro usada en cada movimiento.",
+    },
+    goals: {
+      new_goal: "Nueva meta",
+      no_goals: "Aún no ha creado ninguna meta de ahorro.",
+      deadline_prefix: "Plazo:",
+      edit_goal: "Editar meta",
+      remove_goal: "Eliminar meta",
+      save_monthly_prefix: "Ahorre",
+      save_monthly_suffix: "/mes para alcanzar la meta a tiempo.",
+      add_contribution: "Añadir contribución",
+      modal_edit_title: "Editar meta",
+      modal_new_title: "Nueva meta de ahorro",
+      field_goal_name: "Nombre de la meta",
+      field_goal_name_placeholder: "ej: Fondo de emergencia",
+      field_category: "Categoría",
+      field_target_value: "Monto objetivo",
+      field_deadline_optional: "Plazo (opcional)",
+      deadline_hint: "Con un plazo definido, la app calcula cuánto necesita ahorrar por mes.",
+      save_changes: "Guardar cambios",
+      create_goal: "Crear meta",
+      contribute_title_prefix: "Contribuir a \"",
+      contribute_title_suffix: "\"",
+      field_amount_to_add: "Monto a añadir",
+      confirm: "Confirmar",
+    },
+    planning: {
+      health_score_title: "Salud Financiera",
+      health_desc: "Combina liquidez, tasa de ahorro, endeudamiento, peso de las inversiones y evolución del patrimonio — 20 puntos cada uno.",
+      networth_title: "Patrimonio neto — proyección",
+      networth_desc_prefix: "Saldos en todas las cuentas (convertidos a Kz) más deudas por cobrar, menos deudas por pagar. Proyectado con base en el resultado mensual promedio actual (",
+      networth_desc_suffix: "/mes).",
+      today: "Hoy",
+      in_1_year: "En 1 año",
+      in_5_years: "En 5 años",
+      in_10_years: "En 10 años",
+      projection_note: "Proyección lineal e indicativa — asume que los ingresos y gastos promedio se mantienen. No considera la revalorización de inversiones más allá de la tasa de interés ya definida en las cuentas.",
+      health_indicators_title: "Salud financiera",
+      indicators_desc: "Tres indicadores simples, calculados a partir de sus datos.",
+      savings_rate: "Tasa de ahorro",
+      savings_rate_desc: "Porcentaje del ingreso que sobra después de los gastos fijos y variables promedio. Lo ideal suele ser por encima del 20%.",
+      emergency_fund: "Fondo de emergencia",
+      emergency_fund_desc: "Cuántos meses de gastos cubre su saldo en cuentas corrientes/ahorro. Lo recomendado suele ser de 3 a 6 meses.",
+      debt_level: "Nivel de endeudamiento",
+      debt_level_desc: "Total de deudas por pagar frente al ingreso anual previsto. Por debajo del 20% suele considerarse saludable.",
+      status_healthy: "Saludable",
+      status_reasonable: "Razonable",
+      status_attention: "Requiere atención",
+      status_no_data: "Sin datos",
+      score_excellent: "Excelente",
+      score_good: "Buena",
+      score_reasonable: "Razonable",
+      score_needs_attention: "Requiere atención",
+      invest_sim_title: "Simulación de rendimiento — inversiones",
+      invest_sim_desc: "Proyección con interés compuesto, a la tasa anual definida en cada saldo de inversión.",
+      today_short: "Hoy:",
+      year_1: "1 año:",
+      year_5: "5 años:",
+      year_10: "10 años:",
+    },
+    debts: {
+      new_debt: "Nueva deuda",
+      no_debts: "Aún no tiene deudas registradas. Añada una deuda por pagar o por cobrar para empezar a hacer seguimiento.",
+      edit_debt: "Editar deuda",
+      remove_debt: "Eliminar deuda",
+      balance_due: "saldo pendiente",
+      paid_prefix: "Pagado:",
+      total_prefix: "Total:",
+      due_date_prefix: "Vencimiento:",
+      interest_accrued_suffix: "intereses acumulados:",
+      register_payment: "Registrar pago",
+      simulator_title: "Simulador de pago",
+      simulator_desc: "Simule cuánto tiempo tardará en quedar libre de deudas, según el monto mensual que pueda dedicar y la estrategia elegida.",
+      strategy_avalanche: "Avalancha (mayor interés primero)",
+      strategy_snowball: "Bola de nieve (menor saldo primero)",
+      field_monthly_budget: "Monto mensual disponible para pagar deudas",
+      infeasible_msg: "Con este monto mensual, los intereses crecen más rápido de lo que puede pagar. Intente un monto mayor.",
+      debt_free_in: "Libre de deudas en",
+      months_suffix: "meses",
+      total_interest_est: "Intereses totales estimados",
+      payoff_order: "Orden de pago",
+      month_label: "mes",
+      field_creditor_to_pay: "A quién debe (acreedor)",
+      field_creditor_to_receive: "Quién le debe",
+      field_creditor_placeholder: "ej: Banco XYZ, Juan, Tienda ABC",
+      field_category: "Categoría",
+      field_original_amount: "Monto original",
+      field_currency: "Moneda",
+      field_interest_rate_optional: "Tasa de interés anual % (opcional)",
+      field_interest_rate_placeholder: "ej: 15",
+      field_start_date: "Fecha de inicio",
+      field_due_date_optional: "Fecha de vencimiento (opcional)",
+      field_linked_account_optional: "Cuenta asociada (opcional)",
+      no_account_option: "Ninguna — no actualizar el saldo automáticamente",
+      field_balance: "Saldo",
+      note_pay_reduces: "Al registrar un pago, el saldo de esta cuenta se reducirá automáticamente.",
+      note_receive_increases: "Al registrar un cobro, el saldo de esta cuenta aumentará automáticamente.",
+      field_description_optional: "Descripción (opcional)",
+      field_description_placeholder: "ej: Préstamo del auto",
+      save_changes: "Guardar cambios",
+      save_debt: "Guardar deuda",
+      word_payment: "pago",
+      word_receipt: "cobro",
+      register_prefix: "Registrar",
+      current_balance_prefix: "Saldo pendiente actual:",
+      field_amount: "Monto",
+      field_date: "Fecha",
+      field_description_placeholder_payment: "ej: Cuota de enero",
+      will_reduce: "Reducirá",
+      will_increase: "Aumentará",
+      balance_of: "el saldo de",
+      amount_prefix: "en",
+      no_account_note: "Esta deuda no tiene una cuenta asociada — el saldo no se actualiza automáticamente. Puede asociar una cuenta al editar la deuda.",
+      confirm_prefix: "Confirmar",
+    },
+    cards: {
+      new_card: "Añadir tarjeta de crédito",
+      no_cards: "Aún no tiene tarjetas de crédito registradas. Añada la primera para empezar a hacer seguimiento de facturas y cuotas.",
+      edit_card_modal_title: "Editar tarjeta de crédito",
+      new_card_modal_title: "Nueva tarjeta de crédito",
+      field_bank: "Banco",
+      field_nickname_optional: "Apodo (opcional)",
+      field_nickname_placeholder: "ej: Tarjeta Gold",
+      field_currency: "Moneda",
+      field_credit_limit: "Límite de crédito",
+      field_closing_day: "Día de cierre de la factura",
+      field_due_day: "Día de vencimiento",
+      closing_day_note: "Las compras hechas hasta el día de cierre entran en la factura de ese mes; después de eso, entran en la siguiente.",
+      save_changes: "Guardar cambios",
+      add_card: "Añadir tarjeta",
+      edit_purchase_modal_title: "Editar compra",
+      new_purchase_modal_title: "Nueva compra con tarjeta",
+      field_description: "Descripción",
+      field_description_placeholder: "ej: Supermercado",
+      field_category: "Categoría",
+      field_total_amount: "Monto total",
+      field_installments: "N.º de cuotas",
+      field_purchase_date: "Fecha de la compra",
+      field_member_optional: "Miembro de la familia (opcional)",
+      field_member_placeholder: "ej: Afonso",
+      distribution_title: "Distribución entre facturas:",
+      add_purchase: "Añadir compra",
+      pay_statement_modal_title_prefix: "Pagar factura — ",
+      statement_amount_prefix: "Monto de la factura:",
+      field_amount_to_pay: "Monto a pagar",
+      field_date: "Fecha",
+      field_pay_from_optional: "Pagar desde (opcional)",
+      no_account_linked_option: "— sin cuenta asociada —",
+      field_balance: "Saldo",
+      usual_account_hint: "Cuenta habitual, usada la última vez",
+      confirm_payment: "Confirmar pago",
+      edit_card: "Editar tarjeta",
+      remove_card: "Eliminar tarjeta",
+      limit_used: "Límite usado",
+      available_prefix: "Disponible:",
+      current_statement_prefix: "Factura actual (",
+      current_statement_suffix: ")",
+      due_date_prefix2: "Vencimiento:",
+      pay_statement: "Pagar factura",
+      recent_purchases: "Compras recientes",
+      new_purchase_short: "+ Nueva compra",
+      no_purchases: "Ninguna compra registrada.",
+    },
+    exchange: {
+      rates_title: "Tasas de cambio de referencia",
+      rates_desc: "Usadas para convertir los saldos en USD/EUR/ZAR/GBP a Kwanza en el Resumen.",
+      update_automatically: "Actualizar automáticamente",
+      updating: "Obteniendo…",
+      fetch_error: "No fue posible obtener las tasas automáticamente. Puede introducirlas manualmente abajo — consulte www.bna.ao para el valor de referencia del día.",
+      field_usd: "1 USD en Kz",
+      field_eur: "1 EUR en Kz",
+      field_zar: "1 ZAR en Kz",
+      field_gbp: "1 GBP en Kz",
+      save_rates: "Guardar tasas",
+      last_update_prefix: "Última actualización:",
+      source_prefix: "Fuente:",
+      no_rate_set: "Aún no ha definido ninguna tasa de cambio.",
+      disclaimer_prefix: "Valores meramente indicativos. Para la tasa oficial del día, consulte",
+      disclaimer_suffix: ". La actualización automática usa una API comunitaria que refleja datos del BNA y puede no estar siempre disponible, sobre todo para ZAR y GBP — en ese caso, introduzca el valor manualmente.",
+      preview_title: "Vista previa",
     },
   },
 };
@@ -8124,6 +8980,7 @@ function FinanceApp() {
     onNavigateToCategory: goToCategoryTransactions,
     onNavigateToMember: goToMemberTransactions
   }), tab === "budget" && React.createElement(BudgetTab, {
+    lang: lang,
     categories: budgetIncome.categories,
     spentByCategory: spentByCategory,
     prevSpentByCategory: prevSpentByCategory,
@@ -8167,6 +9024,7 @@ function FinanceApp() {
     memberLimits: budgetIncome.memberLimits,
     onSetMemberLimit: setMemberLimit
   }), tab === "goals" && React.createElement(GoalsTab, {
+    lang: lang,
     goals: goals,
     onAdd: () => {
       setEditingGoal(null);
@@ -8179,6 +9037,7 @@ function FinanceApp() {
     onRemove: id => askConfirm("Remover esta meta?", () => removeGoal(id), "O histórico de contribuições também será perdido."),
     onContribute: g => setContribGoal(g)
   }), tab === "debts" && React.createElement(DebtsTab, {
+    lang: lang,
     debts: debts,
     debtPayments: debtPayments,
     onAdd: () => {
@@ -8192,6 +9051,7 @@ function FinanceApp() {
     onRemove: id => askConfirm("Remover esta dívida?", () => removeDebt(id), "O histórico de pagamentos também será perdido."),
     onPay: d => setPayingDebt(d)
   }), tab === "cards" && React.createElement(CreditCardsTab, {
+    lang: lang,
     creditCards: creditCards,
     cardPurchases: cardPurchases,
     cardPayments: cardPayments,
@@ -8216,6 +9076,7 @@ function FinanceApp() {
       statementAmount
     })
   }), tab === "exchange" && React.createElement(ExchangeTab, {
+    lang: lang,
     rates: exchangeRates,
     onSave: updateExchangeRates
   }), tab === "forecast" && React.createElement(ForecastTab, {
@@ -8242,6 +9103,7 @@ function FinanceApp() {
     taxaImpostoDividendos: taxaImpostoDividendos,
     taxaImpostoMaisValias: taxaImpostoMaisValias
   }), tab === "planning" && React.createElement(PlanningTab, {
+    lang: lang,
     accounts: accounts,
     transactions: transactions,
     balancesByCurrency: balancesByCurrency,
@@ -9009,6 +9871,7 @@ function FinanceApp() {
       setEditingTx(null);
     }
   }), showGoalModal && React.createElement(GoalModal, {
+    lang: lang,
     initial: editingGoal,
     onClose: () => {
       setShowGoalModal(false);
@@ -9020,6 +9883,7 @@ function FinanceApp() {
       setEditingGoal(null);
     }
   }), contribGoal && React.createElement(ContributeModal, {
+    lang: lang,
     goal: contribGoal,
     onClose: () => setContribGoal(null),
     onSave: amount => {
@@ -9027,6 +9891,7 @@ function FinanceApp() {
       setContribGoal(null);
     }
   }), showDebtModal && React.createElement(DebtModal, {
+    lang: lang,
     initial: editingDebt,
     accounts: accounts,
     onClose: () => {
@@ -9039,6 +9904,7 @@ function FinanceApp() {
       setEditingDebt(null);
     }
   }), payingDebt && React.createElement(DebtPaymentModal, {
+    lang: lang,
     debt: payingDebt,
     accounts: accounts,
     currentBalance: debtBalance(payingDebt, debtPayments),
@@ -9048,6 +9914,7 @@ function FinanceApp() {
       setPayingDebt(null);
     }
   }), showCreditCardModal && React.createElement(CreditCardModal, {
+    lang: lang,
     initial: editingCreditCard,
     onClose: () => {
       setShowCreditCardModal(false);
@@ -9059,6 +9926,7 @@ function FinanceApp() {
       setEditingCreditCard(null);
     }
   }), showCardPurchaseModal && purchaseCard && React.createElement(CardPurchaseModal, {
+    lang: lang,
     card: purchaseCard,
     expenseCategories: expenseCategories,
     onClose: () => {
@@ -9071,6 +9939,7 @@ function FinanceApp() {
       setPurchaseCard(null);
     }
   }), payingStatement && React.createElement(CardPaymentModal, {
+    lang: lang,
     card: payingStatement.card,
     cycleMonth: payingStatement.cycleMonth,
     statementAmount: payingStatement.statementAmount,
@@ -15362,6 +16231,7 @@ function TransferModal({
   }, isEditing ? translate(lang, "transactions", "save_changes") : translate(lang, "transactions", "save_transfer"))));
 }
 function ExchangeTab({
+  lang,
   rates,
   onSave
 }) {
@@ -15391,7 +16261,7 @@ function ExchangeTab({
         source: fetched.source
       });
     } catch (e) {
-      setError("Não foi possível obter as taxas automaticamente. Pode inserir manualmente abaixo — consulte www.bna.ao para o valor de referência do dia.");
+      setError(translate(lang, "exchange", "fetch_error"));
     } finally {
       setLoading(false);
     }
@@ -15426,18 +16296,18 @@ function ExchangeTab({
       fontSize: 16,
       margin: 0
     }
-  }, "Taxas de câmbio de referência"), React.createElement("p", {
+  }, translate(lang, "exchange", "rates_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 0"
     }
-  }, "Usadas para converter os saldos em USD/EUR/ZAR/GBP para Kwanza na Visão Geral.")), React.createElement(PrimaryButton, {
+  }, translate(lang, "exchange", "rates_desc"))), React.createElement(PrimaryButton, {
     onClick: handleFetch,
     disabled: loading
   }, React.createElement(IconRepeat, {
     size: 14
-  }), " ", loading ? "A obter…" : "Atualizar automaticamente")), error && React.createElement("p", {
+  }), " ", loading ? translate(lang, "exchange", "updating") : translate(lang, "exchange", "update_automatically"))), error && React.createElement("p", {
     style: {
       fontSize: 12.5,
       color: "var(--rust)",
@@ -15454,7 +16324,7 @@ function ExchangeTab({
       marginTop: 16
     }
   }, React.createElement(Field, {
-    label: "1 USD em Kz"
+    label: translate(lang, "exchange", "field_usd")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -15462,7 +16332,7 @@ function ExchangeTab({
     onChange: e => setUsdRate(e.target.value),
     placeholder: "ex: 918.00"
   })), React.createElement(Field, {
-    label: "1 EUR em Kz"
+    label: translate(lang, "exchange", "field_eur")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -15470,7 +16340,7 @@ function ExchangeTab({
     onChange: e => setEurRate(e.target.value),
     placeholder: "ex: 1045.40"
   })), React.createElement(Field, {
-    label: "1 ZAR em Kz"
+    label: translate(lang, "exchange", "field_zar")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -15478,7 +16348,7 @@ function ExchangeTab({
     onChange: e => setZarRate(e.target.value),
     placeholder: "ex: 51.20"
   })), React.createElement(Field, {
-    label: "1 GBP em Kz"
+    label: translate(lang, "exchange", "field_gbp")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -15490,7 +16360,7 @@ function ExchangeTab({
       marginTop: 14
     },
     onClick: handleSaveManual
-  }, "Guardar taxas"), React.createElement("div", {
+  }, translate(lang, "exchange", "save_rates")), React.createElement("div", {
     style: {
       marginTop: 18,
       paddingTop: 14,
@@ -15502,11 +16372,11 @@ function ExchangeTab({
     style: {
       margin: 0
     }
-  }, "Última atualização: ", React.createElement("strong", {
+  }, translate(lang, "exchange", "last_update_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
-  }, rates.updatedAt), " · Fonte: ", React.createElement("strong", {
+  }, rates.updatedAt), " · " + translate(lang, "exchange", "source_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
@@ -15514,24 +16384,24 @@ function ExchangeTab({
     style: {
       margin: 0
     }
-  }, "Ainda não definiu nenhuma taxa de câmbio."), React.createElement("p", {
+  }, translate(lang, "exchange", "no_rate_set")), React.createElement("p", {
     style: {
       margin: "8px 0 0"
     }
-  }, "Valores meramente indicativos. Para a taxa oficial do dia, consulte", " ", React.createElement("a", {
+  }, translate(lang, "exchange", "disclaimer_prefix"), " ", React.createElement("a", {
     href: "https://www.bna.ao",
     target: "_blank",
     rel: "noreferrer",
     style: {
       color: "var(--ink)"
     }
-  }, "www.bna.ao"), ". A atualização automática usa uma API comunitária que espelha dados do BNA e pode nem sempre estar disponível, sobretudo para ZAR e GBP — nesse caso, insira o valor manualmente."))), (usdRate || eurRate || zarRate || gbpRate) && React.createElement(Card, null, React.createElement("h3", {
+  }, "www.bna.ao"), translate(lang, "exchange", "disclaimer_suffix")))), (usdRate || eurRate || zarRate || gbpRate) && React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
       margin: "0 0 12px"
     }
-  }, "Pré-visualização"), React.createElement("div", {
+  }, translate(lang, "exchange", "preview_title")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -15883,6 +16753,7 @@ function RecurringRow({
   }))));
 }
 function PlanningTab({
+  lang,
   accounts,
   transactions,
   balancesByCurrency,
@@ -15940,7 +16811,7 @@ function PlanningTab({
     investSharePct,
     patrimonioTrendPct
   });
-  const scoreLabel = healthScore.total >= 80 ? "Excelente" : healthScore.total >= 60 ? "Boa" : healthScore.total >= 40 ? "Razoável" : "Requer atenção";
+  const scoreLabel = healthScore.total >= 80 ? translate(lang, "planning", "score_excellent") : healthScore.total >= 60 ? translate(lang, "planning", "score_good") : healthScore.total >= 40 ? translate(lang, "planning", "score_reasonable") : translate(lang, "planning", "score_needs_attention");
   const scoreTone = healthScore.total >= 80 ? "emerald" : healthScore.total >= 60 ? "gold" : healthScore.total >= 40 ? "gold" : "rust";
   const investBalances = [];
   for (const a of accounts) {
@@ -15957,48 +16828,48 @@ function PlanningTab({
   }
   function healthStatus(value, unit) {
     if (value === null) return {
-      label: "Sem dados",
+      label: translate(lang, "planning", "status_no_data"),
       tone: "slate"
     };
     if (unit === "savingsRate") {
       if (value >= 20) return {
-        label: "Saudável",
+        label: translate(lang, "planning", "status_healthy"),
         tone: "emerald"
       };
       if (value >= 5) return {
-        label: "Razoável",
+        label: translate(lang, "planning", "status_reasonable"),
         tone: "gold"
       };
       return {
-        label: "Atenção",
+        label: translate(lang, "planning", "status_attention"),
         tone: "rust"
       };
     }
     if (unit === "emergency") {
       if (value >= 6) return {
-        label: "Saudável",
+        label: translate(lang, "planning", "status_healthy"),
         tone: "emerald"
       };
       if (value >= 3) return {
-        label: "Razoável",
+        label: translate(lang, "planning", "status_reasonable"),
         tone: "gold"
       };
       return {
-        label: "Atenção",
+        label: translate(lang, "planning", "status_attention"),
         tone: "rust"
       };
     }
     if (unit === "debt") {
       if (value <= 20) return {
-        label: "Saudável",
+        label: translate(lang, "planning", "status_healthy"),
         tone: "emerald"
       };
       if (value <= 40) return {
-        label: "Razoável",
+        label: translate(lang, "planning", "status_reasonable"),
         tone: "gold"
       };
       return {
-        label: "Atenção",
+        label: translate(lang, "planning", "status_attention"),
         tone: "rust"
       };
     }
@@ -16018,7 +16889,7 @@ function PlanningTab({
       fontSize: 17,
       margin: "0 0 14px"
     }
-  }, "Saúde Financeira"), React.createElement("div", {
+  }, translate(lang, "planning", "health_score_title")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 24,
@@ -16044,7 +16915,7 @@ function PlanningTab({
       color: "var(--slate)",
       margin: "4px 0 12px"
     }
-  }, "Combina liquidez, taxa de poupança, endividamento, peso de investimentos e evolução do património — 20 pontos cada."), React.createElement("div", {
+  }, translate(lang, "planning", "health_desc")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -16075,32 +16946,32 @@ function PlanningTab({
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Património líquido — projeção"), React.createElement("p", {
+  }, translate(lang, "planning", "networth_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 14px"
     }
-  }, "Saldos em todas as contas (convertidos para Kz) mais dívidas a receber, menos dívidas a pagar. Projetado com base no resultado mensal médio atual (", fmt(netPerMonth), "/mês)."), React.createElement("div", {
+  }, translate(lang, "planning", "networth_desc_prefix"), fmt(netPerMonth), translate(lang, "planning", "networth_desc_suffix")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 14,
       flexWrap: "wrap"
     }
   }, React.createElement(StatCard, {
-    label: "Hoje",
+    label: translate(lang, "planning", "today"),
     value: fmt(projection.now),
     tone: "ink"
   }), React.createElement(StatCard, {
-    label: "Em 1 ano",
+    label: translate(lang, "planning", "in_1_year"),
     value: fmt(projection.oneYear),
     tone: projection.oneYear >= projection.now ? "emerald" : "rust"
   }), React.createElement(StatCard, {
-    label: "Em 5 anos",
+    label: translate(lang, "planning", "in_5_years"),
     value: fmt(projection.fiveYear),
     tone: projection.fiveYear >= projection.now ? "emerald" : "rust"
   }), React.createElement(StatCard, {
-    label: "Em 10 anos",
+    label: translate(lang, "planning", "in_10_years"),
     value: fmt(projection.tenYear),
     tone: projection.tenYear >= projection.now ? "emerald" : "rust"
   })), React.createElement("p", {
@@ -16109,19 +16980,19 @@ function PlanningTab({
       color: "var(--slate)",
       marginTop: 12
     }
-  }, "Projeção linear e indicativa — assume que as receitas e despesas médias se mantêm. Não considera valorização de investimentos além da taxa de juro já definida nas contas.")), React.createElement(Card, null, React.createElement("h3", {
+  }, translate(lang, "planning", "projection_note"))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Saúde financeira"), React.createElement("p", {
+  }, translate(lang, "planning", "health_indicators_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 14px"
     }
-  }, "Três indicadores simples, calculados a partir dos seus dados."), React.createElement("div", {
+  }, translate(lang, "planning", "indicators_desc")), React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -16139,7 +17010,7 @@ function PlanningTab({
       color: "var(--slate)",
       fontWeight: 600
     }
-  }, "Taxa de poupança"), React.createElement("div", {
+  }, translate(lang, "planning", "savings_rate")), React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 22,
@@ -16159,7 +17030,7 @@ function PlanningTab({
       color: "var(--slate)",
       marginTop: 8
     }
-  }, "Percentagem do rendimento que sobra depois das despesas fixas e variáveis médias. O ideal costuma ser acima de 20%.")), React.createElement("div", {
+  }, translate(lang, "planning", "savings_rate_desc"))), React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
       borderRadius: 10,
@@ -16171,7 +17042,7 @@ function PlanningTab({
       color: "var(--slate)",
       fontWeight: 600
     }
-  }, "Fundo de emergência"), React.createElement("div", {
+  }, translate(lang, "planning", "emergency_fund")), React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 22,
@@ -16191,7 +17062,7 @@ function PlanningTab({
       color: "var(--slate)",
       marginTop: 8
     }
-  }, "Quantos meses de despesas o seu saldo em contas à ordem/poupança cobre. O recomendado costuma ser 3 a 6 meses.")), React.createElement("div", {
+  }, translate(lang, "planning", "emergency_fund_desc"))), React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
       borderRadius: 10,
@@ -16203,7 +17074,7 @@ function PlanningTab({
       color: "var(--slate)",
       fontWeight: 600
     }
-  }, "Nível de endividamento"), React.createElement("div", {
+  }, translate(lang, "planning", "debt_level")), React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 22,
@@ -16223,19 +17094,19 @@ function PlanningTab({
       color: "var(--slate)",
       marginTop: 8
     }
-  }, "Total de dívidas a pagar face ao rendimento anual previsto. Abaixo de 20% costuma ser considerado saudável.")))), investBalances.length > 0 && React.createElement(Card, null, React.createElement("h3", {
+  }, translate(lang, "planning", "debt_level_desc"))))), investBalances.length > 0 && React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Simulação de rendimento — investimentos"), React.createElement("p", {
+  }, translate(lang, "planning", "invest_sim_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 14px"
     }
-  }, "Projeção com juro composto, à taxa anual definida em cada saldo de investimento."), React.createElement("div", {
+  }, translate(lang, "planning", "invest_sim_desc")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -16275,19 +17146,19 @@ function PlanningTab({
         fontSize: 12.5,
         flexWrap: "wrap"
       }
-    }, React.createElement("span", null, "Hoje: ", React.createElement("strong", {
+    }, React.createElement("span", null, translate(lang, "planning", "today_short") + " ", React.createElement("strong", {
       style: {
         fontFamily: "'IBM Plex Mono', monospace"
       }
-    }, fmt(principal, account.currency))), React.createElement("span", null, "1 ano: ", React.createElement("strong", {
+    }, fmt(principal, account.currency))), React.createElement("span", null, translate(lang, "planning", "year_1") + " ", React.createElement("strong", {
       style: {
         fontFamily: "'IBM Plex Mono', monospace"
       }
-    }, fmt(y1, account.currency))), React.createElement("span", null, "5 anos: ", React.createElement("strong", {
+    }, fmt(y1, account.currency))), React.createElement("span", null, translate(lang, "planning", "year_5") + " ", React.createElement("strong", {
       style: {
         fontFamily: "'IBM Plex Mono', monospace"
       }
-    }, fmt(y5, account.currency))), React.createElement("span", null, "10 anos: ", React.createElement("strong", {
+    }, fmt(y5, account.currency))), React.createElement("span", null, translate(lang, "planning", "year_10") + " ", React.createElement("strong", {
       style: {
         fontFamily: "'IBM Plex Mono', monospace"
       }
@@ -20638,6 +21509,7 @@ function ForecastTab({
   }, "Esta previsão considera apenas saldos em Kz. Contas em ", otherCurrencies.join(", "), " não estão incluídas.")));
 }
 function BudgetTab({
+  lang,
   categories,
   spentByCategory,
   prevSpentByCategory,
@@ -20703,13 +21575,13 @@ function BudgetTab({
       fontSize: 13.5,
       fontWeight: 700
     }
-  }, "Detetámos possíveis despesas recorrentes"), React.createElement("div", {
+  }, translate(lang, "budget", "recurring_detected_title")), React.createElement("div", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       marginTop: 2
     }
-  }, "Estas despesas repetem-se todo mês, com valores parecidos. Quer marcá-las como fixas?"))), React.createElement("div", {
+  }, translate(lang, "budget", "recurring_detected_desc")))), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -20763,9 +21635,9 @@ function BudgetTab({
       cursor: "pointer",
       whiteSpace: "nowrap"
     }
-  }, "Marcar como fixa"), React.createElement("button", {
+  }, translate(lang, "budget", "mark_as_fixed")), React.createElement("button", {
     onClick: () => setDismissedSuggestions(d => [...d, `${c.category}||${c.name}`]),
-    title: "Dispensar",
+    title: translate(lang, "budget", "dismiss"),
     style: {
       background: "none",
       border: "none",
@@ -20789,26 +21661,26 @@ function BudgetTab({
       fontSize: 16,
       margin: 0
     }
-  }, "Despesas Fixas"), React.createElement("p", {
+  }, translate(lang, "budget", "fixed_expenses_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 0"
     }
-  }, "Renda, subscrições e outras contas que se repetem todo mês.")), React.createElement(PrimaryButton, {
+  }, translate(lang, "budget", "fixed_expenses_subtitle"))), React.createElement(PrimaryButton, {
     onClick: onAddRecurring,
     style: {
       flexShrink: 0
     }
   }, React.createElement(IconPlus, {
     size: 14
-  }), " Nova despesa fixa")), fixedExpenses.length === 0 ? React.createElement("p", {
+  }), " " + translate(lang, "budget", "new_fixed_expense"))), fixedExpenses.length === 0 ? React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5,
       marginTop: 14
     }
-  }, "Ainda não tem despesas fixas registadas.") : React.createElement("div", {
+  }, translate(lang, "budget", "no_fixed_expenses")) : React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -20839,32 +21711,32 @@ function BudgetTab({
       fontSize: 16,
       margin: 0
     }
-  }, "Funcionários — Ordenados"), React.createElement("p", {
+  }, translate(lang, "budget", "staff_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 0"
     }
-  }, "Salários dos funcionários da casa, pagos todo mês.")), React.createElement(PrimaryButton, {
+  }, translate(lang, "budget", "staff_subtitle"))), React.createElement(PrimaryButton, {
     onClick: onAddStaff,
     style: {
       flexShrink: 0
     }
   }, React.createElement(IconPlus, {
     size: 14
-  }), " Novo funcionário")), staff.length === 0 ? React.createElement("p", {
+  }), " " + translate(lang, "budget", "new_staff"))), staff.length === 0 ? React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13.5,
       marginTop: 14
     }
-  }, "Ainda não tem funcionários registados.") : React.createElement(React.Fragment, null, React.createElement("p", {
+  }, translate(lang, "budget", "no_staff")) : React.createElement(React.Fragment, null, React.createElement("p", {
     style: {
       fontSize: 12.5,
       color: "var(--slate)",
       margin: "14px 0 10px"
     }
-  }, "Total mensal em ordenados: ", React.createElement("strong", {
+  }, translate(lang, "budget", "staff_total_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
@@ -20904,13 +21776,13 @@ function BudgetTab({
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Limites por categoria"), React.createElement("p", {
+  }, translate(lang, "budget", "category_limits_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "0 0 16px"
     }
-  }, "Defina um limite mensal para acompanhar cada categoria de despesa.")), React.createElement("button", {
+  }, translate(lang, "budget", "category_limits_subtitle"))), React.createElement("button", {
     onClick: onManageCategories,
     style: {
       background: "none",
@@ -20921,7 +21793,7 @@ function BudgetTab({
       textDecoration: "underline",
       whiteSpace: "nowrap"
     }
-  }, "Gerir categorias")), React.createElement("div", {
+  }, translate(lang, "budget", "manage_categories"))), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -20956,7 +21828,7 @@ function BudgetTab({
       }
     }, cat), React.createElement("input", {
       type: "number",
-      placeholder: "Limite",
+      placeholder: translate(lang, "budget", "limit_placeholder"),
       value: limit,
       onChange: e => onSetLimit(cat, e.target.value),
       style: {
@@ -20985,7 +21857,7 @@ function BudgetTab({
         marginLeft: 6,
         fontFamily: "Inter, sans-serif"
       }
-    }, "(+", fmtCompact(rolloverIn), " transportado)"))), rolloverEligible && React.createElement("button", {
+    }, "(+", fmtCompact(rolloverIn), " " + translate(lang, "budget", "rollover_carried_suffix") + ")"))), rolloverEligible && React.createElement("button", {
       onClick: () => onRolloverCategory(prevMonth, cat, prevLeftover),
       style: {
         display: "flex",
@@ -21008,20 +21880,20 @@ function BudgetTab({
       style: {
         flexShrink: 0
       }
-    }), "Sobraram ", fmtCompact(prevLeftover), " no mês anterior — transportar para este mês"));
+    }), translate(lang, "budget", "rollover_leftover_prefix") + " ", fmtCompact(prevLeftover), " " + translate(lang, "budget", "rollover_leftover_suffix")));
   }))), React.createElement(Card, null, React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Fontes de rendimento"), React.createElement("p", {
+  }, translate(lang, "budget", "income_sources_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "0 0 16px"
     }
-  }, "Salário e outras receitas previstas por mês."), React.createElement("div", {
+  }, translate(lang, "budget", "income_sources_subtitle")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -21033,7 +21905,7 @@ function BudgetTab({
       color: "var(--slate)",
       fontSize: 13
     }
-  }, "Nenhuma fonte cadastrada."), income.map(i => React.createElement("div", {
+  }, translate(lang, "budget", "no_income_sources")), income.map(i => React.createElement("div", {
     key: i.id,
     style: {
       display: "flex",
@@ -21072,8 +21944,8 @@ function BudgetTab({
       cursor: "pointer",
       color: "var(--slate)"
     },
-    title: "Remover fonte de rendimento",
-    "aria-label": "Remover fonte de rendimento"
+    title: translate(lang, "budget", "remove_income_source"),
+    "aria-label": translate(lang, "budget", "remove_income_source")
   }, React.createElement(IconTrash, {
     size: 13
   })))))), React.createElement("div", {
@@ -21085,7 +21957,7 @@ function BudgetTab({
       paddingTop: 14
     }
   }, React.createElement(Field, {
-    label: "Tipo"
+    label: translate(lang, "budget", "field_income_type")
   }, React.createElement("select", {
     style: inputStyle,
     value: newIncomeType,
@@ -21093,14 +21965,14 @@ function BudgetTab({
   }, INCOME_TYPES.map(t => React.createElement("option", {
     key: t
   }, t)))), React.createElement(Field, {
-    label: "Nome (opcional)"
+    label: translate(lang, "budget", "field_name_optional")
   }, React.createElement("input", {
     style: inputStyle,
     value: newIncomeLabel,
     onChange: e => setNewIncomeLabel(e.target.value),
-    placeholder: "ex: Salário — Empresa X"
+    placeholder: translate(lang, "budget", "field_name_placeholder")
   })), React.createElement(Field, {
-    label: "Valor mensal previsto"
+    label: translate(lang, "budget", "field_monthly_amount")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -21120,17 +21992,17 @@ function BudgetTab({
     }
   }, React.createElement(IconPlus, {
     size: 14
-  }), " Adicionar fonte")), React.createElement("div", {
+  }), " " + translate(lang, "budget", "add_income_source"))), React.createElement("div", {
     style: {
       marginTop: 14,
       fontSize: 12.5,
       color: "var(--slate)"
     }
-  }, "Previsto: ", React.createElement("strong", {
+  }, translate(lang, "budget", "expected_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
-  }, fmt(expectedIncome)), " · Recebido este mês: ", React.createElement("strong", {
+  }, fmt(expectedIncome)), " · " + translate(lang, "budget", "received_this_month_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--emerald)"
     }
@@ -21143,13 +22015,13 @@ function BudgetTab({
         fontSize: 16,
         margin: "0 0 4px"
       }
-    }, "Orçamento por membro"), React.createElement("p", {
+    }, translate(lang, "budget", "member_budget_title")), React.createElement("p", {
       style: {
         color: "var(--slate)",
         fontSize: 12.5,
         margin: "0 0 16px"
       }
-    }, "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento."), React.createElement("div", {
+    }, translate(lang, "budget", "member_budget_subtitle")), React.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "column",
@@ -21183,7 +22055,7 @@ function BudgetTab({
         }
       }), " ", member), React.createElement("input", {
         type: "number",
-        placeholder: "Limite",
+        placeholder: translate(lang, "budget", "limit_placeholder"),
         value: limit,
         onChange: e => onSetMemberLimit(member, e.target.value),
         style: {
@@ -21211,6 +22083,7 @@ function BudgetTab({
   })());
 }
 function GoalsTab({
+  lang,
   goals,
   onAdd,
   onEdit,
@@ -21224,13 +22097,13 @@ function GoalsTab({
     }
   }, React.createElement(IconPlus, {
     size: 15
-  }), " Nova meta"), goals.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+  }), " " + translate(lang, "goals", "new_goal")), goals.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 14,
       margin: 0
     }
-  }, "Ainda não criou nenhuma meta de poupança.")) : React.createElement("div", {
+  }, translate(lang, "goals", "no_goals"))) : React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
@@ -21287,7 +22160,7 @@ function GoalsTab({
         color: "var(--slate)",
         marginTop: 2
       }
-    }, "Prazo: ", g.deadline))), React.createElement("div", {
+    }, translate(lang, "goals", "deadline_prefix") + " ", g.deadline))), React.createElement("div", {
       style: {
         display: "flex",
         gap: 4
@@ -21301,8 +22174,8 @@ function GoalsTab({
         color: "var(--slate)",
         padding: 4
       },
-      title: "Editar meta",
-      "aria-label": "Editar meta"
+      title: translate(lang, "goals", "edit_goal"),
+      "aria-label": translate(lang, "goals", "edit_goal")
     }, React.createElement(IconPencil, {
       size: 13
     })), React.createElement("button", {
@@ -21314,8 +22187,8 @@ function GoalsTab({
         color: "var(--slate)",
         padding: 4
       },
-      title: "Remover meta",
-      "aria-label": "Remover meta"
+      title: translate(lang, "goals", "remove_goal"),
+      "aria-label": translate(lang, "goals", "remove_goal")
     }, React.createElement(IconTrash, {
       size: 13
     })))), React.createElement("div", {
@@ -21340,11 +22213,11 @@ function GoalsTab({
         marginTop: 8,
         marginBottom: 0
       }
-    }, "Poupe ", React.createElement("strong", {
+    }, translate(lang, "goals", "save_monthly_prefix") + " ", React.createElement("strong", {
       style: {
         color: "var(--ink)"
       }
-    }, fmt(monthly)), "/mês para atingir a meta no prazo."), React.createElement(PrimaryButton, {
+    }, fmt(monthly)), translate(lang, "goals", "save_monthly_suffix")), React.createElement(PrimaryButton, {
       style: {
         marginTop: 14,
         width: "100%"
@@ -21352,10 +22225,11 @@ function GoalsTab({
       onClick: () => onContribute(g)
     }, React.createElement(IconPig, {
       size: 14
-    }), " Adicionar contribuição"));
+    }), " " + translate(lang, "goals", "add_contribution")));
   })));
 }
 function DebtCard({
+  lang,
   debt,
   debtPayments,
   onEdit,
@@ -21418,7 +22292,7 @@ function DebtCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar dívida"
+    title: translate(lang, "debts", "edit_debt")
   }, React.createElement(IconPencil, {
     size: 14
   })), React.createElement("button", {
@@ -21430,7 +22304,7 @@ function DebtCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover dívida"
+    title: translate(lang, "debts", "remove_debt")
   }, React.createElement(IconTrash, {
     size: 14
   })))), React.createElement("div", {
@@ -21447,7 +22321,7 @@ function DebtCard({
       color: "var(--slate)",
       marginTop: 2
     }
-  }, "saldo devedor"), React.createElement("div", {
+  }, translate(lang, "debts", "balance_due")), React.createElement("div", {
     style: {
       margin: "12px 0 6px"
     }
@@ -21462,7 +22336,7 @@ function DebtCard({
       fontFamily: "'IBM Plex Mono', monospace",
       color: "var(--slate)"
     }
-  }, React.createElement("span", null, "Pago: ", fmt(paid, debt.currency)), React.createElement("span", null, "Total: ", fmt(total, debt.currency))), React.createElement("div", {
+  }, React.createElement("span", null, translate(lang, "debts", "paid_prefix") + " ", fmt(paid, debt.currency)), React.createElement("span", null, translate(lang, "debts", "total_prefix") + " ", fmt(total, debt.currency))), React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -21479,13 +22353,13 @@ function DebtCard({
     style: {
       color: "var(--slate)"
     }
-  }, "Vencimento: ", debt.dueDate)), debt.interestRate ? React.createElement("div", {
+  }, translate(lang, "debts", "due_date_prefix") + " ", debt.dueDate)), debt.interestRate ? React.createElement("div", {
     style: {
       fontSize: 11.5,
       color: "var(--gold)",
       marginTop: 4
     }
-  }, debt.interestRate, "% a.a. · juros acumulados: ", fmt(interest, debt.currency)) : null, status !== "Quitada" && React.createElement(PrimaryButton, {
+  }, debt.interestRate, "% a.a. · " + translate(lang, "debts", "interest_accrued_suffix") + " ", fmt(interest, debt.currency)) : null, status !== "Quitada" && React.createElement(PrimaryButton, {
     style: {
       marginTop: 14,
       width: "100%"
@@ -21493,9 +22367,10 @@ function DebtCard({
     onClick: () => onPay(debt)
   }, React.createElement(IconBanknote, {
     size: 14
-  }), " Registar pagamento"));
+  }), " " + translate(lang, "debts", "register_payment")));
 }
 function DebtPayoffSimulator({
+  lang,
   debts,
   debtPayments
 }) {
@@ -21510,13 +22385,13 @@ function DebtPayoffSimulator({
       fontSize: 16,
       margin: "0 0 4px"
     }
-  }, "Simulador de pagamento"), React.createElement("p", {
+  }, translate(lang, "debts", "simulator_title")), React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 12.5,
       margin: "4px 0 14px"
     }
-  }, "Simule quanto tempo demora a ficar livre de dívidas, consoante o valor mensal que consegue dedicar e a estratégia escolhida."), React.createElement("div", {
+  }, translate(lang, "debts", "simulator_desc")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -21541,7 +22416,7 @@ function DebtPayoffSimulator({
     }
   }, React.createElement(IconFlame, {
     size: 14
-  }), " Avalanche (maior juro primeiro)"), React.createElement("button", {
+  }), " " + translate(lang, "debts", "strategy_avalanche")), React.createElement("button", {
     onClick: () => setStrategy("snowball"),
     style: {
       flex: 1,
@@ -21560,8 +22435,8 @@ function DebtPayoffSimulator({
     }
   }, React.createElement(IconSnowflake, {
     size: 14
-  }), " Snowball (menor saldo primeiro)")), React.createElement(Field, {
-    label: "Valor mensal disponível para pagar dívidas"
+  }), " " + translate(lang, "debts", "strategy_snowball"))), React.createElement(Field, {
+    label: translate(lang, "debts", "field_monthly_budget")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -21577,7 +22452,7 @@ function DebtPayoffSimulator({
       fontSize: 13,
       color: "var(--rust)"
     }
-  }, "Com este valor mensal, os juros crescem mais depressa do que consegue pagar. Tente um valor maior.") : React.createElement(React.Fragment, null, React.createElement("div", {
+  }, translate(lang, "debts", "infeasible_msg")) : React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       display: "flex",
       gap: 14,
@@ -21585,11 +22460,11 @@ function DebtPayoffSimulator({
       marginBottom: 14
     }
   }, React.createElement(StatCard, {
-    label: "Livre de dívidas em",
-    value: `${result.months} meses`,
+    label: translate(lang, "debts", "debt_free_in"),
+    value: `${result.months} ${translate(lang, "debts", "months_suffix")}`,
     tone: "emerald"
   }), React.createElement(StatCard, {
-    label: "Juros totais estimados",
+    label: translate(lang, "debts", "total_interest_est"),
     value: fmt(result.totalInterest),
     tone: "rust"
   })), React.createElement("div", {
@@ -21599,7 +22474,7 @@ function DebtPayoffSimulator({
       color: "var(--slate)",
       marginBottom: 8
     }
-  }, "Ordem de pagamento"), React.createElement("div", {
+  }, translate(lang, "debts", "payoff_order")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -21618,9 +22493,10 @@ function DebtPayoffSimulator({
     style: {
       color: "var(--slate)"
     }
-  }, "mês ", p.month)))))));
+  }, translate(lang, "debts", "month_label") + " ", p.month)))))));
 }
 function DebtsTab({
+  lang,
   debts,
   debtPayments,
   onAdd,
@@ -21641,13 +22517,13 @@ function DebtsTab({
     }
   }, React.createElement(IconPlus, {
     size: 15
-  }), " Nova dívida"), debts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+  }), " " + translate(lang, "debts", "new_debt")), debts.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 14,
       margin: 0
     }
-  }, "Ainda não tem dívidas registadas. Adicione uma dívida a pagar ou a receber para começar a acompanhar.")) : React.createElement("div", {
+  }, translate(lang, "debts", "no_debts"))) : React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
@@ -21655,17 +22531,20 @@ function DebtsTab({
     }
   }, debts.map(d => React.createElement(DebtCard, {
     key: d.id,
+    lang: lang,
     debt: d,
     debtPayments: debtPayments,
     onEdit: onEdit,
     onRemove: onRemove,
     onPay: onPay
   })))), React.createElement(DebtPayoffSimulator, {
+    lang: lang,
     debts: debts,
     debtPayments: debtPayments
   }));
 }
 function DebtModal({
+  lang,
   initial,
   accounts,
   onClose,
@@ -21706,7 +22585,7 @@ function DebtModal({
     });
   }
   return React.createElement(Modal, {
-    title: isEditing ? "Editar dívida" : "Nova dívida",
+    title: isEditing ? translate(lang, "debts", "edit_debt") : translate(lang, "debts", "new_debt"),
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -21734,14 +22613,14 @@ function DebtModal({
       cursor: "pointer"
     }
   }, t))), React.createElement(Field, {
-    label: type === "A pagar" ? "A quem deve (credor)" : "Quem lhe deve"
+    label: type === "A pagar" ? translate(lang, "debts", "field_creditor_to_pay") : translate(lang, "debts", "field_creditor_to_receive")
   }, React.createElement("input", {
     style: inputStyle,
     value: creditor,
     onChange: e => setCreditor(e.target.value),
-    placeholder: "ex: Banco XYZ, João, Loja ABC"
+    placeholder: translate(lang, "debts", "field_creditor_placeholder")
   })), React.createElement(Field, {
-    label: "Categoria"
+    label: translate(lang, "debts", "field_category")
   }, React.createElement("select", {
     style: inputStyle,
     value: category,
@@ -21754,7 +22633,7 @@ function DebtModal({
       gap: 10
     }
   }, React.createElement(Field, {
-    label: "Valor original"
+    label: translate(lang, "debts", "field_original_amount")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -21762,7 +22641,7 @@ function DebtModal({
     onChange: e => setOriginalAmount(e.target.value),
     placeholder: "0.00"
   })), React.createElement(Field, {
-    label: "Moeda"
+    label: translate(lang, "debts", "field_currency")
   }, React.createElement("select", {
     style: inputStyle,
     value: currency,
@@ -21775,40 +22654,40 @@ function DebtModal({
       gap: 10
     }
   }, React.createElement(Field, {
-    label: "Taxa de juro anual % (opcional)"
+    label: translate(lang, "debts", "field_interest_rate_optional")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
     value: interestRate,
     onChange: e => setInterestRate(e.target.value),
-    placeholder: "ex: 15"
+    placeholder: translate(lang, "debts", "field_interest_rate_placeholder")
   })), React.createElement(Field, {
-    label: "Data de início"
+    label: translate(lang, "debts", "field_start_date")
   }, React.createElement("input", {
     type: "date",
     style: inputStyle,
     value: startDate,
     onChange: e => setStartDate(e.target.value)
   }))), React.createElement(Field, {
-    label: "Data de vencimento (opcional)"
+    label: translate(lang, "debts", "field_due_date_optional")
   }, React.createElement("input", {
     type: "date",
     style: inputStyle,
     value: dueDate,
     onChange: e => setDueDate(e.target.value)
   })), accounts.length > 0 && React.createElement(React.Fragment, null, React.createElement(Field, {
-    label: "Conta associada (opcional)"
+    label: translate(lang, "debts", "field_linked_account_optional")
   }, React.createElement("select", {
     style: inputStyle,
     value: accountId,
     onChange: e => handleAccountChange(e.target.value)
   }, React.createElement("option", {
     value: ""
-  }, "Nenhuma — não atualizar saldo automaticamente"), accounts.map(a => React.createElement("option", {
+  }, translate(lang, "debts", "no_account_option")), accounts.map(a => React.createElement("option", {
     key: a.id,
     value: a.id
   }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`)))), currentAccount && React.createElement(Field, {
-    label: "Saldo"
+    label: translate(lang, "debts", "field_balance")
   }, React.createElement("select", {
     style: inputStyle,
     value: subBalanceId,
@@ -21822,19 +22701,20 @@ function DebtModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, type === "A pagar" ? "Ao registar um pagamento, o saldo desta conta será automaticamente reduzido." : "Ao registar um recebimento, o saldo desta conta será automaticamente aumentado.")), React.createElement(Field, {
-    label: "Descrição (opcional)"
+  }, type === "A pagar" ? translate(lang, "debts", "note_pay_reduces") : translate(lang, "debts", "note_receive_increases"))), React.createElement(Field, {
+    label: translate(lang, "debts", "field_description_optional")
   }, React.createElement("input", {
     style: inputStyle,
     value: description,
     onChange: e => setDescription(e.target.value),
-    placeholder: "ex: Empréstimo para o carro"
+    placeholder: translate(lang, "debts", "field_description_placeholder")
   })), React.createElement(PrimaryButton, {
     disabled: !canSave,
     onClick: handleSave
-  }, isEditing ? "Guardar alterações" : "Guardar dívida")));
+  }, isEditing ? translate(lang, "debts", "save_changes") : translate(lang, "debts", "save_debt"))));
 }
 function CreditCardModal({
+  lang,
   initial,
   onClose,
   onSave
@@ -21848,7 +22728,7 @@ function CreditCardModal({
   const [dueDay, setDueDay] = useState(initial ? String(initial.dueDay) : "5");
   const canSave = bank && limit !== "" && Number(limit) > 0 && Number(closingDay) >= 1 && Number(closingDay) <= 31 && Number(dueDay) >= 1 && Number(dueDay) <= 31;
   return React.createElement(Modal, {
-    title: isEditing ? "Editar cartão de crédito" : "Novo cartão de crédito",
+    title: isEditing ? translate(lang, "cards", "edit_card_modal_title") : translate(lang, "cards", "new_card_modal_title"),
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -21857,7 +22737,7 @@ function CreditCardModal({
       gap: 14
     }
   }, React.createElement(Field, {
-    label: "Banco"
+    label: translate(lang, "cards", "field_bank")
   }, React.createElement("select", {
     style: inputStyle,
     value: bank,
@@ -21865,19 +22745,19 @@ function CreditCardModal({
   }, BANKS.map(b => React.createElement("option", {
     key: b
   }, b)))), React.createElement(Field, {
-    label: "Apelido (opcional)"
+    label: translate(lang, "cards", "field_nickname_optional")
   }, React.createElement("input", {
     style: inputStyle,
     value: nickname,
     onChange: e => setNickname(e.target.value),
-    placeholder: "ex: Cartão Gold"
+    placeholder: translate(lang, "cards", "field_nickname_placeholder")
   })), React.createElement("div", {
     style: {
       display: "flex",
       gap: 10
     }
   }, React.createElement(Field, {
-    label: "Moeda",
+    label: translate(lang, "cards", "field_currency"),
     style: {
       flex: 1
     }
@@ -21896,7 +22776,7 @@ function CreditCardModal({
   }, "ZAR"), React.createElement("option", {
     value: "GBP"
   }, "GBP"))), React.createElement(Field, {
-    label: "Limite de crédito",
+    label: translate(lang, "cards", "field_credit_limit"),
     style: {
       flex: 1
     }
@@ -21912,7 +22792,7 @@ function CreditCardModal({
       gap: 10
     }
   }, React.createElement(Field, {
-    label: "Dia de fecho da fatura",
+    label: translate(lang, "cards", "field_closing_day"),
     style: {
       flex: 1
     }
@@ -21924,7 +22804,7 @@ function CreditCardModal({
     value: closingDay,
     onChange: e => setClosingDay(e.target.value)
   })), React.createElement(Field, {
-    label: "Dia de vencimento",
+    label: translate(lang, "cards", "field_due_day"),
     style: {
       flex: 1
     }
@@ -21941,7 +22821,7 @@ function CreditCardModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Compras feitas até ao dia de fecho entram na fatura desse mês; depois disso, entram na fatura seguinte."), React.createElement(PrimaryButton, {
+  }, translate(lang, "cards", "closing_day_note")), React.createElement(PrimaryButton, {
     disabled: !canSave,
     onClick: () => onSave({
       bank,
@@ -21951,9 +22831,10 @@ function CreditCardModal({
       closingDay: Number(closingDay),
       dueDay: Number(dueDay)
     })
-  }, isEditing ? "Guardar alterações" : "Adicionar cartão")));
+  }, isEditing ? translate(lang, "cards", "save_changes") : translate(lang, "cards", "add_card"))));
 }
 function CardPurchaseModal({
+  lang,
   card,
   initial,
   expenseCategories,
@@ -21974,7 +22855,7 @@ function CardPurchaseModal({
     installments: Number(installments)
   }, card.closingDay) : [];
   return React.createElement(Modal, {
-    title: isEditing ? "Editar compra" : "Nova compra no cartão",
+    title: isEditing ? translate(lang, "cards", "edit_purchase_modal_title") : translate(lang, "cards", "new_purchase_modal_title"),
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -21983,14 +22864,14 @@ function CardPurchaseModal({
       gap: 14
     }
   }, React.createElement(Field, {
-    label: "Descrição"
+    label: translate(lang, "cards", "field_description")
   }, React.createElement("input", {
     style: inputStyle,
     value: description,
     onChange: e => setDescription(e.target.value),
-    placeholder: "ex: Supermercado"
+    placeholder: translate(lang, "cards", "field_description_placeholder")
   })), React.createElement(Field, {
-    label: "Categoria"
+    label: translate(lang, "cards", "field_category")
   }, React.createElement("select", {
     style: inputStyle,
     value: category,
@@ -22003,7 +22884,7 @@ function CardPurchaseModal({
       gap: 10
     }
   }, React.createElement(Field, {
-    label: "Valor total",
+    label: translate(lang, "cards", "field_total_amount"),
     style: {
       flex: 1
     }
@@ -22014,7 +22895,7 @@ function CardPurchaseModal({
     onChange: e => setTotalAmount(e.target.value),
     placeholder: "0.00"
   })), React.createElement(Field, {
-    label: "Nº de parcelas",
+    label: translate(lang, "cards", "field_installments"),
     style: {
       flex: 1
     }
@@ -22026,19 +22907,19 @@ function CardPurchaseModal({
     value: installments,
     onChange: e => setInstallments(e.target.value)
   }))), React.createElement(Field, {
-    label: "Data da compra"
+    label: translate(lang, "cards", "field_purchase_date")
   }, React.createElement("input", {
     type: "date",
     style: inputStyle,
     value: date,
     onChange: e => setDate(e.target.value)
   })), React.createElement(Field, {
-    label: "Membro da família (opcional)"
+    label: translate(lang, "cards", "field_member_optional")
   }, React.createElement("input", {
     style: inputStyle,
     value: member,
     onChange: e => setMember(e.target.value),
-    placeholder: "ex: Afonso"
+    placeholder: translate(lang, "cards", "field_member_placeholder")
   })), preview.length > 0 && React.createElement("div", {
     style: {
       padding: "10px 12px",
@@ -22051,7 +22932,7 @@ function CardPurchaseModal({
       fontWeight: 600,
       marginBottom: 6
     }
-  }, "Distribuição pelas faturas:"), preview.map((row, i) => React.createElement("div", {
+  }, translate(lang, "cards", "distribution_title")), preview.map((row, i) => React.createElement("div", {
     key: i,
     style: {
       display: "flex",
@@ -22073,9 +22954,10 @@ function CardPurchaseModal({
       date,
       member: member.trim() || null
     })
-  }, isEditing ? "Guardar alterações" : "Adicionar compra")));
+  }, isEditing ? translate(lang, "cards", "save_changes") : translate(lang, "cards", "add_purchase"))));
 }
 function CardPaymentModal({
+  lang,
   card,
   cycleMonth,
   statementAmount,
@@ -22097,7 +22979,7 @@ function CardPaymentModal({
     setSubBalanceId(acc?.subBalances?.[0]?.id || "");
   }
   return React.createElement(Modal, {
-    title: `Pagar fatura — ${monthShortLabel(cycleMonth)}`,
+    title: `${translate(lang, "cards", "pay_statement_modal_title_prefix")}${monthShortLabel(cycleMonth)}`,
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -22111,33 +22993,33 @@ function CardPaymentModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Valor da fatura: ", React.createElement("strong", {
+  }, translate(lang, "cards", "statement_amount_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
   }, fmt(statementAmount, card.currency))), React.createElement(Field, {
-    label: "Valor a pagar"
+    label: translate(lang, "cards", "field_amount_to_pay")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
     value: amount,
     onChange: e => setAmount(e.target.value)
   })), React.createElement(Field, {
-    label: "Data"
+    label: translate(lang, "cards", "field_date")
   }, React.createElement("input", {
     type: "date",
     style: inputStyle,
     value: date,
     onChange: e => setDate(e.target.value)
   })), React.createElement(Field, {
-    label: "Pagar a partir de (opcional)"
+    label: translate(lang, "cards", "field_pay_from_optional")
   }, React.createElement("select", {
     style: inputStyle,
     value: accountId,
     onChange: e => handleAccountChange(e.target.value)
   }, React.createElement("option", {
     value: ""
-  }, "— sem conta associada —"), accounts.map(a => React.createElement("option", {
+  }, translate(lang, "cards", "no_account_linked_option")), accounts.map(a => React.createElement("option", {
     key: a.id,
     value: a.id
   }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`))), usedRememberedAccount && accountId === rememberedAccount.id && React.createElement("div", {
@@ -22151,8 +23033,8 @@ function CardPaymentModal({
     }
   }, React.createElement(IconLightbulb, {
     size: 12
-  }), " Conta habitual, usada da última vez")), linkedAccount && React.createElement(Field, {
-    label: "Saldo"
+  }), " " + translate(lang, "cards", "usual_account_hint"))), linkedAccount && React.createElement(Field, {
+    label: translate(lang, "cards", "field_balance")
   }, React.createElement("select", {
     style: inputStyle,
     value: subBalanceId,
@@ -22168,9 +23050,10 @@ function CardPaymentModal({
       accountId: accountId || null,
       subBalanceId: accountId ? subBalanceId : null
     })
-  }, "Confirmar pagamento")));
+  }, translate(lang, "cards", "confirm_payment"))));
 }
 function CreditCardCard({
+  lang,
   card,
   purchases,
   payments,
@@ -22217,8 +23100,8 @@ function CreditCardCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar cartão",
-    "aria-label": "Editar cartão"
+    title: translate(lang, "cards", "edit_card"),
+    "aria-label": translate(lang, "cards", "edit_card")
   }, React.createElement(IconPencil, {
     size: 15
   })), React.createElement("button", {
@@ -22230,8 +23113,8 @@ function CreditCardCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover cartão",
-    "aria-label": "Remover cartão"
+    title: translate(lang, "cards", "remove_card"),
+    "aria-label": translate(lang, "cards", "remove_card")
   }, React.createElement(IconTrash, {
     size: 15
   })))), React.createElement("div", {
@@ -22246,7 +23129,7 @@ function CreditCardCard({
       color: "var(--slate)",
       marginBottom: 4
     }
-  }, React.createElement("span", null, "Limite usado"), React.createElement("span", {
+  }, React.createElement("span", null, translate(lang, "cards", "limit_used")), React.createElement("span", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace"
     }
@@ -22259,7 +23142,7 @@ function CreditCardCard({
       color: "var(--slate)",
       marginTop: 4
     }
-  }, "Disponível: ", fmt(Math.max(available, 0), card.currency))), React.createElement("div", {
+  }, translate(lang, "cards", "available_prefix") + " ", fmt(Math.max(available, 0), card.currency))), React.createElement("div", {
     style: {
       marginTop: 14,
       padding: "10px 12px",
@@ -22272,7 +23155,7 @@ function CreditCardCard({
       justifyContent: "space-between",
       fontSize: 12.5
     }
-  }, React.createElement("span", null, "Fatura atual (", monthShortLabel(currentCycle), ")"), React.createElement("span", {
+  }, React.createElement("span", null, translate(lang, "cards", "current_statement_prefix"), monthShortLabel(currentCycle), translate(lang, "cards", "current_statement_suffix")), React.createElement("span", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontWeight: 700
@@ -22283,13 +23166,13 @@ function CreditCardCard({
       color: "var(--slate)",
       marginTop: 2
     }
-  }, "Vencimento: ", new Date(dueDate + "T00:00:00").toLocaleDateString("pt-PT")), currentStatementBalance > 0.005 && React.createElement(GhostButton, {
+  }, translate(lang, "cards", "due_date_prefix2") + " ", new Date(dueDate + "T00:00:00").toLocaleDateString("pt-PT")), currentStatementBalance > 0.005 && React.createElement(GhostButton, {
     onClick: () => onPayStatement(card, currentCycle, currentStatementBalance),
     style: {
       marginTop: 8,
       width: "100%"
     }
-  }, "Pagar fatura")), React.createElement("div", {
+  }, translate(lang, "cards", "pay_statement"))), React.createElement("div", {
     style: {
       marginTop: 14
     }
@@ -22305,7 +23188,7 @@ function CreditCardCard({
       fontSize: 12.5,
       fontWeight: 600
     }
-  }, "Compras recentes"), React.createElement("button", {
+  }, translate(lang, "cards", "recent_purchases")), React.createElement("button", {
     onClick: () => onAddPurchase(card),
     style: {
       background: "none",
@@ -22315,13 +23198,13 @@ function CreditCardCard({
       cursor: "pointer",
       fontWeight: 600
     }
-  }, "+ Nova compra")), cardPurchasesForCard.length === 0 ? React.createElement("p", {
+  }, translate(lang, "cards", "new_purchase_short"))), cardPurchasesForCard.length === 0 ? React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
-  }, "Nenhuma compra registada.") : React.createElement("div", {
+  }, translate(lang, "cards", "no_purchases")) : React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -22350,6 +23233,7 @@ function CreditCardCard({
   }, fmt(p.totalAmount, card.currency)))))));
 }
 function CreditCardsTab({
+  lang,
   creditCards,
   cardPurchases,
   cardPayments,
@@ -22368,13 +23252,13 @@ function CreditCardsTab({
     }
   }, React.createElement(IconPlus, {
     size: 15
-  }), " Adicionar cartão de crédito"), creditCards.length === 0 ? React.createElement(Card, null, React.createElement("p", {
+  }), " " + translate(lang, "cards", "new_card")), creditCards.length === 0 ? React.createElement(Card, null, React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 14,
       margin: 0
     }
-  }, "Ainda não tem cartões de crédito registados. Adicione o primeiro para começar a acompanhar faturas e parcelas.")) : React.createElement("div", {
+  }, translate(lang, "cards", "no_cards"))) : React.createElement("div", {
     className: "resp-grid-2col",
     style: {
       display: "grid",
@@ -22383,6 +23267,7 @@ function CreditCardsTab({
     }
   }, creditCards.map(card => React.createElement(CreditCardCard, {
     key: card.id,
+    lang: lang,
     card: card,
     purchases: cardPurchases,
     payments: cardPayments,
@@ -22393,6 +23278,7 @@ function CreditCardsTab({
   }))));
 }
 function DebtPaymentModal({
+  lang,
   debt,
   accounts,
   currentBalance,
@@ -22406,7 +23292,7 @@ function DebtPaymentModal({
   const linkedSub = linkedAccount && linkedAccount.subBalances && linkedAccount.subBalances.find(s => s.id === debt.subBalanceId);
   const isPagar = debt.type === "A pagar";
   return React.createElement(Modal, {
-    title: `Registar ${isPagar ? "pagamento" : "recebimento"} — ${debt.creditor}`,
+    title: `${translate(lang, "debts", "register_prefix")} ${isPagar ? translate(lang, "debts", "word_payment") : translate(lang, "debts", "word_receipt")} — ${debt.creditor}`,
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -22420,12 +23306,12 @@ function DebtPaymentModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Saldo devedor atual: ", React.createElement("strong", {
+  }, translate(lang, "debts", "current_balance_prefix") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
   }, fmt(Math.max(currentBalance, 0), debt.currency))), React.createElement(Field, {
-    label: "Valor"
+    label: translate(lang, "debts", "field_amount")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -22433,43 +23319,43 @@ function DebtPaymentModal({
     onChange: e => setAmount(e.target.value),
     placeholder: "0.00"
   })), React.createElement(Field, {
-    label: "Data"
+    label: translate(lang, "debts", "field_date")
   }, React.createElement("input", {
     type: "date",
     style: inputStyle,
     value: date,
     onChange: e => setDate(e.target.value)
   })), React.createElement(Field, {
-    label: "Descrição (opcional)"
+    label: translate(lang, "debts", "field_description_optional")
   }, React.createElement("input", {
     style: inputStyle,
     value: description,
     onChange: e => setDescription(e.target.value),
-    placeholder: "ex: Prestação de janeiro"
+    placeholder: translate(lang, "debts", "field_description_placeholder_payment")
   })), linkedAccount ? React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
-  }, isPagar ? "Vai reduzir" : "Vai aumentar", " o saldo de ", React.createElement("strong", {
+  }, isPagar ? translate(lang, "debts", "will_reduce") : translate(lang, "debts", "will_increase"), " " + translate(lang, "debts", "balance_of") + " ", React.createElement("strong", {
     style: {
       color: "var(--ink)"
     }
-  }, linkedAccount.bank.replace(/—.*/, "").trim(), " — ", linkedSub ? linkedSub.label || linkedSub.type : ""), amount !== "" && React.createElement(React.Fragment, null, " em ", fmt(Number(amount), linkedAccount.currency)), ".") : React.createElement("p", {
+  }, linkedAccount.bank.replace(/—.*/, "").trim(), " — ", linkedSub ? linkedSub.label || linkedSub.type : ""), amount !== "" && React.createElement(React.Fragment, null, " " + translate(lang, "debts", "amount_prefix") + " ", fmt(Number(amount), linkedAccount.currency)), ".") : React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
       margin: 0
     }
-  }, "Esta dívida não tem conta associada — o saldo não é atualizado automaticamente. Pode associar uma conta ao editar a dívida."), React.createElement(PrimaryButton, {
+  }, translate(lang, "debts", "no_account_note")), React.createElement(PrimaryButton, {
     disabled: amount === "" || Number(amount) <= 0,
     onClick: () => onSave({
       amount: Number(amount),
       date,
       description
     })
-  }, "Confirmar ", isPagar ? "pagamento" : "recebimento")));
+  }, translate(lang, "debts", "confirm_prefix") + " ", isPagar ? translate(lang, "debts", "word_payment") : translate(lang, "debts", "word_receipt"))));
 }
 function RecurringModal({
   initial,
@@ -22963,6 +23849,7 @@ function ShortcutFormModal({
   }, isEditing ? "Guardar alterações" : "Guardar atalho")));
 }
 function GoalModal({
+  lang,
   initial,
   onClose,
   onSave
@@ -22973,7 +23860,7 @@ function GoalModal({
   const [target, setTarget] = useState(initial ? String(initial.target) : "");
   const [deadline, setDeadline] = useState(initial && initial.deadline || "");
   return React.createElement(Modal, {
-    title: isEditing ? "Editar meta" : "Nova meta de poupança",
+    title: isEditing ? translate(lang, "goals", "modal_edit_title") : translate(lang, "goals", "modal_new_title"),
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -22982,14 +23869,14 @@ function GoalModal({
       gap: 14
     }
   }, React.createElement(Field, {
-    label: "Nome da meta"
+    label: translate(lang, "goals", "field_goal_name")
   }, React.createElement("input", {
     style: inputStyle,
     value: name,
     onChange: e => setName(e.target.value),
-    placeholder: "ex: Fundo de emergência"
+    placeholder: translate(lang, "goals", "field_goal_name_placeholder")
   })), React.createElement(Field, {
-    label: "Categoria"
+    label: translate(lang, "goals", "field_category")
   }, React.createElement("select", {
     style: inputStyle,
     value: category,
@@ -22997,7 +23884,7 @@ function GoalModal({
   }, GOAL_CATEGORIES.map(c => React.createElement("option", {
     key: c
   }, c)))), React.createElement(Field, {
-    label: "Valor alvo"
+    label: translate(lang, "goals", "field_target_value")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -23005,7 +23892,7 @@ function GoalModal({
     onChange: e => setTarget(e.target.value),
     placeholder: "0.00"
   })), React.createElement(Field, {
-    label: "Prazo (opcional)"
+    label: translate(lang, "goals", "field_deadline_optional")
   }, React.createElement("input", {
     type: "date",
     style: inputStyle,
@@ -23017,23 +23904,24 @@ function GoalModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Com um prazo definido, o app calcula quanto precisa de poupar por mês."), React.createElement(PrimaryButton, {
+  }, translate(lang, "goals", "deadline_hint")), React.createElement(PrimaryButton, {
     onClick: () => name && target !== "" && onSave({
       name,
       category,
       target: Number(target),
       deadline
     })
-  }, isEditing ? "Guardar alterações" : "Criar meta")));
+  }, isEditing ? translate(lang, "goals", "save_changes") : translate(lang, "goals", "create_goal"))));
 }
 function ContributeModal({
+  lang,
   goal,
   onClose,
   onSave
 }) {
   const [amount, setAmount] = useState("");
   return React.createElement(Modal, {
-    title: `Contribuir para "${goal.name}"`,
+    title: `${translate(lang, "goals", "contribute_title_prefix")}${goal.name}${translate(lang, "goals", "contribute_title_suffix")}`,
     onClose: onClose
   }, React.createElement("div", {
     style: {
@@ -23042,7 +23930,7 @@ function ContributeModal({
       gap: 14
     }
   }, React.createElement(Field, {
-    label: "Valor a adicionar"
+    label: translate(lang, "goals", "field_amount_to_add")
   }, React.createElement("input", {
     type: "number",
     style: inputStyle,
@@ -23051,7 +23939,7 @@ function ContributeModal({
     placeholder: "0.00"
   })), React.createElement(PrimaryButton, {
     onClick: () => amount !== "" && onSave(Number(amount))
-  }, "Confirmar")));
+  }, translate(lang, "goals", "confirm"))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(FinanceApp, null));
 </script>
