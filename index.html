@@ -3366,7 +3366,21 @@ const TRANSLATIONS = {
       expected_prefix: "Previsto:",
       received_this_month_prefix: "Recebido este mês:",
       member_budget_title: "Orçamento por membro",
-      member_budget_subtitle: "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento."
+      member_budget_subtitle: "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento.",
+      summary_title: "Resumo de",
+      summary_budgeted: "Orçamentado",
+      summary_spent: "Gasto",
+      summary_remaining: "Saldo restante",
+      summary_over_badge: "acima do limite",
+      pacing_ahead: "Está a gastar mais depressa do que o previsto para esta altura do mês.",
+      pacing_ok: "O ritmo de despesas está alinhado com o mês.",
+      pacing_under: "Está a gastar menos do que o previsto — bom trabalho.",
+      section_limits: "Categorias",
+      section_income: "Rendimentos",
+      section_fixed: "Fixas & Equipa",
+      section_members: "Membros",
+      remaining_of_prefix: "restam",
+      add_income_source_toggle: "Nova fonte"
     },
     members: {
       manage_members: "Gerir membros",
@@ -4052,7 +4066,21 @@ const TRANSLATIONS = {
       expected_prefix: "Expected:",
       received_this_month_prefix: "Received this month:",
       member_budget_title: "Budget by member",
-      member_budget_subtitle: "Set a monthly expense limit per family member, based on the member label used on each transaction."
+      member_budget_subtitle: "Set a monthly expense limit per family member, based on the member label used on each transaction.",
+      summary_title: "Summary for",
+      summary_budgeted: "Budgeted",
+      summary_spent: "Spent",
+      summary_remaining: "Remaining",
+      summary_over_badge: "over limit",
+      pacing_ahead: "You're spending faster than expected for this point in the month.",
+      pacing_ok: "Your spending pace is on track with the month.",
+      pacing_under: "You're spending less than expected — nice work.",
+      section_limits: "Categories",
+      section_income: "Income",
+      section_fixed: "Fixed & Staff",
+      section_members: "Members",
+      remaining_of_prefix: "remaining",
+      add_income_source_toggle: "New source"
     },
     members: {
       manage_members: "Manage members",
@@ -4738,7 +4766,21 @@ const TRANSLATIONS = {
       expected_prefix: "Prévu :",
       received_this_month_prefix: "Reçu ce mois-ci :",
       member_budget_title: "Budget par membre",
-      member_budget_subtitle: "Définissez une limite de dépense mensuelle par membre de la famille, selon l'étiquette de membre utilisée sur chaque mouvement."
+      member_budget_subtitle: "Définissez une limite de dépense mensuelle par membre de la famille, selon l'étiquette de membre utilisée sur chaque mouvement.",
+      summary_title: "Résumé de",
+      summary_budgeted: "Budgétisé",
+      summary_spent: "Dépensé",
+      summary_remaining: "Solde restant",
+      summary_over_badge: "au-dessus de la limite",
+      pacing_ahead: "Vous dépensez plus vite que prévu pour ce stade du mois.",
+      pacing_ok: "Le rythme des dépenses est aligné avec le mois.",
+      pacing_under: "Vous dépensez moins que prévu — bon travail.",
+      section_limits: "Catégories",
+      section_income: "Revenus",
+      section_fixed: "Fixes & Personnel",
+      section_members: "Membres",
+      remaining_of_prefix: "restant",
+      add_income_source_toggle: "Nouvelle source"
     },
     members: {
       manage_members: "Gérer les membres",
@@ -5424,7 +5466,21 @@ const TRANSLATIONS = {
       expected_prefix: "Previsto:",
       received_this_month_prefix: "Recibido este mes:",
       member_budget_title: "Presupuesto por miembro",
-      member_budget_subtitle: "Defina un límite mensual de gasto por miembro de la familia, según la etiqueta de miembro usada en cada movimiento."
+      member_budget_subtitle: "Defina un límite mensual de gasto por miembro de la familia, según la etiqueta de miembro usada en cada movimiento.",
+      summary_title: "Resumen de",
+      summary_budgeted: "Presupuestado",
+      summary_spent: "Gastado",
+      summary_remaining: "Saldo restante",
+      summary_over_badge: "sobre el límite",
+      pacing_ahead: "Está gastando más rápido de lo previsto para este punto del mes.",
+      pacing_ok: "El ritmo de gasto está alineado con el mes.",
+      pacing_under: "Está gastando menos de lo previsto — buen trabajo.",
+      section_limits: "Categorías",
+      section_income: "Ingresos",
+      section_fixed: "Fijas y Personal",
+      section_members: "Miembros",
+      remaining_of_prefix: "restantes",
+      add_income_source_toggle: "Nueva fuente"
     },
     members: {
       manage_members: "Gestionar miembros",
@@ -22774,6 +22830,17 @@ function ForecastTab({
 // SECTION 5: BUDGET TAB
 // ══════════════════════════════════════════════════════════════════════
 
+const INCOME_TYPE_ICONS = {
+  "Salário": IconWallet,
+  "Freelance / Trabalho extra": IconWrench,
+  "Rendas": IconHome,
+  "Dividendos / Investimentos": IconTrendingUp,
+  "Negócio próprio": IconBarChart3,
+  "Outro": IconTag
+};
+function incomeTypeIcon(type) {
+  return INCOME_TYPE_ICONS[type] || IconTag;
+}
 function BudgetTab({
   lang,
   categories,
@@ -22810,10 +22877,53 @@ function BudgetTab({
   const [newIncomeLabel, setNewIncomeLabel] = useState("");
   const [newIncomeAmount, setNewIncomeAmount] = useState("");
   const [dismissedSuggestions, setDismissedSuggestions] = useState([]);
+  const [showAddIncome, setShowAddIncome] = useState(false);
+  const [section, setSection] = useState("limits");
   const recurringCandidates = useMemo(() => detectRecurringCandidates(transactions, recurringExpenses).filter(c => !dismissedSuggestions.includes(`${c.category}||${c.name}`)), [transactions, recurringExpenses, dismissedSuggestions]);
   const fixedExpenses = recurringExpenses.filter(r => !r.isStaff);
   const staff = recurringExpenses.filter(r => r.isStaff);
   const staffTotal = staff.reduce((s, r) => s + Number(r.amount), 0);
+  const totalBudgeted = useMemo(() => expenseCategories.reduce((s, c) => s + Number(categories[c] || 0), 0), [expenseCategories, categories]);
+  const totalSpent = useMemo(() => expenseCategories.reduce((s, c) => s + (spentByCategory[c] || 0), 0), [expenseCategories, spentByCategory]);
+  const remaining = totalBudgeted - totalSpent;
+  const overallPct = totalBudgeted ? totalSpent / totalBudgeted * 100 : 0;
+  const overBudgetCount = expenseCategories.filter(c => Number(categories[c] || 0) > 0 && (spentByCategory[c] || 0) > Number(categories[c])).length;
+  const [yearNum, monthNum] = (month || "").split("-").map(Number);
+  const daysInMonth = yearNum && monthNum ? new Date(yearNum, monthNum, 0).getDate() : 30;
+  const now = new Date();
+  const isCurrentMonth = now.getFullYear() === yearNum && now.getMonth() + 1 === monthNum;
+  const dayOfMonth = isCurrentMonth ? now.getDate() : daysInMonth;
+  const monthPct = Math.min(100, dayOfMonth / daysInMonth * 100);
+  const pacingKey = totalBudgeted === 0 ? null : overallPct - monthPct > 8 ? "pacing_ahead" : overallPct - monthPct < -8 ? "pacing_under" : "pacing_ok";
+  const pacingColor = pacingKey === "pacing_ahead" ? "var(--rust)" : pacingKey === "pacing_under" ? "var(--emerald)" : "var(--gold)";
+  const sortedCategories = useMemo(() => {
+    const withLimit = [];
+    const withoutLimit = [];
+    expenseCategories.forEach(cat => (Number(categories[cat] || 0) > 0 ? withLimit : withoutLimit).push(cat));
+    withLimit.sort((a, b) => {
+      const pctA = (spentByCategory[a] || 0) / Number(categories[a] || 1);
+      const pctB = (spentByCategory[b] || 0) / Number(categories[b] || 1);
+      return pctB - pctA;
+    });
+    return [...withLimit, ...withoutLimit];
+  }, [expenseCategories, categories, spentByCategory]);
+  const SEGMENTS = [{
+    id: "limits",
+    label: translate(lang, "budget", "section_limits"),
+    icon: IconPieChart
+  }, {
+    id: "income",
+    label: translate(lang, "budget", "section_income"),
+    icon: IconWallet
+  }, {
+    id: "fixed",
+    label: translate(lang, "budget", "section_fixed"),
+    icon: IconRepeat
+  }, {
+    id: "members",
+    label: translate(lang, "budget", "section_members"),
+    icon: IconUsers
+  }];
   return /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -22917,7 +23027,495 @@ function BudgetTab({
     }
   }, /*#__PURE__*/React.createElement(IconX, {
     size: 14
-  })))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+  })))))), /*#__PURE__*/React.createElement(Card, {
+    style: {
+      background: "linear-gradient(135deg, var(--sidebar) 0%, color-mix(in srgb, var(--sidebar) 82%, black) 100%)",
+      border: "none",
+      color: "#fff"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      opacity: 0.85
+    }
+  }, translate(lang, "budget", "summary_title"), " ", monthShortLabel(month)), overBudgetCount > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      background: "rgba(224,90,90,0.22)",
+      border: "1px solid rgba(224,90,90,0.5)",
+      borderRadius: 20,
+      padding: "4px 10px",
+      fontSize: 11.5,
+      fontWeight: 700
+    }
+  }, /*#__PURE__*/React.createElement(IconAlertTriangle, {
+    size: 12
+  }), " ", overBudgetCount, " ", translate(lang, "budget", "summary_over_badge"))), /*#__PURE__*/React.createElement("div", {
+    className: "resp-grid-3col",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 14,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      opacity: 0.7,
+      marginBottom: 3
+    }
+  }, translate(lang, "budget", "summary_budgeted")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 19,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totalBudgeted))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      opacity: 0.7,
+      marginBottom: 3
+    }
+  }, translate(lang, "budget", "summary_spent")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 19,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(totalSpent))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      opacity: 0.7,
+      marginBottom: 3
+    }
+  }, translate(lang, "budget", "summary_remaining")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 19,
+      fontWeight: 700,
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: remaining < 0 ? "#FF8A80" : "#8EF0C0"
+    }
+  }, fmt(remaining)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      height: 8,
+      borderRadius: 4,
+      background: "rgba(255,255,255,0.18)",
+      overflow: "visible",
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      width: `${Math.min(overallPct, 100)}%`,
+      borderRadius: 4,
+      background: overallPct > 100 ? "#FF8A80" : "#8EF0C0",
+      transition: "width 0.3s"
+    }
+  }), totalBudgeted > 0 && /*#__PURE__*/React.createElement("div", {
+    title: `${monthPct.toFixed(0)}% do mês`,
+    style: {
+      position: "absolute",
+      left: `${monthPct}%`,
+      top: -3,
+      bottom: -3,
+      width: 2,
+      background: "rgba(255,255,255,0.85)"
+    }
+  })), pacingKey && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      opacity: 0.9
+    }
+  }, translate(lang, "budget", pacingKey))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2,
+      background: "var(--paper)",
+      borderRadius: 10,
+      padding: 3,
+      overflowX: isMobile ? "auto" : "visible",
+      WebkitOverflowScrolling: "touch"
+    }
+  }, SEGMENTS.map(s => {
+    const isActive = section === s.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: s.id,
+      onClick: () => setSection(s.id),
+      style: {
+        flex: isMobile ? "0 0 auto" : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: "9px 14px",
+        borderRadius: 7,
+        border: "none",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: 600,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        whiteSpace: "nowrap",
+        background: isActive ? "var(--card)" : "transparent",
+        color: isActive ? "var(--gold)" : "var(--slate)",
+        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+        transition: "background 0.15s ease, color 0.15s ease"
+      }
+    }, /*#__PURE__*/React.createElement(s.icon, {
+      size: 14
+    }), s.label);
+  })), section === "limits" && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, translate(lang, "budget", "category_limits_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "0 0 16px"
+    }
+  }, translate(lang, "budget", "category_limits_subtitle"))), /*#__PURE__*/React.createElement("button", {
+    onClick: onManageCategories,
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      fontSize: 12,
+      cursor: "pointer",
+      textDecoration: "underline",
+      whiteSpace: "nowrap"
+    }
+  }, translate(lang, "budget", "manage_categories"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 4
+    }
+  }, sortedCategories.map(cat => {
+    const limit = categories[cat] || "";
+    const spent = spentByCategory[cat] || 0;
+    const rolloverIn = Number(budgetRollovers[month]?.[cat] || 0);
+    const effectiveLimit = Number(limit || 0) + rolloverIn;
+    const pct = effectiveLimit ? spent / effectiveLimit * 100 : 0;
+    const prevMonth = previousMonthKey(month);
+    const prevLimit = Number(categories[cat] || 0);
+    const prevSpent = Number((prevSpentByCategory || {})[cat] || 0);
+    const prevLeftover = prevLimit - prevSpent;
+    const rolloverKey = `${prevMonth}||${cat}`;
+    const alreadyRolled = (rolledOverKeys || []).includes(rolloverKey);
+    const rolloverEligible = prevLimit > 0 && prevLeftover > 0 && !alreadyRolled;
+    const CatIcon = categoryIcon(cat);
+    const tone = pct > 100 ? "rust" : pct >= 85 ? "gold" : "emerald";
+    const toneColor = {
+      rust: "var(--rust)",
+      gold: "var(--gold)",
+      emerald: "var(--emerald)"
+    }[tone];
+    return /*#__PURE__*/React.createElement("div", {
+      key: cat,
+      style: {
+        padding: "12px 0",
+        borderBottom: "1px solid var(--line)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 30,
+        height: 30,
+        borderRadius: 8,
+        background: `color-mix(in srgb, ${toneColor} 14%, var(--card))`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement(CatIcon, {
+      size: 14,
+      style: {
+        color: toneColor
+      }
+    })), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 13.5,
+        fontWeight: 600,
+        flex: 1,
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, cat), /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      placeholder: translate(lang, "budget", "limit_placeholder"),
+      value: limit,
+      onChange: e => onSetLimit(cat, e.target.value),
+      style: {
+        ...inputStyle,
+        width: 92,
+        padding: "6px 8px",
+        fontSize: 13,
+        flexShrink: 0
+      }
+    })), limit !== "" && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 8,
+        paddingLeft: 40
+      }
+    }, /*#__PURE__*/React.createElement(ProgressBar, {
+      pct: pct,
+      tone: tone
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        marginTop: 3
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11.5,
+        color: "var(--slate)",
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, fmt(spent), " / ", fmt(effectiveLimit), rolloverIn > 0 && /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "var(--emerald)",
+        marginLeft: 6,
+        fontFamily: "Inter, sans-serif"
+      }
+    }, "(+", fmtCompact(rolloverIn), " ", translate(lang, "budget", "rollover_carried_suffix"), ")")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11.5,
+        fontWeight: 700,
+        color: toneColor,
+        fontFamily: "'IBM Plex Mono', monospace"
+      }
+    }, fmtCompact(effectiveLimit - spent), " ", translate(lang, "budget", "remaining_of_prefix")))), rolloverEligible && /*#__PURE__*/React.createElement("button", {
+      onClick: () => onRolloverCategory(prevMonth, cat, prevLeftover),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        marginTop: 8,
+        marginLeft: 40,
+        background: "color-mix(in srgb, var(--emerald) 12%, var(--card))",
+        border: "1px dashed var(--emerald)",
+        borderRadius: 6,
+        padding: "5px 9px",
+        fontSize: 11.5,
+        color: "var(--emerald)",
+        fontWeight: 600,
+        cursor: "pointer",
+        width: "calc(100% - 40px)",
+        textAlign: "left"
+      }
+    }, /*#__PURE__*/React.createElement(IconArrowRightCircle, {
+      size: 13,
+      style: {
+        flexShrink: 0
+      }
+    }), translate(lang, "budget", "rollover_leftover_prefix"), " ", fmtCompact(prevLeftover), " ", translate(lang, "budget", "rollover_leftover_suffix")));
+  }))), section === "income" && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, translate(lang, "budget", "income_sources_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12.5,
+      margin: "0 0 16px"
+    }
+  }, translate(lang, "budget", "income_sources_subtitle"))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAddIncome(v => !v),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      background: "none",
+      border: "1px solid var(--gold)",
+      color: "var(--gold)",
+      borderRadius: 8,
+      padding: "6px 10px",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      flexShrink: 0,
+      whiteSpace: "nowrap"
+    }
+  }, /*#__PURE__*/React.createElement(IconPlus, {
+    size: 13
+  }), " ", translate(lang, "budget", "add_income_source_toggle"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 2,
+      marginBottom: showAddIncome ? 16 : 0
+    }
+  }, income.length === 0 && /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13
+    }
+  }, translate(lang, "budget", "no_income_sources")), income.map(i => {
+    const TypeIcon = incomeTypeIcon(i.type);
+    return /*#__PURE__*/React.createElement("div", {
+      key: i.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px 0",
+        borderBottom: "1px solid var(--line)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 30,
+        height: 30,
+        borderRadius: 8,
+        background: "color-mix(in srgb, var(--emerald) 14%, var(--card))",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement(TypeIcon, {
+      size: 14,
+      style: {
+        color: "var(--emerald)"
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 600,
+        fontSize: 13.5,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, i.label || i.type), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11.5,
+        color: "var(--slate)"
+      }
+    }, i.type)), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        color: "var(--emerald)",
+        fontWeight: 600,
+        fontSize: 13.5,
+        flexShrink: 0
+      }
+    }, fmt(i.amount)), /*#__PURE__*/React.createElement("button", {
+      onClick: () => onRemoveIncome(i.id),
+      style: {
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "var(--slate)",
+        flexShrink: 0
+      },
+      title: translate(lang, "budget", "remove_income_source"),
+      "aria-label": translate(lang, "budget", "remove_income_source")
+    }, /*#__PURE__*/React.createElement(IconTrash, {
+      size: 13
+    })));
+  })), showAddIncome && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      borderTop: "1px solid var(--line)",
+      paddingTop: 14
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: translate(lang, "budget", "field_income_type")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: newIncomeType,
+    onChange: e => setNewIncomeType(e.target.value)
+  }, INCOME_TYPES.map(t => /*#__PURE__*/React.createElement("option", {
+    key: t
+  }, t)))), /*#__PURE__*/React.createElement(Field, {
+    label: translate(lang, "budget", "field_name_optional")
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inputStyle,
+    value: newIncomeLabel,
+    onChange: e => setNewIncomeLabel(e.target.value),
+    placeholder: translate(lang, "budget", "field_name_placeholder")
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: translate(lang, "budget", "field_monthly_amount")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    style: inputStyle,
+    value: newIncomeAmount,
+    onChange: e => setNewIncomeAmount(e.target.value),
+    placeholder: "0.00"
+  })), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: () => {
+      if (newIncomeAmount === "") return;
+      onAddIncome({
+        type: newIncomeType,
+        label: newIncomeLabel,
+        amount: Number(newIncomeAmount)
+      });
+      setNewIncomeLabel("");
+      setNewIncomeAmount("");
+      setShowAddIncome(false);
+    }
+  }, /*#__PURE__*/React.createElement(IconPlus, {
+    size: 14
+  }), " ", translate(lang, "budget", "add_income_source"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      fontSize: 12.5,
+      color: "var(--slate)"
+    }
+  }, translate(lang, "budget", "expected_prefix"), " ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: "var(--ink)"
+    }
+  }, fmt(expectedIncome)), " · ", translate(lang, "budget", "received_this_month_prefix"), " ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: "var(--emerald)"
+    }
+  }, fmt(totalReceitas)))), section === "fixed" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -23027,255 +23625,7 @@ function BudgetTab({
     onQuickCategory: onQuickCategory,
     expenseCategories: expenseCategories,
     isStaffRow: true
-  }))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1fr",
-      gap: 18
-    }
-  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, translate(lang, "budget", "category_limits_title")), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 12.5,
-      margin: "0 0 16px"
-    }
-  }, translate(lang, "budget", "category_limits_subtitle"))), /*#__PURE__*/React.createElement("button", {
-    onClick: onManageCategories,
-    style: {
-      background: "none",
-      border: "none",
-      color: "var(--slate)",
-      fontSize: 12,
-      cursor: "pointer",
-      textDecoration: "underline",
-      whiteSpace: "nowrap"
-    }
-  }, translate(lang, "budget", "manage_categories"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 14
-    }
-  }, expenseCategories.map(cat => {
-    const limit = categories[cat] || "";
-    const spent = spentByCategory[cat] || 0;
-    const rolloverIn = Number(budgetRollovers[month]?.[cat] || 0);
-    const effectiveLimit = Number(limit || 0) + rolloverIn;
-    const pct = effectiveLimit ? spent / effectiveLimit * 100 : 0;
-    const prevMonth = previousMonthKey(month);
-    const prevLimit = Number(categories[cat] || 0);
-    const prevSpent = Number((prevSpentByCategory || {})[cat] || 0);
-    const prevLeftover = prevLimit - prevSpent;
-    const rolloverKey = `${prevMonth}||${cat}`;
-    const alreadyRolled = (rolledOverKeys || []).includes(rolloverKey);
-    const rolloverEligible = prevLimit > 0 && prevLeftover > 0 && !alreadyRolled;
-    return /*#__PURE__*/React.createElement("div", {
-      key: cat
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 10
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 13.5,
-        flex: 1
-      }
-    }, cat), /*#__PURE__*/React.createElement("input", {
-      type: "number",
-      placeholder: translate(lang, "budget", "limit_placeholder"),
-      value: limit,
-      onChange: e => onSetLimit(cat, e.target.value),
-      style: {
-        ...inputStyle,
-        width: 100,
-        padding: "6px 8px",
-        fontSize: 13
-      }
-    })), limit !== "" && /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginTop: 6
-      }
-    }, /*#__PURE__*/React.createElement(ProgressBar, {
-      pct: pct,
-      tone: pct > 100 ? "rust" : "emerald"
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11.5,
-        color: "var(--slate)",
-        marginTop: 3,
-        fontFamily: "'IBM Plex Mono', monospace"
-      }
-    }, fmt(spent), " / ", fmt(effectiveLimit), rolloverIn > 0 && /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "var(--emerald)",
-        marginLeft: 6,
-        fontFamily: "Inter, sans-serif"
-      }
-    }, "(+", fmtCompact(rolloverIn), " ", translate(lang, "budget", "rollover_carried_suffix"), ")"))), rolloverEligible && /*#__PURE__*/React.createElement("button", {
-      onClick: () => onRolloverCategory(prevMonth, cat, prevLeftover),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        marginTop: 6,
-        background: "color-mix(in srgb, var(--emerald) 12%, var(--card))",
-        border: "1px dashed var(--emerald)",
-        borderRadius: 6,
-        padding: "5px 9px",
-        fontSize: 11.5,
-        color: "var(--emerald)",
-        fontWeight: 600,
-        cursor: "pointer",
-        width: "100%",
-        textAlign: "left"
-      }
-    }, /*#__PURE__*/React.createElement(IconArrowRightCircle, {
-      size: 13,
-      style: {
-        flexShrink: 0
-      }
-    }), translate(lang, "budget", "rollover_leftover_prefix"), " ", fmtCompact(prevLeftover), " ", translate(lang, "budget", "rollover_leftover_suffix")));
-  }))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 16,
-      margin: "0 0 4px"
-    }
-  }, translate(lang, "budget", "income_sources_title")), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 12.5,
-      margin: "0 0 16px"
-    }
-  }, translate(lang, "budget", "income_sources_subtitle")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-      marginBottom: 16
-    }
-  }, income.length === 0 && /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 13
-    }
-  }, translate(lang, "budget", "no_income_sources")), income.map(i => /*#__PURE__*/React.createElement("div", {
-    key: i.id,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      fontSize: 13.5,
-      borderBottom: "1px solid var(--line)",
-      paddingBottom: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 600
-    }
-  }, i.label || i.type), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11.5,
-      color: "var(--slate)"
-    }
-  }, i.type)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      color: "var(--emerald)",
-      fontWeight: 600
-    }
-  }, fmt(i.amount)), /*#__PURE__*/React.createElement("button", {
-    onClick: () => onRemoveIncome(i.id),
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: "var(--slate)"
-    },
-    title: translate(lang, "budget", "remove_income_source"),
-    "aria-label": translate(lang, "budget", "remove_income_source")
-  }, /*#__PURE__*/React.createElement(IconTrash, {
-    size: 13
-  })))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
-      borderTop: "1px solid var(--line)",
-      paddingTop: 14
-    }
-  }, /*#__PURE__*/React.createElement(Field, {
-    label: translate(lang, "budget", "field_income_type")
-  }, /*#__PURE__*/React.createElement("select", {
-    style: inputStyle,
-    value: newIncomeType,
-    onChange: e => setNewIncomeType(e.target.value)
-  }, INCOME_TYPES.map(t => /*#__PURE__*/React.createElement("option", {
-    key: t
-  }, t)))), /*#__PURE__*/React.createElement(Field, {
-    label: translate(lang, "budget", "field_name_optional")
-  }, /*#__PURE__*/React.createElement("input", {
-    style: inputStyle,
-    value: newIncomeLabel,
-    onChange: e => setNewIncomeLabel(e.target.value),
-    placeholder: translate(lang, "budget", "field_name_placeholder")
-  })), /*#__PURE__*/React.createElement(Field, {
-    label: translate(lang, "budget", "field_monthly_amount")
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    style: inputStyle,
-    value: newIncomeAmount,
-    onChange: e => setNewIncomeAmount(e.target.value),
-    placeholder: "0.00"
-  })), /*#__PURE__*/React.createElement(PrimaryButton, {
-    onClick: () => {
-      if (newIncomeAmount === "") return;
-      onAddIncome({
-        type: newIncomeType,
-        label: newIncomeLabel,
-        amount: Number(newIncomeAmount)
-      });
-      setNewIncomeLabel("");
-      setNewIncomeAmount("");
-    }
-  }, /*#__PURE__*/React.createElement(IconPlus, {
-    size: 14
-  }), " ", translate(lang, "budget", "add_income_source"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 14,
-      fontSize: 12.5,
-      color: "var(--slate)"
-    }
-  }, translate(lang, "budget", "expected_prefix"), " ", /*#__PURE__*/React.createElement("strong", {
-    style: {
-      color: "var(--ink)"
-    }
-  }, fmt(expectedIncome)), " · ", translate(lang, "budget", "received_this_month_prefix"), " ", /*#__PURE__*/React.createElement("strong", {
-    style: {
-      color: "var(--emerald)"
-    }
-  }, fmt(totalReceitas))))), (() => {
+  })))))), section === "members" && (() => {
     // Defensive union: normally every historical value is already inside the managed
     // `members` list (seeded by the one-time migration and kept in sync by rename/delete),
     // but any leftover memberLimits key not yet in the list is still shown so nothing hides.
@@ -23322,52 +23672,76 @@ function BudgetTab({
       style: {
         display: "flex",
         flexDirection: "column",
-        gap: 14
+        gap: 4
       }
     }, allMembers.map(member => {
       const limit = (memberLimits || {})[member] || "";
       const spent = transactions.filter(t => t.kind === "despesa" && (t.member || "").trim() === member && monthKey(t.date) === month).reduce((s, t) => s + Number(t.amount), 0);
       const pct = limit ? spent / Number(limit) * 100 : 0;
+      const tone = pct > 100 ? "rust" : pct >= 85 ? "gold" : "emerald";
+      const toneColor = {
+        rust: "var(--rust)",
+        gold: "var(--gold)",
+        emerald: "var(--emerald)"
+      }[tone];
       return /*#__PURE__*/React.createElement("div", {
-        key: member
+        key: member,
+        style: {
+          padding: "12px 0",
+          borderBottom: "1px solid var(--line)"
+        }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
           gap: 10
         }
-      }, /*#__PURE__*/React.createElement("span", {
+      }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 13.5,
-          flex: 1,
+          width: 30,
+          height: 30,
+          borderRadius: "50%",
+          background: `color-mix(in srgb, ${toneColor} 16%, var(--card))`,
           display: "flex",
           alignItems: "center",
-          gap: 6
+          justifyContent: "center",
+          flexShrink: 0
         }
       }, /*#__PURE__*/React.createElement(IconUsers, {
-        size: 13,
+        size: 14,
         style: {
-          color: "var(--slate)"
+          color: toneColor
         }
-      }), " ", member), /*#__PURE__*/React.createElement("input", {
+      })), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 13.5,
+          fontWeight: 600,
+          flex: 1,
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }
+      }, member), /*#__PURE__*/React.createElement("input", {
         type: "number",
         placeholder: translate(lang, "budget", "limit_placeholder"),
         value: limit,
         onChange: e => onSetMemberLimit(member, e.target.value),
         style: {
           ...inputStyle,
-          width: 100,
+          width: 92,
           padding: "6px 8px",
-          fontSize: 13
+          fontSize: 13,
+          flexShrink: 0
         }
       })), limit !== "" && /*#__PURE__*/React.createElement("div", {
         style: {
-          marginTop: 6
+          marginTop: 8,
+          paddingLeft: 40
         }
       }, /*#__PURE__*/React.createElement(ProgressBar, {
         pct: pct,
-        tone: pct > 100 ? "rust" : "emerald"
+        tone: tone
       }), /*#__PURE__*/React.createElement("div", {
         style: {
           fontSize: 11.5,
