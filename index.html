@@ -956,6 +956,8 @@ const MARKETS = {
 };
 let BANKS = MARKETS.AO.banks;
 let CURRENT_NUMBER_LOCALE = MARKETS.AO.numberLocale;
+let CURRENT_LANG = "pt";
+let CURRENT_CURRENCY_CODE = MARKETS.AO.currency;
 const CURRENCY_SYMBOLS = {
   Kz: {
     symbol: "Kz",
@@ -3341,7 +3343,60 @@ const TRANSLATIONS = {
       "lang_pt-BR": "Português (Brasil)",
       lang_en: "Inglês",
       lang_fr: "Francês",
-      lang_es: "Espanhol"
+      lang_es: "Espanhol",
+      select_month: "Selecionar mês",
+      back_to_overview: "Voltar à Visão Geral",
+      main_navigation: "Navegação principal",
+      quick_actions: "Ações rápidas",
+      more_options: "Mais opções",
+      security: "Segurança",
+      loading_financial_data: "A carregar os seus dados financeiros…",
+      checking_session: "A verificar sessão…",
+      remove_transaction: "Remover transação",
+      import_bank_statement_csv: "Importar extrato bancário (CSV)",
+      edit: "Editar",
+      remove: "Remover",
+      export_data: "Exportar dados",
+      import_data: "Importar dados",
+      edit_bond: "Editar obrigação",
+      remove_bond: "Remover obrigação",
+      remove_balance: "Remover saldo",
+      edit_fund: "Editar fundo",
+      remove_fund: "Remover fundo",
+      new_event: "Novo evento",
+      remove_category: "Remover categoria",
+      edit_position: "Editar posição",
+      new_stock_position: "Nova posição em ações",
+      new_fund: "Nova aplicação em fundo",
+      edit_shortcut: "Editar atalho",
+      new_shortcut: "Novo atalho",
+      edit_stock: "Editar ação",
+      remove_stock: "Remover ação",
+      expense_shortcut_placeholder: "ex: Combustível, Mercado",
+      last_6_months: "Últimos 6 meses",
+      distribution: "Distribuição",
+      metrics: "Métricas",
+      description: "Descrição",
+      coupons_received: "Cupões recebidos",
+      avg_price: "Preço médio",
+      current_price: "Preço atual",
+      alerts_next_30_days: "Alertas — próximos 30 dias",
+      calc_parameters: "Parâmetros de cálculo",
+      coupon_tax_percent: "Imp. Cupões (%)",
+      more: "Mais",
+      light_mode: "Modo claro",
+      dark_mode: "Modo escuro",
+      available_balances_note: "Saldos disponíveis calculados ao dia de hoje.",
+      close_quick_actions_menu: "Fechar menu de ações rápidas",
+      open_quick_actions_menu: "Abrir menu de ações rápidas",
+      new_bond: "Nova obrigação",
+      more_options: "Mais opções",
+      main_section: "Principal",
+      data_section: "Dados",
+      export_transactions_csv: "Exportar movimentos (CSV)",
+      import_statement_csv: "Importar extrato (CSV)",
+      edit_account: "Editar conta",
+      delete_account: "Eliminar conta"
     },
     overview: {
       dashboard_title: "Dashboard Executivo",
@@ -4048,7 +4103,60 @@ const TRANSLATIONS = {
       "lang_pt-BR": "Português (Brasil)",
       lang_en: "Inglês",
       lang_fr: "Francês",
-      lang_es: "Espanhol"
+      lang_es: "Espanhol",
+      select_month: "Selecionar mês",
+      back_to_overview: "Voltar à Visão Geral",
+      main_navigation: "Navegação principal",
+      quick_actions: "Ações rápidas",
+      more_options: "Mais opções",
+      security: "Segurança",
+      loading_financial_data: "Carregando seus dados financeiros…",
+      checking_session: "Verificando sessão…",
+      remove_transaction: "Remover transação",
+      import_bank_statement_csv: "Importar extrato bancário (CSV)",
+      edit: "Editar",
+      remove: "Remover",
+      export_data: "Exportar dados",
+      import_data: "Importar dados",
+      edit_bond: "Editar título",
+      remove_bond: "Remover título",
+      remove_balance: "Remover saldo",
+      edit_fund: "Editar fundo",
+      remove_fund: "Remover fundo",
+      new_event: "Novo evento",
+      remove_category: "Remover categoria",
+      edit_position: "Editar posição",
+      new_stock_position: "Nova posição em ações",
+      new_fund: "Nova aplicação em fundo",
+      edit_shortcut: "Editar atalho",
+      new_shortcut: "Novo atalho",
+      edit_stock: "Editar ação",
+      remove_stock: "Remover ação",
+      expense_shortcut_placeholder: "ex: Combustível, Mercado",
+      last_6_months: "Últimos 6 meses",
+      distribution: "Distribuição",
+      metrics: "Métricas",
+      description: "Descrição",
+      coupons_received: "Cupons recebidos",
+      avg_price: "Preço médio",
+      current_price: "Preço atual",
+      alerts_next_30_days: "Alertas — próximos 30 dias",
+      calc_parameters: "Parâmetros de cálculo",
+      coupon_tax_percent: "Imp. Cupons (%)",
+      more: "Mais",
+      light_mode: "Modo claro",
+      dark_mode: "Modo escuro",
+      available_balances_note: "Saldos disponíveis calculados ao dia de hoje.",
+      close_quick_actions_menu: "Fechar menu de ações rápidas",
+      open_quick_actions_menu: "Abrir menu de ações rápidas",
+      new_bond: "Nova obrigação",
+      more_options: "Mais opções",
+      main_section: "Principal",
+      data_section: "Dados",
+      export_transactions_csv: "Exportar movimentos (CSV)",
+      import_statement_csv: "Importar extrato (CSV)",
+      edit_account: "Editar conta",
+      delete_account: "Eliminar conta"
     },
     overview: {
       dashboard_title: "Dashboard Executivo",
@@ -4755,7 +4863,60 @@ const TRANSLATIONS = {
       "lang_pt-BR": "Portuguese (Brazil)",
       lang_en: "English",
       lang_fr: "French",
-      lang_es: "Spanish"
+      lang_es: "Spanish",
+      select_month: "Select month",
+      back_to_overview: "Back to Overview",
+      main_navigation: "Main navigation",
+      quick_actions: "Quick actions",
+      more_options: "More options",
+      security: "Security",
+      loading_financial_data: "Loading your financial data…",
+      checking_session: "Checking session…",
+      remove_transaction: "Remove transaction",
+      import_bank_statement_csv: "Import bank statement (CSV)",
+      edit: "Edit",
+      remove: "Remove",
+      export_data: "Export data",
+      import_data: "Import data",
+      edit_bond: "Edit bond",
+      remove_bond: "Remove bond",
+      remove_balance: "Remove balance",
+      edit_fund: "Edit fund",
+      remove_fund: "Remove fund",
+      new_event: "New event",
+      remove_category: "Remove category",
+      edit_position: "Edit position",
+      new_stock_position: "New stock position",
+      new_fund: "New fund investment",
+      edit_shortcut: "Edit shortcut",
+      new_shortcut: "New shortcut",
+      edit_stock: "Edit stock",
+      remove_stock: "Remove stock",
+      expense_shortcut_placeholder: "e.g.: Fuel, Groceries",
+      last_6_months: "Last 6 months",
+      distribution: "Distribution",
+      metrics: "Metrics",
+      description: "Description",
+      coupons_received: "Coupons received",
+      avg_price: "Average price",
+      current_price: "Current price",
+      alerts_next_30_days: "Alerts — next 30 days",
+      calc_parameters: "Calculation parameters",
+      coupon_tax_percent: "Coupon tax (%)",
+      more: "More",
+      light_mode: "Light mode",
+      dark_mode: "Dark mode",
+      available_balances_note: "Available balances calculated as of today.",
+      close_quick_actions_menu: "Close quick actions menu",
+      open_quick_actions_menu: "Open quick actions menu",
+      new_bond: "New bond",
+      more_options: "More options",
+      main_section: "Main",
+      data_section: "Data",
+      export_transactions_csv: "Export transactions (CSV)",
+      import_statement_csv: "Import bank statement (CSV)",
+      edit_account: "Edit account",
+      delete_account: "Delete account"
     },
     overview: {
       dashboard_title: "Executive Dashboard",
@@ -5462,7 +5623,60 @@ const TRANSLATIONS = {
       "lang_pt-BR": "Portugais (Brésil)",
       lang_en: "Anglais",
       lang_fr: "Français",
-      lang_es: "Espagnol"
+      lang_es: "Espagnol",
+      select_month: "Sélectionner le mois",
+      back_to_overview: "Retour à la Vue d'ensemble",
+      main_navigation: "Navigation principale",
+      quick_actions: "Actions rapides",
+      more_options: "Plus d'options",
+      security: "Sécurité",
+      loading_financial_data: "Chargement de vos données financières…",
+      checking_session: "Vérification de la session…",
+      remove_transaction: "Supprimer la transaction",
+      import_bank_statement_csv: "Importer un relevé bancaire (CSV)",
+      edit: "Modifier",
+      remove: "Supprimer",
+      export_data: "Exporter les données",
+      import_data: "Importer des données",
+      edit_bond: "Modifier l'obligation",
+      remove_bond: "Supprimer l'obligation",
+      remove_balance: "Supprimer le solde",
+      edit_fund: "Modifier le fonds",
+      remove_fund: "Supprimer le fonds",
+      new_event: "Nouvel événement",
+      remove_category: "Supprimer la catégorie",
+      edit_position: "Modifier la position",
+      new_stock_position: "Nouvelle position en actions",
+      new_fund: "Nouvel investissement en fonds",
+      edit_shortcut: "Modifier le raccourci",
+      new_shortcut: "Nouveau raccourci",
+      edit_stock: "Modifier l'action",
+      remove_stock: "Supprimer l'action",
+      expense_shortcut_placeholder: "ex : Carburant, Courses",
+      last_6_months: "6 derniers mois",
+      distribution: "Répartition",
+      metrics: "Indicateurs",
+      description: "Description",
+      coupons_received: "Coupons reçus",
+      avg_price: "Prix moyen",
+      current_price: "Prix actuel",
+      alerts_next_30_days: "Alertes — 30 prochains jours",
+      calc_parameters: "Paramètres de calcul",
+      coupon_tax_percent: "Impôt sur coupons (%)",
+      more: "Plus",
+      light_mode: "Mode clair",
+      dark_mode: "Mode sombre",
+      available_balances_note: "Soldes disponibles calculés à la date du jour.",
+      close_quick_actions_menu: "Fermer le menu des actions rapides",
+      open_quick_actions_menu: "Ouvrir le menu des actions rapides",
+      new_bond: "Nouvelle obligation",
+      more_options: "Plus d'options",
+      main_section: "Principal",
+      data_section: "Données",
+      export_transactions_csv: "Exporter les transactions (CSV)",
+      import_statement_csv: "Importer un relevé bancaire (CSV)",
+      edit_account: "Modifier le compte",
+      delete_account: "Supprimer le compte"
     },
     overview: {
       dashboard_title: "Tableau de bord exécutif",
@@ -6169,7 +6383,60 @@ const TRANSLATIONS = {
       "lang_pt-BR": "Portugués (Brasil)",
       lang_en: "Inglés",
       lang_fr: "Francés",
-      lang_es: "Español"
+      lang_es: "Español",
+      select_month: "Seleccionar mes",
+      back_to_overview: "Volver al Resumen",
+      main_navigation: "Navegación principal",
+      quick_actions: "Acciones rápidas",
+      more_options: "Más opciones",
+      security: "Seguridad",
+      loading_financial_data: "Cargando tus datos financieros…",
+      checking_session: "Verificando sesión…",
+      remove_transaction: "Eliminar transacción",
+      import_bank_statement_csv: "Importar extracto bancario (CSV)",
+      edit: "Editar",
+      remove: "Eliminar",
+      export_data: "Exportar datos",
+      import_data: "Importar datos",
+      edit_bond: "Editar bono",
+      remove_bond: "Eliminar bono",
+      remove_balance: "Eliminar saldo",
+      edit_fund: "Editar fondo",
+      remove_fund: "Eliminar fondo",
+      new_event: "Nuevo evento",
+      remove_category: "Eliminar categoría",
+      edit_position: "Editar posición",
+      new_stock_position: "Nueva posición en acciones",
+      new_fund: "Nueva inversión en fondo",
+      edit_shortcut: "Editar atajo",
+      new_shortcut: "Nuevo atajo",
+      edit_stock: "Editar acción",
+      remove_stock: "Eliminar acción",
+      expense_shortcut_placeholder: "ej.: Combustible, Supermercado",
+      last_6_months: "Últimos 6 meses",
+      distribution: "Distribución",
+      metrics: "Métricas",
+      description: "Descripción",
+      coupons_received: "Cupones recibidos",
+      avg_price: "Precio medio",
+      current_price: "Precio actual",
+      alerts_next_30_days: "Alertas — próximos 30 días",
+      calc_parameters: "Parámetros de cálculo",
+      coupon_tax_percent: "Imp. Cupones (%)",
+      more: "Más",
+      light_mode: "Modo claro",
+      dark_mode: "Modo oscuro",
+      available_balances_note: "Saldos disponibles calculados a la fecha de hoy.",
+      close_quick_actions_menu: "Cerrar menú de acciones rápidas",
+      open_quick_actions_menu: "Abrir menú de acciones rápidas",
+      new_bond: "Nuevo bono",
+      more_options: "Más opciones",
+      main_section: "Principal",
+      data_section: "Datos",
+      export_transactions_csv: "Exportar transacciones (CSV)",
+      import_statement_csv: "Importar extracto bancario (CSV)",
+      edit_account: "Editar cuenta",
+      delete_account: "Eliminar cuenta"
     },
     overview: {
       dashboard_title: "Panel Ejecutivo",
@@ -7987,7 +8254,7 @@ function PinSetupModal({
     onRemove();
   }
   return /*#__PURE__*/React.createElement(Modal, {
-    title: "Segurança",
+    title: translate(CURRENT_LANG, "ui", "security"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9457,6 +9724,23 @@ function FinanceApp() {
   }));
   const [expenseShortcuts, setExpenseShortcuts] = useState(() => loadKey("expense-shortcuts", []));
   const [month, setMonth] = useState(todayMonth());
+  const monthAutoTrackRef = useRef(true);
+  useEffect(() => {
+    function syncToCurrentMonthIfTracking() {
+      if (!monthAutoTrackRef.current) return;
+      const current = todayMonth();
+      setMonth(m => m === current ? m : current);
+    }
+    syncToCurrentMonthIfTracking();
+    const interval = setInterval(syncToCurrentMonthIfTracking, 60000);
+    document.addEventListener("visibilitychange", syncToCurrentMonthIfTracking);
+    window.addEventListener("focus", syncToCurrentMonthIfTracking);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", syncToCurrentMonthIfTracking);
+      window.removeEventListener("focus", syncToCurrentMonthIfTracking);
+    };
+  }, []);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [showTxModal, setShowTxModal] = useState(false);
@@ -9527,7 +9811,10 @@ function FinanceApp() {
   useEffect(() => saveKey("app-pin", pin), [pin]);
   useEffect(() => saveKey("biometric-credential-id", biometricCredentialId), [biometricCredentialId]);
   useEffect(() => saveKey("dark-mode", darkMode), [darkMode]);
-  useEffect(() => saveKey("lang", lang), [lang]);
+  useEffect(() => {
+    saveKey("lang", lang);
+    CURRENT_LANG = lang;
+  }, [lang]);
   useEffect(() => saveKey("user-name", userName), [userName]);
   useEffect(() => {
     saveKey("country", country);
@@ -9536,6 +9823,7 @@ function FinanceApp() {
     CURRENT_NUMBER_LOCALE = market.numberLocale;
     BOND_TYPES = market.bondTypes;
     EQUITY_SUGGESTIONS = market.equitySuggestions;
+    CURRENT_CURRENCY_CODE = market.currency;
   }, [country]);
   useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
@@ -10421,7 +10709,7 @@ function FinanceApp() {
   }
   if (isFirebaseConfigured() && !cloudAuthChecked) {
     return /*#__PURE__*/React.createElement(SplashScreen, {
-      subtitle: "A verificar sessão…"
+      subtitle: translate(lang, "ui", "checking_session")
     });
   }
   if (isFirebaseConfigured() && !cloudUser) {
@@ -10545,7 +10833,7 @@ function FinanceApp() {
       transition: "transform 0.18s"
     }
   })), favoriteTabs.length > 0 && /*#__PURE__*/React.createElement(NavSection, {
-    label: "Favoritos",
+    label: translate(lang, "nav", "section_favorites"),
     collapsed: sidebarCollapsed
   }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(t => /*#__PURE__*/React.createElement(NavItem, {
     key: t.id,
@@ -10557,7 +10845,7 @@ function FinanceApp() {
     isFavorite: true,
     onToggleFavorite: () => toggleFavorite(t.id)
   }))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement(NavSection, {
-    label: "Mais usados",
+    label: translate(lang, "nav", "section_most_used"),
     collapsed: sidebarCollapsed
   }, mostUsedTabs.map(t => /*#__PURE__*/React.createElement(NavItem, {
     key: t.id,
@@ -10569,7 +10857,7 @@ function FinanceApp() {
     isFavorite: favoriteTabs.includes(t.id),
     onToggleFavorite: () => toggleFavorite(t.id)
   }))), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Dashboard",
+    label: translate(lang, "nav", "section_dashboard"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconDashboard,
@@ -10580,7 +10868,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("overview"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Finanças",
+    label: translate(lang, "nav", "section_finance"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconBank,
@@ -10615,7 +10903,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("budget"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Planeamento",
+    label: translate(lang, "nav", "section_planning"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconTarget,
@@ -10634,7 +10922,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("planning"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Financiamento",
+    label: translate(lang, "nav", "section_financing"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconCreditCard,
@@ -10653,7 +10941,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("cards"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Tesouraria",
+    label: translate(lang, "nav", "section_treasury"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconRepeat,
@@ -10672,7 +10960,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("forecast"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Investimentos",
+    label: translate(lang, "nav", "section_investments"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconPieChart,
@@ -10683,7 +10971,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("investments"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Relatórios",
+    label: translate(lang, "nav", "section_reports"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconFileText,
@@ -10710,7 +10998,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("exports"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Alertas",
+    label: translate(lang, "nav", "section_alerts"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconBell,
@@ -10721,7 +11009,7 @@ function FinanceApp() {
     onToggleFavorite: () => toggleFavorite("alerts"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Ferramentas",
+    label: translate(lang, "nav", "section_tools"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconCalculator,
@@ -10733,7 +11021,7 @@ function FinanceApp() {
     collapsed: sidebarCollapsed
   }), /*#__PURE__*/React.createElement(NavItem, {
     icon: IconWrench,
-    label: "Categorias",
+    label: translate(lang, "nav", "categories"),
     active: false,
     onClick: () => {
       setShowCategoryManager(true);
@@ -10742,7 +11030,7 @@ function FinanceApp() {
     collapsed: sidebarCollapsed
   }), /*#__PURE__*/React.createElement(NavItem, {
     icon: IconZap,
-    label: "Atalhos",
+    label: translate(lang, "nav", "shortcuts"),
     active: false,
     onClick: () => {
       setShowShortcutsModal(true);
@@ -10750,7 +11038,7 @@ function FinanceApp() {
     },
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
-    label: "Definições",
+    label: translate(lang, "nav", "section_settings"),
     collapsed: sidebarCollapsed
   }, /*#__PURE__*/React.createElement(NavItem, {
     icon: IconSettings,
@@ -10782,9 +11070,9 @@ function FinanceApp() {
       fontSize: 11,
       color: "rgba(255,255,255,0.4)"
     }
-  }, "Saldos disponíveis calculados ao dia de hoje."), /*#__PURE__*/React.createElement("button", {
+  }, translate(lang, "ui", "available_balances_note")), /*#__PURE__*/React.createElement("button", {
     onClick: exportAllData,
-    title: sidebarCollapsed ? "Exportar dados" : undefined,
+    title: sidebarCollapsed ? translate(lang, "ui", "export_data") : undefined,
     style: {
       display: "flex",
       alignItems: "center",
@@ -10800,9 +11088,9 @@ function FinanceApp() {
     }
   }, /*#__PURE__*/React.createElement(IconDownload, {
     size: 13
-  }), " ", !sidebarCollapsed && "Exportar dados"), /*#__PURE__*/React.createElement("button", {
+  }), " ", !sidebarCollapsed && translate(lang, "ui", "export_data")), /*#__PURE__*/React.createElement("button", {
     onClick: () => fileInputRef.current && fileInputRef.current.click(),
-    title: sidebarCollapsed ? "Importar dados" : undefined,
+    title: sidebarCollapsed ? translate(lang, "ui", "import_data") : undefined,
     style: {
       display: "flex",
       alignItems: "center",
@@ -10818,7 +11106,7 @@ function FinanceApp() {
     }
   }, /*#__PURE__*/React.createElement(IconUpload, {
     size: 13
-  }), " ", !sidebarCollapsed && "Importar dados"), importError && !sidebarCollapsed && /*#__PURE__*/React.createElement("div", {
+  }), " ", !sidebarCollapsed && translate(lang, "ui", "import_data")), importError && !sidebarCollapsed && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       color: "#E8A9A0"
@@ -10880,7 +11168,7 @@ function FinanceApp() {
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => selectTab("alerts"),
-    title: "Alertas",
+    title: translate(lang, "nav", "alerts"),
     style: {
       background: "none",
       border: "none",
@@ -10896,7 +11184,7 @@ function FinanceApp() {
     size: 17
   })), /*#__PURE__*/React.createElement("button", {
     onClick: () => setDarkMode(d => !d),
-    title: darkMode ? "Modo claro" : "Modo escuro",
+    title: translate(lang, "ui", darkMode ? "light_mode" : "dark_mode"),
     style: {
       background: "none",
       border: "none",
@@ -10914,7 +11202,7 @@ function FinanceApp() {
     size: 17
   })), /*#__PURE__*/React.createElement("div", {
     onClick: () => setShowPinSetup(true),
-    title: "Segurança",
+    title: translate(lang, "ui", "security"),
     style: {
       width: 36,
       height: 36,
@@ -10983,7 +11271,7 @@ function FinanceApp() {
     }
   }, tab !== "overview" && /*#__PURE__*/React.createElement("button", {
     onClick: () => selectTab("overview"),
-    "aria-label": "Voltar à Visão Geral",
+    "aria-label": translate(lang, "ui", "back_to_overview"),
     style: {
       background: "none",
       border: "none",
@@ -11042,8 +11330,11 @@ function FinanceApp() {
   })), /*#__PURE__*/React.createElement("input", {
     type: "month",
     value: month,
-    onChange: e => setMonth(e.target.value),
-    "aria-label": "Selecionar mês",
+    onChange: e => {
+      monthAutoTrackRef.current = e.target.value === todayMonth();
+      setMonth(e.target.value);
+    },
+    "aria-label": translate(lang, "ui", "select_month"),
     style: {
       position: "absolute",
       inset: 0,
@@ -11057,7 +11348,7 @@ function FinanceApp() {
   }))), (() => {
     const contextualActions = {
       accounts: [{
-        label: "Nova conta",
+        label: translate(lang, "overview", "action_new_account"),
         icon: IconBank,
         onClick: () => {
           setEditingAccount(null);
@@ -11065,7 +11356,7 @@ function FinanceApp() {
         }
       }],
       transactions: [{
-        label: "Nova transação",
+        label: translate(lang, "transactions", "new_transaction"),
         icon: IconReceipt,
         onClick: () => {
           setTxModalKind("despesa");
@@ -11073,12 +11364,12 @@ function FinanceApp() {
           setShowTxModal(true);
         }
       }, {
-        label: "Importar extrato",
+        label: translate(lang, "transactions", "import_statement"),
         icon: IconUpload,
         onClick: () => setShowCsvImportModal(true)
       }],
       goals: [{
-        label: "Nova meta",
+        label: translate(lang, "goals", "new_goal"),
         icon: IconTarget,
         onClick: () => {
           setEditingGoal(null);
@@ -11086,7 +11377,7 @@ function FinanceApp() {
         }
       }],
       debts: [{
-        label: "Nova dívida",
+        label: translate(lang, "debts", "new_debt"),
         icon: IconCreditCard,
         onClick: () => {
           setEditingDebt(null);
@@ -11094,7 +11385,7 @@ function FinanceApp() {
         }
       }],
       cards: [{
-        label: "Novo cartão",
+        label: translate(lang, "cards", "new_card_modal_title"),
         icon: IconBanknote,
         onClick: () => {
           setEditingCreditCard(null);
@@ -11102,7 +11393,7 @@ function FinanceApp() {
         }
       }],
       investments: [{
-        label: "Nova obrigação",
+        label: translate(lang, "ui", "new_bond"),
         icon: IconPieChart,
         onClick: () => {
           setEditingBond(null);
@@ -11752,7 +12043,7 @@ function FinanceApp() {
     toast: toast,
     onDismiss: () => setToast(null)
   }), isMobile && /*#__PURE__*/React.createElement("nav", {
-    "aria-label": "Navegação principal",
+    "aria-label": translate(lang, "ui", "main_navigation"),
     style: {
       position: "fixed",
       bottom: 0,
@@ -11832,7 +12123,7 @@ function FinanceApp() {
       fontSize: 11,
       fontWeight: 600
     }
-  }, "Mais"))), isMobile && showFabMenu && /*#__PURE__*/React.createElement("div", {
+  }, translate(lang, "ui", "more")))), isMobile && showFabMenu && /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
     onClick: () => closeFabMenu(false),
     style: {
@@ -11843,7 +12134,7 @@ function FinanceApp() {
     }
   }), isMobile && showFabMenu && /*#__PURE__*/React.createElement("div", {
     role: "menu",
-    "aria-label": "Ações rápidas",
+    "aria-label": translate(lang, "ui", "quick_actions"),
     onKeyDown: handleFabMenuKeyDown,
     style: {
       position: "fixed",
@@ -11859,7 +12150,7 @@ function FinanceApp() {
       justifyItems: "stretch"
     }
   }, [{
-    label: "Receita",
+    label: translate(lang, "overview", "action_income"),
     icon: IconTrendingUp,
     color: "var(--emerald)",
     onClick: () => {
@@ -11868,7 +12159,7 @@ function FinanceApp() {
       setShowTxModal(true);
     }
   }, {
-    label: "Nova conta",
+    label: translate(lang, "overview", "action_new_account"),
     icon: IconBank,
     color: "var(--gold)",
     onClick: () => {
@@ -11876,12 +12167,12 @@ function FinanceApp() {
       setShowAccountModal(true);
     }
   }, {
-    label: "Transferência",
+    label: translate(lang, "overview", "action_transfer"),
     icon: IconRepeat,
     color: "#4C9FE8",
     onClick: () => setShowTransferModal(true)
   }, {
-    label: "Despesa",
+    label: translate(lang, "overview", "action_expense"),
     icon: IconTrendingDown,
     color: "var(--rust)",
     onClick: () => {
@@ -11950,7 +12241,7 @@ function FinanceApp() {
     onClick: () => setShowFabMenu(v => !v),
     "aria-haspopup": "true",
     "aria-expanded": showFabMenu,
-    "aria-label": showFabMenu ? "Fechar menu de ações rápidas" : "Abrir menu de ações rápidas",
+    "aria-label": translate(lang, "ui", showFabMenu ? "close_quick_actions_menu" : "open_quick_actions_menu"),
     className: "a11y-focusable",
     style: {
       position: "fixed",
@@ -12070,7 +12361,7 @@ function FinanceApp() {
       })), label);
     };
     return /*#__PURE__*/React.createElement(Modal, {
-      title: "Mais opções",
+      title: translate(lang, "ui", "more_options"),
       onClose: () => setShowMoreSheet(false),
       sheet: isMobile
     }, /*#__PURE__*/React.createElement("div", {
@@ -12079,77 +12370,77 @@ function FinanceApp() {
         flexDirection: "column",
         gap: 22
       }
-    }, favoriteTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Favoritos"), /*#__PURE__*/React.createElement("div", {
+    }, favoriteTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "nav", "section_favorites")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
       }
-    }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(sheetTile))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Mais usados"), /*#__PURE__*/React.createElement("div", {
+    }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(sheetTile))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "nav", "section_most_used")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
       }
-    }, mostUsedTabs.map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Principal"), /*#__PURE__*/React.createElement("div", {
+    }, mostUsedTabs.map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "ui", "main_section")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
       }
     }, [{
       id: "charts",
-      label: "Gráficos",
+      label: translate(lang, "nav", "charts"),
       icon: IconBarChart3
     }, {
       id: "budget",
-      label: "Orçamento",
+      label: translate(lang, "nav", "budget"),
       icon: IconWallet
     }, {
       id: "cards",
-      label: "Cartões",
+      label: translate(lang, "nav", "cards"),
       icon: IconBanknote
     }, {
       id: "investments",
-      label: "Investimentos",
+      label: translate(lang, "nav", "investments"),
       icon: IconPieChart
     }, {
       id: "simulators",
-      label: "Simuladores",
+      label: translate(lang, "nav", "simulators"),
       icon: IconCalculator
-    }].map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Atalhos"), /*#__PURE__*/React.createElement("div", {
+    }].map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "nav", "shortcuts")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
       }
     }, [{
       id: "goals",
-      label: "Metas",
+      label: translate(lang, "nav", "goals"),
       icon: IconTarget
     }, {
       id: "planning",
-      label: "Planeamento",
+      label: translate(lang, "nav", "planning"),
       icon: IconCompass
     }, {
       id: "exchange",
-      label: "Câmbio",
+      label: translate(lang, "nav", "exchange"),
       icon: IconRepeat
     }, {
       id: "forecast",
-      label: "Fluxo Caixa",
+      label: translate(lang, "nav", "forecast"),
       icon: IconTrendingUp
     }, {
       id: "report",
-      label: "Relatório",
+      label: translate(lang, "nav", "report"),
       icon: IconFileText
     }, {
       id: "kpis",
-      label: "KPI's",
+      label: translate(lang, "nav", "kpis"),
       icon: IconActivity
     }, {
       id: "exports",
-      label: "Exportações",
+      label: translate(lang, "nav", "exports"),
       icon: IconDownload
     }, {
       id: "__categories",
-      label: "Categorias",
+      label: translate(lang, "nav", "categories"),
       icon: IconSettings,
       onClick: () => {
         setShowCategoryManager(true);
@@ -12157,7 +12448,7 @@ function FinanceApp() {
       }
     }, {
       id: "__shortcuts",
-      label: "Atalhos",
+      label: translate(lang, "nav", "shortcuts"),
       icon: IconZap,
       onClick: () => {
         setShowShortcutsModal(true);
@@ -12165,13 +12456,13 @@ function FinanceApp() {
       }
     }, {
       id: "settings",
-      label: "Definições",
+      label: translate(lang, "nav", "settings"),
       icon: IconSettings
     }, {
       id: "privacy",
-      label: "Privacidade",
+      label: translate(lang, "nav", "privacy"),
       icon: IconShieldCheck
-    }].map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel("Dados"), /*#__PURE__*/React.createElement("div", {
+    }].map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "ui", "data_section")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "column",
@@ -12179,13 +12470,13 @@ function FinanceApp() {
         overflow: "hidden",
         border: "1px solid var(--line)"
       }
-    }, dataRow(IconDownload, "Exportar dados", () => {
+    }, dataRow(IconDownload, translate(lang, "ui", "export_data"), () => {
       exportAllData();
       setShowMoreSheet(false);
-    }), dataRow(IconDownload, "Exportar movimentos (CSV)", () => {
+    }), dataRow(IconDownload, translate(lang, "ui", "export_transactions_csv"), () => {
       exportTransactionsCSV();
       setShowMoreSheet(false);
-    }), dataRow(IconUpload, "Importar extrato (CSV)", () => {
+    }), dataRow(IconUpload, translate(lang, "ui", "import_statement_csv"), () => {
       setShowMoreSheet(false);
       setShowCsvImportModal(true);
     }), /*#__PURE__*/React.createElement("button", {
@@ -12225,7 +12516,7 @@ function FinanceApp() {
       style: {
         color: "var(--ink)"
       }
-    })), "Importar dados")), importError && /*#__PURE__*/React.createElement("div", {
+    })), translate(lang, "ui", "import_data"))), importError && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 12,
         color: "var(--rust)",
@@ -14761,7 +15052,7 @@ function AccountCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar conta"
+    title: translate(CURRENT_LANG, "ui", "edit_account")
   }, /*#__PURE__*/React.createElement(IconPencil, {
     size: 15
   })), onRemove && /*#__PURE__*/React.createElement("button", {
@@ -14774,7 +15065,7 @@ function AccountCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover conta"
+    title: translate(CURRENT_LANG, "ui", "delete_account")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 15
   }))), /*#__PURE__*/React.createElement("div", {
@@ -15621,6 +15912,7 @@ function AccountsTab({
       ...layerTransform(1)
     }
   }, activeAccount && /*#__PURE__*/React.createElement(AccountDetailPanel, {
+    lang: lang,
     account: activeAccount,
     transactions: transactions,
     exchangeRates: exchangeRates,
@@ -15847,6 +16139,7 @@ function CascadeHeader({
   }, subtitle)), actions);
 }
 function AccountDetailPanel({
+  lang,
   account,
   transactions,
   exchangeRates,
@@ -15890,7 +16183,7 @@ function AccountDetailPanel({
         cursor: "pointer",
         padding: 6
       },
-      title: "Mais opções"
+      title: translate(lang, "ui", "more_options")
     }, /*#__PURE__*/React.createElement(IconMore, {
       size: 17
     })), showActionsMenu && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -15937,7 +16230,7 @@ function AccountDetailPanel({
       style: {
         color: "var(--slate)"
       }
-    }), " Editar conta"), /*#__PURE__*/React.createElement("button", {
+    }), " ", translate(lang, "ui", "edit_account")), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         onRemove();
         setShowActionsMenu(false);
@@ -15959,7 +16252,7 @@ function AccountDetailPanel({
       }
     }, /*#__PURE__*/React.createElement(IconTrash, {
       size: 14
-    }), " Eliminar conta"))))
+    }), " ", translate(lang, "ui", "delete_account")))))
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: 18
@@ -16511,8 +16804,8 @@ function AccountModal({
       color: "var(--slate)",
       cursor: "pointer"
     },
-    title: "Remover saldo",
-    "aria-label": "Remover saldo"
+    title: translate(lang, "ui", "remove_balance"),
+    "aria-label": translate(lang, "ui", "remove_balance")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 13
   })), /*#__PURE__*/React.createElement("div", {
@@ -16716,8 +17009,8 @@ function TimelineNode({
       alignItems: "center",
       justifyContent: "center"
     },
-    title: "Remover transação",
-    "aria-label": "Remover transação"
+    title: translate(CURRENT_LANG, "ui", "remove_transaction"),
+    "aria-label": translate(CURRENT_LANG, "ui", "remove_transaction")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 16
   }))), /*#__PURE__*/React.createElement("div", {
@@ -17672,7 +17965,7 @@ function CsvImportModal({
     onImport(toImport);
   }
   return /*#__PURE__*/React.createElement(Modal, {
-    title: "Importar extrato bancário (CSV)",
+    title: translate(CURRENT_LANG, "ui", "import_bank_statement_csv"),
     onClose: onClose
   }, step === 1 ? /*#__PURE__*/React.createElement("div", {
     style: {
@@ -18955,7 +19248,7 @@ function RecurringRow({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar"
+    title: translate(CURRENT_LANG, "ui", "edit")
   }, /*#__PURE__*/React.createElement(IconPencil, {
     size: 14
   })), /*#__PURE__*/React.createElement("button", {
@@ -18967,7 +19260,7 @@ function RecurringRow({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover"
+    title: translate(CURRENT_LANG, "ui", "remove")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 14
   }))));
@@ -19494,7 +19787,7 @@ function BondModal({
     });
   }
   return /*#__PURE__*/React.createElement(Modal, {
-    title: isEditing ? "Editar obrigação" : "Nova obrigação",
+    title: translate(CURRENT_LANG, "ui", isEditing ? "edit_bond" : "new_bond"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -19703,8 +19996,8 @@ function BondCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar obrigação",
-    "aria-label": "Editar obrigação"
+    title: translate(CURRENT_LANG, "ui", "edit_bond"),
+    "aria-label": translate(CURRENT_LANG, "ui", "edit_bond")
   }, /*#__PURE__*/React.createElement(IconPencil, {
     size: 15
   })), /*#__PURE__*/React.createElement("button", {
@@ -19716,8 +20009,8 @@ function BondCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover obrigação",
-    "aria-label": "Remover obrigação"
+    title: translate(CURRENT_LANG, "ui", "remove_bond"),
+    "aria-label": translate(CURRENT_LANG, "ui", "remove_bond")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 15
   })))), /*#__PURE__*/React.createElement("div", {
@@ -19977,7 +20270,7 @@ function EquityModal({
     });
   }
   return /*#__PURE__*/React.createElement(Modal, {
-    title: isEditing ? "Editar posição" : "Nova posição em ações",
+    title: translate(CURRENT_LANG, "ui", isEditing ? "edit_position" : "new_stock_position"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -20129,8 +20422,8 @@ function EquityCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar ação",
-    "aria-label": "Editar ação"
+    title: translate(CURRENT_LANG, "ui", "edit_stock"),
+    "aria-label": translate(CURRENT_LANG, "ui", "edit_stock")
   }, /*#__PURE__*/React.createElement(IconPencil, {
     size: 15
   })), /*#__PURE__*/React.createElement("button", {
@@ -20142,8 +20435,8 @@ function EquityCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover ação",
-    "aria-label": "Remover ação"
+    title: translate(CURRENT_LANG, "ui", "remove_stock"),
+    "aria-label": translate(CURRENT_LANG, "ui", "remove_stock")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 15
   })))), /*#__PURE__*/React.createElement("div", {
@@ -20556,7 +20849,7 @@ function FundModal({
     });
   }
   return /*#__PURE__*/React.createElement(Modal, {
-    title: isEditing ? "Editar fundo" : "Nova aplicação em fundo",
+    title: translate(CURRENT_LANG, "ui", isEditing ? "edit_fund" : "new_fund"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -20713,8 +21006,8 @@ function FundCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar fundo",
-    "aria-label": "Editar fundo"
+    title: translate(CURRENT_LANG, "ui", "edit_fund"),
+    "aria-label": translate(CURRENT_LANG, "ui", "edit_fund")
   }, /*#__PURE__*/React.createElement(IconPencil, {
     size: 15
   })), /*#__PURE__*/React.createElement("button", {
@@ -20726,8 +21019,8 @@ function FundCard({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover fundo",
-    "aria-label": "Remover fundo"
+    title: translate(CURRENT_LANG, "ui", "remove_fund"),
+    "aria-label": translate(CURRENT_LANG, "ui", "remove_fund")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 15
   })))), /*#__PURE__*/React.createElement("div", {
@@ -21044,7 +21337,7 @@ function EventModal({
   const [ativoRelacionado, setAtivoRelacionado] = useState("");
   const canSave = data && descricao.trim();
   return /*#__PURE__*/React.createElement(Modal, {
-    title: "Novo evento",
+    title: translate(CURRENT_LANG, "ui", "new_event"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -22037,6 +22330,85 @@ function getSimGroups(lang, country) {
     }]
   }];
 }
+
+/* Tradução leve dos textos internos dos simuladores (rótulos de campos, resultados, avisos). Aplicada apenas quando CURRENT_LANG === "en" (necessário para o Reino Unido); as restantes línguas continuam a mostrar o texto em português nestes simuladores. */
+const SIM_LABEL_EN = {
+  "Capital inicial": "Initial capital",
+  "Taxa por período": "Rate per period",
+  "Número de períodos": "Number of periods",
+  "Juros acumulados": "Accrued interest",
+  "Montante final": "Final amount",
+  "Direção da conversão": "Conversion direction",
+  "Taxa mensal → taxa anual": "Monthly rate → annual rate",
+  "Taxa anual → taxa mensal": "Annual rate → monthly rate",
+  "Taxa mensal": "Monthly rate",
+  "Taxa anual": "Annual rate",
+  "Taxa anual equivalente": "Equivalent annual rate",
+  "Taxa mensal equivalente": "Equivalent monthly rate",
+  "Valor poupado": "Amount saved",
+  "Taxa de juro anual": "Annual interest rate",
+  "Prazo": "Term",
+  "Rendimento no período": "Return over the period",
+  "Saldo final": "Final balance",
+  "O que pretende calcular?": "What do you want to calculate?",
+  "Quanto é X% de Y": "How much is X% of Y",
+  "X é que percentagem de Y": "X is what percentage of Y",
+  "Aumentar Y em X%": "Increase Y by X%",
+  "Diminuir Y em X%": "Decrease Y by X%",
+  "Valor X": "Value X",
+  "Percentagem X": "Percentage X",
+  "Valor Y": "Value Y",
+  "Resultado": "Result",
+  "A está para B assim como C está para X": "A is to B as C is to X",
+  "Data inicial": "Start date",
+  "Data final": "End date",
+  "Dias corridos": "Total days",
+  "Semanas (aprox.)": "Weeks (approx.)",
+  "Meses (aprox.)": "Months (approx.)",
+  "Data alvo": "Target date",
+  "Dias que faltam": "Days remaining",
+  "Dias já passados": "Days already passed",
+  "Rendimento bruto anual": "Gross annual income",
+  "Taxa marginal (Income Tax)": "Marginal rate (Income Tax)",
+  "Income Tax (anual)": "Income Tax (annual)",
+  "National Insurance — Classe 1 (anual)": "National Insurance — Class 1 (annual)",
+  "Rendimento líquido estimado (anual)": "Estimated net income (annual)",
+  "Rendimento líquido estimado (mensal, ÷12)": "Estimated net income (monthly, ÷12)",
+  'Ano fiscal 2026/27: "Personal Allowance" de £12.570 (0%), 20% até £50.270, 40% até £125.140, 45% acima disso. National Insurance Classe 1: 8% entre £12.584 e £50.284, 2% acima. Estimativa simplificada — não modela a redução do Personal Allowance para rendimentos acima de £100.000 nem outras deduções (pensão, Gift Aid, etc.).': 'Tax year 2026/27: Personal Allowance of £12,570 (0%), 20% up to £50,270, 40% up to £125,140, 45% above that. Class 1 National Insurance: 8% between £12,584 and £50,284, 2% above. Simplified estimate — does not model the Personal Allowance taper for income above £100,000 or other deductions (pension, Gift Aid, etc.).',
+  "Valor do crédito": "Loan amount",
+  "Taxa de juro anual (fixa)": "Annual interest rate (fixed)",
+  "Comissão de abertura": "Arrangement fee",
+  "Rendimento líquido mensal (opcional)": "Net monthly income (optional)",
+  "Prestação mensal (capital + juros)": "Monthly repayment (capital + interest)",
+  "Valor líquido a receber": "Net amount received",
+  "Custo total do crédito": "Total cost of credit",
+  "Taxa de esforço": "Debt-to-income ratio",
+  "Modelo de empréstimo pessoal no Reino Unido: não existe um imposto equivalente ao Imposto de Selo sobre crédito ao consumo; o custo do crédito reflete-se na Representative APR. Estimativa simplificada — a taxa real depende do perfil de crédito (\"personalised APR\").": "UK personal loan model: there is no tax equivalent to Stamp Duty on consumer credit; the cost of credit is reflected in the Representative APR. Simplified estimate — the actual rate you're offered depends on your credit profile (\"personalised APR\").",
+  "Valor da viatura / bem": "Vehicle / asset value",
+  "Entrada (comparticipação)": "Deposit",
+  "Valor residual": "Residual value",
+  "Valor de entrada": "Deposit amount",
+  "Montante financiado": "Amount financed",
+  "Valor residual (opção de compra final)": "Residual value (final purchase option)",
+  "Renda mensal": "Monthly payment",
+  "Total de juros": "Total interest",
+  "Modelo PCP (Personal Contract Purchase): entrada inicial, rendas mensais mais baixas por excluírem o valor residual (\"balloon/optional final payment\"), pago apenas se decidir ficar com o veículo no final. Não existe imposto equivalente ao Imposto de Selo neste tipo de crédito no Reino Unido.": "PCP (Personal Contract Purchase) model: an initial deposit, lower monthly payments since they exclude the residual value (the \"balloon/optional final payment\"), paid only if you decide to keep the vehicle at the end. There is no tax equivalent to Stamp Duty on this type of credit in the UK.",
+  "TAN — Taxa Anual Nominal": "APR — Annual Percentage Rate (nominal)",
+  "TAEG estimada": "Estimated APR",
+  "APR estimada": "Estimated APR",
+  "(dentro do limite)": "(within the limit)",
+  "acima de": "above",
+  "meses": "months",
+  "Imposto de Selo sobre o montante": "Stamp Duty on the amount"
+};
+function SL(text) {
+  if (CURRENT_LANG !== "en") return text;
+  return SIM_LABEL_EN[text] || text;
+}
+function SLdia(n) {
+  if (CURRENT_LANG !== "en") return `${n} dia${Math.abs(n) === 1 ? "" : "s"}`;
+  return `${n} day${Math.abs(n) === 1 ? "" : "s"}`;
+}
 function SimResultRow({
   label,
   value,
@@ -22263,7 +22635,7 @@ function SimUKTax() {
   const ni = calcUKNationalInsurance(v);
   const liquido = v - tax - ni;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Rendimento bruto anual",
+    label: SL("Rendimento bruto anual"),
     value: rendimento,
     onChange: setRendimento,
     suffix: "£"
@@ -22272,23 +22644,23 @@ function SimUKTax() {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Taxa marginal (Income Tax)",
+    label: SL("Taxa marginal (Income Tax)"),
     value: `${(marginalRate * 100).toFixed(0)}%`
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Income Tax (anual)",
+    label: SL("Income Tax (anual)"),
     value: "− " + fmt(tax, "GBP"),
     tone: "rust"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "National Insurance — Classe 1 (anual)",
+    label: SL("National Insurance — Classe 1 (anual)"),
     value: "− " + fmt(ni, "GBP"),
     tone: "rust"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Rendimento líquido estimado (anual)",
+    label: SL("Rendimento líquido estimado (anual)"),
     value: fmt(liquido, "GBP"),
     big: true,
     tone: "emerald"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Rendimento líquido estimado (mensal, ÷12)",
+    label: SL("Rendimento líquido estimado (mensal, ÷12)"),
     value: fmt(liquido / 12, "GBP")
   })), /*#__PURE__*/React.createElement("p", {
     style: {
@@ -22296,7 +22668,7 @@ function SimUKTax() {
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, "Ano fiscal 2026/27: \"Personal Allowance\" de £12.570 (0%), 20% até £50.270, 40% até £125.140, 45% acima disso. National Insurance Classe 1: 8% entre £12.584 e £50.284, 2% acima. Estimativa simplificada — não modela a redução do Personal Allowance para rendimentos acima de £100.000 nem outras deduções (pensão, Gift Aid, etc.)."));
+  }, SL('Ano fiscal 2026/27: "Personal Allowance" de £12.570 (0%), 20% até £50.270, 40% até £125.140, 45% acima disso. National Insurance Classe 1: 8% entre £12.584 e £50.284, 2% acima. Estimativa simplificada — não modela a redução do Personal Allowance para rendimentos acima de £100.000 nem outras deduções (pensão, Gift Aid, etc.).')));
 }
 
 /* --- Salário Líquido --- */
@@ -22542,17 +22914,17 @@ function SimJurosComposto() {
   const montante = c * Math.pow(1 + i, n);
   const juros = montante - c;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Capital inicial",
+    label: SL("Capital inicial"),
     value: capital,
     onChange: setCapital,
-    suffix: "Kz"
+    suffix: CURRENT_CURRENCY_CODE
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Taxa por período",
+    label: SL("Taxa por período"),
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Número de períodos",
+    label: SL("Número de períodos"),
     value: periodos,
     onChange: setPeriodos
   }), /*#__PURE__*/React.createElement("div", {
@@ -22560,11 +22932,11 @@ function SimJurosComposto() {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Juros acumulados",
+    label: SL("Juros acumulados"),
     value: fmt(juros),
     tone: "gold"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Montante final",
+    label: SL("Montante final"),
     value: fmt(montante),
     big: true,
     tone: "emerald"
@@ -22582,17 +22954,17 @@ function SimJurosSimples() {
   const juros = c * i * n;
   const montante = c + juros;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Capital inicial",
+    label: SL("Capital inicial"),
     value: capital,
     onChange: setCapital,
-    suffix: "Kz"
+    suffix: CURRENT_CURRENCY_CODE
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Taxa por período",
+    label: SL("Taxa por período"),
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Número de períodos",
+    label: SL("Número de períodos"),
     value: periodos,
     onChange: setPeriodos
   }), /*#__PURE__*/React.createElement("div", {
@@ -22600,11 +22972,11 @@ function SimJurosSimples() {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Juros acumulados",
+    label: SL("Juros acumulados"),
     value: fmt(juros),
     tone: "gold"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Montante final",
+    label: SL("Montante final"),
     value: fmt(montante),
     big: true,
     tone: "emerald"
@@ -22618,7 +22990,7 @@ function SimConversaoTaxa() {
   const t = (Number(taxa) || 0) / 100;
   const resultado = direcao === "mensalParaAnual" ? Math.pow(1 + t, 12) - 1 : Math.pow(1 + t, 1 / 12) - 1;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Direção da conversão"
+    label: SL("Direção da conversão")
   }, /*#__PURE__*/React.createElement("select", {
     value: direcao,
     onChange: e => setDirecao(e.target.value),
@@ -22628,10 +23000,10 @@ function SimConversaoTaxa() {
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: "mensalParaAnual"
-  }, "Taxa mensal → taxa anual"), /*#__PURE__*/React.createElement("option", {
+  }, SL("Taxa mensal → taxa anual")), /*#__PURE__*/React.createElement("option", {
     value: "anualParaMensal"
-  }, "Taxa anual → taxa mensal"))), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: direcao === "mensalParaAnual" ? "Taxa mensal" : "Taxa anual",
+  }, SL("Taxa anual → taxa mensal")))), /*#__PURE__*/React.createElement(SimNumberField, {
+    label: SL(direcao === "mensalParaAnual" ? "Taxa mensal" : "Taxa anual"),
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
@@ -22640,7 +23012,7 @@ function SimConversaoTaxa() {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: direcao === "mensalParaAnual" ? "Taxa anual equivalente" : "Taxa mensal equivalente",
+    label: SL(direcao === "mensalParaAnual" ? "Taxa anual equivalente" : "Taxa mensal equivalente"),
     value: (resultado * 100).toFixed(3) + "%",
     big: true,
     tone: "emerald"
@@ -22659,33 +23031,33 @@ function SimRendimentoPoupanca() {
   const montante = c * Math.pow(1 + im, n);
   const rendimento = montante - c;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Valor poupado",
+    label: SL("Valor poupado"),
     value: capital,
     onChange: setCapital,
-    suffix: "Kz"
+    suffix: CURRENT_CURRENCY_CODE
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Taxa de juro anual",
+    label: SL("Taxa de juro anual"),
     value: taxaAnual,
     onChange: setTaxaAnual,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Prazo",
+    label: SL("Prazo"),
     value: meses,
     onChange: setMeses,
-    suffix: "meses"
+    suffix: SL("meses")
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Taxa mensal equivalente",
+    label: SL("Taxa mensal equivalente"),
     value: (im * 100).toFixed(3) + "%"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Rendimento no período",
+    label: SL("Rendimento no período"),
     value: fmt(rendimento),
     tone: "gold"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Saldo final",
+    label: SL("Saldo final"),
     value: fmt(montante),
     big: true,
     tone: "emerald"
@@ -22702,19 +23074,19 @@ function SimPorcentagem() {
   let resultado, label;
   if (modo === "quantoE") {
     resultado = fmt(vb * va / 100);
-    label = `${va}% de ${fmt(vb)}`;
+    label = CURRENT_LANG === "en" ? `${va}% of ${fmt(vb)}` : `${va}% de ${fmt(vb)}`;
   } else if (modo === "queQuota") {
     resultado = (vb === 0 ? 0 : va / vb * 100).toFixed(2) + "%";
-    label = `${fmt(va)} em relação a ${fmt(vb)}`;
+    label = CURRENT_LANG === "en" ? `${fmt(va)} relative to ${fmt(vb)}` : `${fmt(va)} em relação a ${fmt(vb)}`;
   } else if (modo === "aumentar") {
     resultado = fmt(vb * (1 + va / 100));
-    label = `${fmt(vb)} aumentado em ${va}%`;
+    label = CURRENT_LANG === "en" ? `${fmt(vb)} increased by ${va}%` : `${fmt(vb)} aumentado em ${va}%`;
   } else {
     resultado = fmt(vb * (1 - va / 100));
-    label = `${fmt(vb)} reduzido em ${va}%`;
+    label = CURRENT_LANG === "en" ? `${fmt(vb)} decreased by ${va}%` : `${fmt(vb)} reduzido em ${va}%`;
   }
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(Field, {
-    label: "O que pretende calcular?"
+    label: SL("O que pretende calcular?")
   }, /*#__PURE__*/React.createElement("select", {
     value: modo,
     onChange: e => setModo(e.target.value),
@@ -22724,22 +23096,22 @@ function SimPorcentagem() {
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: "quantoE"
-  }, "Quanto é X% de Y"), /*#__PURE__*/React.createElement("option", {
+  }, SL("Quanto é X% de Y")), /*#__PURE__*/React.createElement("option", {
     value: "queQuota"
-  }, "X é que percentagem de Y"), /*#__PURE__*/React.createElement("option", {
+  }, SL("X é que percentagem de Y")), /*#__PURE__*/React.createElement("option", {
     value: "aumentar"
-  }, "Aumentar Y em X%"), /*#__PURE__*/React.createElement("option", {
+  }, SL("Aumentar Y em X%")), /*#__PURE__*/React.createElement("option", {
     value: "diminuir"
-  }, "Diminuir Y em X%"))), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: modo === "queQuota" ? "Valor X" : "Percentagem X",
+  }, SL("Diminuir Y em X%")))), /*#__PURE__*/React.createElement(SimNumberField, {
+    label: SL(modo === "queQuota" ? "Valor X" : "Percentagem X"),
     value: a,
     onChange: setA,
-    suffix: modo === "queQuota" ? "Kz" : "%"
+    suffix: modo === "queQuota" ? CURRENT_CURRENCY_CODE : "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Valor Y",
+    label: SL("Valor Y"),
     value: b,
     onChange: setB,
-    suffix: "Kz"
+    suffix: CURRENT_CURRENCY_CODE
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6
@@ -22751,7 +23123,7 @@ function SimPorcentagem() {
       margin: "0 0 4px"
     }
   }, label), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Resultado",
+    label: SL("Resultado"),
     value: resultado,
     big: true,
     tone: "emerald"
@@ -22773,7 +23145,7 @@ function SimRegraTres() {
       color: "var(--slate)",
       margin: 0
     }
-  }, "A está para B assim como C está para X"), /*#__PURE__*/React.createElement("div", {
+  }, SL("A está para B assim como C está para X")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -22796,7 +23168,7 @@ function SimRegraTres() {
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
     label: "X",
-    value: x.toLocaleString("pt-PT", {
+    value: x.toLocaleString(CURRENT_LANG === "en" ? "en-GB" : "pt-PT", {
       maximumFractionDigits: 4
     }),
     big: true,
@@ -22812,7 +23184,7 @@ function SimContadorDias() {
   const d2 = new Date(fim + "T00:00:00");
   const dias = Math.round((d2 - d1) / 86400000);
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Data inicial"
+    label: SL("Data inicial")
   }, /*#__PURE__*/React.createElement("input", {
     type: "date",
     value: inicio,
@@ -22822,7 +23194,7 @@ function SimContadorDias() {
       width: "100%"
     }
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Data final"
+    label: SL("Data final")
   }, /*#__PURE__*/React.createElement("input", {
     type: "date",
     value: fim,
@@ -22836,15 +23208,15 @@ function SimContadorDias() {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Dias corridos",
-    value: `${dias} dia${Math.abs(dias) === 1 ? "" : "s"}`,
+    label: SL("Dias corridos"),
+    value: SLdia(dias),
     big: true,
     tone: "emerald"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Semanas (aprox.)",
+    label: SL("Semanas (aprox.)"),
     value: (dias / 7).toFixed(1)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Meses (aprox.)",
+    label: SL("Meses (aprox.)"),
     value: (dias / 30.44).toFixed(1)
   })));
 }
@@ -22856,7 +23228,7 @@ function SimDiasFaltam() {
   const d2 = new Date(alvo + "T00:00:00");
   const dias = Math.round((d2 - hoje) / 86400000);
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Data alvo"
+    label: SL("Data alvo")
   }, /*#__PURE__*/React.createElement("input", {
     type: "date",
     value: alvo,
@@ -22870,8 +23242,8 @@ function SimDiasFaltam() {
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: dias >= 0 ? "Dias que faltam" : "Dias já passados",
-    value: `${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"}`,
+    label: SL(dias >= 0 ? "Dias que faltam" : "Dias já passados"),
+    value: SLdia(Math.abs(dias)),
     big: true,
     tone: dias >= 0 ? "emerald" : "rust"
   })));
@@ -22977,30 +23349,30 @@ function SimEmprestimo({
   const taeg = taegAnualEstimada(valorLiquido, pmt + (n > 0 ? impostoTotal / n : 0), n);
   const rend = Number(rendimento) || 0;
   const taxaEsforco = rend > 0 ? pmt / rend * 100 : null;
-  const taegLabel = cc === "GB" ? "APR estimada" : "TAEG estimada";
+  const taegLabel = SL("TAEG estimada");
   const currency = cfg.currency;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Valor do crédito",
+    label: SL("Valor do crédito"),
     value: valor,
     onChange: setValor,
     suffix: currency
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: cc === "GB" ? "Taxa de juro anual (fixa)" : "TAN — Taxa Anual Nominal",
+    label: SL(cc === "GB" ? "Taxa de juro anual (fixa)" : "TAN — Taxa Anual Nominal"),
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Comissão de abertura",
+    label: SL("Comissão de abertura"),
     value: comissao,
     onChange: setComissao,
     suffix: currency
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Prazo",
+    label: SL("Prazo"),
     value: prazo,
     onChange: setPrazo,
-    suffix: "meses"
+    suffix: SL("meses")
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Rendimento líquido mensal (opcional)",
+    label: SL("Rendimento líquido mensal (opcional)"),
     value: rendimento,
     onChange: setRendimento,
     suffix: currency
@@ -23009,7 +23381,7 @@ function SimEmprestimo({
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Prestação mensal (capital + juros)",
+    label: SL("Prestação mensal (capital + juros)"),
     value: fmt(pmt, currency),
     big: true,
     tone: "emerald"
@@ -23018,7 +23390,7 @@ function SimEmprestimo({
     label: l.label,
     value: fmt(l.value, currency)
   })), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Valor líquido a receber",
+    label: SL("Valor líquido a receber"),
     value: fmt(valorLiquido, currency),
     tone: "gold"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
@@ -23027,12 +23399,12 @@ function SimEmprestimo({
     big: true,
     tone: "emerald"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Custo total do crédito",
+    label: SL("Custo total do crédito"),
     value: fmt(custoTotalCredito, currency),
     tone: "rust"
   }), taxaEsforco !== null && /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Taxa de esforço",
-    value: cfg.esforcoLimite ? `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= cfg.esforcoLimite ? "(dentro do limite)" : `(acima de ${cfg.esforcoLimite}%)`}` : `${taxaEsforco.toFixed(1)}%`,
+    label: SL("Taxa de esforço"),
+    value: cfg.esforcoLimite ? `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= cfg.esforcoLimite ? SL("(dentro do limite)") : `(${SL("acima de")} ${cfg.esforcoLimite}%)`}` : `${taxaEsforco.toFixed(1)}%`,
     tone: !cfg.esforcoLimite ? "ink" : taxaEsforco <= cfg.esforcoLimite ? "emerald" : "rust"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
@@ -23040,7 +23412,7 @@ function SimEmprestimo({
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, cc === "AO" && "Segue as regras praticadas pela banca angolana (ex. BFA — Crédito Pessoal/Solução): sistema de prestações constantes, Imposto de Selo (0,1% sobre o montante financiado, 0,7% sobre a comissão, 0,2% sobre os juros) e taxa de esforço máxima habitual de 35%. Valores indicativos — consulte a Ficha Técnica Informativa do seu banco.", cc === "PT" && "Imposto do Selo sobre crédito ao consumo (Verba 17 da Tabela Geral): 0,141% por mês para prazos inferiores a 1 ano, ou 1,76% para prazos de 1 ano ou mais, mais 4% sobre juros e comissões. Estimativa simplificada — consulte a Ficha de Informação Normalizada (FIN) do seu banco.", cc === "BR" && "IOF sobre crédito pessoa física: alíquota fixa de 0,38% + 0,0082% ao dia (máximo 365 dias / 3% ao ano), incidente sobre o montante financiado. Não substitui o Custo Efetivo Total (CET) divulgado pela instituição financeira, que pode incluir outras tarifas.", cc === "GB" && "Modelo de empréstimo pessoal no Reino Unido: não existe um imposto equivalente ao Imposto de Selo sobre crédito ao consumo; o custo do crédito reflete-se na Representative APR. Estimativa simplificada — a taxa real depende do perfil de crédito (\"personalised APR\")."));
+  }, cc === "AO" && "Segue as regras praticadas pela banca angolana (ex. BFA — Crédito Pessoal/Solução): sistema de prestações constantes, Imposto de Selo (0,1% sobre o montante financiado, 0,7% sobre a comissão, 0,2% sobre os juros) e taxa de esforço máxima habitual de 35%. Valores indicativos — consulte a Ficha Técnica Informativa do seu banco.", cc === "PT" && "Imposto do Selo sobre crédito ao consumo (Verba 17 da Tabela Geral): 0,141% por mês para prazos inferiores a 1 ano, ou 1,76% para prazos de 1 ano ou mais, mais 4% sobre juros e comissões. Estimativa simplificada — consulte a Ficha de Informação Normalizada (FIN) do seu banco.", cc === "BR" && "IOF sobre crédito pessoa física: alíquota fixa de 0,38% + 0,0082% ao dia (máximo 365 dias / 3% ao ano), incidente sobre o montante financiado. Não substitui o Custo Efetivo Total (CET) divulgado pela instituição financeira, que pode incluir outras tarifas.", cc === "GB" && SL("Modelo de empréstimo pessoal no Reino Unido: não existe um imposto equivalente ao Imposto de Selo sobre crédito ao consumo; o custo do crédito reflete-se na Representative APR. Estimativa simplificada — a taxa real depende do perfil de crédito (\"personalised APR\").")));
 }
 const FINANCING_CONFIG_BY_COUNTRY = {
   AO: {
@@ -23112,35 +23484,35 @@ function SimFinanciamento({
   const taeg = taegAnualEstimada(financiado - isMontante, renda, n, valorResidual);
   const rend = Number(rendimento) || 0;
   const taxaEsforco = rend > 0 ? renda / rend * 100 : null;
-  const taegLabel = cc === "GB" ? "APR estimada" : "TAEG estimada";
+  const taegLabel = SL("TAEG estimada");
   const currency = cfg.currency;
   return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Valor da viatura / bem",
+    label: SL("Valor da viatura / bem"),
     value: valorBem,
     onChange: setValorBem,
     suffix: currency
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Entrada (comparticipação)",
+    label: SL("Entrada (comparticipação)"),
     value: entradaPct,
     onChange: setEntradaPct,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Valor residual",
+    label: SL("Valor residual"),
     value: residualPct,
     onChange: setResidualPct,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: cc === "GB" ? "Taxa de juro anual (fixa)" : "TAN — Taxa Anual Nominal",
+    label: SL(cc === "GB" ? "Taxa de juro anual (fixa)" : "TAN — Taxa Anual Nominal"),
     value: taxa,
     onChange: setTaxa,
     suffix: "%"
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Prazo",
+    label: SL("Prazo"),
     value: prazo,
     onChange: setPrazo,
-    suffix: "meses"
+    suffix: SL("meses")
   }), /*#__PURE__*/React.createElement(SimNumberField, {
-    label: "Rendimento líquido mensal (opcional)",
+    label: SL("Rendimento líquido mensal (opcional)"),
     value: rendimento,
     onChange: setRendimento,
     suffix: currency
@@ -23149,32 +23521,32 @@ function SimFinanciamento({
       marginTop: 6
     }
   }, /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Valor de entrada",
+    label: SL("Valor de entrada"),
     value: fmt(entrada, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Montante financiado",
+    label: SL("Montante financiado"),
     value: fmt(financiado, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Valor residual (opção de compra final)",
+    label: SL("Valor residual (opção de compra final)"),
     value: fmt(valorResidual, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Renda mensal",
+    label: SL("Renda mensal"),
     value: fmt(renda, currency),
     big: true,
     tone: "emerald"
   }), cfg.isRate > 0 && /*#__PURE__*/React.createElement(SimResultRow, {
-    label: `Imposto de Selo sobre o montante (${(cfg.isRate * 100).toFixed(3).replace(/0+$/, "").replace(/\.$/, "")}%)`,
+    label: `${SL("Imposto de Selo sobre o montante")} (${(cfg.isRate * 100).toFixed(3).replace(/0+$/, "").replace(/\.$/, "")}%)`,
     value: fmt(isMontante, currency)
   }), /*#__PURE__*/React.createElement(SimResultRow, {
     label: taegLabel,
     value: (taeg * 100).toFixed(2) + "%"
   }), /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Total de juros",
+    label: SL("Total de juros"),
     value: fmt(jurosTotais, currency),
     tone: "gold"
   }), taxaEsforco !== null && /*#__PURE__*/React.createElement(SimResultRow, {
-    label: "Taxa de esforço",
-    value: cfg.esforcoLimite ? `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= cfg.esforcoLimite ? "(dentro do limite)" : `(acima de ${cfg.esforcoLimite}%)`}` : `${taxaEsforco.toFixed(1)}%`,
+    label: SL("Taxa de esforço"),
+    value: cfg.esforcoLimite ? `${taxaEsforco.toFixed(1)}% ${taxaEsforco <= cfg.esforcoLimite ? SL("(dentro do limite)") : `(${SL("acima de")} ${cfg.esforcoLimite}%)`}` : `${taxaEsforco.toFixed(1)}%`,
     tone: !cfg.esforcoLimite ? "ink" : taxaEsforco <= cfg.esforcoLimite ? "emerald" : "rust"
   })), /*#__PURE__*/React.createElement("p", {
     style: {
@@ -23182,7 +23554,7 @@ function SimFinanciamento({
       color: "var(--slate)",
       margin: "6px 0 0"
     }
-  }, cc === "AO" && "Modelo de Leasing Automóvel praticado pela banca angolana (ex. BAI): financia normalmente 70%-90% do valor do bem, prazos até 50 meses, valor residual pago no final para exercer a opção de compra, e taxa de esforço máxima habitual de 35%.", cc === "PT" && "Modelo de Locação Financeira / ALD automóvel: valor residual pago (ou renovado) no final do contrato, com Imposto do Selo de 1,76% sobre o montante financiado (Verba 17). Estimativa simplificada — consulte a Ficha de Informação Normalizada (FIN) do seu banco ou sociedade de locação financeira.", cc === "BR" && "Financiamento de veículo (CDC — Crédito Direto ao Consumidor): normalmente sem valor residual (pode definir 0%); ajuste o campo se estiver a simular um consórcio ou arrendamento mercantil com balão. Sujeito a IOF sobre o crédito, não incluído nesta estimativa — consulte o Custo Efetivo Total (CET) do seu banco.", cc === "GB" && "Modelo PCP (Personal Contract Purchase): entrada inicial, rendas mensais mais baixas por excluírem o valor residual (\"balloon/optional final payment\"), pago apenas se decidir ficar com o veículo no final. Não existe imposto equivalente ao Imposto de Selo neste tipo de crédito no Reino Unido."));
+  }, cc === "AO" && "Modelo de Leasing Automóvel praticado pela banca angolana (ex. BAI): financia normalmente 70%-90% do valor do bem, prazos até 50 meses, valor residual pago no final para exercer a opção de compra, e taxa de esforço máxima habitual de 35%.", cc === "PT" && "Modelo de Locação Financeira / ALD automóvel: valor residual pago (ou renovado) no final do contrato, com Imposto do Selo de 1,76% sobre o montante financiado (Verba 17). Estimativa simplificada — consulte a Ficha de Informação Normalizada (FIN) do seu banco ou sociedade de locação financeira.", cc === "BR" && "Financiamento de veículo (CDC — Crédito Direto ao Consumidor): normalmente sem valor residual (pode definir 0%); ajuste o campo se estiver a simular um consórcio ou arrendamento mercantil com balão. Sujeito a IOF sobre o crédito, não incluído nesta estimativa — consulte o Custo Efetivo Total (CET) do seu banco.", cc === "GB" && SL("Modelo PCP (Personal Contract Purchase): entrada inicial, rendas mensais mais baixas por excluírem o valor residual (\"balloon/optional final payment\"), pago apenas se decidir ficar com o veículo no final. Não existe imposto equivalente ao Imposto de Selo neste tipo de crédito no Reino Unido.")));
 }
 const SIM_COMPONENTS = {
   irt: SimIRT,
@@ -26728,8 +27100,8 @@ function CategoryManagerModal({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover categoria",
-    "aria-label": "Remover categoria"
+    title: translate(CURRENT_LANG, "ui", "remove_category"),
+    "aria-label": translate(CURRENT_LANG, "ui", "remove_category")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 14
   })))))), /*#__PURE__*/React.createElement("div", {
@@ -27015,7 +27387,7 @@ function ShortcutsManagerModal({
       cursor: "pointer",
       padding: 4
     },
-    title: "Editar"
+    title: translate(CURRENT_LANG, "ui", "edit")
   }, /*#__PURE__*/React.createElement(IconPencil, {
     size: 14
   })), /*#__PURE__*/React.createElement("button", {
@@ -27027,7 +27399,7 @@ function ShortcutsManagerModal({
       cursor: "pointer",
       padding: 4
     },
-    title: "Remover"
+    title: translate(CURRENT_LANG, "ui", "remove")
   }, /*#__PURE__*/React.createElement(IconTrash, {
     size: 14
   }))))), /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -27071,7 +27443,7 @@ function ShortcutFormModal({
     });
   }
   return /*#__PURE__*/React.createElement(Modal, {
-    title: isEditing ? "Editar atalho" : "Novo atalho",
+    title: translate(CURRENT_LANG, "ui", isEditing ? "edit_shortcut" : "new_shortcut"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -27102,7 +27474,7 @@ function ShortcutFormModal({
     style: inputStyle,
     value: name,
     onChange: e => setName(e.target.value),
-    placeholder: "ex: Combustível, Mercado"
+    placeholder: translate(CURRENT_LANG, "ui", "expense_shortcut_placeholder")
   }))), /*#__PURE__*/React.createElement(Field, {
     label: "Categoria"
   }, /*#__PURE__*/React.createElement("select", {
