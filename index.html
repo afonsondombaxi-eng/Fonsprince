@@ -131,7 +131,57 @@ const {
   useRef
 } = React;
 
+/*
+ * TABLE OF CONTENTS
+ * ------------------------------------------------------------
+ * 1. ICONS
+ * 2. CONSTANTS & CONFIG (styles, currencies, categories, tax brackets)
+ * 3. UTILITY & FORMATTING HELPERS (parsing, dates, receipt OCR, timeline)
+ * 4. ACCOUNTS, DEBTS & CREDIT CARD CALCULATIONS
+ * 5. INVESTMENTS CALCULATIONS (bonds, equities, funds, portfolio)
+ * 6. RECURRING EXPENSES HELPERS
+ * 7. CURRENCY & EXCHANGE RATE LOGIC
+ * 8. CASH FLOW FORECAST
+ * 9. REPORTS & DATA EXPORT
+ * 10. GOALS & NET WORTH
+ * 11. FINANCIAL HEALTH SCORE
+ * 12. DEBT PAYOFF SIMULATION & ALERTS
+ * 13. LOCAL NOTIFICATIONS
+ * 14. CLOUD SYNC & AUTHENTICATION (Firebase)
+ * 15. NOTIFICATION DEDUP & DUE-SOON CHECKS
+ * 16. PERSISTENCE (STORAGE)
+ * 17. INTERNATIONALIZATION (i18n)
+ * 18. NAVIGATION CONFIG
+ * 19. SHARED UI PRIMITIVES
+ * 20. BIOMETRIC AUTH & LOCK SCREEN
+ * 21. UI PRIMITIVES — BUTTONS & CHARTS
+ * 22. MAIN APP COMPONENT (FinanceApp)
+ * 23. OVERVIEW / COCKPIT (helpers, cards, charts page)
+ * 24. ACCOUNTS TAB
+ * 25. TRANSACTIONS TAB (list, timeline, mobile cards, CSV import, transfers)
+ * 26. EXCHANGE TAB
+ * 27. PLANNING & ALERTS TABS
+ * 28. INVESTMENTS TAB (bonds, equities, funds, calendar, indicators)
+ * 29. EXPORTS TAB
+ * 30. KPIS TAB
+ * 31. SIMULATORS TAB
+ * 32. SETTINGS TAB
+ * 33. PRIVACY POLICY PAGE
+ * 34. REPORT TAB
+ * 35. FORECAST TAB
+ * 36. BUDGET TAB
+ * 37. GOALS TAB
+ * 38. DEBTS & CREDIT CARDS TAB
+ * 39. SHARED MODALS (recurring, categories, shortcuts, goals)
+ * 40. MOUNT / RENDER
+ */
+
 /* ---------------- inline icon set ---------------- */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 40: ICONS
+// ══════════════════════════════════════════════════════════════════════
+
 function Icon({
   children,
   size = 16
@@ -841,6 +891,11 @@ const IconShieldCheck = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE
 }));
 
 /* ---------------- data ---------------- */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 39: CONSTANTS & CONFIG (styles, currencies, categories, tax brackets)
+// ══════════════════════════════════════════════════════════════════════
+
 const LOGO_DATA_URI = "data:image/png;base64,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";
 const BANKS = ["BAI — Banco Angolano de Investimentos", "BFA — Banco de Fomento Angola", "BIC — Banco BIC", "Millennium Atlântico", "Standard Bank Angola", "Banco Sol", "Access Bank Angola", "Banco Económico", "Banco Keve", "Outro"];
 const CURRENCIES = ["Kz", "USD", "EUR", "ZAR", "GBP"];
@@ -981,6 +1036,11 @@ function goalCategoryIcon(cat) {
 const INCOME_TYPES = ["Salário", "Freelance / Trabalho extra", "Rendas", "Dividendos / Investimentos", "Negócio próprio", "Outro"];
 const DEBT_TYPES = ["A pagar", "A receber"];
 const DEBT_CATEGORIES = ["Empréstimo pessoal", "Cartão de crédito", "Financiamento / Crédito habitação", "Crédito automóvel", "Empréstimo a terceiros", "Fatura / Conta a pagar", "Outro"];
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 38: UTILITY & FORMATTING HELPERS (parsing, dates, receipt OCR, timeline)
+// ══════════════════════════════════════════════════════════════════════
+
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
@@ -1381,6 +1441,11 @@ function timelineNodeInfo(t, accounts) {
     currency
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 37: ACCOUNTS, DEBTS & CREDIT CARD CALCULATIONS
+// ══════════════════════════════════════════════════════════════════════
+
 function monthlyHistory(transactions, count) {
   count = count || 6;
   const now = new Date();
@@ -1412,7 +1477,9 @@ function memberMonthlyHistory(transactions, count) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(d.toISOString().slice(0, 7));
   }
-  const members = Array.from(new Set(transactions.map(t => t.member).filter(Boolean))).sort();
+  // Defensive: trim on read even though values now come from a managed, deduplicated
+  // list — protects against any stray whitespace slipping in (e.g. old imported data).
+  const members = Array.from(new Set(transactions.map(t => (t.member || "").trim()).filter(Boolean))).sort();
   const rows = months.map(m => {
     const label = new Date(m + "-02").toLocaleDateString("pt-PT", {
       month: "short"
@@ -1420,8 +1487,9 @@ function memberMonthlyHistory(transactions, count) {
     const byMember = {};
     for (const member of members) byMember[member] = 0;
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === m) {
-        byMember[t.member] = (byMember[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === m) {
+        byMember[member] = (byMember[member] || 0) + Number(t.amount);
       }
     }
     return {
@@ -1596,6 +1664,11 @@ function creditCardDueDateForCycle(card, cycleMonth) {
   }
   return `${dueMonth}-${dueDay}`;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 36: INVESTMENTS CALCULATIONS (bonds, equities, funds, portfolio)
+// ══════════════════════════════════════════════════════════════════════
+
 const BOND_TYPES = ["OT-NR", "OT-TXC", "OT-ME", "Obrigação Corporativa"];
 function addMonthsClampedDate(date, months) {
   const day = date.getDate();
@@ -1905,6 +1978,11 @@ function portfolioIndicators(bonds, equities, funds, taxaLivreRisco, taxaInflaca
     totals
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 35: RECURRING EXPENSES HELPERS
+// ══════════════════════════════════════════════════════════════════════
+
 function recurringDueDateForMonth(rec, month) {
   const day = String(rec.dueDay).padStart(2, "0");
   return `${month}-${day}`;
@@ -1956,6 +2034,11 @@ function detectRecurringCandidates(transactions, recurringExpenses) {
   candidates.sort((a, b) => b.monthsSeen - a.monthsSeen || b.avgAmount - a.avgAmount);
   return candidates.slice(0, 3);
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 34: CURRENCY & EXCHANGE RATE LOGIC
+// ══════════════════════════════════════════════════════════════════════
+
 function toKz(amount, currency, rates) {
   if (currency === "Kz") return Number(amount);
   if (currency === "USD") return rates.usdRate ? Number(amount) * Number(rates.usdRate) : null;
@@ -2012,6 +2095,11 @@ async function fetchBnaRates() {
     throw e;
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 33: CASH FLOW FORECAST
+// ══════════════════════════════════════════════════════════════════════
+
 function monthlyFixedTotal(recurringExpenses) {
   return recurringExpenses.reduce((s, r) => s + Number(r.amount), 0);
 }
@@ -2068,6 +2156,11 @@ function monthLabelFull(month) {
   });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 32: REPORTS & DATA EXPORT
+// ══════════════════════════════════════════════════════════════════════
+
 function buildReportHtml(data) {
   const {
     lang,
@@ -2171,6 +2264,11 @@ function monthsUntil(dateStr) {
   if (target.getDate() < now.getDate()) months -= 1;
   return Math.max(months, 0);
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 31: GOALS & NET WORTH
+// ══════════════════════════════════════════════════════════════════════
+
 function goalMonthlySavingsNeeded(goal) {
   const remaining = Number(goal.target) - Number(goal.current);
   if (remaining <= 0) return 0;
@@ -2216,6 +2314,11 @@ function netWorthProjection(current, netPerMonth) {
     tenYear: current + netPerMonth * 120
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 30: FINANCIAL HEALTH SCORE
+// ══════════════════════════════════════════════════════════════════════
+
 function financialHealthMetrics(opts) {
   const {
     expectedIncome,
@@ -2338,6 +2441,11 @@ function computeHealthScoreForApp(opts) {
     patrimonioTrendPct
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 29: DEBT PAYOFF SIMULATION & ALERTS
+// ══════════════════════════════════════════════════════════════════════
+
 function simulateDebtPayoff(debts, debtPayments, monthlyBudget, strategy) {
   let items = debts.filter(d => d.type === "A pagar").map(d => ({
     id: d.id,
@@ -2494,11 +2602,13 @@ function buildAlerts(opts) {
   if (memberLimits) {
     const memberSpend = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
-        memberSpend[t.member] = (memberSpend[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === month) {
+        memberSpend[member] = (memberSpend[member] || 0) + Number(t.amount);
       }
     }
-    for (const [member, limitRaw] of Object.entries(memberLimits)) {
+    for (const [memberRaw, limitRaw] of Object.entries(memberLimits)) {
+      const member = memberRaw.trim();
       const limit = Number(limitRaw) || 0;
       const spent = memberSpend[member] || 0;
       if (limit > 0 && spent > limit) {
@@ -2543,6 +2653,11 @@ function buildAlerts(opts) {
   }
   return alerts;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 28: LOCAL NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════════════
+
 function isNotificationSupported() {
   return typeof window !== "undefined" && "Notification" in window;
 }
@@ -2579,6 +2694,11 @@ async function registerPeriodicSync() {
    ative "Authentication" (método Email/Password) e "Firestore Database",
    depois substitua os valores de FIREBASE_CONFIG pelos da sua app
    (Definições do projeto → Geral → As suas apps → Configuração do SDK). */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 27: CLOUD SYNC & AUTHENTICATION (Firebase)
+// ══════════════════════════════════════════════════════════════════════
+
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyD-CWvH5-0b0XTuuoRF_SLwDvtfUTUjCDM",
   authDomain: "fonsprince-one.firebaseapp.com",
@@ -2701,6 +2821,11 @@ function cloudErrorMessage(err) {
   };
   return map[code] || `Não foi possível concluir a operação${code ? ` (código: ${code})` : ""}. Tente novamente.`;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 26: NOTIFICATION DEDUP & DUE-SOON CHECKS
+// ══════════════════════════════════════════════════════════════════════
+
 function getNotifiedTodaySet() {
   try {
     const raw = localStorage.getItem("ledger:notified-today");
@@ -2881,6 +3006,11 @@ function checkDueSoonAndNotify(opts) {
 }
 
 /* ---------------- local storage ---------------- */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 25: PERSISTENCE (STORAGE)
+// ══════════════════════════════════════════════════════════════════════
+
 const STORE_PREFIX = "ledger:";
 function loadKey(key, fallback) {
   try {
@@ -2902,6 +3032,11 @@ function saveKey(key, value) {
    navegação, títulos/subtítulos de página e o seletor de idioma. O resto
    do texto (formulários, relatórios, etc.) permanece em Português por agora
    e será traduzido em fases seguintes. */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 24: INTERNATIONALIZATION (i18n)
+// ══════════════════════════════════════════════════════════════════════
+
 const SUPPORTED_LANGS = ["pt", "en", "fr", "es"];
 const TRANSLATIONS = {
   pt: {
@@ -3213,6 +3348,22 @@ const TRANSLATIONS = {
       received_this_month_prefix: "Recebido este mês:",
       member_budget_title: "Orçamento por membro",
       member_budget_subtitle: "Defina um limite mensal de despesa por pessoa da família, com base na etiqueta de membro que usa em cada movimento."
+    },
+    members: {
+      manage_members: "Gerir membros",
+      manage_members_intro: "Os membros da família são escolhidos numa lista, para evitar que o mesmo membro apareça duas vezes por causa de maiúsculas ou espaços a mais.",
+      member_name_placeholder: "Nome do membro",
+      add_member: "Adicionar",
+      your_members: "Os seus membros",
+      no_members_yet: "Ainda não criou nenhum membro.",
+      none_option: "Nenhum",
+      rename: "Renomear membro",
+      remove_member: "Remover membro",
+      save: "Guardar",
+      cancel: "Cancelar",
+      duplicate_error: "Já existe um membro com esse nome.",
+      delete_blocked: "Este membro tem movimentos associados e não pode ser removido. Renomeie-o em vez disso, ou edite esses movimentos primeiro.",
+      delete_confirm: "Remover o membro \"{member}\"?"
     },
     goals: {
       new_goal: "Nova meta",
@@ -3884,6 +4035,22 @@ const TRANSLATIONS = {
       member_budget_title: "Budget by member",
       member_budget_subtitle: "Set a monthly expense limit per family member, based on the member label used on each transaction."
     },
+    members: {
+      manage_members: "Manage members",
+      manage_members_intro: "Family members are chosen from a list, so the same member never shows up twice because of capitalization or extra spaces.",
+      member_name_placeholder: "Member name",
+      add_member: "Add",
+      your_members: "Your members",
+      no_members_yet: "You haven't created any members yet.",
+      none_option: "None",
+      rename: "Rename member",
+      remove_member: "Remove member",
+      save: "Save",
+      cancel: "Cancel",
+      duplicate_error: "A member with that name already exists.",
+      delete_blocked: "This member has transactions and can't be removed. Rename it instead, or edit those transactions first.",
+      delete_confirm: "Remove member \"{member}\"?"
+    },
     goals: {
       new_goal: "New goal",
       no_goals: "You haven't created any savings goal yet.",
@@ -4553,6 +4720,22 @@ const TRANSLATIONS = {
       received_this_month_prefix: "Reçu ce mois-ci :",
       member_budget_title: "Budget par membre",
       member_budget_subtitle: "Définissez une limite de dépense mensuelle par membre de la famille, selon l'étiquette de membre utilisée sur chaque mouvement."
+    },
+    members: {
+      manage_members: "Gérer les membres",
+      manage_members_intro: "Les membres de la famille sont choisis dans une liste, pour éviter que le même membre apparaisse deux fois à cause de majuscules ou d'espaces en trop.",
+      member_name_placeholder: "Nom du membre",
+      add_member: "Ajouter",
+      your_members: "Vos membres",
+      no_members_yet: "Vous n'avez encore créé aucun membre.",
+      none_option: "Aucun",
+      rename: "Renommer le membre",
+      remove_member: "Supprimer le membre",
+      save: "Enregistrer",
+      cancel: "Annuler",
+      duplicate_error: "Un membre avec ce nom existe déjà.",
+      delete_blocked: "Ce membre a des mouvements associés et ne peut pas être supprimé. Renommez-le plutôt, ou modifiez d'abord ces mouvements.",
+      delete_confirm: "Supprimer le membre « {member} » ?"
     },
     goals: {
       new_goal: "Nouvel objectif",
@@ -5224,6 +5407,22 @@ const TRANSLATIONS = {
       member_budget_title: "Presupuesto por miembro",
       member_budget_subtitle: "Defina un límite mensual de gasto por miembro de la familia, según la etiqueta de miembro usada en cada movimiento."
     },
+    members: {
+      manage_members: "Gestionar miembros",
+      manage_members_intro: "Los miembros de la familia se eligen de una lista, para que el mismo miembro nunca aparezca dos veces por mayúsculas o espacios de más.",
+      member_name_placeholder: "Nombre del miembro",
+      add_member: "Añadir",
+      your_members: "Sus miembros",
+      no_members_yet: "Aún no ha creado ningún miembro.",
+      none_option: "Ninguno",
+      rename: "Renombrar miembro",
+      remove_member: "Eliminar miembro",
+      save: "Guardar",
+      cancel: "Cancelar",
+      duplicate_error: "Ya existe un miembro con ese nombre.",
+      delete_blocked: "Este miembro tiene movimientos asociados y no se puede eliminar. Renómbrelo o edite antes esos movimientos.",
+      delete_confirm: "¿Eliminar al miembro \"{member}\"?"
+    },
     goals: {
       new_goal: "Nueva meta",
       no_goals: "Aún no ha creado ninguna meta de ahorro.",
@@ -5602,6 +5801,11 @@ function quickFilterLabel(f, lang) {
 
 /* Catálogo central de separadores navegáveis — usado para construir as
    secções "Favoritos" e "Mais usados" a partir dos IDs guardados. */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 23: NAVIGATION CONFIG
+// ══════════════════════════════════════════════════════════════════════
+
 const ALL_NAV_TABS = [{
   id: "overview",
   label: "Visão Geral",
@@ -5681,6 +5885,11 @@ const ALL_NAV_TABS = [{
 }];
 
 /* ---------------- UI atoms ---------------- */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 22: SHARED UI PRIMITIVES
+// ══════════════════════════════════════════════════════════════════════
+
 function NavItem({
   icon: IconC,
   label,
@@ -6306,6 +6515,10 @@ function Toast({
     info: {
       bg: "var(--ink)",
       icon: IconArrowUpRight
+    },
+    error: {
+      bg: "var(--rust)",
+      icon: IconAlertTriangle
     }
   }[toast.kind] || {
     bg: "var(--ink)",
@@ -6609,6 +6822,11 @@ function ConfirmDialog({
     }
   }, "Remover"))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 21: BIOMETRIC AUTH & LOCK SCREEN
+// ══════════════════════════════════════════════════════════════════════
+
 async function isBiometricAvailable() {
   if (!window.PublicKeyCredential || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
   try {
@@ -7411,6 +7629,11 @@ function VerifyEmailGate({
     }
   }, "Usar outra conta")));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 20: UI PRIMITIVES — BUTTONS & CHARTS
+// ══════════════════════════════════════════════════════════════════════
+
 function PrimaryButton({
   children,
   onClick,
@@ -7885,6 +8108,11 @@ function SplitBar({
 }
 
 /* ---------------- App ---------------- */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 19: MAIN APP COMPONENT (FinanceApp)
+// ══════════════════════════════════════════════════════════════════════
+
 function FinanceApp() {
   const [tab, setTab] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => loadKey("sidebar-collapsed", true));
@@ -8116,7 +8344,49 @@ function FinanceApp() {
     income: [],
     memberLimits: {}
   }));
-  const knownMembers = useMemo(() => Array.from(new Set([...transactions.map(t => t.member).filter(Boolean), ...Object.keys(budgetIncome.memberLimits || {})])).sort(), [transactions, budgetIncome.memberLimits]);
+  const [members, setMembers] = useState(() => loadKey("members", []));
+  const [membersMigrated, setMembersMigrated] = useState(() => loadKey("members-migrated", false));
+  const [showMembersManager, setShowMembersManager] = useState(false);
+  useEffect(() => {
+    // One-time migration: family members used to be free text on each transaction/card
+    // purchase, which allowed silent duplicates ("Afonso" vs "afonso" vs "Afonso ").
+    // Seed the managed list from every distinct value seen historically (trimmed,
+    // de-duplicated case-insensitively, keeping the first-seen casing) so no existing
+    // data becomes orphaned once inputs become <select> dropdowns.
+    if (membersMigrated) return;
+    const seen = new Map();
+    for (const t of transactions) {
+      if (!t.member) continue;
+      const trimmed = String(t.member).trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLowerCase();
+      if (!seen.has(key)) seen.set(key, trimmed);
+    }
+    for (const cp of cardPurchases) {
+      if (!cp.member) continue;
+      const trimmed = String(cp.member).trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLowerCase();
+      if (!seen.has(key)) seen.set(key, trimmed);
+    }
+    for (const m of Object.keys(budgetIncome.memberLimits || {})) {
+      const trimmed = String(m).trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLowerCase();
+      if (!seen.has(key)) seen.set(key, trimmed);
+    }
+    const discovered = Array.from(seen.values());
+    if (discovered.length > 0) {
+      setMembers(cur => {
+        const existingKeys = new Set(cur.map(m => m.toLowerCase()));
+        return [...cur, ...discovered.filter(m => !existingKeys.has(m.toLowerCase()))];
+      });
+    }
+    setMembersMigrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => saveKey("members", members), [members]);
+  useEffect(() => saveKey("members-migrated", membersMigrated), [membersMigrated]);
   const [goals, setGoals] = useState(() => loadKey("goals", []));
   const [debts, setDebts] = useState(() => loadKey("debts", []));
   const [debtPayments, setDebtPayments] = useState(() => loadKey("debt-payments", []));
@@ -8381,6 +8651,61 @@ function FinanceApp() {
         [member]: limit
       }
     }));
+  }
+  function addMember(name) {
+    const trimmed = (name || "").trim();
+    if (!trimmed) return false;
+    if (members.some(m => m.toLowerCase() === trimmed.toLowerCase())) return false;
+    setMembers(m => [...m, trimmed]);
+    return true;
+  }
+  function renameMember(oldName, newName) {
+    const trimmed = (newName || "").trim();
+    if (!trimmed || trimmed === oldName) return false;
+    if (members.some(m => m.toLowerCase() === trimmed.toLowerCase() && m.toLowerCase() !== oldName.toLowerCase())) return false;
+    setMembers(m => m.map(x => x === oldName ? trimmed : x));
+    setTransactions(ts => ts.map(t => (t.member || "").trim() === oldName ? {
+      ...t,
+      member: trimmed
+    } : t));
+    setCardPurchases(cs => cs.map(c => (c.member || "").trim() === oldName ? {
+      ...c,
+      member: trimmed
+    } : c));
+    setBudgetIncome(b => {
+      if (!b.memberLimits || !(oldName in b.memberLimits)) return b;
+      const {
+        [oldName]: val,
+        ...rest
+      } = b.memberLimits;
+      return {
+        ...b,
+        memberLimits: {
+          ...rest,
+          [trimmed]: val
+        }
+      };
+    });
+    return true;
+  }
+  function memberHasHistory(name) {
+    return transactions.some(t => (t.member || "").trim() === name) || cardPurchases.some(c => (c.member || "").trim() === name);
+  }
+  function removeMember(name) {
+    if (memberHasHistory(name)) return false;
+    setMembers(m => m.filter(x => x !== name));
+    setBudgetIncome(b => {
+      if (!b.memberLimits || !(name in b.memberLimits)) return b;
+      const {
+        [name]: _drop,
+        ...rest
+      } = b.memberLimits;
+      return {
+        ...b,
+        memberLimits: rest
+      };
+    });
+    return true;
   }
   function addIncome(inc) {
     setBudgetIncome(b => ({
@@ -8712,6 +9037,7 @@ function FinanceApp() {
       exchangeRates,
       expenseShortcuts,
       customCategories,
+      members,
       rateHistory,
       budgetRollovers,
       rolledOverKeys
@@ -8872,6 +9198,7 @@ function FinanceApp() {
     });
     setExpenseShortcuts(data.expenseShortcuts || []);
     setCustomCategories(data.customCategories || []);
+    setMembers(data.members || []);
     setRateHistory(data.rateHistory || []);
     setBudgetRollovers(data.budgetRollovers || {});
     setRolledOverKeys(data.rolledOverKeys || []);
@@ -8907,6 +9234,7 @@ function FinanceApp() {
     });
     setExpenseShortcuts(data.expenseShortcuts || []);
     setCustomCategories(data.customCategories || []);
+    setMembers(data.members || []);
     setRateHistory(data.rateHistory || []);
     setBudgetRollovers(data.budgetRollovers || {});
     setRolledOverKeys(data.rolledOverKeys || []);
@@ -9000,6 +9328,7 @@ function FinanceApp() {
           exchangeRates,
           expenseShortcuts,
           customCategories,
+          members,
           rateHistory,
           budgetRollovers,
           rolledOverKeys
@@ -9013,7 +9342,7 @@ function FinanceApp() {
     return () => {
       if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
     };
-  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, rateHistory, budgetRollovers, rolledOverKeys]);
+  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, members, rateHistory, budgetRollovers, rolledOverKeys]);
   function addShortcut(s) {
     setExpenseShortcuts(ss => [...ss, {
       ...s,
@@ -9887,7 +10216,9 @@ function FinanceApp() {
     expenseCategories: expenseCategories,
     onManageCategories: () => setShowCategoryManager(true),
     memberLimits: budgetIncome.memberLimits,
-    onSetMemberLimit: setMemberLimit
+    onSetMemberLimit: setMemberLimit,
+    members: members,
+    onManageMembers: () => setShowMembersManager(true)
   }), tab === "goals" && /*#__PURE__*/React.createElement(GoalsTab, {
     lang: lang,
     goals: goals,
@@ -10112,7 +10443,7 @@ function FinanceApp() {
     accounts: accounts,
     transactions: transactions,
     expenseCategories: expenseCategories,
-    members: knownMembers,
+    members: members,
     onClose: () => {
       setShowTxModal(false);
       setEditingTx(null);
@@ -10205,6 +10536,7 @@ function FinanceApp() {
     lang: lang,
     card: purchaseCard,
     expenseCategories: expenseCategories,
+    members: members,
     onClose: () => {
       setShowCardPurchaseModal(false);
       setPurchaseCard(null);
@@ -10968,8 +11300,30 @@ function FinanceApp() {
     onAdd: addCustomCategory,
     onRemove: name => askConfirm(`Remover a categoria "${name}"?`, () => removeCustomCategory(name), "Os movimentos já registados com esta categoria mantêm-se, só deixa de aparecer como opção para novos movimentos."),
     onClose: () => setShowCategoryManager(false)
+  }), showMembersManager && /*#__PURE__*/React.createElement(MembersManagerModal, {
+    lang: lang,
+    members: members,
+    onAdd: name => {
+      if (!addMember(name)) showToast(translate(lang, "members", "duplicate_error"), "error");
+    },
+    onRename: (oldName, newName) => {
+      if (!renameMember(oldName, newName)) showToast(translate(lang, "members", "duplicate_error"), "error");
+    },
+    onRemove: name => {
+      if (memberHasHistory(name)) {
+        showToast(translate(lang, "members", "delete_blocked"), "error");
+        return;
+      }
+      askConfirm(translate(lang, "members", "delete_confirm").replace("{member}", name), () => removeMember(name));
+    },
+    onClose: () => setShowMembersManager(false)
   }));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 18: OVERVIEW / COCKPIT (helpers, cards, charts page)
+// ══════════════════════════════════════════════════════════════════════
+
 function buildCockpitDecisions({
   recurringExpenses,
   transactions,
@@ -12014,8 +12368,9 @@ function ChartsPage({
   const familyBreakdown = useMemo(() => {
     const map = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
-        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === month) {
+        map[member] = (map[member] || 0) + Number(t.amount);
       }
     }
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
@@ -12023,8 +12378,9 @@ function ChartsPage({
   const familyBreakdownPrevMap = useMemo(() => {
     const map = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === prevMonthKeyForCharts) {
-        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === prevMonthKeyForCharts) {
+        map[member] = (map[member] || 0) + Number(t.amount);
       }
     }
     return map;
@@ -12638,8 +12994,9 @@ function Overview({
   const familyBreakdown = useMemo(() => {
     const map = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) {
-        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === month) {
+        map[member] = (map[member] || 0) + Number(t.amount);
       }
     }
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
@@ -12647,8 +13004,9 @@ function Overview({
   const familyBreakdownPrevMap = useMemo(() => {
     const map = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === prevMonthKeyForOverview) {
-        map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === prevMonthKeyForOverview) {
+        map[member] = (map[member] || 0) + Number(t.amount);
       }
     }
     return map;
@@ -13218,6 +13576,11 @@ function Overview({
     }));
   })))))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 17: ACCOUNTS TAB
+// ══════════════════════════════════════════════════════════════════════
+
 const TYPE_BADGE_COLOR = {
   "À ordem": "#12A150",
   "Poupança": "#B8823C",
@@ -15304,6 +15667,11 @@ function AccountModal({
     onClick: handleSave
   }, isEditing ? translate(lang, "accounts", "save_changes") : translate(lang, "accounts", "save_account"))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 16: TRANSACTIONS TAB (list, timeline, mobile cards, CSV import, transfers)
+// ══════════════════════════════════════════════════════════════════════
+
 function TimelineNode({
   t,
   accounts,
@@ -16785,18 +17153,18 @@ function TxModal({
     onChange: e => setDate(e.target.value)
   }))), /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "transactions", "field_member")
-  }, /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("select", {
     style: inputStyle,
     value: member,
-    onChange: e => setMember(e.target.value),
-    placeholder: translate(lang, "transactions", "field_member_placeholder"),
-    list: "member-suggestions"
-  }), /*#__PURE__*/React.createElement("datalist", {
-    id: "member-suggestions"
-  }, (members || []).map(m => /*#__PURE__*/React.createElement("option", {
+    onChange: e => setMember(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, translate(lang, "members", "none_option")), member && !(members || []).includes(member) && /*#__PURE__*/React.createElement("option", {
+    value: member
+  }, member), (members || []).map(m => /*#__PURE__*/React.createElement("option", {
     key: m,
     value: m
-  })))), /*#__PURE__*/React.createElement("p", {
+  }, m)))), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
@@ -17106,6 +17474,11 @@ function TransferModal({
     onClick: handleSave
   }, isEditing ? translate(lang, "transactions", "save_changes") : translate(lang, "transactions", "save_transfer"))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 15: EXCHANGE TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function ExchangeTab({
   lang,
   rates,
@@ -17286,6 +17659,11 @@ function ExchangeTab({
     }
   }, usdRate && /*#__PURE__*/React.createElement("div", null, "1 USD = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(usdRate))), " · 100 USD = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(usdRate) * 100))), eurRate && /*#__PURE__*/React.createElement("div", null, "1 EUR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(eurRate))), " · 100 EUR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(eurRate) * 100))), zarRate && /*#__PURE__*/React.createElement("div", null, "1 ZAR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(zarRate))), " · 100 ZAR = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(zarRate) * 100))), gbpRate && /*#__PURE__*/React.createElement("div", null, "1 GBP = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(gbpRate))), " · 100 GBP = ", /*#__PURE__*/React.createElement("strong", null, fmt(Number(gbpRate) * 100))))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 14: PLANNING & ALERTS TABS
+// ══════════════════════════════════════════════════════════════════════
+
 function RecurringRow({
   r,
   month,
@@ -18109,6 +18487,11 @@ function AlertsTab({
     }
   }, a.text)))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 13: INVESTMENTS TAB (bonds, equities, funds, calendar, indicators)
+// ══════════════════════════════════════════════════════════════════════
+
 function BondModal({
   initial,
   onClose,
@@ -20223,6 +20606,11 @@ function InvestmentsTab({
     income: translate(lang, "investments", "pill_income")
   }[subTab]))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 12: EXPORTS TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function ExportsTab({
   lang,
   onExportTransactionsCSV,
@@ -20316,6 +20704,11 @@ function ExportsTab({
     }
   }, item.cta)))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 11: KPIS TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function KPIsTab({
   lang,
   accounts,
@@ -20357,7 +20750,8 @@ function KPIsTab({
   const familyBreakdown = (() => {
     const map = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && t.member && monthKey(t.date) === month) map[t.member] = (map[t.member] || 0) + Number(t.amount);
+      const member = (t.member || "").trim();
+      if (t.kind === "despesa" && member && monthKey(t.date) === month) map[member] = (map[member] || 0) + Number(t.amount);
     }
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   })();
@@ -20465,6 +20859,10 @@ function KPIsTab({
 }
 
 /* ---------------- Simuladores ---------------- */
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 10: SIMULATORS TAB
+// ══════════════════════════════════════════════════════════════════════
 
 function getSimGroups(lang) {
   const t = k => translate(lang, "simulators", k);
@@ -21648,6 +22046,11 @@ function SimuladoresTab({
     }
   }, /*#__PURE__*/React.createElement(ActiveComponent, null)))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 9: SETTINGS TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function CloudSyncCard({
   lang,
   cloudUser,
@@ -21997,6 +22400,11 @@ function SettingsTab({
     onCloudSignOut: onCloudSignOut
   }));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 8: PRIVACY POLICY PAGE
+// ══════════════════════════════════════════════════════════════════════
+
 function PrivacyPolicyPage({
   lang
 }) {
@@ -22060,6 +22468,11 @@ function PrivacyPolicyPage({
     }
   }, t("s7_body"))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 7: REPORT TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function buildAnnualReportHtml(data) {
   const {
     lang,
@@ -22299,6 +22712,11 @@ function ReportTab({
     }
   })));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 6: FORECAST TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function ForecastTab({
   lang,
   balancesByCurrency,
@@ -22435,6 +22853,11 @@ function ForecastTab({
     }
   }, translate(lang, "forecast", "other_currencies_note").replace("{currencies}", otherCurrencies.join(", ")))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 5: BUDGET TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function BudgetTab({
   lang,
   categories,
@@ -22462,7 +22885,9 @@ function BudgetTab({
   expenseCategories,
   onManageCategories,
   memberLimits,
-  onSetMemberLimit
+  onSetMemberLimit,
+  members,
+  onManageMembers
 }) {
   const [newIncomeType, setNewIncomeType] = useState(INCOME_TYPES[0]);
   const [newIncomeLabel, setNewIncomeLabel] = useState("");
@@ -22934,9 +23359,20 @@ function BudgetTab({
       color: "var(--emerald)"
     }
   }, fmt(totalReceitas))))), (() => {
-    const allMembers = Array.from(new Set([...transactions.map(t => t.member).filter(Boolean), ...Object.keys(memberLimits || {})])).sort();
-    if (allMembers.length === 0) return null;
-    return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+    // Defensive union: normally every historical value is already inside the managed
+    // `members` list (seeded by the one-time migration and kept in sync by rename/delete),
+    // but any leftover memberLimits key not yet in the list is still shown so nothing hides.
+    const managedKeys = new Set((members || []).map(m => m.toLowerCase()));
+    const orphanLimitKeys = Object.keys(memberLimits || {}).filter(m => !managedKeys.has(m.toLowerCase()));
+    const allMembers = [...(members || []), ...orphanLimitKeys];
+    return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
       style: {
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         fontSize: 16,
@@ -22948,7 +23384,24 @@ function BudgetTab({
         fontSize: 12.5,
         margin: "0 0 16px"
       }
-    }, translate(lang, "budget", "member_budget_subtitle")), /*#__PURE__*/React.createElement("div", {
+    }, translate(lang, "budget", "member_budget_subtitle"))), /*#__PURE__*/React.createElement("button", {
+      onClick: onManageMembers,
+      style: {
+        background: "none",
+        border: "none",
+        color: "var(--slate)",
+        fontSize: 12,
+        cursor: "pointer",
+        textDecoration: "underline",
+        whiteSpace: "nowrap"
+      }
+    }, translate(lang, "members", "manage_members"))), allMembers.length === 0 ? /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 13,
+        color: "var(--slate)",
+        margin: 0
+      }
+    }, translate(lang, "members", "no_members_yet")) : /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "column",
@@ -22956,7 +23409,7 @@ function BudgetTab({
       }
     }, allMembers.map(member => {
       const limit = (memberLimits || {})[member] || "";
-      const spent = transactions.filter(t => t.kind === "despesa" && t.member === member && monthKey(t.date) === month).reduce((s, t) => s + Number(t.amount), 0);
+      const spent = transactions.filter(t => t.kind === "despesa" && (t.member || "").trim() === member && monthKey(t.date) === month).reduce((s, t) => s + Number(t.amount), 0);
       const pct = limit ? spent / Number(limit) * 100 : 0;
       return /*#__PURE__*/React.createElement("div", {
         key: member
@@ -23009,6 +23462,11 @@ function BudgetTab({
     })));
   })());
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 4: GOALS TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function GoalsTab({
   lang,
   goals,
@@ -23155,6 +23613,11 @@ function GoalsTab({
     }), " ", translate(lang, "goals", "add_contribution")));
   })));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 3: DEBTS & CREDIT CARDS TAB
+// ══════════════════════════════════════════════════════════════════════
+
 function DebtCard({
   lang,
   debt,
@@ -23765,6 +24228,7 @@ function CardPurchaseModal({
   card,
   initial,
   expenseCategories,
+  members,
   onClose,
   onSave
 }) {
@@ -23842,12 +24306,18 @@ function CardPurchaseModal({
     onChange: e => setDate(e.target.value)
   })), /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "cards", "field_member_optional")
-  }, /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("select", {
     style: inputStyle,
     value: member,
-    onChange: e => setMember(e.target.value),
-    placeholder: translate(lang, "cards", "field_member_placeholder")
-  })), preview.length > 0 && /*#__PURE__*/React.createElement("div", {
+    onChange: e => setMember(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, translate(lang, "members", "none_option")), member && !(members || []).includes(member) && /*#__PURE__*/React.createElement("option", {
+    value: member
+  }, member), (members || []).map(m => /*#__PURE__*/React.createElement("option", {
+    key: m,
+    value: m
+  }, m)))), preview.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "10px 12px",
       borderRadius: 8,
@@ -24284,6 +24754,11 @@ function DebtPaymentModal({
     })
   }, translate(lang, "debts", "confirm_prefix"), " ", isPagar ? translate(lang, "debts", "word_payment") : translate(lang, "debts", "word_receipt"))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 2: SHARED MODALS (recurring, categories, shortcuts, goals)
+// ══════════════════════════════════════════════════════════════════════
+
 function RecurringModal({
   initial,
   defaultIsStaff,
@@ -24577,6 +25052,188 @@ function CategoryManagerModal({
     }
   }, c))))));
 }
+function MembersManagerModal({
+  lang,
+  members,
+  onAdd,
+  onRename,
+  onRemove,
+  onClose
+}) {
+  const [newName, setNewName] = useState("");
+  const [editingMember, setEditingMember] = useState(null);
+  const [editingValue, setEditingValue] = useState("");
+  function startEdit(m) {
+    setEditingMember(m);
+    setEditingValue(m);
+  }
+  function cancelEdit() {
+    setEditingMember(null);
+    setEditingValue("");
+  }
+  function commitEdit() {
+    if (editingValue.trim() && editingValue.trim() !== editingMember) onRename(editingMember, editingValue);
+    cancelEdit();
+  }
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: translate(lang, "members", "manage_members"),
+    onClose: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12.5,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, translate(lang, "members", "manage_members_intro")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inputStyle,
+    value: newName,
+    onChange: e => setNewName(e.target.value),
+    placeholder: translate(lang, "members", "member_name_placeholder"),
+    onKeyDown: e => {
+      if (e.key === "Enter" && newName.trim()) {
+        onAdd(newName);
+        setNewName("");
+      }
+    }
+  }), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: () => {
+      if (newName.trim()) {
+        onAdd(newName);
+        setNewName("");
+      }
+    }
+  }, /*#__PURE__*/React.createElement(IconPlus, {
+    size: 14
+  }), " ", translate(lang, "members", "add_member"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderTop: "1px solid var(--line)",
+      paddingTop: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      marginBottom: 8
+    }
+  }, translate(lang, "members", "your_members")), members.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, translate(lang, "members", "no_members_yet")) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, members.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "7px 10px",
+      border: "1px solid var(--line)",
+      borderRadius: 7,
+      gap: 8
+    }
+  }, editingMember === m ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inputStyle,
+      padding: "5px 8px",
+      fontSize: 13
+    },
+    value: editingValue,
+    onChange: e => setEditingValue(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter") commitEdit();
+      if (e.key === "Escape") cancelEdit();
+    },
+    autoFocus: true
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: commitEdit,
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--emerald)",
+      cursor: "pointer",
+      padding: 4
+    },
+    title: translate(lang, "members", "save"),
+    "aria-label": translate(lang, "members", "save")
+  }, /*#__PURE__*/React.createElement(IconCheck, {
+    size: 14
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: cancelEdit,
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    },
+    title: translate(lang, "members", "cancel"),
+    "aria-label": translate(lang, "members", "cancel")
+  }, /*#__PURE__*/React.createElement(IconX, {
+    size: 14
+  })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13.5
+    }
+  }, m), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => startEdit(m),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    },
+    title: translate(lang, "members", "rename"),
+    "aria-label": translate(lang, "members", "rename")
+  }, /*#__PURE__*/React.createElement(IconPencil, {
+    size: 14
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onRemove(m),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--slate)",
+      cursor: "pointer",
+      padding: 4
+    },
+    title: translate(lang, "members", "remove_member"),
+    "aria-label": translate(lang, "members", "remove_member")
+  }, /*#__PURE__*/React.createElement(IconTrash, {
+    size: 14
+  }))))))))));
+}
 function ShortcutsManagerModal({
   shortcuts,
   onClose,
@@ -24868,6 +25525,11 @@ function ContributeModal({
     onClick: () => amount !== "" && onSave(Number(amount))
   }, translate(lang, "goals", "confirm"))));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION 1: MOUNT / RENDER
+// ══════════════════════════════════════════════════════════════════════
+
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(FinanceApp, null));
 </script>
 <script>
