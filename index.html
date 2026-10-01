@@ -47,8 +47,13 @@
     #printable-report, #printable-report * { visibility: visible; }
     #printable-report { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
   }
-  .clickable-card { transition: box-shadow 0.15s ease, border-color 0.15s ease; }
+  .clickable-card { transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease; }
   .clickable-card:hover { box-shadow: 0 4px 14px rgba(16,24,40,0.09); border-color: var(--gold); }
+  .app-card { transition: box-shadow 0.15s ease, transform 0.15s ease; }
+  @media (hover: hover) and (pointer: fine) {
+    .clickable-card:hover:not(:active) { transform: translateY(-2px) !important; box-shadow: 0 8px 22px rgba(16,24,40,0.12) !important; }
+    .app-card:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 22px rgba(16,24,40,0.1) !important; }
+  }
   @keyframes chartFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1573,6 +1578,18 @@ function seal(name) {
 }
 function monthKey(dateStr) {
   return (dateStr || "").slice(0, 7);
+}
+function computeSavingsStreak(transactions) {
+  const history = monthlyHistory(transactions, 12);
+  let streak = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const {
+      receitas,
+      despesas
+    } = history[i];
+    if (receitas > despesas && receitas > 0) streak++;else break;
+  }
+  return streak;
 }
 function previousMonthKey(month) {
   const d = new Date(month + "-01");
@@ -3682,6 +3699,7 @@ const TRANSLATIONS = {
       balance: "Balanço",
       details: "Detalhes",
       greeting_morning: "Bom dia",
+      savings_streak: "{n} meses seguidos a poupar",
       greeting_afternoon: "Boa tarde",
       greeting_evening: "Boa noite",
       attention_needed: "O que precisa da sua atenção",
@@ -4557,6 +4575,7 @@ const TRANSLATIONS = {
       balance: "Balanço",
       details: "Detalhes",
       greeting_morning: "Bom dia",
+      savings_streak: "{n} meses seguidos a poupar",
       greeting_afternoon: "Boa tarde",
       greeting_evening: "Boa noite",
       attention_needed: "O que precisa da sua atenção",
@@ -5432,6 +5451,7 @@ const TRANSLATIONS = {
       balance: "Balance",
       details: "Details",
       greeting_morning: "Good morning",
+      savings_streak: "{n} months in a row saving",
       greeting_afternoon: "Good afternoon",
       greeting_evening: "Good evening",
       attention_needed: "What needs your attention",
@@ -6307,6 +6327,7 @@ const TRANSLATIONS = {
       balance: "Bilan",
       details: "Détails",
       greeting_morning: "Bonjour",
+      savings_streak: "{n} mois d'affilée à épargner",
       greeting_afternoon: "Bon après-midi",
       greeting_evening: "Bonsoir",
       attention_needed: "Ce qui nécessite votre attention",
@@ -7182,6 +7203,7 @@ const TRANSLATIONS = {
       balance: "Balance",
       details: "Detalles",
       greeting_morning: "Buenos días",
+      savings_streak: "{n} meses seguidos ahorrando",
       greeting_afternoon: "Buenas tardes",
       greeting_evening: "Buenas noches",
       attention_needed: "Lo que necesita su atención",
@@ -8194,7 +8216,7 @@ function Card({
     onTouchStart: startPress,
     onTouchEnd: endPress,
     onTouchCancel: endPress,
-    className: onClick ? "clickable-card" : undefined,
+    className: onClick ? "clickable-card" : "app-card",
     style: {
       background: "var(--card)",
       border: "1px solid var(--line)",
@@ -11534,6 +11556,12 @@ function FinanceApp() {
     }]);
   }
   function confirmDebtPayment(debt, payment) {
+    const balanceBefore = debtBalance(debt, debtPayments);
+    const balanceAfter = balanceBefore - Number(payment.amount);
+    if (balanceBefore > 0.005 && balanceAfter <= 0.005) {
+      vibrate([40, 60, 40]);
+      showToast(`Dívida "${debt.creditor}" liquidada!`, "celebrate");
+    }
     addDebtPayment({
       ...payment,
       debtId: debt.id
@@ -14521,12 +14549,18 @@ function MonthlySavingsCard({
   totalDespesas,
   bare
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
   const saved = totalReceitas - totalDespesas;
   const pct = totalReceitas > 0 ? Math.max(0, Math.min(100, saved / totalReceitas * 100)) : 0;
   const positive = saved >= 0;
   const r = 54;
   const circumference = Math.PI * r;
-  const filled = pct / 100 * circumference;
+  const filled = mounted ? pct / 100 * circumference : 0;
+  const animatedPct = useCountUp(mounted ? pct : 0, 700);
   const content = /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -14557,7 +14591,10 @@ function MonthlySavingsCard({
     stroke: positive ? "var(--thrive)" : "var(--rust)",
     strokeWidth: 13,
     strokeLinecap: "round",
-    strokeDasharray: `${filled} ${circumference - filled}`
+    strokeDasharray: `${filled} ${circumference - filled}`,
+    style: {
+      transition: "stroke-dasharray 0.7s cubic-bezier(0.22, 1, 0.36, 1)"
+    }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       position: "absolute",
@@ -14569,7 +14606,7 @@ function MonthlySavingsCard({
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace"
     }
-  }, pct.toFixed(0), "%")), /*#__PURE__*/React.createElement("div", {
+  }, animatedPct.toFixed(0), "%")), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       minWidth: 180
@@ -14591,7 +14628,10 @@ function MonthlySavingsCard({
     style: {
       fontFamily: "'IBM Plex Mono', monospace"
     }
-  }, fmt(Math.abs(saved))), "."), totalReceitas > 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+    value: Math.abs(saved),
+    format: fmt
+  })), "."), totalReceitas > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 14,
       color: "var(--ink)"
@@ -14651,7 +14691,10 @@ function SaldoAtualCard({
       color: "var(--ink)",
       cursor: hidden ? "default" : "help"
     }
-  }, hidden ? "••••••••" : fmt(totalBalance)), /*#__PURE__*/React.createElement("button", {
+  }, hidden ? "••••••••" : /*#__PURE__*/React.createElement(AnimatedNumber, {
+    value: totalBalance,
+    format: fmt
+  })), /*#__PURE__*/React.createElement("button", {
     onClick: toggleHidden,
     "aria-label": hidden ? translate(lang, "overview", "show_balance") : translate(lang, "overview", "hide_balance"),
     style: {
@@ -14676,6 +14719,11 @@ function MonthlyBalanceCard({
   onNavigate,
   bare
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
   const maxVal = Math.max(totalReceitas, totalDespesas, 1);
   const MAX_BAR_HEIGHT = 92;
   const MIN_BAR_HEIGHT = 8;
@@ -14699,17 +14747,19 @@ function MonthlyBalanceCard({
     title: `Receitas: ${fmt(totalReceitas)}`,
     style: {
       width: 20,
-      height: receitaHeight,
+      height: mounted ? receitaHeight : 0,
       borderRadius: 8,
-      background: "var(--emerald)"
+      background: "var(--emerald)",
+      transition: "height 0.6s cubic-bezier(0.22, 1, 0.36, 1)"
     }
   }), /*#__PURE__*/React.createElement("div", {
     title: `Despesas: ${fmt(totalDespesas)}`,
     style: {
       width: 20,
-      height: despesaHeight,
+      height: mounted ? despesaHeight : 0,
       borderRadius: 8,
-      background: "var(--rust)"
+      background: "var(--rust)",
+      transition: "height 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s"
     }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -14735,7 +14785,10 @@ function MonthlyBalanceCard({
       color: "var(--emerald)",
       fontFamily: "'IBM Plex Mono', monospace"
     }
-  }, fmt(totalReceitas))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+    value: totalReceitas,
+    format: fmt
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -14754,7 +14807,10 @@ function MonthlyBalanceCard({
       color: "var(--rust)",
       fontFamily: "'IBM Plex Mono', monospace"
     }
-  }, fmt(totalDespesas))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+    value: totalDespesas,
+    format: fmt
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       borderTop: "1px solid var(--line)",
       margin: "6px 0"
@@ -14778,7 +14834,10 @@ function MonthlyBalanceCard({
       color: "var(--ink)",
       fontFamily: "'IBM Plex Mono', monospace"
     }
-  }, fmt(saldo))))), onNavigate && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+    value: saldo,
+    format: fmt
+  }))))), onNavigate && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "flex-end",
@@ -14812,7 +14871,8 @@ function CockpitCard({
   score,
   factors,
   decisions,
-  onNavigate
+  onNavigate,
+  streak
 }) {
   const [mounted, setMounted] = useState(false);
   const [showFactors, setShowFactors] = useState(false);
@@ -14905,7 +14965,29 @@ function CockpitCard({
       color: "rgba(255,255,255,0.55)",
       marginTop: 2
     }
-  }, dateLabel))), /*#__PURE__*/React.createElement("button", {
+  }, dateLabel), streak >= 2 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 6,
+      padding: "3px 9px",
+      borderRadius: 20,
+      background: "rgba(240,180,30,0.18)",
+      border: "1px solid rgba(240,180,30,0.35)"
+    }
+  }, /*#__PURE__*/React.createElement(IconFlame, {
+    size: 12,
+    style: {
+      color: "#F0C419"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#F0C419"
+    }
+  }, translate(lang, "overview", "savings_streak").replace("{n}", streak))))), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowFactors(v => !v),
     style: {
       display: "flex",
@@ -15915,6 +15997,7 @@ function Overview({
     recurringExpenses,
     expectedIncome
   }), [accounts, transactions, balancesByCurrency, exchangeRates, debts, debtPayments, recurringExpenses, expectedIncome]);
+  const savingsStreak = useMemo(() => computeSavingsStreak(transactions), [transactions]);
   const firstSteps = [{
     label: translate(lang, "overview", "first_step_bank_account"),
     done: accounts.length > 0,
@@ -15940,7 +16023,8 @@ function Overview({
     score: healthScore.total,
     factors: healthScore.factors,
     decisions: cockpitDecisions,
-    onNavigate: onNavigate
+    onNavigate: onNavigate,
+    streak: savingsStreak
   }), /*#__PURE__*/React.createElement(SaldoAtualCard, {
     lang: lang,
     totalBalance: consolidatedKzNow
