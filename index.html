@@ -9290,150 +9290,6 @@ function OnboardingModal({
     }
   }, translate(lang, "onboarding", "skip_for_now"))));
 }
-function MonthPickerPopover({
-  lang,
-  month,
-  onSelect,
-  onClose,
-  isMobile
-}) {
-  const [pickerYear, setPickerYear] = useState(Number(month.slice(0, 4)));
-  const currentYear = Number(month.slice(0, 4));
-  const currentMonthNum = Number(month.slice(5, 7));
-  const monthAbbrevs = useMemo(() => Array.from({
-    length: 12
-  }, (_, i) => {
-    const s = new Date(2000, i, 1).toLocaleDateString("pt-PT", {
-      month: "short"
-    });
-    return s.charAt(0).toUpperCase() + s.slice(1).replace(".", "");
-  }), []);
-  const quarters = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11]];
-  function pick(monthIndex) {
-    onSelect(`${pickerYear}-${String(monthIndex + 1).padStart(2, "0")}`);
-  }
-  const todayM = todayMonth();
-  const threeMonthsAgo = previousMonthKey(previousMonthKey(previousMonthKey(todayM)));
-  const quickChips = [{
-    label: translate(lang, "ui", "month_quick_current"),
-    value: todayM
-  }, {
-    label: translate(lang, "ui", "month_quick_previous"),
-    value: previousMonthKey(todayM)
-  }, {
-    label: translate(lang, "ui", "month_quick_3m"),
-    value: threeMonthsAgo
-  }];
-  return /*#__PURE__*/React.createElement(Modal, {
-    title: translate(lang, "ui", "select_month_title"),
-    onClose: onClose,
-    sheet: isMobile
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      flexWrap: "wrap"
-    }
-  }, quickChips.map(c => /*#__PURE__*/React.createElement("button", {
-    key: c.label,
-    onClick: () => onSelect(c.value),
-    style: {
-      padding: "6px 12px",
-      borderRadius: 20,
-      border: c.value === month ? "1px solid var(--gold)" : "1px solid var(--line)",
-      background: c.value === month ? "var(--gold)" : "var(--card)",
-      color: c.value === month ? "#fff" : "var(--ink)",
-      fontSize: 12,
-      fontWeight: 600,
-      cursor: "pointer"
-    }
-  }, c.label))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between"
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setPickerYear(y => y - 1),
-    "aria-label": translate(lang, "ui", "previous_year"),
-    style: {
-      background: "none",
-      border: "1px solid var(--line)",
-      borderRadius: 8,
-      cursor: "pointer",
-      color: "var(--slate)",
-      padding: 7,
-      display: "flex"
-    }
-  }, /*#__PURE__*/React.createElement(IconChevronLeft, {
-    size: 15
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 15,
-      fontWeight: 700,
-      fontFamily: "'IBM Plex Mono', monospace"
-    }
-  }, pickerYear), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setPickerYear(y => y + 1),
-    "aria-label": translate(lang, "ui", "next_year"),
-    style: {
-      background: "none",
-      border: "1px solid var(--line)",
-      borderRadius: 8,
-      cursor: "pointer",
-      color: "var(--slate)",
-      padding: 7,
-      display: "flex"
-    }
-  }, /*#__PURE__*/React.createElement(IconChevronRight, {
-    size: 15
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 10
-    }
-  }, quarters.map((q, qi) => /*#__PURE__*/React.createElement("div", {
-    key: qi
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      fontWeight: 700,
-      color: "var(--slate)",
-      textTransform: "uppercase",
-      letterSpacing: 0.4,
-      marginBottom: 5
-    }
-  }, translate(lang, "ui", "quarter_label").replace("{n}", qi + 1)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 6
-    }
-  }, q.map(mi => {
-    const isSelected = pickerYear === currentYear && mi + 1 === currentMonthNum;
-    return /*#__PURE__*/React.createElement("button", {
-      key: mi,
-      onClick: () => pick(mi),
-      style: {
-        padding: "8px 0",
-        borderRadius: 8,
-        border: isSelected ? "1px solid var(--gold)" : "1px solid var(--line)",
-        background: isSelected ? "var(--gold)" : "var(--card)",
-        color: isSelected ? "#fff" : "var(--ink)",
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: "pointer"
-      }
-    }, monthAbbrevs[mi]);
-  })))))));
-}
 function ConfirmDialog({
   message,
   detail,
@@ -11112,7 +10968,6 @@ function FinanceApp() {
   }));
   const [expenseShortcuts, setExpenseShortcuts] = useState(() => loadKey("expense-shortcuts", []));
   const [month, setMonth] = useState(todayMonth());
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
   const monthAutoTrackRef = useRef(true);
   useEffect(() => {
     function syncToCurrentMonthIfTracking() {
@@ -12747,32 +12602,11 @@ function FinanceApp() {
     }
   }, translate(lang, "subtitle", tab))), (tab === "overview" || tab === "transactions" || tab === "budget" || tab === "report" || tab === "alerts") && /*#__PURE__*/React.createElement("div", {
     style: {
+      position: "relative",
       display: "inline-flex",
-      alignItems: "center",
-      gap: 4,
       flexShrink: 0
     }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      const prev = previousMonthKey(month);
-      monthAutoTrackRef.current = prev === todayMonth();
-      setMonth(prev);
-    },
-    "aria-label": translate(lang, "ui", "previous_month"),
-    style: {
-      background: "none",
-      border: "1px solid var(--line)",
-      borderRadius: 8,
-      cursor: "pointer",
-      color: "var(--slate)",
-      padding: isMobile ? 5 : 7,
-      display: "flex"
-    }
-  }, /*#__PURE__*/React.createElement(IconChevronLeft, {
-    size: isMobile ? 14 : 16
-  })), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setShowMonthPicker(true),
-    "aria-label": translate(lang, "ui", "select_month"),
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -12792,35 +12626,25 @@ function FinanceApp() {
     style: {
       color: "var(--slate)"
     }
-  })), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      const next = nextMonthKey(month);
-      monthAutoTrackRef.current = next === todayMonth();
-      setMonth(next);
+  })), /*#__PURE__*/React.createElement("input", {
+    type: "month",
+    value: month,
+    onChange: e => {
+      monthAutoTrackRef.current = e.target.value === todayMonth();
+      setMonth(e.target.value);
     },
-    "aria-label": translate(lang, "ui", "next_month"),
+    "aria-label": translate(lang, "ui", "select_month"),
     style: {
-      background: "none",
-      border: "1px solid var(--line)",
-      borderRadius: 8,
+      position: "absolute",
+      inset: 0,
+      opacity: 0,
+      width: "100%",
+      height: "100%",
       cursor: "pointer",
-      color: "var(--slate)",
-      padding: isMobile ? 5 : 7,
-      display: "flex"
+      border: "none",
+      padding: 0
     }
-  }, /*#__PURE__*/React.createElement(IconChevronRight, {
-    size: isMobile ? 14 : 16
-  }))), showMonthPicker && /*#__PURE__*/React.createElement(MonthPickerPopover, {
-    lang: lang,
-    month: month,
-    isMobile: isMobile,
-    onClose: () => setShowMonthPicker(false),
-    onSelect: m => {
-      monthAutoTrackRef.current = m === todayMonth();
-      setMonth(m);
-      setShowMonthPicker(false);
-    }
-  })), (() => {
+  }))), (() => {
     const contextualActions = {
       accounts: [{
         label: translate(lang, "overview", "action_new_account"),
