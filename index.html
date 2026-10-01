@@ -3338,6 +3338,11 @@ const TRANSLATIONS = {
       privacy: "Como tratamos os seus dados na Fonsprince One."
     },
     ui: {
+      health_excellent: "Excelente",
+      health_good: "Bom",
+      health_fair: "Razoável",
+      health_attention: "Atenção",
+      health_critical: "Crítico",
       today: "Hoje",
       yesterday: "Ontem",
       transfer_sent: "Transferência enviada",
@@ -3444,6 +3449,9 @@ const TRANSLATIONS = {
       to_receive: "A receber",
       no_goals: "Sem metas criadas.",
       first_steps: "Primeiros passos",
+      first_step_bank_account: "Cadastre uma conta bancária",
+      first_step_first_transaction: "Registe a sua primeira transação",
+      first_step_credit_card: "Cadastre um cartão de crédito",
       done_suffix: "feito",
       action_income: "Receita",
       action_expense: "Despesa",
@@ -4122,6 +4130,11 @@ const TRANSLATIONS = {
       privacy: "Como tratamos os seus dados na Fonsprince One."
     },
     ui: {
+      health_excellent: "Excelente",
+      health_good: "Bom",
+      health_fair: "Razoável",
+      health_attention: "Atenção",
+      health_critical: "Crítico",
       today: "Hoje",
       yesterday: "Ontem",
       transfer_sent: "Transferência enviada",
@@ -4228,6 +4241,9 @@ const TRANSLATIONS = {
       to_receive: "A receber",
       no_goals: "Sem metas criadas.",
       first_steps: "Primeiros passos",
+      first_step_bank_account: "Cadastre uma conta bancária",
+      first_step_first_transaction: "Registe a sua primeira transação",
+      first_step_credit_card: "Cadastre um cartão de crédito",
       done_suffix: "feito",
       action_income: "Receita",
       action_expense: "Despesa",
@@ -4906,6 +4922,11 @@ const TRANSLATIONS = {
       privacy: "How we handle your data in Fonsprince One."
     },
     ui: {
+      health_excellent: "Excellent",
+      health_good: "Good",
+      health_fair: "Fair",
+      health_attention: "Needs attention",
+      health_critical: "Critical",
       today: "Today",
       yesterday: "Yesterday",
       transfer_sent: "Transfer sent",
@@ -5012,6 +5033,9 @@ const TRANSLATIONS = {
       to_receive: "To receive",
       no_goals: "No goals created.",
       first_steps: "First steps",
+      first_step_bank_account: "Add a bank account",
+      first_step_first_transaction: "Log your first transaction",
+      first_step_credit_card: "Add a credit card",
       done_suffix: "done",
       action_income: "Income",
       action_expense: "Expense",
@@ -5690,6 +5714,11 @@ const TRANSLATIONS = {
       privacy: "Comment nous traitons vos données dans Fonsprince One."
     },
     ui: {
+      health_excellent: "Excellent",
+      health_good: "Bon",
+      health_fair: "Correct",
+      health_attention: "Attention",
+      health_critical: "Critique",
       today: "Aujourd'hui",
       yesterday: "Hier",
       transfer_sent: "Virement envoyé",
@@ -5796,6 +5825,9 @@ const TRANSLATIONS = {
       to_receive: "À recevoir",
       no_goals: "Aucun objectif créé.",
       first_steps: "Premiers pas",
+      first_step_bank_account: "Ajoutez un compte bancaire",
+      first_step_first_transaction: "Enregistrez votre première transaction",
+      first_step_credit_card: "Ajoutez une carte de crédit",
       done_suffix: "fait",
       action_income: "Revenu",
       action_expense: "Dépense",
@@ -6474,6 +6506,11 @@ const TRANSLATIONS = {
       privacy: "Cómo tratamos sus datos en Fonsprince One."
     },
     ui: {
+      health_excellent: "Excelente",
+      health_good: "Bueno",
+      health_fair: "Razonable",
+      health_attention: "Atención",
+      health_critical: "Crítico",
       today: "Hoy",
       yesterday: "Ayer",
       transfer_sent: "Transferencia enviada",
@@ -6580,6 +6617,9 @@ const TRANSLATIONS = {
       to_receive: "A recibir",
       no_goals: "Sin metas creadas.",
       first_steps: "Primeros pasos",
+      first_step_bank_account: "Registra una cuenta bancaria",
+      first_step_first_transaction: "Registra tu primera transacción",
+      first_step_credit_card: "Registra una tarjeta de crédito",
       done_suffix: "hecho",
       action_income: "Ingreso",
       action_expense: "Gasto",
@@ -12860,23 +12900,23 @@ function computeHealthScore({
 }
 function healthLabel(score) {
   if (score >= 80) return {
-    label: "Excelente",
+    label: translate(CURRENT_LANG, "ui", "health_excellent"),
     color: "var(--emerald)"
   };
   if (score >= 60) return {
-    label: "Bom",
+    label: translate(CURRENT_LANG, "ui", "health_good"),
     color: "var(--emerald)"
   };
   if (score >= 40) return {
-    label: "Razoável",
+    label: translate(CURRENT_LANG, "ui", "health_fair"),
     color: "var(--gold)"
   };
   if (score >= 20) return {
-    label: "Atenção",
+    label: translate(CURRENT_LANG, "ui", "health_attention"),
     color: "#E08E45"
   };
   return {
-    label: "Crítico",
+    label: translate(CURRENT_LANG, "ui", "health_critical"),
     color: "var(--rust)"
   };
 }
@@ -13467,7 +13507,7 @@ function CockpitCard({
   const now = new Date();
   const hour = now.getHours();
   const greeting = hour >= 5 && hour < 12 ? translate(lang, "overview", "greeting_morning") : hour >= 12 && hour < 18 ? translate(lang, "overview", "greeting_afternoon") : translate(lang, "overview", "greeting_evening");
-  const dateLabelRaw = now.toLocaleDateString("pt-PT", {
+  const dateLabelRaw = now.toLocaleDateString(CURRENT_NUMBER_LOCALE, {
     weekday: "long",
     day: "numeric",
     month: "long"
@@ -14491,15 +14531,15 @@ function Overview({
     debtPayments
   }), [totalReceitas, totalDespesas, liquidKzNow, spentByCategory, categories, debts, debtPayments]);
   const firstSteps = [{
-    label: "Cadastre uma conta bancária",
+    label: translate(lang, "overview", "first_step_bank_account"),
     done: accounts.length > 0,
     tab: "accounts"
   }, {
-    label: "Registe a sua primeira transação",
+    label: translate(lang, "overview", "first_step_first_transaction"),
     done: transactions.length > 0,
     tab: "transactions"
   }, {
-    label: "Cadastre um cartão de crédito",
+    label: translate(lang, "overview", "first_step_credit_card"),
     done: (creditCards || []).length > 0,
     tab: "cards"
   }];
