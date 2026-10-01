@@ -72,6 +72,40 @@
   .ptr-indicator.spinning svg {
     animation: ptrSpin 0.7s linear infinite;
   }
+  @keyframes confettiFall {
+    0% { transform: translateY(-12px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(170px) rotate(360deg); opacity: 0; }
+  }
+  .confetti-piece {
+    position: absolute;
+    top: 0;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    animation: confettiFall 1.6s ease-in forwards;
+    pointer-events: none;
+  }
+  .nav-tooltip-wrap { position: relative; }
+  .nav-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--ink);
+    color: #fff;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease 0.15s;
+    z-index: 50;
+    box-shadow: 0 4px 14px rgba(16,24,40,0.25);
+  }
+  .nav-tooltip-wrap:hover .nav-tooltip { opacity: 1; }
   @keyframes brandBgIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes brandLogoIn {
     0% { opacity: 0; transform: translateY(16px); }
@@ -3381,6 +3415,22 @@ function checkDueSoonAndNotify(opts) {
   }
 }
 
+/* avisa quando a Pontuação de Saúde Financeira sobe ou desce de forma significativa
+   (±8 pontos) desde a última vez que foi vista — no máximo uma vez por dia */
+function checkHealthScoreChangeAndNotify(score, lastScore) {
+  if (lastScore == null || score == null) return;
+  const diff = Math.round(score) - Math.round(lastScore);
+  if (Math.abs(diff) < 8) return;
+  const key = `health-score-change-${todayISO()}`;
+  if (wasNotifiedToday(key)) return;
+  if (diff > 0) {
+    sendLocalNotification("A sua Pontuação de Saúde Financeira subiu", `Passou de ${Math.round(lastScore)} para ${Math.round(score)} (+${diff}). Continue assim!`);
+  } else {
+    sendLocalNotification("A sua Pontuação de Saúde Financeira desceu", `Passou de ${Math.round(lastScore)} para ${Math.round(score)} (${diff}). Veja o que mudou em Visão Geral.`);
+  }
+  markNotified(key);
+}
+
 /* ---------------- local storage ---------------- */
 
 // ══════════════════════════════════════════════════════════════════════
@@ -3617,6 +3667,7 @@ const TRANSLATIONS = {
       show_balance: "Mostrar saldo",
       hide_balance: "Ocultar saldo",
       monthly_balance: "Balanço mensal",
+      balance_savings_title: "Balanço e Economia",
       income: "Receitas",
       expenses: "Despesas",
       balance: "Balanço",
@@ -3874,6 +3925,9 @@ const TRANSLATIONS = {
       name_placeholder: "O seu nome",
       country_step_label: "País / Mercado",
       country_step_hint: "Isto define a moeda, os bancos e os impostos usados na aplicação. Pode alterar mais tarde em Definições.",
+      summary_name: "Nome",
+      summary_country: "País / Mercado",
+      summary_focus: "Vai focar-se em",
       prefer_not_to_say: "Prefiro não dizer",
       motivation_step_title: "O que procura na Fonsprince One?",
       motivation_step_text: "Escolha uma ou mais opções — vamos adaptar as sugestões a isso.",
@@ -4478,6 +4532,7 @@ const TRANSLATIONS = {
       show_balance: "Mostrar saldo",
       hide_balance: "Ocultar saldo",
       monthly_balance: "Balanço mensal",
+      balance_savings_title: "Balanço e Economia",
       income: "Receitas",
       expenses: "Despesas",
       balance: "Balanço",
@@ -4735,6 +4790,9 @@ const TRANSLATIONS = {
       name_placeholder: "O seu nome",
       country_step_label: "País / Mercado",
       country_step_hint: "Isto define a moeda, os bancos e os impostos usados na aplicação. Pode alterar mais tarde em Definições.",
+      summary_name: "Nome",
+      summary_country: "País / Mercado",
+      summary_focus: "Vai focar-se em",
       prefer_not_to_say: "Prefiro não dizer",
       motivation_step_title: "O que procura na Fonsprince One?",
       motivation_step_text: "Escolha uma ou mais opções — vamos adaptar as sugestões a isso.",
@@ -5339,6 +5397,7 @@ const TRANSLATIONS = {
       show_balance: "Show balance",
       hide_balance: "Hide balance",
       monthly_balance: "Monthly balance",
+      balance_savings_title: "Balance & Savings",
       income: "Income",
       expenses: "Expenses",
       balance: "Balance",
@@ -5596,6 +5655,9 @@ const TRANSLATIONS = {
       name_placeholder: "Your name",
       country_step_label: "Country / Market",
       country_step_hint: "This sets the currency, banks, and taxes used in the app. You can change it later in Settings.",
+      summary_name: "Name",
+      summary_country: "Country / Market",
+      summary_focus: "Focusing on",
       prefer_not_to_say: "Prefer not to say",
       motivation_step_title: "What are you looking for in Fonsprince One?",
       motivation_step_text: "Pick one or more — we'll tailor suggestions to that.",
@@ -6200,6 +6262,7 @@ const TRANSLATIONS = {
       show_balance: "Afficher le solde",
       hide_balance: "Masquer le solde",
       monthly_balance: "Bilan mensuel",
+      balance_savings_title: "Bilan et Épargne",
       income: "Revenus",
       expenses: "Dépenses",
       balance: "Bilan",
@@ -6457,6 +6520,9 @@ const TRANSLATIONS = {
       name_placeholder: "Votre nom",
       country_step_label: "Pays / Marché",
       country_step_hint: "Cela définit la devise, les banques et les impôts utilisés dans l'application. Vous pourrez le modifier plus tard dans Paramètres.",
+      summary_name: "Nom",
+      summary_country: "Pays / Marché",
+      summary_focus: "Vous allez vous concentrer sur",
       prefer_not_to_say: "Préfère ne pas dire",
       motivation_step_title: "Que recherchez-vous dans Fonsprince One ?",
       motivation_step_text: "Choisissez une ou plusieurs options — nous adapterons nos suggestions.",
@@ -7061,6 +7127,7 @@ const TRANSLATIONS = {
       show_balance: "Mostrar saldo",
       hide_balance: "Ocultar saldo",
       monthly_balance: "Balance mensual",
+      balance_savings_title: "Balance y Ahorro",
       income: "Ingresos",
       expenses: "Gastos",
       balance: "Balance",
@@ -7318,6 +7385,9 @@ const TRANSLATIONS = {
       name_placeholder: "Tu nombre",
       country_step_label: "País / Mercado",
       country_step_hint: "Esto define la moneda, los bancos y los impuestos usados en la aplicación. Puedes cambiarlo más tarde en Ajustes.",
+      summary_name: "Nombre",
+      summary_country: "País / Mercado",
+      summary_focus: "Te vas a centrar en",
       prefer_not_to_say: "Prefiero no decirlo",
       motivation_step_title: "¿Qué buscas en Fonsprince One?",
       motivation_step_text: "Elige una o más opciones — adaptaremos las sugerencias a eso.",
@@ -7867,7 +7937,15 @@ function NavItem({
       flexShrink: 0
     }
   }), !collapsed && label);
-  if (!onToggleFavorite || collapsed) return button;
+  if (collapsed) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "nav-tooltip-wrap"
+    }, button, /*#__PURE__*/React.createElement("span", {
+      className: "nav-tooltip",
+      role: "tooltip"
+    }, label));
+  }
+  if (!onToggleFavorite) return button;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       position: "relative"
@@ -7993,6 +8071,54 @@ function AnimatedNumber({
 }) {
   const display = useCountUp(value, duration);
   return format(display);
+}
+function EmptyState({
+  icon: IconC,
+  title,
+  description,
+  compact
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      textAlign: "center",
+      padding: compact ? "16px 10px" : "28px 16px",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 48,
+      height: 48,
+      borderRadius: "50%",
+      background: "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 4
+    }
+  }, IconC && /*#__PURE__*/React.createElement(IconC, {
+    size: 22,
+    style: {
+      color: "var(--slate)"
+    },
+    strokeWidth: 1.75
+  })), title && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: "var(--ink)"
+    }
+  }, title), description && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0,
+      maxWidth: 300,
+      lineHeight: 1.5
+    }
+  }, description));
 }
 function Card({
   children,
@@ -8608,6 +8734,42 @@ function Modal({
     size: sheet ? 16 : 18
   }))), children));
 }
+function ConfettiBurst() {
+  const pieces = useMemo(() => {
+    const colors = ["#F0C419", "#2FA37C", "#E0634C", "#3C6E9B", "#B98AC9"];
+    return Array.from({
+      length: 28
+    }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 0.35,
+      color: colors[i % colors.length],
+      rotate: Math.round(Math.random() * 360)
+    }));
+  }, []);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: -6,
+      height: 0,
+      overflow: "visible",
+      pointerEvents: "none",
+      zIndex: -1
+    },
+    "aria-hidden": "true"
+  }, pieces.map(p => /*#__PURE__*/React.createElement("span", {
+    key: p.id,
+    className: "confetti-piece",
+    style: {
+      left: `${p.left}%`,
+      background: p.color,
+      animationDelay: `${p.delay}s`,
+      transform: `rotate(${p.rotate}deg)`
+    }
+  })));
+}
 function OnboardingModal({
   lang,
   userName,
@@ -8882,22 +9044,81 @@ function OnboardingModal({
     }, translate(lang, "onboarding", "continue"))));
   }
   const firstName = (nameDraft || "").trim().split(" ")[0];
+  const motivationLabels = selectedMotivations.map(id => MOTIVATIONS.find(m => m.id === id)?.label).filter(Boolean);
+  const countryName = (MARKETS[countryDraft] || MARKETS.AO).name;
   return /*#__PURE__*/React.createElement(Modal, {
     title: firstName ? `${translate(lang, "onboarding", "ready_title_prefix")}, ${firstName}!` : translate(lang, "onboarding", "ready_title_prefix"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
+      position: "relative",
       display: "flex",
       flexDirection: "column",
       gap: 16
     }
-  }, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement(ConfettiBurst, null), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
-  }, translate(lang, "onboarding", "ready_text")), /*#__PURE__*/React.createElement(PrimaryButton, {
+  }, translate(lang, "onboarding", "ready_text")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      padding: "12px 14px",
+      borderRadius: 10,
+      background: "var(--paper)"
+    }
+  }, firstName && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10,
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, translate(lang, "onboarding", "summary_name")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 600
+    }
+  }, firstName)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10,
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, translate(lang, "onboarding", "summary_country")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 600
+    }
+  }, countryName)), motivationLabels.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10,
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--slate)",
+      flexShrink: 0
+    }
+  }, translate(lang, "onboarding", "summary_focus")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 600,
+      textAlign: "right"
+    }
+  }, motivationLabels.join(", ")))), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onStart
   }, translate(lang, "onboarding", "create_first_account")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -10513,6 +10734,7 @@ function FinanceApp() {
   const cloudPushTimer = useRef(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => loadKey("onboarding-dismissed", false));
   const [onboardingMotivations, setOnboardingMotivations] = useState(() => loadKey("onboarding-motivations", []));
+  const [lastHealthScoreSeen, setLastHealthScoreSeen] = useState(() => loadKey("last-health-score-seen", null));
   const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [lastExportDate, setLastExportDate] = useState(() => loadKey("last-export-date", null));
@@ -10725,6 +10947,7 @@ function FinanceApp() {
   useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
   useEffect(() => saveKey("onboarding-motivations", onboardingMotivations), [onboardingMotivations]);
+  useEffect(() => saveKey("last-health-score-seen", lastHealthScoreSeen), [lastHealthScoreSeen]);
   useEffect(() => {
     if (!notificationsEnabled) return;
     checkDueSoonAndNotify({
@@ -10756,6 +10979,21 @@ function FinanceApp() {
     for (const a of accounts) map[a.currency] = (map[a.currency] || 0) + accountTotal(a, transactions);
     return map;
   }, [accounts, transactions]);
+  useEffect(() => {
+    const score = computeHealthScoreForApp({
+      accounts,
+      transactions,
+      balancesByCurrency,
+      exchangeRates,
+      debts,
+      debtPayments,
+      recurringExpenses,
+      expectedIncome
+    }).total;
+    if (notificationsEnabled) checkHealthScoreChangeAndNotify(score, lastHealthScoreSeen);
+    const rounded = Math.round(score);
+    if (lastHealthScoreSeen == null || Math.round(lastHealthScoreSeen) !== rounded) setLastHealthScoreSeen(rounded);
+  }, [notificationsEnabled, accounts, transactions, balancesByCurrency, exchangeRates, debts, debtPayments, recurringExpenses, expectedIncome, lastHealthScoreSeen]);
   const splitByCurrency = useMemo(() => {
     const map = {};
     for (const a of accounts) {
@@ -11675,6 +11913,7 @@ function FinanceApp() {
       "--card": darkMode ? "#1A2338" : "#FFFFFF",
       "--line": darkMode ? "#2A3550" : "#E1E5EE",
       "--emerald": darkMode ? "#2FBE73" : "#12A150",
+      "--thrive": darkMode ? "#22E6A0" : "#00B87A",
       "--rust": darkMode ? "#E5595C" : "#D13438",
       "--gold": darkMode ? "#E0A855" : "#96682A",
       "--sidebar": darkMode ? "#0A0F1E" : "#0F1E42",
@@ -13999,7 +14238,8 @@ function QuickActionsRow({
 function MonthlySavingsCard({
   lang,
   totalReceitas,
-  totalDespesas
+  totalDespesas,
+  bare
 }) {
   const saved = totalReceitas - totalDespesas;
   const pct = totalReceitas > 0 ? Math.max(0, Math.min(100, saved / totalReceitas * 100)) : 0;
@@ -14007,14 +14247,7 @@ function MonthlySavingsCard({
   const r = 54;
   const circumference = Math.PI * r;
   const filled = pct / 100 * circumference;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: "var(--slate)",
-      fontWeight: 600,
-      marginBottom: 8
-    }
-  }, translate(lang, "overview", "monthly_savings")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+  const content = /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -14041,7 +14274,7 @@ function MonthlySavingsCard({
   }), /*#__PURE__*/React.createElement("path", {
     d: `M 9 66 A ${r} ${r} 0 0 1 123 66`,
     fill: "none",
-    stroke: positive ? "var(--emerald)" : "var(--rust)",
+    stroke: positive ? "var(--thrive)" : "var(--rust)",
     strokeWidth: 13,
     strokeLinecap: "round",
     strokeDasharray: `${filled} ${circumference - filled}`
@@ -14065,7 +14298,8 @@ function MonthlySavingsCard({
     style: {
       fontSize: 16,
       fontWeight: 700,
-      marginBottom: 6
+      marginBottom: 6,
+      color: positive && saved > 0 ? "var(--thrive)" : "var(--ink)"
     }
   }, positive ? translate(lang, "overview", "congrats") : translate(lang, "overview", "budget_attention")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -14089,7 +14323,20 @@ function MonthlySavingsCard({
       marginTop: 10,
       marginBottom: 0
     }
-  }, positive ? translate(lang, "overview", "effort_worth_it") : translate(lang, "overview", "review_expenses"))))));
+  }, positive ? translate(lang, "overview", "effort_worth_it") : translate(lang, "overview", "review_expenses"))));
+  if (bare) return content;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, translate(lang, "overview", "monthly_savings")), /*#__PURE__*/React.createElement(Card, {
+    style: positive && saved > 0 ? {
+      borderLeft: "3px solid var(--thrive)"
+    } : undefined
+  }, content));
 }
 function SaldoAtualCard({
   lang,
@@ -14146,21 +14393,15 @@ function MonthlyBalanceCard({
   totalReceitas,
   totalDespesas,
   saldo,
-  onNavigate
+  onNavigate,
+  bare
 }) {
   const maxVal = Math.max(totalReceitas, totalDespesas, 1);
   const MAX_BAR_HEIGHT = 92;
   const MIN_BAR_HEIGHT = 8;
   const receitaHeight = totalReceitas > 0 ? Math.max(MIN_BAR_HEIGHT, totalReceitas / maxVal * MAX_BAR_HEIGHT) : MIN_BAR_HEIGHT;
   const despesaHeight = totalDespesas > 0 ? Math.max(MIN_BAR_HEIGHT, totalDespesas / maxVal * MAX_BAR_HEIGHT) : MIN_BAR_HEIGHT;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: "var(--slate)",
-      fontWeight: 600,
-      marginBottom: 8
-    }
-  }, translate(lang, "overview", "monthly_balance")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+  const content = /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -14274,7 +14515,16 @@ function MonthlyBalanceCard({
       fontWeight: 600,
       padding: 4
     }
-  }, translate(lang, "overview", "details")))));
+  }, translate(lang, "overview", "details"))));
+  if (bare) return content;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, translate(lang, "overview", "monthly_balance")), /*#__PURE__*/React.createElement(Card, null, content));
 }
 function CockpitCard({
   lang,
@@ -14414,48 +14664,53 @@ function CockpitCard({
     style: {
       marginTop: 14,
       paddingTop: 14,
-      borderTop: "1px solid rgba(255,255,255,0.14)",
+      borderTop: "1px solid rgba(255,255,255,0.18)",
       display: "flex",
       flexDirection: "column",
-      gap: 8
+      gap: 10
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
-      color: "rgba(255,255,255,0.55)",
+      color: "rgba(255,255,255,0.6)",
       marginBottom: 2
     }
-  }, translate(lang, "overview", "health_score_how_calculated")), factors.map(f => /*#__PURE__*/React.createElement("div", {
-    key: f.name
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      fontSize: 12,
-      color: "rgba(255,255,255,0.75)",
-      marginBottom: 2
-    }
-  }, /*#__PURE__*/React.createElement("span", null, healthFactorLabel(lang, f.name)), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontWeight: 600,
-      color: "#fff"
-    }
-  }, Math.round(f.value), "/20")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 4,
-      borderRadius: 3,
-      background: "rgba(255,255,255,0.14)",
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: "100%",
-      width: `${f.value / 20 * 100}%`,
-      borderRadius: 3,
-      background: f.value >= 14 ? "#8EF0C0" : f.value >= 8 ? "#F0D28E" : "#FF8A80"
-    }
-  }))))), hasDecisions ? /*#__PURE__*/React.createElement("div", {
+  }, translate(lang, "overview", "health_score_how_calculated")), factors.map(f => {
+    const factorColor = f.value >= 14 ? "#4ADE80" : f.value >= 8 ? "#FBBF24" : "#FB7185";
+    return /*#__PURE__*/React.createElement("div", {
+      key: f.name
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 12.5,
+        color: "rgba(255,255,255,0.92)",
+        marginBottom: 4,
+        fontWeight: 600
+      }
+    }, /*#__PURE__*/React.createElement("span", null, healthFactorLabel(lang, f.name)), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontWeight: 700,
+        color: factorColor
+      }
+    }, Math.round(f.value), "/20")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: 6,
+        borderRadius: 4,
+        background: "rgba(255,255,255,0.2)",
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: "100%",
+        width: `${f.value / 20 * 100}%`,
+        borderRadius: 4,
+        background: factorColor,
+        transition: "width 0.3s ease"
+      }
+    })));
+  })), hasDecisions ? /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16
     }
@@ -15246,6 +15501,8 @@ function Overview({
   const [pressedDashTab, setPressedDashTab] = useState(null);
   const [summaryTab, setSummaryTab] = useState("interest");
   const [pressedSummaryTab, setPressedSummaryTab] = useState(null);
+  const [balSavTab, setBalSavTab] = useState("balance");
+  const [pressedBalSavTab, setPressedBalSavTab] = useState(null);
   const saldo = totalReceitas - totalDespesas;
   const otherCurrencies = Object.keys(balancesByCurrency).filter(c => c !== "Kz");
   const prevMonthKeyForOverview = previousMonthKey(month);
@@ -15411,17 +15668,92 @@ function Overview({
     lang: lang,
     steps: firstSteps,
     onNavigate: onNavigate
-  }), /*#__PURE__*/React.createElement(MonthlyBalanceCard, {
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, translate(lang, "overview", "balance_savings_title")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      borderRadius: 8,
+      padding: 4,
+      gap: 2,
+      marginBottom: 16,
+      flexWrap: "wrap"
+    }
+  }, [{
+    id: "balance",
+    label: translate(lang, "overview", "monthly_balance"),
+    icon: IconWallet
+  }, {
+    id: "savings",
+    label: translate(lang, "overview", "monthly_savings"),
+    icon: IconPiggyBank
+  }].map(t => {
+    const isActive = balSavTab === t.id;
+    const isPressed = pressedBalSavTab === t.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: t.id,
+      onClick: () => setBalSavTab(t.id),
+      onMouseDown: () => {
+        setPressedBalSavTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onMouseUp: () => setPressedBalSavTab(null),
+      onMouseLeave: () => setPressedBalSavTab(p => p === t.id ? null : p),
+      onTouchStart: () => {
+        setPressedBalSavTab(t.id);
+        try {
+          navigator.vibrate && navigator.vibrate(9);
+        } catch (e) {}
+      },
+      onTouchEnd: () => setPressedBalSavTab(null),
+      onTouchCancel: () => setPressedBalSavTab(null),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "7px 12px",
+        borderRadius: 8,
+        border: "none",
+        cursor: "pointer",
+        fontSize: 13,
+        fontWeight: 600,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: isActive ? "var(--card)" : "transparent",
+        color: isActive ? "var(--gold)" : "var(--slate)",
+        boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+        transform: isPressed ? "scale(0.91)" : "scale(1)",
+        transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
+        whiteSpace: "nowrap"
+      }
+    }, /*#__PURE__*/React.createElement(t.icon, {
+      size: 14
+    }), t.label);
+  })), /*#__PURE__*/React.createElement("div", {
+    key: balSavTab,
+    style: {
+      animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  }, balSavTab === "balance" && /*#__PURE__*/React.createElement(MonthlyBalanceCard, {
     lang: lang,
     totalReceitas: totalReceitas,
     totalDespesas: totalDespesas,
     saldo: saldo,
-    onNavigate: onNavigate
-  }), /*#__PURE__*/React.createElement(MonthlySavingsCard, {
+    onNavigate: onNavigate,
+    bare: true
+  }), balSavTab === "savings" && /*#__PURE__*/React.createElement(MonthlySavingsCard, {
     lang: lang,
     totalReceitas: totalReceitas,
-    totalDespesas: totalDespesas
-  }), /*#__PURE__*/React.createElement(QuickActionsRow, {
+    totalDespesas: totalDespesas,
+    bare: true
+  })))), /*#__PURE__*/React.createElement(QuickActionsRow, {
     lang: lang,
     onReceita: onQuickReceita,
     onDespesa: onQuickDespesa,
@@ -15604,12 +15936,11 @@ function Overview({
     }
   }, translate(lang, "overview", "view_all_charts"), " ", /*#__PURE__*/React.createElement(IconChevronRight, {
     size: 13
-  }))), categoryChartData.length === 0 ? /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14
-    }
-  }, translate(lang, "overview", "no_expenses_month")) : /*#__PURE__*/React.createElement(CategoryDonut, {
+  }))), categoryChartData.length === 0 ? /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconPieChart,
+    description: translate(lang, "overview", "no_expenses_month"),
+    compact: true
+  }) : /*#__PURE__*/React.createElement(CategoryDonut, {
     data: categoryChartData,
     onItemClick: onNavigateToCategory
   })), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
@@ -15688,12 +16019,11 @@ function Overview({
     style: {
       animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
     }
-  }, summaryTab === "interest" && (interestSummary.rows.length === 0 ? /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14
-    }
-  }, translate(lang, "overview", "no_interest_month")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, summaryTab === "interest" && (interestSummary.rows.length === 0 ? /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconPiggyBank,
+    description: translate(lang, "overview", "no_interest_month"),
+    compact: true
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13,
@@ -15757,12 +16087,11 @@ function Overview({
       fontSize: 11,
       color: "var(--slate)"
     }
-  }, translate(lang, "overview", "accrued")))))))), summaryTab === "debts" && (Object.keys(debtsByCurrency).length === 0 ? /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14
-    }
-  }, translate(lang, "overview", "no_debts")) : /*#__PURE__*/React.createElement(React.Fragment, null, overdueDebts.length > 0 && /*#__PURE__*/React.createElement("p", {
+  }, translate(lang, "overview", "accrued")))))))), summaryTab === "debts" && (Object.keys(debtsByCurrency).length === 0 ? /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconCreditCard,
+    description: translate(lang, "overview", "no_debts"),
+    compact: true
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, overdueDebts.length > 0 && /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--rust)",
       fontSize: 13,
@@ -15805,12 +16134,11 @@ function Overview({
       fontWeight: 600,
       color: "var(--emerald)"
     }
-  }, fmt(byType["A receber"], cur)))))))), summaryTab === "goals" && (goals.length === 0 ? /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14
-    }
-  }, translate(lang, "overview", "no_goals")) : /*#__PURE__*/React.createElement("div", {
+  }, fmt(byType["A receber"], cur)))))))), summaryTab === "goals" && (goals.length === 0 ? /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconTarget,
+    description: translate(lang, "overview", "no_goals"),
+    compact: true
+  }) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -21394,13 +21722,10 @@ function BondsTab({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
-  }), " Adicionar obrigação"), bonds.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
-    }
-  }, "Ainda não tem obrigações registadas.")) : /*#__PURE__*/React.createElement("div", {
+  }), " Adicionar obrigação"), bonds.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconFileText,
+    description: "Ainda não tem obrigações registadas."
+  })) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -21969,13 +22294,10 @@ function EquitiesTab({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
-  }), " Adicionar posição"), equities.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
-    }
-  }, "Ainda não tem ações registadas.")) : /*#__PURE__*/React.createElement("div", {
+  }), " Adicionar posição"), equities.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconBarChart3,
+    description: "Ainda não tem ações registadas."
+  })) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -22202,7 +22524,34 @@ function FundCard({
       fontSize: 12,
       color: "var(--slate)"
     }
-  }, fund.tipo, " · aplicado em ", new Date(fund.data_aplicacao + "T00:00:00").toLocaleDateString("pt-PT"))), /*#__PURE__*/React.createElement("div", {
+  }, fund.tipo, " · aplicado em ", new Date(fund.data_aplicacao + "T00:00:00").toLocaleDateString("pt-PT")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      marginTop: 6,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      padding: "2px 8px",
+      borderRadius: 20,
+      textTransform: "uppercase",
+      letterSpacing: 0.3,
+      color: fund.perfilRisco === "Conservador" ? "var(--emerald)" : fund.perfilRisco === "Arrojado" ? "var(--rust)" : "var(--gold)",
+      background: fund.perfilRisco === "Conservador" ? "color-mix(in srgb, var(--emerald) 14%, transparent)" : fund.perfilRisco === "Arrojado" ? "color-mix(in srgb, var(--rust) 14%, transparent)" : "color-mix(in srgb, var(--gold) 14%, transparent)"
+    }
+  }, fund.perfilRisco || "Moderado"), fund.taxaGestao != null && fund.taxaGestao !== "" && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 600,
+      padding: "2px 8px",
+      borderRadius: 20,
+      color: "var(--slate)",
+      background: "var(--paper)"
+    }
+  }, "Taxa de gestão: ", fund.taxaGestao, "%"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 4
@@ -22512,13 +22861,10 @@ function FundsTab({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
-  }), " Adicionar fundo"), funds.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
-    }
-  }, "Ainda não tem fundos registados.")) : /*#__PURE__*/React.createElement("div", {
+  }), " Adicionar fundo"), funds.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconBank,
+    description: "Ainda não tem fundos registados."
+  })) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -27137,13 +27483,10 @@ function GoalsTab({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
-  }), " ", translate(lang, "goals", "new_goal")), goals.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
-    }
-  }, translate(lang, "goals", "no_goals"))) : /*#__PURE__*/React.createElement("div", {
+  }), " ", translate(lang, "goals", "new_goal")), goals.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconTarget,
+    description: translate(lang, "goals", "no_goals")
+  })) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
@@ -27206,7 +27549,7 @@ function GoalsTab({
       style: {
         fontSize: 11,
         fontWeight: 700,
-        color: "var(--emerald)",
+        color: "var(--thrive)",
         marginTop: 3,
         display: "inline-flex",
         alignItems: "center",
@@ -27274,9 +27617,10 @@ function GoalsTab({
     }, fmt(monthly)), translate(lang, "goals", "save_monthly_suffix")), hasInterest && projectedIn12m > Number(g.current) && /*#__PURE__*/React.createElement("p", {
       style: {
         fontSize: 12,
-        color: "var(--emerald)",
+        color: "var(--thrive)",
         marginTop: 6,
-        marginBottom: 0
+        marginBottom: 0,
+        fontWeight: 600
       }
     }, translate(lang, "goals", "projected_growth_prefix"), " ", /*#__PURE__*/React.createElement("strong", null, fmt(projectedIn12m)), " ", translate(lang, "goals", "projected_growth_suffix")), /*#__PURE__*/React.createElement(PrimaryButton, {
       style: {
@@ -27584,13 +27928,10 @@ function DebtsTab({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
-  }), " ", translate(lang, "debts", "new_debt")), debts.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
-    }
-  }, translate(lang, "debts", "no_debts"))) : /*#__PURE__*/React.createElement("div", {
+  }), " ", translate(lang, "debts", "new_debt")), debts.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconScale,
+    description: translate(lang, "debts", "no_debts")
+  })) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
