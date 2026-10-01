@@ -1593,9 +1593,9 @@ function timelineDayLabel(dateStr) {
   today.setHours(0, 0, 0, 0);
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (d.getTime() === today.getTime()) return "Hoje";
-  if (d.getTime() === yesterday.getTime()) return "Ontem";
-  const label = d.toLocaleDateString("pt-PT", {
+  if (d.getTime() === today.getTime()) return translate(CURRENT_LANG, "ui", "today");
+  if (d.getTime() === yesterday.getTime()) return translate(CURRENT_LANG, "ui", "yesterday");
+  const label = d.toLocaleDateString(CURRENT_NUMBER_LOCALE, {
     weekday: "long",
     day: "numeric",
     month: "long"
@@ -1642,7 +1642,7 @@ function timelineNodeInfo(t, accounts) {
     return {
       icon: IconRepeat,
       bg: "var(--slate)",
-      title: "Transferência enviada",
+      title: translate(CURRENT_LANG, "ui", "transfer_sent"),
       subtitle: `${fromAcc ? fromAcc.bank.replace(/—.*/, "").trim() : "—"} → ${toAcc ? toAcc.bank.replace(/—.*/, "").trim() : "—"}`,
       amountColor: "var(--ink)",
       amountPrefix: "",
@@ -1656,7 +1656,7 @@ function timelineNodeInfo(t, accounts) {
     return {
       icon: IconArrowDownLeft,
       bg: "var(--emerald)",
-      title: `Recebeu ${t.description || t.category || "receita"}`,
+      title: `${translate(CURRENT_LANG, "ui", "received_prefix")} ${t.description || t.category || translate(CURRENT_LANG, "ui", "income_fallback")}`,
       subtitle: t.description ? `${t.category} · ${accName}` : accName,
       amountColor: "var(--emerald)",
       amountPrefix: "+ ",
@@ -1666,7 +1666,7 @@ function timelineNodeInfo(t, accounts) {
   return {
     icon: categoryIcon(t.category),
     bg: categoryColor(t.category),
-    title: `Pagou ${t.description || t.category}`,
+    title: `${translate(CURRENT_LANG, "ui", "paid_prefix")} ${t.description || t.category}`,
     subtitle: t.description ? `${t.category} · ${accName}` : accName,
     amountColor: "var(--rust)",
     amountPrefix: "− ",
@@ -3338,6 +3338,30 @@ const TRANSLATIONS = {
       privacy: "Como tratamos os seus dados na Fonsprince One."
     },
     ui: {
+      today: "Hoje",
+      yesterday: "Ontem",
+      transfer_sent: "Transferência enviada",
+      received_prefix: "Recebeu",
+      paid_prefix: "Pagou",
+      income_fallback: "receita",
+      cockpit_action_view: "Ver",
+      cockpit_action_adjust: "Ajustar",
+      cockpit_overdue_suffix: "está vencida",
+      cockpit_pay_prefix: "Pague",
+      cockpit_pay_suffix: "em breve",
+      cockpit_due: "vence",
+      cockpit_debt_overdue_prefix: "Dívida vencida:",
+      cockpit_budget_exceeded_prefix: "Orçamento de",
+      cockpit_budget_exceeded_suffix: "ultrapassado",
+      cockpit_budget_near_limit_suffix: "quase no limite",
+      cockpit_of: "de",
+      cockpit_spent_more_prefix: "Gastou",
+      cockpit_spent_more_suffix: "mais este mês",
+      cockpit_vs_last_month: "Face ao mês anterior",
+      cockpit_goal_near_prefix: "Falta pouco para",
+      cockpit_completed_suffix: "concluído",
+      cockpit_idle_liquidity_title: "Tem dinheiro parado a render pouco",
+      cockpit_idle_liquidity_subtitle_suffix: "disponíveis — considere investir ou reforçar uma meta",
       language: "Idioma",
       lang_pt: "Português",
       "lang_pt-BR": "Português (Brasil)",
@@ -4098,6 +4122,30 @@ const TRANSLATIONS = {
       privacy: "Como tratamos os seus dados na Fonsprince One."
     },
     ui: {
+      today: "Hoje",
+      yesterday: "Ontem",
+      transfer_sent: "Transferência enviada",
+      received_prefix: "Recebeu",
+      paid_prefix: "Pagou",
+      income_fallback: "receita",
+      cockpit_action_view: "Ver",
+      cockpit_action_adjust: "Ajustar",
+      cockpit_overdue_suffix: "está vencida",
+      cockpit_pay_prefix: "Pague",
+      cockpit_pay_suffix: "em breve",
+      cockpit_due: "vence",
+      cockpit_debt_overdue_prefix: "Dívida vencida:",
+      cockpit_budget_exceeded_prefix: "Orçamento de",
+      cockpit_budget_exceeded_suffix: "ultrapassado",
+      cockpit_budget_near_limit_suffix: "quase no limite",
+      cockpit_of: "de",
+      cockpit_spent_more_prefix: "Gastou",
+      cockpit_spent_more_suffix: "mais este mês",
+      cockpit_vs_last_month: "Em relação ao mês anterior",
+      cockpit_goal_near_prefix: "Falta pouco para",
+      cockpit_completed_suffix: "concluído",
+      cockpit_idle_liquidity_title: "Você tem dinheiro parado rendendo pouco",
+      cockpit_idle_liquidity_subtitle_suffix: "disponíveis — considere investir ou reforçar uma meta",
       language: "Idioma",
       lang_pt: "Português",
       "lang_pt-BR": "Português (Brasil)",
@@ -4858,6 +4906,30 @@ const TRANSLATIONS = {
       privacy: "How we handle your data in Fonsprince One."
     },
     ui: {
+      today: "Today",
+      yesterday: "Yesterday",
+      transfer_sent: "Transfer sent",
+      received_prefix: "Received",
+      paid_prefix: "Paid",
+      income_fallback: "income",
+      cockpit_action_view: "View",
+      cockpit_action_adjust: "Adjust",
+      cockpit_overdue_suffix: "is overdue",
+      cockpit_pay_prefix: "Pay",
+      cockpit_pay_suffix: "soon",
+      cockpit_due: "due",
+      cockpit_debt_overdue_prefix: "Overdue debt:",
+      cockpit_budget_exceeded_prefix: "Budget for",
+      cockpit_budget_exceeded_suffix: "exceeded",
+      cockpit_budget_near_limit_suffix: "near its limit",
+      cockpit_of: "of",
+      cockpit_spent_more_prefix: "You spent",
+      cockpit_spent_more_suffix: "more this month",
+      cockpit_vs_last_month: "Compared to last month",
+      cockpit_goal_near_prefix: "Almost there for",
+      cockpit_completed_suffix: "complete",
+      cockpit_idle_liquidity_title: "You have idle cash earning little",
+      cockpit_idle_liquidity_subtitle_suffix: "available — consider investing or boosting a goal",
       language: "Language",
       lang_pt: "Portuguese",
       "lang_pt-BR": "Portuguese (Brazil)",
@@ -5618,6 +5690,30 @@ const TRANSLATIONS = {
       privacy: "Comment nous traitons vos données dans Fonsprince One."
     },
     ui: {
+      today: "Aujourd'hui",
+      yesterday: "Hier",
+      transfer_sent: "Virement envoyé",
+      received_prefix: "Reçu",
+      paid_prefix: "Payé",
+      income_fallback: "revenu",
+      cockpit_action_view: "Voir",
+      cockpit_action_adjust: "Ajuster",
+      cockpit_overdue_suffix: "est en retard",
+      cockpit_pay_prefix: "Payez",
+      cockpit_pay_suffix: "bientôt",
+      cockpit_due: "échéance",
+      cockpit_debt_overdue_prefix: "Dette en retard :",
+      cockpit_budget_exceeded_prefix: "Budget de",
+      cockpit_budget_exceeded_suffix: "dépassé",
+      cockpit_budget_near_limit_suffix: "proche de la limite",
+      cockpit_of: "sur",
+      cockpit_spent_more_prefix: "Vous avez dépensé",
+      cockpit_spent_more_suffix: "de plus ce mois-ci",
+      cockpit_vs_last_month: "Par rapport au mois dernier",
+      cockpit_goal_near_prefix: "Presque atteint pour",
+      cockpit_completed_suffix: "atteint",
+      cockpit_idle_liquidity_title: "Vous avez des liquidités inactives peu rentables",
+      cockpit_idle_liquidity_subtitle_suffix: "disponibles — envisagez d'investir ou de renforcer un objectif",
       language: "Langue",
       lang_pt: "Portugais",
       "lang_pt-BR": "Portugais (Brésil)",
@@ -6378,6 +6474,30 @@ const TRANSLATIONS = {
       privacy: "Cómo tratamos sus datos en Fonsprince One."
     },
     ui: {
+      today: "Hoy",
+      yesterday: "Ayer",
+      transfer_sent: "Transferencia enviada",
+      received_prefix: "Recibiste",
+      paid_prefix: "Pagaste",
+      income_fallback: "ingreso",
+      cockpit_action_view: "Ver",
+      cockpit_action_adjust: "Ajustar",
+      cockpit_overdue_suffix: "está vencida",
+      cockpit_pay_prefix: "Paga",
+      cockpit_pay_suffix: "pronto",
+      cockpit_due: "vence",
+      cockpit_debt_overdue_prefix: "Deuda vencida:",
+      cockpit_budget_exceeded_prefix: "Presupuesto de",
+      cockpit_budget_exceeded_suffix: "superado",
+      cockpit_budget_near_limit_suffix: "cerca del límite",
+      cockpit_of: "de",
+      cockpit_spent_more_prefix: "Gastaste",
+      cockpit_spent_more_suffix: "más este mes",
+      cockpit_vs_last_month: "Respecto al mes anterior",
+      cockpit_goal_near_prefix: "Falta poco para",
+      cockpit_completed_suffix: "completado",
+      cockpit_idle_liquidity_title: "Tienes dinero parado con poco rendimiento",
+      cockpit_idle_liquidity_subtitle_suffix: "disponibles — considera invertir o reforzar una meta",
       language: "Idioma",
       lang_pt: "Portugués",
       "lang_pt-BR": "Portugués (Brasil)",
@@ -12059,19 +12179,19 @@ function FinanceApp() {
     }
   }, [{
     id: "overview",
-    label: "Geral",
+    label: translate(lang, "nav", "overview"),
     icon: IconDashboard
   }, {
     id: "accounts",
-    label: "Contas",
+    label: translate(lang, "nav", "accounts"),
     icon: IconBank
   }, {
     id: "transactions",
-    label: "Transações",
+    label: translate(lang, "nav", "transactions"),
     icon: IconReceipt
   }, {
     id: "debts",
-    label: "Empréstimos",
+    label: translate(lang, "nav", "debts"),
     icon: IconCreditCard
   }].map(t => /*#__PURE__*/React.createElement("button", {
     key: t.id,
@@ -12375,12 +12495,18 @@ function FinanceApp() {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
       }
-    }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(sheetTile))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "nav", "section_most_used")), /*#__PURE__*/React.createElement("div", {
+    }, ALL_NAV_TABS.filter(t => favoriteTabs.includes(t.id)).map(t => sheetTile({
+      ...t,
+      label: translate(lang, "nav", t.id)
+    })))), mostUsedTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "nav", "section_most_used")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
       }
-    }, mostUsedTabs.map(sheetTile))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "ui", "main_section")), /*#__PURE__*/React.createElement("div", {
+    }, mostUsedTabs.map(t => sheetTile({
+      ...t,
+      label: translate(lang, "nav", t.id)
+    })))), /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "ui", "main_section")), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)"
@@ -12608,9 +12734,9 @@ function buildCockpitDecisions({
       id: `rec-${r.id}`,
       tone: r.overdue ? "urgent" : "warning",
       icon: r.overdue ? IconAlertTriangle : IconClock,
-      title: r.overdue ? `${r.name} está vencida` : `Pague ${r.name} em breve`,
-      subtitle: `${fmt(r.amount)} · vence ${new Date(r.due + "T00:00:00").toLocaleDateString("pt-PT")}`,
-      actionLabel: "Ver",
+      title: r.overdue ? `${r.name} ${translate(CURRENT_LANG, "ui", "cockpit_overdue_suffix")}` : `${translate(CURRENT_LANG, "ui", "cockpit_pay_prefix")} ${r.name} ${translate(CURRENT_LANG, "ui", "cockpit_pay_suffix")}`,
+      subtitle: `${fmt(r.amount)} · ${translate(CURRENT_LANG, "ui", "cockpit_due")} ${new Date(r.due + "T00:00:00").toLocaleDateString(CURRENT_NUMBER_LOCALE)}`,
+      actionLabel: translate(CURRENT_LANG, "ui", "cockpit_action_view"),
       tab: "budget"
     });
   }
@@ -12620,9 +12746,9 @@ function buildCockpitDecisions({
       id: `debt-${d.id}`,
       tone: "urgent",
       icon: IconAlertTriangle,
-      title: `Dívida vencida: ${d.creditor}`,
+      title: `${translate(CURRENT_LANG, "ui", "cockpit_debt_overdue_prefix")} ${d.creditor}`,
       subtitle: fmt(debtBalance(d, debtPayments), d.currency),
-      actionLabel: "Ver",
+      actionLabel: translate(CURRENT_LANG, "ui", "cockpit_action_view"),
       tab: "debts"
     });
   }
@@ -12645,9 +12771,9 @@ function buildCockpitDecisions({
       id: `budget-${b.cat}`,
       tone: b.pct >= 1 ? "urgent" : "warning",
       icon: b.pct >= 1 ? IconAlertTriangle : IconTrendingUp,
-      title: b.pct >= 1 ? `Orçamento de ${b.cat} ultrapassado` : `${b.cat} quase no limite`,
-      subtitle: `${fmt(b.spent)} de ${fmt(b.lim)} (${Math.round(b.pct * 100)}%)`,
-      actionLabel: "Ajustar",
+      title: b.pct >= 1 ? `${translate(CURRENT_LANG, "ui", "cockpit_budget_exceeded_prefix")} ${b.cat} ${translate(CURRENT_LANG, "ui", "cockpit_budget_exceeded_suffix")}` : `${b.cat} ${translate(CURRENT_LANG, "ui", "cockpit_budget_near_limit_suffix")}`,
+      subtitle: `${fmt(b.spent)} ${translate(CURRENT_LANG, "ui", "cockpit_of")} ${fmt(b.lim)} (${Math.round(b.pct * 100)}%)`,
+      actionLabel: translate(CURRENT_LANG, "ui", "cockpit_action_adjust"),
       tab: "budget"
     });
   }
@@ -12658,9 +12784,9 @@ function buildCockpitDecisions({
       id: "spike",
       tone: "warning",
       icon: IconTrendingUp,
-      title: `Gastou ${spendingChangePct.toFixed(0)}% mais este mês`,
-      subtitle: "Face ao mês anterior",
-      actionLabel: "Ver",
+      title: `${translate(CURRENT_LANG, "ui", "cockpit_spent_more_prefix")} ${spendingChangePct.toFixed(0)}% ${translate(CURRENT_LANG, "ui", "cockpit_spent_more_suffix")}`,
+      subtitle: translate(CURRENT_LANG, "ui", "cockpit_vs_last_month"),
+      actionLabel: translate(CURRENT_LANG, "ui", "cockpit_action_view"),
       tab: "budget"
     });
   }
@@ -12680,9 +12806,9 @@ function buildCockpitDecisions({
       id: "goal",
       tone: "opportunity",
       icon: IconTarget,
-      title: `Falta pouco para "${nearestGoal.name}"`,
-      subtitle: `${nearestGoal.pct.toFixed(0)}% concluído`,
-      actionLabel: "Ver",
+      title: `${translate(CURRENT_LANG, "ui", "cockpit_goal_near_prefix")} "${nearestGoal.name}"`,
+      subtitle: `${nearestGoal.pct.toFixed(0)}% ${translate(CURRENT_LANG, "ui", "cockpit_completed_suffix")}`,
+      actionLabel: translate(CURRENT_LANG, "ui", "cockpit_action_view"),
       tab: "goals"
     });
   }
@@ -12692,9 +12818,9 @@ function buildCockpitDecisions({
       id: "idle-liquidity",
       tone: "opportunity",
       icon: IconPig,
-      title: "Tem dinheiro parado a render pouco",
-      subtitle: `${fmtCompact(liquidKzNow)} disponíveis — considere investir ou reforçar uma meta`,
-      actionLabel: "Ver",
+      title: translate(CURRENT_LANG, "ui", "cockpit_idle_liquidity_title"),
+      subtitle: `${fmtCompact(liquidKzNow)} ${translate(CURRENT_LANG, "ui", "cockpit_idle_liquidity_subtitle_suffix")}`,
+      actionLabel: translate(CURRENT_LANG, "ui", "cockpit_action_view"),
       tab: "planning"
     });
   }
@@ -14843,10 +14969,10 @@ function lastMovementForAccount(account, transactions) {
   if (t.kind === "transferencia") {
     const isOutgoing = t.fromAccountId === account.id;
     signedAmount = isOutgoing ? -Number(t.amount) : Number(t.amount);
-    label = isOutgoing ? "Transferência enviada" : "Transferência recebida";
+    label = isOutgoing ? translate(CURRENT_LANG, "ui", "transfer_sent") : translate(CURRENT_LANG, "ui", "transfer_received");
   } else {
     signedAmount = t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
-    label = t.description || t.category || (t.kind === "receita" ? "Receita" : "Despesa");
+    label = t.description || t.category || (t.kind === "receita" ? translate(CURRENT_LANG, "overview", "action_income") : translate(CURRENT_LANG, "overview", "action_expense"));
   }
   return {
     date: t.date,
@@ -15321,7 +15447,7 @@ function AccountCard({
       color: "var(--slate)",
       marginTop: 3
     }
-  }, new Date(lastMovement.date + "T00:00:00").toLocaleDateString("pt-PT"))), /*#__PURE__*/React.createElement("div", {
+  }, new Date(lastMovement.date + "T00:00:00").toLocaleDateString(CURRENT_NUMBER_LOCALE))), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 14,
       fontWeight: 700,
@@ -16398,7 +16524,7 @@ function AccountDetailPanel({
       letterSpacing: 0.4,
       marginBottom: 10
     }
-  }, "Movimentos recentes"), /*#__PURE__*/React.createElement("div", {
+  }, translate(lang, "ui", "recent_movements")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -16408,7 +16534,7 @@ function AccountDetailPanel({
     const isTransfer = t.kind === "transferencia";
     const isOutgoing = isTransfer && t.fromAccountId === account.id;
     const signedAmount = isTransfer ? isOutgoing ? -Number(t.amount) : Number(t.amount) : t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
-    const label = isTransfer ? isOutgoing ? "Transferência enviada" : "Transferência recebida" : t.description || t.category;
+    const label = isTransfer ? isOutgoing ? translate(lang, "ui", "transfer_sent") : translate(lang, "ui", "transfer_received") : t.description || t.category;
     return /*#__PURE__*/React.createElement("div", {
       key: t.id,
       style: {
@@ -16453,7 +16579,7 @@ function AccountDetailPanel({
         fontSize: 11,
         color: "var(--slate)"
       }
-    }, new Date(t.date + "T00:00:00").toLocaleDateString("pt-PT")))), /*#__PURE__*/React.createElement("div", {
+    }, new Date(t.date + "T00:00:00").toLocaleDateString(CURRENT_NUMBER_LOCALE)))), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'IBM Plex Mono', monospace",
         fontWeight: 700,
@@ -16589,13 +16715,13 @@ function SubBalanceDetailPanel({
       letterSpacing: 0.4,
       marginBottom: 10
     }
-  }, "Movimentos"), subTx.length === 0 ? /*#__PURE__*/React.createElement("p", {
+  }, translate(lang, "ui", "movements")), subTx.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       color: "var(--slate)",
       fontSize: 13,
       margin: 0
     }
-  }, "Ainda sem movimentos neste saldo.") : /*#__PURE__*/React.createElement("div", {
+  }, translate(lang, "ui", "no_movements_in_balance")) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -16605,7 +16731,7 @@ function SubBalanceDetailPanel({
     const isTransfer = t.kind === "transferencia";
     const isOutgoing = isTransfer && t.fromSubBalanceId === sub.id;
     const signedAmount = isTransfer ? isOutgoing ? -Number(t.amount) : Number(t.amount) : t.kind === "receita" ? Number(t.amount) : -Number(t.amount);
-    const label = isTransfer ? isOutgoing ? "Transferência enviada" : "Transferência recebida" : t.description || t.category;
+    const label = isTransfer ? isOutgoing ? translate(lang, "ui", "transfer_sent") : translate(lang, "ui", "transfer_received") : t.description || t.category;
     return /*#__PURE__*/React.createElement("div", {
       key: t.id,
       style: {
@@ -16650,7 +16776,7 @@ function SubBalanceDetailPanel({
         fontSize: 11,
         color: "var(--slate)"
       }
-    }, new Date(t.date + "T00:00:00").toLocaleDateString("pt-PT")))), /*#__PURE__*/React.createElement("div", {
+    }, new Date(t.date + "T00:00:00").toLocaleDateString(CURRENT_NUMBER_LOCALE)))), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'IBM Plex Mono', monospace",
         fontWeight: 700,
