@@ -3872,6 +3872,8 @@ const TRANSLATIONS = {
       name_step_title: "Como se chama?",
       name_step_text: "Vamos personalizar a sua experiência.",
       name_placeholder: "O seu nome",
+      country_step_label: "País / Mercado",
+      country_step_hint: "Isto define a moeda, os bancos e os impostos usados na aplicação. Pode alterar mais tarde em Definições.",
       prefer_not_to_say: "Prefiro não dizer",
       motivation_step_title: "O que procura na Fonsprince One?",
       motivation_step_text: "Escolha uma ou mais opções — vamos adaptar as sugestões a isso.",
@@ -4731,6 +4733,8 @@ const TRANSLATIONS = {
       name_step_title: "Como se chama?",
       name_step_text: "Vamos personalizar a sua experiência.",
       name_placeholder: "O seu nome",
+      country_step_label: "País / Mercado",
+      country_step_hint: "Isto define a moeda, os bancos e os impostos usados na aplicação. Pode alterar mais tarde em Definições.",
       prefer_not_to_say: "Prefiro não dizer",
       motivation_step_title: "O que procura na Fonsprince One?",
       motivation_step_text: "Escolha uma ou mais opções — vamos adaptar as sugestões a isso.",
@@ -5590,6 +5594,8 @@ const TRANSLATIONS = {
       name_step_title: "What's your name?",
       name_step_text: "Let's personalize your experience.",
       name_placeholder: "Your name",
+      country_step_label: "Country / Market",
+      country_step_hint: "This sets the currency, banks, and taxes used in the app. You can change it later in Settings.",
       prefer_not_to_say: "Prefer not to say",
       motivation_step_title: "What are you looking for in Fonsprince One?",
       motivation_step_text: "Pick one or more — we'll tailor suggestions to that.",
@@ -6449,6 +6455,8 @@ const TRANSLATIONS = {
       name_step_title: "Comment vous appelez-vous ?",
       name_step_text: "Personnalisons votre expérience.",
       name_placeholder: "Votre nom",
+      country_step_label: "Pays / Marché",
+      country_step_hint: "Cela définit la devise, les banques et les impôts utilisés dans l'application. Vous pourrez le modifier plus tard dans Paramètres.",
       prefer_not_to_say: "Préfère ne pas dire",
       motivation_step_title: "Que recherchez-vous dans Fonsprince One ?",
       motivation_step_text: "Choisissez une ou plusieurs options — nous adapterons nos suggestions.",
@@ -7308,6 +7316,8 @@ const TRANSLATIONS = {
       name_step_title: "¿Cómo te llamas?",
       name_step_text: "Vamos a personalizar tu experiencia.",
       name_placeholder: "Tu nombre",
+      country_step_label: "País / Mercado",
+      country_step_hint: "Esto define la moneda, los bancos y los impuestos usados en la aplicación. Puedes cambiarlo más tarde en Ajustes.",
       prefer_not_to_say: "Prefiero no decirlo",
       motivation_step_title: "¿Qué buscas en Fonsprince One?",
       motivation_step_text: "Elige una o más opciones — adaptaremos las sugerencias a eso.",
@@ -8602,6 +8612,8 @@ function OnboardingModal({
   lang,
   userName,
   onSetUserName,
+  country,
+  onSetCountry,
   onSetMotivations,
   onClose,
   onStart,
@@ -8609,6 +8621,7 @@ function OnboardingModal({
 }) {
   const [step, setStep] = useState(0);
   const [nameDraft, setNameDraft] = useState(userName || "");
+  const [countryDraft, setCountryDraft] = useState(country || "AO");
   const [selectedMotivations, setSelectedMotivations] = useState([]);
   const steps = [{
     icon: IconBank,
@@ -8675,7 +8688,10 @@ function OnboardingModal({
     }
   }
   function goNext() {
-    if (step === 1) onSetUserName && onSetUserName(nameDraft.trim());
+    if (step === 1) {
+      onSetUserName && onSetUserName(nameDraft.trim());
+      onSetCountry && onSetCountry(countryDraft);
+    }
     if (step === 2) onSetMotivations && onSetMotivations(selectedMotivations);
     setStep(s => s + 1);
   }
@@ -8772,7 +8788,22 @@ function OnboardingModal({
       onChange: e => setNameDraft(e.target.value),
       placeholder: translate(lang, "onboarding", "name_placeholder"),
       onKeyDown: e => e.key === "Enter" && goNext()
-    }), /*#__PURE__*/React.createElement(PrimaryButton, {
+    }), /*#__PURE__*/React.createElement(Field, {
+      label: translate(lang, "onboarding", "country_step_label")
+    }, /*#__PURE__*/React.createElement("select", {
+      style: inputStyle,
+      value: countryDraft,
+      onChange: e => setCountryDraft(e.target.value)
+    }, Object.entries(MARKETS).map(([code, m]) => /*#__PURE__*/React.createElement("option", {
+      key: code,
+      value: code
+    }, m.name))), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)",
+        margin: "6px 0 0"
+      }
+    }, translate(lang, "onboarding", "country_step_hint"))), /*#__PURE__*/React.createElement(PrimaryButton, {
       onClick: goNext
     }, translate(lang, "onboarding", "continue")), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
@@ -12931,6 +12962,11 @@ function FinanceApp() {
     lang: lang,
     userName: userName,
     onSetUserName: setUserName,
+    country: country,
+    onSetCountry: c => {
+      setCountry(c);
+      setLang((MARKETS[c] || MARKETS.AO).lang);
+    },
     onSetMotivations: setOnboardingMotivations,
     showToast: showToast,
     onClose: () => setOnboardingDismissed(true),
