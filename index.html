@@ -908,6 +908,40 @@ const IconShieldCheck = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE
 }), /*#__PURE__*/React.createElement("path", {
   d: "m9 12 2 2 4-4"
 }));
+const IconPiggyBank = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__*/React.createElement("path", {
+  d: "M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"
+}), /*#__PURE__*/React.createElement("path", {
+  d: "M2 9v1c0 1.1.9 2 2 2h1"
+}), /*#__PURE__*/React.createElement("circle", {
+  cx: "16",
+  cy: "11",
+  r: "0.5",
+  fill: "currentColor",
+  stroke: "none"
+}));
+const IconShare2 = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__*/React.createElement("circle", {
+  cx: "18",
+  cy: "5",
+  r: "3"
+}), /*#__PURE__*/React.createElement("circle", {
+  cx: "6",
+  cy: "12",
+  r: "3"
+}), /*#__PURE__*/React.createElement("circle", {
+  cx: "18",
+  cy: "19",
+  r: "3"
+}), /*#__PURE__*/React.createElement("line", {
+  x1: "8.59",
+  y1: "13.51",
+  x2: "15.42",
+  y2: "17.49"
+}), /*#__PURE__*/React.createElement("line", {
+  x1: "15.41",
+  y1: "6.51",
+  x2: "8.59",
+  y2: "10.49"
+}));
 
 /* ---------------- data ---------------- */
 
@@ -2019,6 +2053,73 @@ function fundRentabilidade(f) {
 function fundResgatado(f) {
   return (f.redemptions || []).reduce((s, r) => s + Number(r.valor), 0);
 }
+const RECOMMENDED_ALLOCATION = {
+  Conservador: {
+    Conservador: 60,
+    Moderado: 30,
+    Arrojado: 10
+  },
+  Moderado: {
+    Conservador: 30,
+    Moderado: 40,
+    Arrojado: 30
+  },
+  Arrojado: {
+    Conservador: 15,
+    Moderado: 35,
+    Arrojado: 50
+  }
+};
+function investmentAllocationBreakdown({
+  equities,
+  bonds,
+  funds,
+  exchangeRates
+}) {
+  const buckets = {
+    Conservador: 0,
+    Moderado: 0,
+    Arrojado: 0
+  };
+  for (const eq of equities || []) {
+    const kz = toKz(equityValorAtual(eq), eq.moeda, exchangeRates);
+    if (kz) buckets.Arrojado += kz;
+  }
+  for (const b of bonds || []) {
+    const kz = toKz(Number(b.valor_atual) || 0, b.moeda, exchangeRates);
+    if (kz) buckets.Conservador += kz;
+  }
+  for (const f of funds || []) {
+    const kz = toKz(fundValorAtual(f), f.moeda, exchangeRates);
+    if (!kz) continue;
+    const bucket = ["Conservador", "Moderado", "Arrojado"].includes(f.perfilRisco) ? f.perfilRisco : "Moderado";
+    buckets[bucket] += kz;
+  }
+  const total = buckets.Conservador + buckets.Moderado + buckets.Arrojado;
+  return {
+    ...buckets,
+    total
+  };
+}
+function weightedFundExpenseRatio({
+  funds,
+  exchangeRates
+}) {
+  let weightedSum = 0;
+  let totalKz = 0;
+  for (const f of funds || []) {
+    if (f.taxaGestao == null || f.taxaGestao === "") continue;
+    const kz = toKz(fundValorAtual(f), f.moeda, exchangeRates);
+    if (!kz) continue;
+    weightedSum += kz * (Number(f.taxaGestao) / 100);
+    totalKz += kz;
+  }
+  if (totalKz <= 0) return null;
+  return {
+    weightedPct: weightedSum / totalKz * 100,
+    totalKz
+  };
+}
 const EVENT_TYPES = ["Pagamento de Cupão", "Dividendo", "Vencimento", "Resgate", "Outro"];
 function investmentUpcomingEvents(daysWindow, events, bonds) {
   const today = new Date();
@@ -2544,6 +2645,12 @@ function goalMonthlySavingsNeeded(goal) {
   const months = monthsUntil(goal.deadline);
   if (months === null) return null;
   return remaining / Math.max(months, 1);
+}
+function projectGoalGrowth(current, annualRatePct, months) {
+  const rate = Number(annualRatePct || 0) / 100;
+  if (!rate || !current) return Number(current) || 0;
+  const monthlyRate = rate / 12;
+  return Number(current) * Math.pow(1 + monthlyRate, months);
 }
 function liquidAssetsKz(accounts, transactions, exchangeRates, asOfDate) {
   let total = 0;
@@ -3489,6 +3596,7 @@ const TRANSLATIONS = {
       first_step_bank_account: "Cadastre uma conta bancária",
       first_step_first_transaction: "Registe a sua primeira transação",
       first_step_credit_card: "Cadastre um cartão de crédito",
+      health_score_how_calculated: "Como calculamos",
       done_suffix: "feito",
       action_income: "Receita",
       action_expense: "Despesa",
@@ -3756,6 +3864,31 @@ const TRANSLATIONS = {
       delete_blocked: "Este membro tem movimentos associados e não pode ser removido. Renomeie-o em vez disso, ou edite esses movimentos primeiro.",
       delete_confirm: "Remover o membro \"{member}\"?"
     },
+    onboarding: {
+      welcome_title: "Bem-vindo ao Fonsprince One",
+      welcome_text: "Um controlo financeiro pessoal completo, feito à sua medida.",
+      continue: "Continuar",
+      skip_for_now: "Saltar por agora",
+      name_step_title: "Como se chama?",
+      name_step_text: "Vamos personalizar a sua experiência.",
+      name_placeholder: "O seu nome",
+      prefer_not_to_say: "Prefiro não dizer",
+      motivation_step_title: "O que procura na Fonsprince One?",
+      motivation_step_text: "Escolha uma ou mais opções — vamos adaptar as sugestões a isso.",
+      motivation_spending: "Controlar os gastos do dia a dia",
+      motivation_saving: "Poupar para um objetivo",
+      motivation_debt: "Sair de dívidas",
+      motivation_investing: "Investir com mais confiança",
+      motivation_family: "Gerir as finanças da família",
+      motivation_other: "Outro motivo",
+      ready_title_prefix: "Tudo pronto",
+      ready_text: "Vamos construir isto consigo, um passo de cada vez.",
+      create_first_account: "Criar a minha primeira conta",
+      share_prompt: "Se a Fonsprince One lhe for útil, conte a alguém que também possa precisar.",
+      share_button: "Partilhar com um amigo",
+      share_message: "Estou a usar a Fonsprince One para organizar as minhas finanças — experimenta também.",
+      share_copied: "Mensagem copiada! Já pode colar e enviar."
+    },
     goals: {
       new_goal: "Nova meta",
       no_goals: "Ainda não criou nenhuma meta de poupança.",
@@ -3773,6 +3906,11 @@ const TRANSLATIONS = {
       field_target_value: "Valor alvo",
       field_deadline_optional: "Prazo (opcional)",
       deadline_hint: "Com um prazo definido, o app calcula quanto precisa de poupar por mês.",
+      field_interest_rate_optional: "Taxa de juro anual (opcional)",
+      interest_rate_hint: "Para poupanças remuneradas (pote com juros): o app projeta o crescimento do saldo já guardado, além das suas contribuições.",
+      interest_rate_suffix: "ao ano",
+      projected_growth_prefix: "Com os juros, em 12 meses o saldo atual chegaria a",
+      projected_growth_suffix: "sem novas contribuições.",
       save_changes: "Guardar alterações",
       create_goal: "Criar meta",
       contribute_title_prefix: "Contribuir para \"",
@@ -3783,6 +3921,20 @@ const TRANSLATIONS = {
     planning: {
       health_score_title: "Saúde Financeira",
       health_desc: "Combina liquidez, taxa de poupança, endividamento, peso de investimentos e evolução do património — 20 pontos cada.",
+      allocation_title: "Verificação de Alocação",
+      allocation_desc: "Compara como as suas ações, obrigações e fundos estão distribuídos com uma referência recomendada para o perfil de risco escolhido.",
+      allocation_empty: "Ainda não tem ações, obrigações ou fundos registados para analisar.",
+      allocation_recommended_prefix: "recomendado",
+      profile_conservador: "Conservador",
+      profile_moderado: "Moderado",
+      profile_arrojado: "Arrojado",
+      fee_analyzer_title: "Analisador de Taxas",
+      fee_analyzer_desc: "Taxa de gestão média ponderada dos seus fundos, e o que isso representa em custo ao longo do tempo.",
+      fee_analyzer_empty: "Defina a taxa de gestão de pelo menos um fundo para ver esta análise.",
+      fee_weighted_avg: "Taxa média ponderada",
+      fee_annual_cost: "Custo anual estimado",
+      fee_10y_cost: "Custo em 10 anos (estimado)",
+      fee_analyzer_note: "Estimativa simples assumindo o valor atual da carteira e a taxa constante ao longo do tempo — não considera crescimento nem alterações na carteira.",
       networth_title: "Património líquido — projeção",
       networth_desc_prefix: "Saldos em todas as contas (convertidos para Kz) mais dívidas a receber, menos dívidas a pagar. Projetado com base no resultado mensal médio atual (",
       networth_desc_suffix: "/mês).",
@@ -4303,6 +4455,7 @@ const TRANSLATIONS = {
       first_step_bank_account: "Cadastre uma conta bancária",
       first_step_first_transaction: "Registe a sua primeira transação",
       first_step_credit_card: "Cadastre um cartão de crédito",
+      health_score_how_calculated: "Como calculamos",
       done_suffix: "feito",
       action_income: "Receita",
       action_expense: "Despesa",
@@ -4570,6 +4723,31 @@ const TRANSLATIONS = {
       delete_blocked: "Este membro tem movimentos associados e não pode ser removido. Renomeie-o em vez disso, ou edite esses movimentos primeiro.",
       delete_confirm: "Remover o membro \"{member}\"?"
     },
+    onboarding: {
+      welcome_title: "Bem-vindo ao Fonsprince One",
+      welcome_text: "Um controlo financeiro pessoal completo, feito à sua medida.",
+      continue: "Continuar",
+      skip_for_now: "Saltar por agora",
+      name_step_title: "Como se chama?",
+      name_step_text: "Vamos personalizar a sua experiência.",
+      name_placeholder: "O seu nome",
+      prefer_not_to_say: "Prefiro não dizer",
+      motivation_step_title: "O que procura na Fonsprince One?",
+      motivation_step_text: "Escolha uma ou mais opções — vamos adaptar as sugestões a isso.",
+      motivation_spending: "Controlar os gastos do dia a dia",
+      motivation_saving: "Poupar para um objetivo",
+      motivation_debt: "Sair de dívidas",
+      motivation_investing: "Investir com mais confiança",
+      motivation_family: "Gerir as finanças da família",
+      motivation_other: "Outro motivo",
+      ready_title_prefix: "Tudo pronto",
+      ready_text: "Vamos construir isto consigo, um passo de cada vez.",
+      create_first_account: "Criar a minha primeira conta",
+      share_prompt: "Se a Fonsprince One lhe for útil, conte a alguém que também possa precisar.",
+      share_button: "Partilhar com um amigo",
+      share_message: "Estou a usar a Fonsprince One para organizar as minhas finanças — experimenta também.",
+      share_copied: "Mensagem copiada! Já pode colar e enviar."
+    },
     goals: {
       new_goal: "Nova meta",
       no_goals: "Ainda não criou nenhuma meta de poupança.",
@@ -4587,6 +4765,11 @@ const TRANSLATIONS = {
       field_target_value: "Valor alvo",
       field_deadline_optional: "Prazo (opcional)",
       deadline_hint: "Com um prazo definido, o app calcula quanto precisa de poupar por mês.",
+      field_interest_rate_optional: "Taxa de juro anual (opcional)",
+      interest_rate_hint: "Para poupanças remuneradas (pote com juros): o app projeta o crescimento do saldo já guardado, além das suas contribuições.",
+      interest_rate_suffix: "ao ano",
+      projected_growth_prefix: "Com os juros, em 12 meses o saldo atual chegaria a",
+      projected_growth_suffix: "sem novas contribuições.",
       save_changes: "Salvar alterações",
       create_goal: "Criar meta",
       contribute_title_prefix: "Contribuir para \"",
@@ -4597,6 +4780,20 @@ const TRANSLATIONS = {
     planning: {
       health_score_title: "Saúde Financeira",
       health_desc: "Combina liquidez, taxa de poupança, endividamento, peso de investimentos e evolução do património — 20 pontos cada.",
+      allocation_title: "Verificação de Alocação",
+      allocation_desc: "Compara como as suas ações, obrigações e fundos estão distribuídos com uma referência recomendada para o perfil de risco escolhido.",
+      allocation_empty: "Ainda não tem ações, obrigações ou fundos registados para analisar.",
+      allocation_recommended_prefix: "recomendado",
+      profile_conservador: "Conservador",
+      profile_moderado: "Moderado",
+      profile_arrojado: "Arrojado",
+      fee_analyzer_title: "Analisador de Taxas",
+      fee_analyzer_desc: "Taxa de gestão média ponderada dos seus fundos, e o que isso representa em custo ao longo do tempo.",
+      fee_analyzer_empty: "Defina a taxa de gestão de pelo menos um fundo para ver esta análise.",
+      fee_weighted_avg: "Taxa média ponderada",
+      fee_annual_cost: "Custo anual estimado",
+      fee_10y_cost: "Custo em 10 anos (estimado)",
+      fee_analyzer_note: "Estimativa simples assumindo o valor atual da carteira e a taxa constante ao longo do tempo — não considera crescimento nem alterações na carteira.",
       networth_title: "Património líquido — projeção",
       networth_desc_prefix: "Saldos em todas as contas (convertidos para Kz) mais dívidas a receber, menos dívidas a pagar. Projetado com base no resultado mensal médio atual (",
       networth_desc_suffix: "/mês).",
@@ -5117,6 +5314,7 @@ const TRANSLATIONS = {
       first_step_bank_account: "Add a bank account",
       first_step_first_transaction: "Log your first transaction",
       first_step_credit_card: "Add a credit card",
+      health_score_how_calculated: "How we calculate this",
       done_suffix: "done",
       action_income: "Income",
       action_expense: "Expense",
@@ -5384,6 +5582,31 @@ const TRANSLATIONS = {
       delete_blocked: "This member has transactions and can't be removed. Rename it instead, or edit those transactions first.",
       delete_confirm: "Remove member \"{member}\"?"
     },
+    onboarding: {
+      welcome_title: "Welcome to Fonsprince One",
+      welcome_text: "A complete personal finance tracker, built around you.",
+      continue: "Continue",
+      skip_for_now: "Skip for now",
+      name_step_title: "What's your name?",
+      name_step_text: "Let's personalize your experience.",
+      name_placeholder: "Your name",
+      prefer_not_to_say: "Prefer not to say",
+      motivation_step_title: "What are you looking for in Fonsprince One?",
+      motivation_step_text: "Pick one or more — we'll tailor suggestions to that.",
+      motivation_spending: "Track day-to-day spending",
+      motivation_saving: "Save for a goal",
+      motivation_debt: "Get out of debt",
+      motivation_investing: "Invest with more confidence",
+      motivation_family: "Manage family finances",
+      motivation_other: "Something else",
+      ready_title_prefix: "All set",
+      ready_text: "Let's build this with you, one step at a time.",
+      create_first_account: "Create my first account",
+      share_prompt: "If Fonsprince One is useful to you, tell someone who might need it too.",
+      share_button: "Share with a friend",
+      share_message: "I'm using Fonsprince One to organize my finances — you should try it too.",
+      share_copied: "Message copied! You can paste and send it now."
+    },
     goals: {
       new_goal: "New goal",
       no_goals: "You haven't created any savings goal yet.",
@@ -5401,6 +5624,11 @@ const TRANSLATIONS = {
       field_target_value: "Target amount",
       field_deadline_optional: "Deadline (optional)",
       deadline_hint: "With a deadline set, the app calculates how much you need to save per month.",
+      field_interest_rate_optional: "Annual interest rate (optional)",
+      interest_rate_hint: "For interest-bearing savings pots: the app projects how the balance already saved will grow, on top of your contributions.",
+      interest_rate_suffix: "per year",
+      projected_growth_prefix: "With interest, in 12 months the current balance would reach",
+      projected_growth_suffix: "with no further contributions.",
       save_changes: "Save changes",
       create_goal: "Create goal",
       contribute_title_prefix: "Contribute to \"",
@@ -5411,6 +5639,20 @@ const TRANSLATIONS = {
     planning: {
       health_score_title: "Financial Health",
       health_desc: "Combines liquidity, savings rate, debt level, investment share and net worth trend — 20 points each.",
+      allocation_title: "Investment Allocation Checkup",
+      allocation_desc: "Compares how your stocks, bonds and funds are split against a recommended mix for the chosen risk profile.",
+      allocation_empty: "You don't have any stocks, bonds or funds registered yet to analyze.",
+      allocation_recommended_prefix: "recommended",
+      profile_conservador: "Conservative",
+      profile_moderado: "Moderate",
+      profile_arrojado: "Aggressive",
+      fee_analyzer_title: "Fee Analyzer",
+      fee_analyzer_desc: "Weighted average management fee across your funds, and what that costs you over time.",
+      fee_analyzer_empty: "Set the management fee on at least one fund to see this analysis.",
+      fee_weighted_avg: "Weighted average fee",
+      fee_annual_cost: "Estimated annual cost",
+      fee_10y_cost: "10-year cost (estimated)",
+      fee_analyzer_note: "A simple estimate using the portfolio's current value and a constant fee over time — it doesn't account for growth or portfolio changes.",
       networth_title: "Net worth — projection",
       networth_desc_prefix: "Balances across all accounts (converted to Kz) plus debts receivable, minus debts payable. Projected based on the current average monthly result (",
       networth_desc_suffix: "/month).",
@@ -5931,6 +6173,7 @@ const TRANSLATIONS = {
       first_step_bank_account: "Ajoutez un compte bancaire",
       first_step_first_transaction: "Enregistrez votre première transaction",
       first_step_credit_card: "Ajoutez une carte de crédit",
+      health_score_how_calculated: "Comment nous calculons cela",
       done_suffix: "fait",
       action_income: "Revenu",
       action_expense: "Dépense",
@@ -6198,6 +6441,31 @@ const TRANSLATIONS = {
       delete_blocked: "Ce membre a des mouvements associés et ne peut pas être supprimé. Renommez-le plutôt, ou modifiez d'abord ces mouvements.",
       delete_confirm: "Supprimer le membre « {member} » ?"
     },
+    onboarding: {
+      welcome_title: "Bienvenue sur Fonsprince One",
+      welcome_text: "Un suivi financier personnel complet, pensé pour vous.",
+      continue: "Continuer",
+      skip_for_now: "Passer pour l'instant",
+      name_step_title: "Comment vous appelez-vous ?",
+      name_step_text: "Personnalisons votre expérience.",
+      name_placeholder: "Votre nom",
+      prefer_not_to_say: "Préfère ne pas dire",
+      motivation_step_title: "Que recherchez-vous dans Fonsprince One ?",
+      motivation_step_text: "Choisissez une ou plusieurs options — nous adapterons nos suggestions.",
+      motivation_spending: "Suivre les dépenses du quotidien",
+      motivation_saving: "Épargner pour un objectif",
+      motivation_debt: "Sortir de l'endettement",
+      motivation_investing: "Investir avec plus de confiance",
+      motivation_family: "Gérer les finances familiales",
+      motivation_other: "Autre raison",
+      ready_title_prefix: "Tout est prêt",
+      ready_text: "Construisons cela ensemble, étape par étape.",
+      create_first_account: "Créer mon premier compte",
+      share_prompt: "Si Fonsprince One vous est utile, parlez-en à quelqu'un qui pourrait en avoir besoin.",
+      share_button: "Partager avec un ami",
+      share_message: "J'utilise Fonsprince One pour organiser mes finances — essaie aussi.",
+      share_copied: "Message copié ! Vous pouvez le coller et l'envoyer."
+    },
     goals: {
       new_goal: "Nouvel objectif",
       no_goals: "Vous n'avez encore créé aucun objectif d'épargne.",
@@ -6215,6 +6483,11 @@ const TRANSLATIONS = {
       field_target_value: "Montant cible",
       field_deadline_optional: "Échéance (facultatif)",
       deadline_hint: "Avec une échéance définie, l'application calcule combien vous devez épargner par mois.",
+      field_interest_rate_optional: "Taux d'intérêt annuel (optionnel)",
+      interest_rate_hint: "Pour une épargne rémunérée : l'application projette la croissance du solde déjà épargné, en plus de vos contributions.",
+      interest_rate_suffix: "par an",
+      projected_growth_prefix: "Avec les intérêts, dans 12 mois le solde actuel atteindrait",
+      projected_growth_suffix: "sans nouvelle contribution.",
       save_changes: "Enregistrer les modifications",
       create_goal: "Créer l'objectif",
       contribute_title_prefix: "Contribuer à \"",
@@ -6225,6 +6498,20 @@ const TRANSLATIONS = {
     planning: {
       health_score_title: "Santé Financière",
       health_desc: "Combine liquidité, taux d'épargne, endettement, part des investissements et évolution du patrimoine — 20 points chacun.",
+      allocation_title: "Vérification de l'allocation",
+      allocation_desc: "Compare la répartition de vos actions, obligations et fonds avec une référence recommandée pour le profil de risque choisi.",
+      allocation_empty: "Vous n'avez pas encore d'actions, d'obligations ou de fonds enregistrés à analyser.",
+      allocation_recommended_prefix: "recommandé",
+      profile_conservador: "Prudent",
+      profile_moderado: "Modéré",
+      profile_arrojado: "Dynamique",
+      fee_analyzer_title: "Analyseur de frais",
+      fee_analyzer_desc: "Frais de gestion moyen pondéré de vos fonds, et ce que cela représente comme coût dans le temps.",
+      fee_analyzer_empty: "Définissez les frais de gestion d'au moins un fonds pour voir cette analyse.",
+      fee_weighted_avg: "Frais moyen pondéré",
+      fee_annual_cost: "Coût annuel estimé",
+      fee_10y_cost: "Coût sur 10 ans (estimé)",
+      fee_analyzer_note: "Estimation simple basée sur la valeur actuelle du portefeuille et des frais constants dans le temps — sans tenir compte de la croissance ni des changements du portefeuille.",
       networth_title: "Patrimoine net — projection",
       networth_desc_prefix: "Soldes de tous les comptes (convertis en Kz) plus les créances, moins les dettes à payer. Projeté sur la base du résultat mensuel moyen actuel (",
       networth_desc_suffix: "/mois).",
@@ -6745,6 +7032,7 @@ const TRANSLATIONS = {
       first_step_bank_account: "Registra una cuenta bancaria",
       first_step_first_transaction: "Registra tu primera transacción",
       first_step_credit_card: "Registra una tarjeta de crédito",
+      health_score_how_calculated: "Cómo lo calculamos",
       done_suffix: "hecho",
       action_income: "Ingreso",
       action_expense: "Gasto",
@@ -7012,6 +7300,31 @@ const TRANSLATIONS = {
       delete_blocked: "Este miembro tiene movimientos asociados y no se puede eliminar. Renómbrelo o edite antes esos movimientos.",
       delete_confirm: "¿Eliminar al miembro \"{member}\"?"
     },
+    onboarding: {
+      welcome_title: "Bienvenido a Fonsprince One",
+      welcome_text: "Un control financiero personal completo, hecho a tu medida.",
+      continue: "Continuar",
+      skip_for_now: "Saltar por ahora",
+      name_step_title: "¿Cómo te llamas?",
+      name_step_text: "Vamos a personalizar tu experiencia.",
+      name_placeholder: "Tu nombre",
+      prefer_not_to_say: "Prefiero no decirlo",
+      motivation_step_title: "¿Qué buscas en Fonsprince One?",
+      motivation_step_text: "Elige una o más opciones — adaptaremos las sugerencias a eso.",
+      motivation_spending: "Controlar los gastos del día a día",
+      motivation_saving: "Ahorrar para una meta",
+      motivation_debt: "Salir de deudas",
+      motivation_investing: "Invertir con más confianza",
+      motivation_family: "Gestionar las finanzas familiares",
+      motivation_other: "Otro motivo",
+      ready_title_prefix: "Todo listo",
+      ready_text: "Construyamos esto contigo, paso a paso.",
+      create_first_account: "Crear mi primera cuenta",
+      share_prompt: "Si Fonsprince One te resulta útil, cuéntaselo a alguien que también lo necesite.",
+      share_button: "Compartir con un amigo",
+      share_message: "Estoy usando Fonsprince One para organizar mis finanzas — pruébala tú también.",
+      share_copied: "¡Mensaje copiado! Ya puedes pegarlo y enviarlo."
+    },
     goals: {
       new_goal: "Nueva meta",
       no_goals: "Aún no ha creado ninguna meta de ahorro.",
@@ -7029,6 +7342,11 @@ const TRANSLATIONS = {
       field_target_value: "Monto objetivo",
       field_deadline_optional: "Plazo (opcional)",
       deadline_hint: "Con un plazo definido, la app calcula cuánto necesita ahorrar por mes.",
+      field_interest_rate_optional: "Tasa de interés anual (opcional)",
+      interest_rate_hint: "Para ahorros remunerados: la app proyecta el crecimiento del saldo ya guardado, además de tus aportes.",
+      interest_rate_suffix: "al año",
+      projected_growth_prefix: "Con los intereses, en 12 meses el saldo actual llegaría a",
+      projected_growth_suffix: "sin nuevos aportes.",
       save_changes: "Guardar cambios",
       create_goal: "Crear meta",
       contribute_title_prefix: "Contribuir a \"",
@@ -7039,6 +7357,20 @@ const TRANSLATIONS = {
     planning: {
       health_score_title: "Salud Financiera",
       health_desc: "Combina liquidez, tasa de ahorro, endeudamiento, peso de las inversiones y evolución del patrimonio — 20 puntos cada uno.",
+      allocation_title: "Verificación de Asignación",
+      allocation_desc: "Compara cómo están distribuidas tus acciones, bonos y fondos frente a una referencia recomendada para el perfil de riesgo elegido.",
+      allocation_empty: "Aún no tienes acciones, bonos o fondos registrados para analizar.",
+      allocation_recommended_prefix: "recomendado",
+      profile_conservador: "Conservador",
+      profile_moderado: "Moderado",
+      profile_arrojado: "Arriesgado",
+      fee_analyzer_title: "Analizador de Comisiones",
+      fee_analyzer_desc: "Comisión de gestión media ponderada de tus fondos, y lo que eso representa en costo a lo largo del tiempo.",
+      fee_analyzer_empty: "Define la comisión de gestión de al menos un fondo para ver este análisis.",
+      fee_weighted_avg: "Comisión media ponderada",
+      fee_annual_cost: "Costo anual estimado",
+      fee_10y_cost: "Costo en 10 años (estimado)",
+      fee_analyzer_note: "Estimación simple usando el valor actual de la cartera y una comisión constante en el tiempo — no considera crecimiento ni cambios en la cartera.",
       networth_title: "Patrimonio neto — proyección",
       networth_desc_prefix: "Saldos en todas las cuentas (convertidos a Kz) más deudas por cobrar, menos deudas por pagar. Proyectado con base en el resultado mensual promedio actual (",
       networth_desc_suffix: "/mes).",
@@ -8267,9 +8599,17 @@ function Modal({
   }))), children));
 }
 function OnboardingModal({
+  lang,
+  userName,
+  onSetUserName,
+  onSetMotivations,
   onClose,
-  onStart
+  onStart,
+  showToast
 }) {
+  const [step, setStep] = useState(0);
+  const [nameDraft, setNameDraft] = useState(userName || "");
+  const [selectedMotivations, setSelectedMotivations] = useState([]);
   const steps = [{
     icon: IconBank,
     title: "Crie a sua primeira conta",
@@ -8287,8 +8627,232 @@ function OnboardingModal({
     title: "Explore os relatórios",
     text: "Score Financeiro, insights automáticos, relatório mensal e anual — tudo gerado a partir dos seus dados."
   }];
+  const MOTIVATIONS = [{
+    id: "spending",
+    icon: IconReceipt,
+    label: translate(lang, "onboarding", "motivation_spending")
+  }, {
+    id: "saving",
+    icon: IconPiggyBank,
+    label: translate(lang, "onboarding", "motivation_saving")
+  }, {
+    id: "debt",
+    icon: IconScale,
+    label: translate(lang, "onboarding", "motivation_debt")
+  }, {
+    id: "investing",
+    icon: IconTrendingUp,
+    label: translate(lang, "onboarding", "motivation_investing")
+  }, {
+    id: "family",
+    icon: IconUsers,
+    label: translate(lang, "onboarding", "motivation_family")
+  }, {
+    id: "other",
+    icon: IconSparkles,
+    label: translate(lang, "onboarding", "motivation_other")
+  }];
+  function toggleMotivation(id) {
+    setSelectedMotivations(cur => cur.includes(id) ? cur.filter(m => m !== id) : [...cur, id]);
+  }
+  async function handleShare() {
+    const message = translate(lang, "onboarding", "share_message");
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          text: message
+        });
+        return;
+      } catch {
+        /* utilizador cancelou a partilha nativa — tenta copiar como alternativa */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(message);
+      showToast && showToast(translate(lang, "onboarding", "share_copied"), "success");
+    } catch {
+      /* clipboard indisponível — sem feedback de erro, não é crítico */
+    }
+  }
+  function goNext() {
+    if (step === 1) onSetUserName && onSetUserName(nameDraft.trim());
+    if (step === 2) onSetMotivations && onSetMotivations(selectedMotivations);
+    setStep(s => s + 1);
+  }
+  if (step === 0) {
+    return /*#__PURE__*/React.createElement(Modal, {
+      title: translate(lang, "onboarding", "welcome_title"),
+      onClose: onClose
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 16
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 13,
+        color: "var(--slate)",
+        margin: 0
+      }
+    }, translate(lang, "onboarding", "welcome_text")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 12
+      }
+    }, steps.map((s, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        display: "flex",
+        gap: 12,
+        alignItems: "flex-start"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 32,
+        height: 32,
+        borderRadius: "50%",
+        background: "var(--paper)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement(s.icon, {
+      size: 15,
+      style: {
+        color: "var(--gold)"
+      }
+    })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 14,
+        fontWeight: 600
+      }
+    }, s.title), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "var(--slate)",
+        marginTop: 2
+      }
+    }, s.text))))), /*#__PURE__*/React.createElement(PrimaryButton, {
+      onClick: goNext
+    }, translate(lang, "onboarding", "continue")), /*#__PURE__*/React.createElement("button", {
+      onClick: onClose,
+      style: {
+        background: "none",
+        border: "none",
+        color: "var(--slate)",
+        fontSize: 13,
+        cursor: "pointer",
+        textDecoration: "underline"
+      }
+    }, translate(lang, "onboarding", "skip_for_now"))));
+  }
+  if (step === 1) {
+    return /*#__PURE__*/React.createElement(Modal, {
+      title: translate(lang, "onboarding", "name_step_title"),
+      onClose: onClose
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 16
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 13,
+        color: "var(--slate)",
+        margin: 0
+      }
+    }, translate(lang, "onboarding", "name_step_text")), /*#__PURE__*/React.createElement("input", {
+      autoFocus: true,
+      style: inputStyle,
+      value: nameDraft,
+      onChange: e => setNameDraft(e.target.value),
+      placeholder: translate(lang, "onboarding", "name_placeholder"),
+      onKeyDown: e => e.key === "Enter" && goNext()
+    }), /*#__PURE__*/React.createElement(PrimaryButton, {
+      onClick: goNext
+    }, translate(lang, "onboarding", "continue")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setNameDraft("");
+        goNext();
+      },
+      style: {
+        background: "none",
+        border: "none",
+        color: "var(--slate)",
+        fontSize: 13,
+        cursor: "pointer",
+        textDecoration: "underline"
+      }
+    }, translate(lang, "onboarding", "prefer_not_to_say"))));
+  }
+  if (step === 2) {
+    return /*#__PURE__*/React.createElement(Modal, {
+      title: translate(lang, "onboarding", "motivation_step_title"),
+      onClose: onClose
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 16
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 13,
+        color: "var(--slate)",
+        margin: 0
+      }
+    }, translate(lang, "onboarding", "motivation_step_text")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 8
+      }
+    }, MOTIVATIONS.map(m => {
+      const selected = selectedMotivations.includes(m.id);
+      return /*#__PURE__*/React.createElement("button", {
+        key: m.id,
+        onClick: () => toggleMotivation(m.id),
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 12px",
+          borderRadius: 8,
+          cursor: "pointer",
+          textAlign: "left",
+          border: selected ? "1px solid var(--gold)" : "1px solid var(--line)",
+          background: selected ? "color-mix(in srgb, var(--gold) 10%, var(--card))" : "var(--card)"
+        }
+      }, /*#__PURE__*/React.createElement(m.icon, {
+        size: 15,
+        style: {
+          color: selected ? "var(--gold)" : "var(--slate)",
+          flexShrink: 0
+        }
+      }), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 13,
+          fontWeight: 600,
+          flex: 1
+        }
+      }, m.label), selected && /*#__PURE__*/React.createElement(IconCheckCircle2, {
+        size: 15,
+        style: {
+          color: "var(--gold)",
+          flexShrink: 0
+        }
+      }));
+    })), /*#__PURE__*/React.createElement(PrimaryButton, {
+      onClick: goNext
+    }, translate(lang, "onboarding", "continue"))));
+  }
+  const firstName = (nameDraft || "").trim().split(" ")[0];
   return /*#__PURE__*/React.createElement(Modal, {
-    title: "Bem-vindo ao Fonsprince One",
+    title: firstName ? `${translate(lang, "onboarding", "ready_title_prefix")}, ${firstName}!` : translate(lang, "onboarding", "ready_title_prefix"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -8302,49 +8866,41 @@ function OnboardingModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Um controlo financeiro pessoal completo, feito à sua medida. Aqui estão os primeiros passos:"), /*#__PURE__*/React.createElement("div", {
+  }, translate(lang, "onboarding", "ready_text")), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: onStart
+  }, translate(lang, "onboarding", "create_first_account")), /*#__PURE__*/React.createElement("div", {
     style: {
+      borderTop: "1px solid var(--line)",
+      paddingTop: 14,
       display: "flex",
       flexDirection: "column",
-      gap: 12
+      gap: 8
     }
-  }, steps.map((s, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      display: "flex",
-      gap: 12,
-      alignItems: "flex-start"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 32,
-      height: 32,
-      borderRadius: "50%",
-      background: "var(--paper)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement(s.icon, {
-    size: 15,
-    style: {
-      color: "var(--gold)"
-    }
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      fontWeight: 600
-    }
-  }, s.title), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
-      marginTop: 2
+      margin: 0
     }
-  }, s.text))))), /*#__PURE__*/React.createElement(PrimaryButton, {
-    onClick: onStart
-  }, "Começar — criar a primeira conta"), /*#__PURE__*/React.createElement("button", {
+  }, translate(lang, "onboarding", "share_prompt")), /*#__PURE__*/React.createElement("button", {
+    onClick: handleShare,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      background: "none",
+      border: "1px solid var(--gold)",
+      color: "var(--gold)",
+      borderRadius: 8,
+      padding: "9px 12px",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement(IconShare2, {
+    size: 14
+  }), " ", translate(lang, "onboarding", "share_button"))), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     style: {
       background: "none",
@@ -8354,7 +8910,7 @@ function OnboardingModal({
       cursor: "pointer",
       textDecoration: "underline"
     }
-  }, "Saltar por agora")));
+  }, translate(lang, "onboarding", "skip_for_now"))));
 }
 function ConfirmDialog({
   message,
@@ -9925,6 +10481,7 @@ function FinanceApp() {
   const [initialPullComplete, setInitialPullComplete] = useState(false);
   const cloudPushTimer = useRef(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => loadKey("onboarding-dismissed", false));
+  const [onboardingMotivations, setOnboardingMotivations] = useState(() => loadKey("onboarding-motivations", []));
   const [customCategories, setCustomCategories] = useState(() => loadKey("custom-categories", []));
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [lastExportDate, setLastExportDate] = useState(() => loadKey("last-export-date", null));
@@ -10136,6 +10693,7 @@ function FinanceApp() {
   }, [country]);
   useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
+  useEffect(() => saveKey("onboarding-motivations", onboardingMotivations), [onboardingMotivations]);
   useEffect(() => {
     if (!notificationsEnabled) return;
     checkDueSoonAndNotify({
@@ -12007,7 +12565,10 @@ function FinanceApp() {
     debts: debts,
     debtPayments: debtPayments,
     recurringExpenses: recurringExpenses,
-    expectedIncome: expectedIncome
+    expectedIncome: expectedIncome,
+    equities: equities,
+    bonds: bonds,
+    funds: funds
   }), tab === "alerts" && /*#__PURE__*/React.createElement(AlertsTab, {
     lang: lang,
     recurringExpenses: recurringExpenses,
@@ -12367,6 +12928,11 @@ function FinanceApp() {
       setEditingShortcut(null);
     }
   }), !onboardingDismissed && accounts.length === 0 && !showAccountModal && /*#__PURE__*/React.createElement(OnboardingModal, {
+    lang: lang,
+    userName: userName,
+    onSetUserName: setUserName,
+    onSetMotivations: setOnboardingMotivations,
+    showToast: showToast,
     onClose: () => setOnboardingDismissed(true),
     onStart: () => {
       setOnboardingDismissed(true);
@@ -13678,10 +14244,12 @@ function CockpitCard({
   lang,
   userName,
   score,
+  factors,
   decisions,
   onNavigate
 }) {
   const [mounted, setMounted] = useState(false);
+  const [showFactors, setShowFactors] = useState(false);
   useEffect(() => {
     const raf = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(raf);
@@ -13771,14 +14339,21 @@ function CockpitCard({
       color: "rgba(255,255,255,0.55)",
       marginTop: 2
     }
-  }, dateLabel))), /*#__PURE__*/React.createElement("div", {
+  }, dateLabel))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowFactors(v => !v),
     style: {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       gap: 3,
-      flexShrink: 0
-    }
+      flexShrink: 0,
+      background: "none",
+      border: "none",
+      cursor: factors ? "pointer" : "default",
+      padding: 0
+    },
+    disabled: !factors,
+    title: factors ? translate(lang, "overview", "health_score_how_calculated") : undefined
   }, /*#__PURE__*/React.createElement(HealthScoreGauge, {
     score: score,
     color: scoreColor
@@ -13788,9 +14363,63 @@ function CockpitCard({
       fontWeight: 700,
       color: scoreColor,
       textTransform: "uppercase",
-      letterSpacing: 0.3
+      letterSpacing: 0.3,
+      display: "flex",
+      alignItems: "center",
+      gap: 3
     }
-  }, scoreLabel))), hasDecisions ? /*#__PURE__*/React.createElement("div", {
+  }, scoreLabel, factors && /*#__PURE__*/React.createElement(IconChevronDown, {
+    size: 11,
+    style: {
+      transform: showFactors ? "rotate(180deg)" : "none",
+      transition: "transform 0.15s ease"
+    }
+  })))), showFactors && factors && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      paddingTop: 14,
+      borderTop: "1px solid rgba(255,255,255,0.14)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "rgba(255,255,255,0.55)",
+      marginBottom: 2
+    }
+  }, translate(lang, "overview", "health_score_how_calculated")), factors.map(f => /*#__PURE__*/React.createElement("div", {
+    key: f.name
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 12,
+      color: "rgba(255,255,255,0.75)",
+      marginBottom: 2
+    }
+  }, /*#__PURE__*/React.createElement("span", null, healthFactorLabel(lang, f.name)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: "#fff"
+    }
+  }, Math.round(f.value), "/20")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 4,
+      borderRadius: 3,
+      background: "rgba(255,255,255,0.14)",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "100%",
+      width: `${f.value / 20 * 100}%`,
+      borderRadius: 3,
+      background: f.value >= 14 ? "#8EF0C0" : f.value >= 8 ? "#F0D28E" : "#FF8A80"
+    }
+  }))))), hasDecisions ? /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16
     }
@@ -14703,15 +15332,16 @@ function Overview({
     categories,
     liquidKzNow
   }), [recurringExpenses, transactions, month, debts, debtPayments, goals, totalDespesas, prevTotalDespesas, spentByCategory, categories, liquidKzNow]);
-  const healthScore = useMemo(() => computeHealthScore({
-    totalReceitas,
-    totalDespesas,
-    liquidKzNow,
-    spentByCategory,
-    categories,
+  const healthScore = useMemo(() => computeHealthScoreForApp({
+    accounts,
+    transactions,
+    balancesByCurrency,
+    exchangeRates,
     debts,
-    debtPayments
-  }), [totalReceitas, totalDespesas, liquidKzNow, spentByCategory, categories, debts, debtPayments]);
+    debtPayments,
+    recurringExpenses,
+    expectedIncome
+  }), [accounts, transactions, balancesByCurrency, exchangeRates, debts, debtPayments, recurringExpenses, expectedIncome]);
   const firstSteps = [{
     label: translate(lang, "overview", "first_step_bank_account"),
     done: accounts.length > 0,
@@ -14734,7 +15364,8 @@ function Overview({
   }, /*#__PURE__*/React.createElement(CockpitCard, {
     lang: lang,
     userName: userName,
-    score: healthScore,
+    score: healthScore.total,
+    factors: healthScore.factors,
     decisions: cockpitDecisions,
     onNavigate: onNavigate
   }), /*#__PURE__*/React.createElement(SaldoAtualCard, {
@@ -19622,8 +20253,12 @@ function PlanningTab({
   debts,
   debtPayments,
   recurringExpenses,
-  expectedIncome
+  expectedIncome,
+  equities,
+  bonds,
+  funds
 }) {
+  const [allocationProfile, setAllocationProfile] = useState("Moderado");
   const monthlyFixed = monthlyFixedTotal(recurringExpenses);
   const avgVariable = averageVariableExpense(transactions, 3);
   const netPerMonth = expectedIncome - monthlyFixed - avgVariable;
@@ -19687,6 +20322,17 @@ function PlanningTab({
       }
     }
   }
+  const allocation = useMemo(() => investmentAllocationBreakdown({
+    equities,
+    bonds,
+    funds,
+    exchangeRates
+  }), [equities, bonds, funds, exchangeRates]);
+  const recommendedAllocation = RECOMMENDED_ALLOCATION[allocationProfile];
+  const feeAnalysis = useMemo(() => weightedFundExpenseRatio({
+    funds,
+    exchangeRates
+  }), [funds, exchangeRates]);
   function healthStatus(value, unit) {
     if (value === null) return {
       label: translate(lang, "planning", "status_no_data"),
@@ -19802,6 +20448,149 @@ function PlanningTab({
     pct: f.value / 20 * 100,
     tone: f.value >= 14 ? "emerald" : f.value >= 8 ? "gold" : "rust"
   }))))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, translate(lang, "planning", "allocation_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13,
+      margin: "4px 0 14px"
+    }
+  }, translate(lang, "planning", "allocation_desc")), allocation.total <= 0 ? /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13,
+      margin: 0
+    }
+  }, translate(lang, "planning", "allocation_empty")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2,
+      background: "var(--paper)",
+      borderRadius: 8,
+      padding: 3,
+      marginBottom: 16,
+      maxWidth: 360
+    }
+  }, ["Conservador", "Moderado", "Arrojado"].map(p => /*#__PURE__*/React.createElement("button", {
+    key: p,
+    onClick: () => setAllocationProfile(p),
+    style: {
+      flex: 1,
+      padding: "7px 10px",
+      borderRadius: 6,
+      border: "none",
+      cursor: "pointer",
+      fontSize: 12,
+      fontWeight: 600,
+      background: allocationProfile === p ? "var(--card)" : "transparent",
+      color: allocationProfile === p ? "var(--gold)" : "var(--slate)",
+      boxShadow: allocationProfile === p ? "0 1px 3px rgba(16,24,40,0.08)" : "none"
+    }
+  }, translate(lang, "planning", `profile_${p.toLowerCase()}`)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, ["Conservador", "Moderado", "Arrojado"].map(bucket => {
+    const actualPct = allocation[bucket] / allocation.total * 100;
+    const recommendedPct = recommendedAllocation[bucket];
+    const diff = actualPct - recommendedPct;
+    return /*#__PURE__*/React.createElement("div", {
+      key: bucket
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 12,
+        marginBottom: 4
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 600
+      }
+    }, translate(lang, "planning", `profile_${bucket.toLowerCase()}`)), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "var(--slate)"
+      }
+    }, actualPct.toFixed(0), "% · ", translate(lang, "planning", "allocation_recommended_prefix"), " ", recommendedPct, "%", Math.abs(diff) >= 5 && /*#__PURE__*/React.createElement("strong", {
+      style: {
+        color: diff > 0 ? "var(--gold)" : "var(--rust)",
+        marginLeft: 6
+      }
+    }, "(", diff > 0 ? "+" : "", diff.toFixed(0), "pp)"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "relative",
+        height: 8,
+        borderRadius: 4,
+        background: "var(--paper)",
+        overflow: "visible"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: "100%",
+        width: `${Math.min(100, actualPct)}%`,
+        borderRadius: 4,
+        background: "var(--gold)"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      title: `${translate(lang, "planning", "allocation_recommended_prefix")} ${recommendedPct}%`,
+      style: {
+        position: "absolute",
+        left: `${recommendedPct}%`,
+        top: -3,
+        bottom: -3,
+        width: 2,
+        background: "var(--ink)"
+      }
+    })));
+  })))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, translate(lang, "planning", "fee_analyzer_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13,
+      margin: "4px 0 14px"
+    }
+  }, translate(lang, "planning", "fee_analyzer_desc")), !feeAnalysis ? /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 13,
+      margin: 0
+    }
+  }, translate(lang, "planning", "fee_analyzer_empty")) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 14,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement(StatCard, {
+    label: translate(lang, "planning", "fee_weighted_avg"),
+    value: `${feeAnalysis.weightedPct.toFixed(2)}%`,
+    tone: feeAnalysis.weightedPct > 1.5 ? "rust" : feeAnalysis.weightedPct > 0.7 ? "gold" : "emerald"
+  }), /*#__PURE__*/React.createElement(StatCard, {
+    label: translate(lang, "planning", "fee_annual_cost"),
+    value: fmt(feeAnalysis.totalKz * feeAnalysis.weightedPct / 100),
+    tone: "ink"
+  }), /*#__PURE__*/React.createElement(StatCard, {
+    label: translate(lang, "planning", "fee_10y_cost"),
+    value: fmt(feeAnalysis.totalKz * feeAnalysis.weightedPct * 10 / 100),
+    tone: "rust"
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 12
+    }
+  }, translate(lang, "planning", "fee_analyzer_note"))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: 16,
@@ -21183,6 +21972,8 @@ function FundModal({
   const [valorUpCompra, setValorUpCompra] = useState(initial ? String(initial.valor_up_compra) : "");
   const [valorUpAtual, setValorUpAtual] = useState(initial ? String(initial.valor_up_atual) : "");
   const [notas, setNotas] = useState(initial?.notas || "");
+  const [perfilRisco, setPerfilRisco] = useState(initial?.perfilRisco || "Moderado");
+  const [taxaGestao, setTaxaGestao] = useState(initial?.taxaGestao != null ? String(initial.taxaGestao) : "");
   const canSave = nome.trim() && dataAplicacao && unidades !== "" && valorUpCompra !== "" && valorUpAtual !== "";
   function handleSave() {
     onSave({
@@ -21193,7 +21984,9 @@ function FundModal({
       unidades: Number(unidades),
       valor_up_compra: Number(valorUpCompra),
       valor_up_atual: Number(valorUpAtual),
-      notas: notas.trim()
+      notas: notas.trim(),
+      perfilRisco,
+      taxaGestao: taxaGestao === "" ? null : Number(taxaGestao)
     });
   }
   return /*#__PURE__*/React.createElement(Modal, {
@@ -21291,6 +22084,39 @@ function FundModal({
     style: inputStyle,
     value: valorUpAtual,
     onChange: e => setValorUpAtual(e.target.value)
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Perfil de risco do fundo",
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: perfilRisco,
+    onChange: e => setPerfilRisco(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "Conservador"
+  }, "Conservador"), /*#__PURE__*/React.createElement("option", {
+    value: "Moderado"
+  }, "Moderado"), /*#__PURE__*/React.createElement("option", {
+    value: "Arrojado"
+  }, "Arrojado"))), /*#__PURE__*/React.createElement(Field, {
+    label: "Taxa de gestão anual % (opcional)",
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    inputMode: "decimal",
+    step: "0.01",
+    style: inputStyle,
+    value: taxaGestao,
+    onChange: e => setTaxaGestao(e.target.value),
+    placeholder: "ex: 1.5"
   }))), /*#__PURE__*/React.createElement(Field, {
     label: "Notas (opcional)"
   }, /*#__PURE__*/React.createElement("textarea", {
@@ -26291,6 +27117,8 @@ function GoalsTab({
     const pct = Number(g.current) / Number(g.target) * 100;
     const monthly = goalMonthlySavingsNeeded(g);
     const IconCat = goalCategoryIcon(g.category);
+    const hasInterest = Number(g.interestRate) > 0;
+    const projectedIn12m = hasInterest ? projectGoalGrowth(g.current, g.interestRate, 12) : null;
     return /*#__PURE__*/React.createElement(Card, {
       key: g.id
     }, /*#__PURE__*/React.createElement("div", {
@@ -26338,7 +27166,19 @@ function GoalsTab({
         color: "var(--slate)",
         marginTop: 2
       }
-    }, translate(lang, "goals", "deadline_prefix"), " ", g.deadline))), /*#__PURE__*/React.createElement("div", {
+    }, translate(lang, "goals", "deadline_prefix"), " ", g.deadline), hasInterest && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        fontWeight: 700,
+        color: "var(--emerald)",
+        marginTop: 3,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 3
+      }
+    }, /*#__PURE__*/React.createElement(IconTrendingUp, {
+      size: 11
+    }), " ", g.interestRate, "% ", translate(lang, "goals", "interest_rate_suffix")))), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 4
@@ -26395,7 +27235,14 @@ function GoalsTab({
       style: {
         color: "var(--ink)"
       }
-    }, fmt(monthly)), translate(lang, "goals", "save_monthly_suffix")), /*#__PURE__*/React.createElement(PrimaryButton, {
+    }, fmt(monthly)), translate(lang, "goals", "save_monthly_suffix")), hasInterest && projectedIn12m > Number(g.current) && /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 12,
+        color: "var(--emerald)",
+        marginTop: 6,
+        marginBottom: 0
+      }
+    }, translate(lang, "goals", "projected_growth_prefix"), " ", /*#__PURE__*/React.createElement("strong", null, fmt(projectedIn12m)), " ", translate(lang, "goals", "projected_growth_suffix")), /*#__PURE__*/React.createElement(PrimaryButton, {
       style: {
         marginTop: 14,
         width: "100%"
@@ -28251,6 +29098,7 @@ function GoalModal({
   const [category, setCategory] = useState(initial && initial.category || GOAL_CATEGORIES[0]);
   const [target, setTarget] = useState(initial ? String(initial.target) : "");
   const [deadline, setDeadline] = useState(initial && initial.deadline || "");
+  const [interestRate, setInterestRate] = useState(initial && initial.interestRate != null ? String(initial.interestRate) : "");
   return /*#__PURE__*/React.createElement(Modal, {
     title: isEditing ? translate(lang, "goals", "modal_edit_title") : translate(lang, "goals", "modal_new_title"),
     onClose: onClose
@@ -28297,12 +29145,28 @@ function GoalModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, translate(lang, "goals", "deadline_hint")), /*#__PURE__*/React.createElement(PrimaryButton, {
+  }, translate(lang, "goals", "deadline_hint")), /*#__PURE__*/React.createElement(Field, {
+    label: translate(lang, "goals", "field_interest_rate_optional")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    inputMode: "decimal",
+    style: inputStyle,
+    value: interestRate,
+    onChange: e => setInterestRate(e.target.value),
+    placeholder: "0.0"
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, translate(lang, "goals", "interest_rate_hint")), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: () => name && target !== "" && onSave({
       name,
       category,
       target: Number(target),
-      deadline
+      deadline,
+      interestRate: interestRate === "" ? null : Number(interestRate)
     })
   }, isEditing ? translate(lang, "goals", "save_changes") : translate(lang, "goals", "create_goal"))));
 }
