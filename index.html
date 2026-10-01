@@ -1519,6 +1519,43 @@ function nextMonthKey(month) {
 function todayMonth() {
   return new Date().toISOString().slice(0, 7);
 }
+function computeAgeOfMoney(transactions, asOfDateStr) {
+  const asOf = new Date((asOfDateStr || todayISO()) + "T00:00:00");
+  const cutoff = new Date(asOf);
+  cutoff.setDate(cutoff.getDate() - 30);
+  const relevant = (transactions || []).filter(t => (t.kind === "receita" || t.kind === "despesa") && t.date && new Date(t.date + "T00:00:00") <= asOf).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  const inflowQueue = [];
+  let weightedAgeSum = 0;
+  let spendTotal = 0;
+  for (const t of relevant) {
+    const amount = Number(t.amount) || 0;
+    if (amount <= 0) continue;
+    const txDate = new Date(t.date + "T00:00:00");
+    if (t.kind === "receita") {
+      inflowQueue.push({
+        date: txDate,
+        amount
+      });
+    } else {
+      let remaining = amount;
+      const withinWindow = txDate >= cutoff;
+      while (remaining > 0.0001 && inflowQueue.length > 0) {
+        const front = inflowQueue[0];
+        const consumed = Math.min(front.amount, remaining);
+        if (withinWindow) {
+          const ageDays = Math.max(0, Math.round((txDate - front.date) / 86400000));
+          weightedAgeSum += ageDays * consumed;
+          spendTotal += consumed;
+        }
+        front.amount -= consumed;
+        remaining -= consumed;
+        if (front.amount <= 0.0001) inflowQueue.shift();
+      }
+    }
+  }
+  if (spendTotal <= 0) return null;
+  return Math.round(weightedAgeSum / spendTotal);
+}
 let _tesseractLoadPromise = null;
 function loadTesseract() {
   if (typeof window !== "undefined" && window.Tesseract) return Promise.resolve(window.Tesseract);
@@ -3679,7 +3716,29 @@ const TRANSLATIONS = {
       section_fixed: "Fixas & Equipa",
       section_members: "Membros",
       remaining_of_prefix: "restam",
-      add_income_source_toggle: "Nova fonte"
+      add_income_source_toggle: "Nova fonte",
+      ready_to_assign_title: "Pronto para atribuir",
+      ready_to_assign_positive_suffix: "por atribuir este mês",
+      ready_to_assign_zero: "Todo o dinheiro já foi atribuído a categorias.",
+      ready_to_assign_negative_prefix: "Atribuiu a mais do que tem disponível:",
+      age_of_money_title: "Idade do dinheiro",
+      age_of_money_days_suffix: "dias",
+      age_of_money_tooltip: "Média de dias entre o dinheiro entrar e ser gasto, nos últimos 30 dias.",
+      goal_add: "Meta",
+      goal_edit: "Editar meta",
+      goal_remove: "Remover meta",
+      goal_type_monthly_funding: "Financiamento mensal",
+      goal_type_target_balance: "Saldo alvo",
+      goal_type_target_by_date: "Alvo por data",
+      goal_amount_label: "Valor alvo",
+      goal_date_label: "Data alvo",
+      goal_save: "Guardar meta",
+      goal_needed_this_month_prefix: "Faltam",
+      goal_needed_this_month_suffix: "este mês",
+      goal_met: "Meta cumprida este mês",
+      cover_overspend_button: "Cobrir excesso",
+      cover_overspend_confirm: "Mover",
+      cover_overspend_no_source: "Nenhuma categoria tem saldo disponível para cobrir este excesso."
     },
     members: {
       manage_members: "Gerir membros",
@@ -4471,7 +4530,29 @@ const TRANSLATIONS = {
       section_fixed: "Fixas & Equipa",
       section_members: "Membros",
       remaining_of_prefix: "restam",
-      add_income_source_toggle: "Nova fonte"
+      add_income_source_toggle: "Nova fonte",
+      ready_to_assign_title: "Pronto para atribuir",
+      ready_to_assign_positive_suffix: "por atribuir este mês",
+      ready_to_assign_zero: "Todo o dinheiro já foi atribuído a categorias.",
+      ready_to_assign_negative_prefix: "Atribuiu a mais do que tem disponível:",
+      age_of_money_title: "Idade do dinheiro",
+      age_of_money_days_suffix: "dias",
+      age_of_money_tooltip: "Média de dias entre o dinheiro entrar e ser gasto, nos últimos 30 dias.",
+      goal_add: "Meta",
+      goal_edit: "Editar meta",
+      goal_remove: "Remover meta",
+      goal_type_monthly_funding: "Financiamento mensal",
+      goal_type_target_balance: "Saldo alvo",
+      goal_type_target_by_date: "Alvo por data",
+      goal_amount_label: "Valor alvo",
+      goal_date_label: "Data alvo",
+      goal_save: "Guardar meta",
+      goal_needed_this_month_prefix: "Faltam",
+      goal_needed_this_month_suffix: "este mês",
+      goal_met: "Meta cumprida este mês",
+      cover_overspend_button: "Cobrir excesso",
+      cover_overspend_confirm: "Mover",
+      cover_overspend_no_source: "Nenhuma categoria tem saldo disponível para cobrir este excesso."
     },
     members: {
       manage_members: "Gerir membros",
@@ -5263,7 +5344,29 @@ const TRANSLATIONS = {
       section_fixed: "Fixed & Staff",
       section_members: "Members",
       remaining_of_prefix: "remaining",
-      add_income_source_toggle: "New source"
+      add_income_source_toggle: "New source",
+      ready_to_assign_title: "Ready to assign",
+      ready_to_assign_positive_suffix: "left to assign this month",
+      ready_to_assign_zero: "All your money is already assigned to categories.",
+      ready_to_assign_negative_prefix: "You've assigned more than you have:",
+      age_of_money_title: "Age of money",
+      age_of_money_days_suffix: "days",
+      age_of_money_tooltip: "Average number of days between money coming in and being spent, over the last 30 days.",
+      goal_add: "Goal",
+      goal_edit: "Edit goal",
+      goal_remove: "Remove goal",
+      goal_type_monthly_funding: "Monthly funding",
+      goal_type_target_balance: "Target balance",
+      goal_type_target_by_date: "Target by date",
+      goal_amount_label: "Target amount",
+      goal_date_label: "Target date",
+      goal_save: "Save goal",
+      goal_needed_this_month_prefix: "Still need",
+      goal_needed_this_month_suffix: "this month",
+      goal_met: "Goal met this month",
+      cover_overspend_button: "Cover overspending",
+      cover_overspend_confirm: "Move",
+      cover_overspend_no_source: "No category has spare balance to cover this overspend."
     },
     members: {
       manage_members: "Manage members",
@@ -6055,7 +6158,29 @@ const TRANSLATIONS = {
       section_fixed: "Fixes & Personnel",
       section_members: "Membres",
       remaining_of_prefix: "restant",
-      add_income_source_toggle: "Nouvelle source"
+      add_income_source_toggle: "Nouvelle source",
+      ready_to_assign_title: "Prêt à attribuer",
+      ready_to_assign_positive_suffix: "à attribuer ce mois-ci",
+      ready_to_assign_zero: "Tout votre argent est déjà attribué à des catégories.",
+      ready_to_assign_negative_prefix: "Vous avez attribué plus que disponible :",
+      age_of_money_title: "Âge de l'argent",
+      age_of_money_days_suffix: "jours",
+      age_of_money_tooltip: "Nombre moyen de jours entre l'entrée de l'argent et sa dépense, sur les 30 derniers jours.",
+      goal_add: "Objectif",
+      goal_edit: "Modifier l'objectif",
+      goal_remove: "Supprimer l'objectif",
+      goal_type_monthly_funding: "Financement mensuel",
+      goal_type_target_balance: "Solde cible",
+      goal_type_target_by_date: "Objectif par date",
+      goal_amount_label: "Montant cible",
+      goal_date_label: "Date cible",
+      goal_save: "Enregistrer l'objectif",
+      goal_needed_this_month_prefix: "Il manque encore",
+      goal_needed_this_month_suffix: "ce mois-ci",
+      goal_met: "Objectif atteint ce mois-ci",
+      cover_overspend_button: "Couvrir le dépassement",
+      cover_overspend_confirm: "Déplacer",
+      cover_overspend_no_source: "Aucune catégorie n'a de solde disponible pour couvrir ce dépassement."
     },
     members: {
       manage_members: "Gérer les membres",
@@ -6847,7 +6972,29 @@ const TRANSLATIONS = {
       section_fixed: "Fijas y Personal",
       section_members: "Miembros",
       remaining_of_prefix: "restantes",
-      add_income_source_toggle: "Nueva fuente"
+      add_income_source_toggle: "Nueva fuente",
+      ready_to_assign_title: "Listo para asignar",
+      ready_to_assign_positive_suffix: "por asignar este mes",
+      ready_to_assign_zero: "Todo tu dinero ya está asignado a categorías.",
+      ready_to_assign_negative_prefix: "Has asignado más de lo que tienes:",
+      age_of_money_title: "Antigüedad del dinero",
+      age_of_money_days_suffix: "días",
+      age_of_money_tooltip: "Número medio de días entre que el dinero entra y se gasta, en los últimos 30 días.",
+      goal_add: "Meta",
+      goal_edit: "Editar meta",
+      goal_remove: "Eliminar meta",
+      goal_type_monthly_funding: "Financiación mensual",
+      goal_type_target_balance: "Saldo objetivo",
+      goal_type_target_by_date: "Objetivo por fecha",
+      goal_amount_label: "Monto objetivo",
+      goal_date_label: "Fecha objetivo",
+      goal_save: "Guardar meta",
+      goal_needed_this_month_prefix: "Aún faltan",
+      goal_needed_this_month_suffix: "este mes",
+      goal_met: "Meta cumplida este mes",
+      cover_overspend_button: "Cubrir exceso",
+      cover_overspend_confirm: "Mover",
+      cover_overspend_no_source: "Ninguna categoría tiene saldo disponible para cubrir este exceso."
     },
     members: {
       manage_members: "Gestionar miembros",
@@ -9874,6 +10021,7 @@ function FinanceApp() {
   const [recurringExpenses, setRecurringExpenses] = useState(() => loadKey("recurring-expenses", []));
   const [budgetRollovers, setBudgetRollovers] = useState(() => loadKey("budget-rollovers", {}));
   const [rolledOverKeys, setRolledOverKeys] = useState(() => loadKey("rolled-over-keys", []));
+  const [categoryGoals, setCategoryGoals] = useState(() => loadKey("category-goals", {}));
   const [exchangeRates, setExchangeRates] = useState(() => loadKey("exchange-rates", {
     usdRate: null,
     eurRate: null,
@@ -9965,6 +10113,7 @@ function FinanceApp() {
   useEffect(() => saveKey("recurring-expenses", recurringExpenses), [recurringExpenses]);
   useEffect(() => saveKey("budget-rollovers", budgetRollovers), [budgetRollovers]);
   useEffect(() => saveKey("rolled-over-keys", rolledOverKeys), [rolledOverKeys]);
+  useEffect(() => saveKey("category-goals", categoryGoals), [categoryGoals]);
   useEffect(() => saveKey("exchange-rates", exchangeRates), [exchangeRates]);
   useEffect(() => saveKey("expense-shortcuts", expenseShortcuts), [expenseShortcuts]);
   useEffect(() => saveKey("sidebar-collapsed", sidebarCollapsed), [sidebarCollapsed]);
@@ -10140,6 +10289,32 @@ function FinanceApp() {
       }
     }));
     setRolledOverKeys(k => [...k, `${fromMonth}||${cat}`]);
+  }
+  function coverOverspend(forMonth, fromCat, toCat, amount) {
+    if (!amount || amount <= 0 || fromCat === toCat) return;
+    setBudgetRollovers(r => ({
+      ...r,
+      [forMonth]: {
+        ...(r[forMonth] || {}),
+        [fromCat]: (r[forMonth]?.[fromCat] || 0) - amount,
+        [toCat]: (r[forMonth]?.[toCat] || 0) + amount
+      }
+    }));
+  }
+  function setCategoryGoal(cat, goal) {
+    setCategoryGoals(g => {
+      if (!goal) {
+        const next = {
+          ...g
+        };
+        delete next[cat];
+        return next;
+      }
+      return {
+        ...g,
+        [cat]: goal
+      };
+    });
   }
   function setMemberLimit(member, limit) {
     setBudgetIncome(b => ({
@@ -10538,7 +10713,8 @@ function FinanceApp() {
       members,
       rateHistory,
       budgetRollovers,
-      rolledOverKeys
+      rolledOverKeys,
+      categoryGoals
     };
     downloadJson(payload, `ledger-backup-${todayISO()}.json`);
     setLastExportDate(todayISO());
@@ -10700,6 +10876,7 @@ function FinanceApp() {
     setRateHistory(data.rateHistory || []);
     setBudgetRollovers(data.budgetRollovers || {});
     setRolledOverKeys(data.rolledOverKeys || []);
+    setCategoryGoals(data.categoryGoals || {});
     setPendingImport(null);
   }
   function applyCloudData(data) {
@@ -10736,6 +10913,7 @@ function FinanceApp() {
     setRateHistory(data.rateHistory || []);
     setBudgetRollovers(data.budgetRollovers || {});
     setRolledOverKeys(data.rolledOverKeys || []);
+    setCategoryGoals(data.categoryGoals || {});
   }
   async function handleCloudSignUp(email, password) {
     setCloudError(null);
@@ -10829,7 +11007,8 @@ function FinanceApp() {
           members,
           rateHistory,
           budgetRollovers,
-          rolledOverKeys
+          rolledOverKeys,
+          categoryGoals
         });
         setCloudSyncStatus("synced");
       } catch (err) {
@@ -10840,7 +11019,7 @@ function FinanceApp() {
     return () => {
       if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
     };
-  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, members, rateHistory, budgetRollovers, rolledOverKeys]);
+  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, members, rateHistory, budgetRollovers, rolledOverKeys, categoryGoals]);
   function addShortcut(s) {
     setExpenseShortcuts(ss => [...ss, {
       ...s,
@@ -11696,6 +11875,9 @@ function FinanceApp() {
     budgetRollovers: budgetRollovers,
     rolledOverKeys: rolledOverKeys,
     onRolloverCategory: rolloverCategory,
+    categoryGoals: categoryGoals,
+    onSetCategoryGoal: setCategoryGoal,
+    onCoverOverspend: (fromCat, toCat, amount) => coverOverspend(month, fromCat, toCat, amount),
     income: budgetIncome.income,
     expectedIncome: expectedIncome,
     totalReceitas: totalReceitas,
@@ -24789,6 +24971,9 @@ function BudgetTab({
   budgetRollovers,
   rolledOverKeys,
   onRolloverCategory,
+  categoryGoals,
+  onSetCategoryGoal,
+  onCoverOverspend,
   income,
   expectedIncome,
   totalReceitas,
@@ -24819,6 +25004,13 @@ function BudgetTab({
   const [dismissedSuggestions, setDismissedSuggestions] = useState([]);
   const [showAddIncome, setShowAddIncome] = useState(false);
   const [section, setSection] = useState("limits");
+  const [editingGoalCat, setEditingGoalCat] = useState(null);
+  const [goalType, setGoalType] = useState("monthly_funding");
+  const [goalAmount, setGoalAmount] = useState("");
+  const [goalDate, setGoalDate] = useState("");
+  const [coveringCat, setCoveringCat] = useState(null);
+  const [coverFrom, setCoverFrom] = useState("");
+  const [coverAmount, setCoverAmount] = useState("");
   const recurringCandidates = useMemo(() => detectRecurringCandidates(transactions, recurringExpenses).filter(c => !dismissedSuggestions.includes(`${c.category}||${c.name}`)), [transactions, recurringExpenses, dismissedSuggestions]);
   const fixedExpenses = recurringExpenses.filter(r => !r.isStaff);
   const staff = recurringExpenses.filter(r => r.isStaff);
@@ -24826,6 +25018,8 @@ function BudgetTab({
   const totalBudgeted = useMemo(() => expenseCategories.reduce((s, c) => s + Number(categories[c] || 0), 0), [expenseCategories, categories]);
   const totalSpent = useMemo(() => expenseCategories.reduce((s, c) => s + (spentByCategory[c] || 0), 0), [expenseCategories, spentByCategory]);
   const remaining = totalBudgeted - totalSpent;
+  const readyToAssign = expectedIncome - totalBudgeted;
+  const ageOfMoney = useMemo(() => computeAgeOfMoney(transactions), [transactions]);
   const overallPct = totalBudgeted ? totalSpent / totalBudgeted * 100 : 0;
   const overBudgetCount = expenseCategories.filter(c => Number(categories[c] || 0) > 0 && (spentByCategory[c] || 0) > Number(categories[c])).length;
   const [yearNum, monthNum] = (month || "").split("-").map(Number);
@@ -24967,7 +25161,66 @@ function BudgetTab({
     }
   }, /*#__PURE__*/React.createElement(IconX, {
     size: 14
-  })))))), /*#__PURE__*/React.createElement(Card, {
+  })))))), (() => {
+    const rtaTone = readyToAssign > 0 ? "gold" : readyToAssign < 0 ? "rust" : "emerald";
+    const rtaColor = {
+      rust: "var(--rust)",
+      gold: "var(--gold)",
+      emerald: "var(--emerald)"
+    }[rtaTone];
+    return /*#__PURE__*/React.createElement(Card, {
+      style: {
+        border: `1px solid ${rtaColor}`,
+        background: `color-mix(in srgb, ${rtaColor} 8%, var(--card))`
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 34,
+        height: 34,
+        borderRadius: 8,
+        background: `color-mix(in srgb, ${rtaColor} 16%, var(--card))`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement(IconWallet, {
+      size: 16,
+      style: {
+        color: rtaColor
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 13,
+        fontWeight: 700
+      }
+    }, translate(lang, "budget", "ready_to_assign_title")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "var(--slate)",
+        marginTop: 2
+      }
+    }, readyToAssign > 0 && `${fmt(readyToAssign)} ${translate(lang, "budget", "ready_to_assign_positive_suffix")}`, readyToAssign === 0 && translate(lang, "budget", "ready_to_assign_zero"), readyToAssign < 0 && `${translate(lang, "budget", "ready_to_assign_negative_prefix")} ${fmt(Math.abs(readyToAssign))}`)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 18,
+        fontWeight: 700,
+        fontFamily: "'IBM Plex Mono', monospace",
+        color: rtaColor,
+        flexShrink: 0
+      }
+    }, fmt(readyToAssign))));
+  })(), /*#__PURE__*/React.createElement(Card, {
     style: {
       background: "linear-gradient(135deg, var(--sidebar) 0%, color-mix(in srgb, var(--sidebar) 82%, black) 100%)",
       border: "none",
@@ -25078,7 +25331,19 @@ function BudgetTab({
       fontSize: 12,
       opacity: 0.9
     }
-  }, translate(lang, "budget", pacingKey))), /*#__PURE__*/React.createElement("div", {
+  }, translate(lang, "budget", pacingKey)), ageOfMoney !== null && /*#__PURE__*/React.createElement("div", {
+    title: translate(lang, "budget", "age_of_money_tooltip"),
+    style: {
+      fontSize: 12,
+      opacity: 0.85,
+      marginTop: 6,
+      display: "flex",
+      alignItems: "center",
+      gap: 5
+    }
+  }, /*#__PURE__*/React.createElement(IconClock, {
+    size: 12
+  }), translate(lang, "budget", "age_of_money_title"), ": ", /*#__PURE__*/React.createElement("strong", null, ageOfMoney), " ", translate(lang, "budget", "age_of_money_days_suffix"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 2,
@@ -25279,7 +25544,301 @@ function BudgetTab({
       style: {
         flexShrink: 0
       }
-    }), translate(lang, "budget", "rollover_leftover_prefix"), " ", fmtCompact(prevLeftover), " ", translate(lang, "budget", "rollover_leftover_suffix")));
+    }), translate(lang, "budget", "rollover_leftover_prefix"), " ", fmtCompact(prevLeftover), " ", translate(lang, "budget", "rollover_leftover_suffix")), (() => {
+      const goal = (categoryGoals || {})[cat];
+      const isEditingGoal = editingGoalCat === cat;
+      if (isEditingGoal) {
+        return /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginTop: 8,
+            marginLeft: 40,
+            padding: 10,
+            border: "1px solid var(--line)",
+            borderRadius: 8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6
+          }
+        }, /*#__PURE__*/React.createElement("select", {
+          value: goalType,
+          onChange: e => setGoalType(e.target.value),
+          style: {
+            ...inputStyle,
+            fontSize: 12,
+            padding: "5px 7px"
+          }
+        }, /*#__PURE__*/React.createElement("option", {
+          value: "monthly_funding"
+        }, translate(lang, "budget", "goal_type_monthly_funding")), /*#__PURE__*/React.createElement("option", {
+          value: "target_balance"
+        }, translate(lang, "budget", "goal_type_target_balance")), /*#__PURE__*/React.createElement("option", {
+          value: "target_by_date"
+        }, translate(lang, "budget", "goal_type_target_by_date"))), /*#__PURE__*/React.createElement("input", {
+          type: "number",
+          inputMode: "decimal",
+          placeholder: translate(lang, "budget", "goal_amount_label"),
+          value: goalAmount,
+          onChange: e => setGoalAmount(e.target.value),
+          style: {
+            ...inputStyle,
+            fontSize: 12,
+            padding: "5px 7px"
+          }
+        }), goalType === "target_by_date" && /*#__PURE__*/React.createElement("input", {
+          type: "date",
+          value: goalDate,
+          onChange: e => setGoalDate(e.target.value),
+          style: {
+            ...inputStyle,
+            fontSize: 12,
+            padding: "5px 7px"
+          }
+        }), /*#__PURE__*/React.createElement("div", {
+          style: {
+            display: "flex",
+            gap: 6
+          }
+        }, /*#__PURE__*/React.createElement("button", {
+          onClick: () => {
+            if (!goalAmount) return;
+            onSetCategoryGoal(cat, {
+              type: goalType,
+              amount: Number(goalAmount),
+              date: goalType === "target_by_date" ? goalDate : null
+            });
+            setEditingGoalCat(null);
+          },
+          style: {
+            background: "var(--gold)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            padding: "6px 10px",
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: "pointer",
+            flex: 1
+          }
+        }, translate(lang, "budget", "goal_save")), /*#__PURE__*/React.createElement("button", {
+          onClick: () => setEditingGoalCat(null),
+          style: {
+            background: "none",
+            border: "1px solid var(--line)",
+            borderRadius: 6,
+            padding: "6px 10px",
+            fontSize: 12,
+            cursor: "pointer"
+          }
+        }, /*#__PURE__*/React.createElement(IconX, {
+          size: 13
+        }))));
+      }
+      if (!goal) {
+        return /*#__PURE__*/React.createElement("button", {
+          onClick: () => {
+            setEditingGoalCat(cat);
+            setGoalType("monthly_funding");
+            setGoalAmount("");
+            setGoalDate("");
+          },
+          style: {
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            marginTop: 8,
+            marginLeft: 40,
+            background: "none",
+            border: "1px dashed var(--line)",
+            borderRadius: 6,
+            padding: "5px 9px",
+            fontSize: 12,
+            color: "var(--slate)",
+            fontWeight: 600,
+            cursor: "pointer"
+          }
+        }, /*#__PURE__*/React.createElement(IconTarget, {
+          size: 12
+        }), " ", translate(lang, "budget", "goal_add"));
+      }
+      const baseLimit = Number(limit || 0);
+      let progressLabel = "";
+      if (goal.type === "monthly_funding") {
+        progressLabel = `${fmtCompact(baseLimit)} / ${fmtCompact(goal.amount)}`;
+      } else if (goal.type === "target_balance") {
+        progressLabel = `${fmtCompact(effectiveLimit)} / ${fmtCompact(goal.amount)}`;
+      } else {
+        const monthsLeft = Math.max(1, monthsUntil(goal.date) || 1);
+        const stillNeeded = Math.max(0, goal.amount - effectiveLimit);
+        const monthlyNeeded = stillNeeded / monthsLeft;
+        progressLabel = baseLimit >= monthlyNeeded ? translate(lang, "budget", "goal_met") : `${translate(lang, "budget", "goal_needed_this_month_prefix")} ${fmtCompact(Math.max(0, monthlyNeeded - baseLimit))} ${translate(lang, "budget", "goal_needed_this_month_suffix")}`;
+      }
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 8,
+          marginLeft: 40,
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }
+      }, /*#__PURE__*/React.createElement(IconTarget, {
+        size: 12,
+        style: {
+          color: "var(--gold)",
+          flexShrink: 0
+        }
+      }), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 12,
+          color: "var(--slate)",
+          flex: 1,
+          minWidth: 0
+        }
+      }, translate(lang, "budget", `goal_type_${goal.type}`), " · ", progressLabel), /*#__PURE__*/React.createElement("button", {
+        onClick: () => {
+          setEditingGoalCat(cat);
+          setGoalType(goal.type);
+          setGoalAmount(String(goal.amount));
+          setGoalDate(goal.date || "");
+        },
+        style: {
+          background: "none",
+          border: "none",
+          color: "var(--slate)",
+          cursor: "pointer",
+          padding: 2
+        },
+        title: translate(lang, "budget", "goal_edit")
+      }, /*#__PURE__*/React.createElement(IconPencil, {
+        size: 12
+      })), /*#__PURE__*/React.createElement("button", {
+        onClick: () => onSetCategoryGoal(cat, null),
+        style: {
+          background: "none",
+          border: "none",
+          color: "var(--slate)",
+          cursor: "pointer",
+          padding: 2
+        },
+        title: translate(lang, "budget", "goal_remove")
+      }, /*#__PURE__*/React.createElement(IconX, {
+        size: 13
+      })));
+    })(), pct > 100 && (() => {
+      const overspend = spent - effectiveLimit;
+      const isCovering = coveringCat === cat;
+      const sources = sortedCategories.filter(c => c !== cat).map(c => {
+        const cLimit = Number(categories[c] || 0) + Number(budgetRollovers[month]?.[c] || 0);
+        const cSpent = spentByCategory[c] || 0;
+        return {
+          cat: c,
+          available: cLimit - cSpent
+        };
+      }).filter(s => s.available > 0).sort((a, b) => b.available - a.available);
+      if (!isCovering) {
+        return /*#__PURE__*/React.createElement("button", {
+          onClick: () => {
+            setCoveringCat(cat);
+            setCoverFrom(sources[0]?.cat || "");
+            setCoverAmount(String(Math.min(overspend, sources[0]?.available || overspend).toFixed(0)));
+          },
+          style: {
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 8,
+            marginLeft: 40,
+            background: "color-mix(in srgb, var(--rust) 10%, var(--card))",
+            border: "1px dashed var(--rust)",
+            borderRadius: 6,
+            padding: "5px 9px",
+            fontSize: 12,
+            color: "var(--rust)",
+            fontWeight: 600,
+            cursor: "pointer"
+          }
+        }, /*#__PURE__*/React.createElement(IconArrowRightCircle, {
+          size: 13
+        }), " ", translate(lang, "budget", "cover_overspend_button"));
+      }
+      if (sources.length === 0) {
+        return /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginTop: 8,
+            marginLeft: 40,
+            fontSize: 12,
+            color: "var(--slate)"
+          }
+        }, translate(lang, "budget", "cover_overspend_no_source"));
+      }
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 8,
+          marginLeft: 40,
+          padding: 10,
+          border: "1px solid var(--line)",
+          borderRadius: 8,
+          display: "flex",
+          flexDirection: "column",
+          gap: 6
+        }
+      }, /*#__PURE__*/React.createElement("select", {
+        value: coverFrom,
+        onChange: e => setCoverFrom(e.target.value),
+        style: {
+          ...inputStyle,
+          fontSize: 12,
+          padding: "5px 7px"
+        }
+      }, sources.map(s => /*#__PURE__*/React.createElement("option", {
+        key: s.cat,
+        value: s.cat
+      }, s.cat, " (", fmtCompact(s.available), ")"))), /*#__PURE__*/React.createElement("input", {
+        type: "number",
+        inputMode: "decimal",
+        value: coverAmount,
+        onChange: e => setCoverAmount(e.target.value),
+        style: {
+          ...inputStyle,
+          fontSize: 12,
+          padding: "5px 7px"
+        }
+      }), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 6
+        }
+      }, /*#__PURE__*/React.createElement("button", {
+        onClick: () => {
+          const amt = Number(coverAmount);
+          if (!amt || !coverFrom) return;
+          onCoverOverspend(coverFrom, cat, amt);
+          setCoveringCat(null);
+        },
+        style: {
+          background: "var(--rust)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 6,
+          padding: "6px 10px",
+          fontSize: 12,
+          fontWeight: 700,
+          cursor: "pointer",
+          flex: 1
+        }
+      }, translate(lang, "budget", "cover_overspend_confirm")), /*#__PURE__*/React.createElement("button", {
+        onClick: () => setCoveringCat(null),
+        style: {
+          background: "none",
+          border: "1px solid var(--line)",
+          borderRadius: 6,
+          padding: "6px 10px",
+          fontSize: 12,
+          cursor: "pointer"
+        }
+      }, /*#__PURE__*/React.createElement(IconX, {
+        size: 13
+      }))));
+    })());
   }))), section === "income" && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
