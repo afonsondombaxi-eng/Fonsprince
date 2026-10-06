@@ -1072,47 +1072,47 @@ const IRT_BRACKETS_2026 = [{
 }, {
   min: 200000,
   max: 300000,
-  fixed: 31250,
+  fixed: 20500,
   rate: 0.18
 }, {
   min: 300000,
   max: 500000,
-  fixed: 49250,
+  fixed: 38500,
   rate: 0.19
 }, {
   min: 500000,
   max: 1000000,
-  fixed: 87250,
+  fixed: 76500,
   rate: 0.2
 }, {
   min: 1000000,
   max: 1500000,
-  fixed: 187250,
+  fixed: 176500,
   rate: 0.21
 }, {
   min: 1500000,
   max: 2000000,
-  fixed: 292250,
+  fixed: 281500,
   rate: 0.22
 }, {
   min: 2000000,
   max: 2500000,
-  fixed: 402250,
+  fixed: 391500,
   rate: 0.23
 }, {
   min: 2500000,
   max: 5000000,
-  fixed: 517250,
+  fixed: 506500,
   rate: 0.24
 }, {
   min: 5000000,
   max: 10000000,
-  fixed: 1117250,
+  fixed: 1106500,
   rate: 0.245
 }, {
   min: 10000000,
   max: Infinity,
-  fixed: 2342250,
+  fixed: 2331500,
   rate: 0.25
 }];
 function calcIRT(materiaColetavel) {
@@ -1925,19 +1925,35 @@ function typeBreakdown(account, transactions) {
   for (const sb of account.subBalances || []) map[sb.type] = (map[sb.type] || 0) + availableBalance(sb, transactions);
   return map;
 }
-function debtInterestAccrued(debt) {
+function debtInterestAccrued(debt, payments) {
+  // Juro simples, mas acumulado sobre o saldo em dívida à medida que os pagamentos
+  // vão reduzindo o capital — e não sempre sobre o valor original do empréstimo.
   if (!debt.interestRate || !debt.startDate) return 0;
-  const start = new Date(debt.startDate);
+  const rate = Number(debt.interestRate) / 100;
+  const today = todayISO();
+  const relevant = (payments || []).filter(p => p.debtId === debt.id && p.date <= today).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  let balance = Number(debt.originalAmount) || 0;
+  let totalInterest = 0;
+  let cursor = new Date(debt.startDate);
+  for (const p of relevant) {
+    const payDate = new Date(p.date);
+    const days = Math.max(0, (payDate - cursor) / (1000 * 60 * 60 * 24));
+    const segment = balance * rate * (days / 365);
+    totalInterest += segment;
+    balance = balance + segment - Number(p.amount);
+    cursor = payDate;
+  }
   const now = new Date();
-  const days = Math.max(0, (now - start) / (1000 * 60 * 60 * 24));
-  return Number(debt.originalAmount) * (Number(debt.interestRate) / 100) * (days / 365);
+  const daysToNow = Math.max(0, (now - cursor) / (1000 * 60 * 60 * 24));
+  totalInterest += balance * rate * (daysToNow / 365);
+  return totalInterest;
 }
 function debtPaid(debt, payments) {
   const today = todayISO();
   return payments.filter(p => p.debtId === debt.id && p.date <= today).reduce((s, p) => s + Number(p.amount), 0);
 }
 function debtBalance(debt, payments) {
-  return Number(debt.originalAmount) + debtInterestAccrued(debt) - debtPaid(debt, payments);
+  return Number(debt.originalAmount) + debtInterestAccrued(debt, payments) - debtPaid(debt, payments);
 }
 function debtStatus(debt, payments) {
   const balance = debtBalance(debt, payments);
@@ -3759,6 +3775,10 @@ const TRANSLATIONS = {
       expense_shortcuts: "Atalhos de despesa",
       manage_shortcuts: "Gerir atalhos",
       no_shortcuts: "Nenhum atalho criado. Crie atalhos para despesas frequentes, como \"Combustível\" ou \"Mercado\", e lance-as com um clique.",
+      shortcuts_hint: "Crie atalhos para despesas que lança com frequência. Cada um aparece como um botão em Movimentos, pronto a lançar com um clique.",
+      save_shortcut: "Guardar atalho",
+      field_name: "Nome",
+      field_emoji_optional: "Emoji (opcional)",
       add_account_first: "Adicione primeiro uma conta bancária na aba Contas.",
       view_timeline: "Timeline",
       view_list: "Lista",
@@ -3789,6 +3809,7 @@ const TRANSLATIONS = {
       field_balance_type: "Saldo (à ordem / poupança / investimento)",
       available_label: "disponível",
       field_description_placeholder2: "ex: Compras no mercado",
+      field_description_optional: "Descrição (opcional)",
       field_category: "Categoria",
       suggested_from_history: "Sugerido a partir do histórico",
       field_amount: "Valor",
@@ -3872,6 +3893,11 @@ const TRANSLATIONS = {
       category_limits_title: "Limites por categoria",
       category_limits_subtitle: "Defina um limite mensal para acompanhar cada categoria de despesa.",
       manage_categories: "Gerir categorias",
+      manage_categories_hint: "As categorias fixas não podem ser removidas. As categorias que criar aparecem em Movimentos, Orçamento e Atalhos.",
+      new_category_placeholder: "Nome da nova categoria",
+      your_categories: "As suas categorias",
+      no_custom_categories: "Ainda não criou nenhuma categoria personalizada.",
+      fixed_categories: "Categorias fixas",
       limit_placeholder: "Limite",
       rollover_carried_suffix: "transportado",
       rollover_leftover_prefix: "Sobraram",
@@ -4635,6 +4661,10 @@ const TRANSLATIONS = {
       expense_shortcuts: "Atalhos de despesa",
       manage_shortcuts: "Gerir atalhos",
       no_shortcuts: "Nenhum atalho criado. Crie atalhos para despesas frequentes, como \"Combustível\" ou \"Mercado\", e lance-as com um clique.",
+      shortcuts_hint: "Crie atalhos para despesas que lança com frequência. Cada um aparece como um botão em Movimentos, pronto a lançar com um clique.",
+      save_shortcut: "Guardar atalho",
+      field_name: "Nome",
+      field_emoji_optional: "Emoji (opcional)",
       add_account_first: "Adicione primeiro uma conta bancária na aba Contas.",
       view_timeline: "Timeline",
       view_list: "Lista",
@@ -4665,6 +4695,7 @@ const TRANSLATIONS = {
       field_balance_type: "Saldo (à ordem / poupança / investimento)",
       available_label: "disponível",
       field_description_placeholder2: "ex: Compras no mercado",
+      field_description_optional: "Descrição (opcional)",
       field_category: "Categoria",
       suggested_from_history: "Sugerido a partir do histórico",
       field_amount: "Valor",
@@ -4748,6 +4779,11 @@ const TRANSLATIONS = {
       category_limits_title: "Limites por categoria",
       category_limits_subtitle: "Defina um limite mensal para acompanhar cada categoria de despesa.",
       manage_categories: "Gerir categorias",
+      manage_categories_hint: "As categorias fixas não podem ser removidas. As categorias que criar aparecem em Movimentos, Orçamento e Atalhos.",
+      new_category_placeholder: "Nome da nova categoria",
+      your_categories: "As suas categorias",
+      no_custom_categories: "Ainda não criou nenhuma categoria personalizada.",
+      fixed_categories: "Categorias fixas",
       limit_placeholder: "Limite",
       rollover_carried_suffix: "transportado",
       rollover_leftover_prefix: "Sobraram",
@@ -5511,6 +5547,10 @@ const TRANSLATIONS = {
       expense_shortcuts: "Expense shortcuts",
       manage_shortcuts: "Manage shortcuts",
       no_shortcuts: "No shortcuts created yet. Create shortcuts for frequent expenses, like \"Fuel\" or \"Groceries\", and log them with one click.",
+      shortcuts_hint: "Create shortcuts for expenses you log often. Each one shows up as a button in Transactions, ready to log with a single click.",
+      save_shortcut: "Save shortcut",
+      field_name: "Name",
+      field_emoji_optional: "Emoji (optional)",
       add_account_first: "First add a bank account in the Accounts tab.",
       view_timeline: "Timeline",
       view_list: "List",
@@ -5541,6 +5581,7 @@ const TRANSLATIONS = {
       field_balance_type: "Balance (checking / savings / investment)",
       available_label: "available",
       field_description_placeholder2: "e.g. Grocery shopping",
+      field_description_optional: "Description (optional)",
       field_category: "Category",
       suggested_from_history: "Suggested from history",
       field_amount: "Amount",
@@ -5624,6 +5665,11 @@ const TRANSLATIONS = {
       category_limits_title: "Category limits",
       category_limits_subtitle: "Set a monthly limit to track each expense category.",
       manage_categories: "Manage categories",
+      manage_categories_hint: "Fixed categories cannot be removed. Categories you create appear in Transactions, Budget, and Shortcuts.",
+      new_category_placeholder: "New category name",
+      your_categories: "Your categories",
+      no_custom_categories: "You haven't created any custom categories yet.",
+      fixed_categories: "Fixed categories",
       limit_placeholder: "Limit",
       rollover_carried_suffix: "carried over",
       rollover_leftover_prefix: "You had",
@@ -6387,6 +6433,10 @@ const TRANSLATIONS = {
       expense_shortcuts: "Raccourcis de dépense",
       manage_shortcuts: "Gérer les raccourcis",
       no_shortcuts: "Aucun raccourci créé. Créez des raccourcis pour les dépenses fréquentes, comme « Carburant » ou « Courses », et enregistrez-les en un clic.",
+      shortcuts_hint: "Créez des raccourcis pour les dépenses que vous enregistrez souvent. Chacun apparaît comme un bouton dans Transactions, prêt à être utilisé en un clic.",
+      save_shortcut: "Enregistrer le raccourci",
+      field_name: "Nom",
+      field_emoji_optional: "Emoji (facultatif)",
       add_account_first: "Ajoutez d'abord un compte bancaire dans l'onglet Comptes.",
       view_timeline: "Chronologie",
       view_list: "Liste",
@@ -6417,6 +6467,7 @@ const TRANSLATIONS = {
       field_balance_type: "Solde (courant / épargne / investissement)",
       available_label: "disponible",
       field_description_placeholder2: "ex : Courses au marché",
+      field_description_optional: "Description (facultatif)",
       field_category: "Catégorie",
       suggested_from_history: "Suggéré d'après l'historique",
       field_amount: "Montant",
@@ -6500,6 +6551,11 @@ const TRANSLATIONS = {
       category_limits_title: "Limites par catégorie",
       category_limits_subtitle: "Définissez une limite mensuelle pour suivre chaque catégorie de dépense.",
       manage_categories: "Gérer les catégories",
+      manage_categories_hint: "Les catégories fixes ne peuvent pas être supprimées. Les catégories que vous créez apparaissent dans Transactions, Budget et Raccourcis.",
+      new_category_placeholder: "Nom de la nouvelle catégorie",
+      your_categories: "Vos catégories",
+      no_custom_categories: "Vous n'avez encore créé aucune catégorie personnalisée.",
+      fixed_categories: "Catégories fixes",
       limit_placeholder: "Limite",
       rollover_carried_suffix: "reporté",
       rollover_leftover_prefix: "Il restait",
@@ -7263,6 +7319,10 @@ const TRANSLATIONS = {
       expense_shortcuts: "Atajos de gasto",
       manage_shortcuts: "Gestionar atajos",
       no_shortcuts: "Ningún atajo creado. Cree atajos para gastos frecuentes, como \"Combustible\" o \"Mercado\", y regístrelos con un clic.",
+      shortcuts_hint: "Cree atajos para los gastos que registra con frecuencia. Cada uno aparece como un botón en Movimientos, listo para registrarse con un clic.",
+      save_shortcut: "Guardar atajo",
+      field_name: "Nombre",
+      field_emoji_optional: "Emoji (opcional)",
       add_account_first: "Primero agregue una cuenta bancaria en la pestaña Cuentas.",
       view_timeline: "Cronología",
       view_list: "Lista",
@@ -7293,6 +7353,7 @@ const TRANSLATIONS = {
       field_balance_type: "Saldo (corriente / ahorro / inversión)",
       available_label: "disponible",
       field_description_placeholder2: "ej: Compras en el mercado",
+      field_description_optional: "Descripción (opcional)",
       field_category: "Categoría",
       suggested_from_history: "Sugerido según el historial",
       field_amount: "Valor",
@@ -7376,6 +7437,11 @@ const TRANSLATIONS = {
       category_limits_title: "Límites por categoría",
       category_limits_subtitle: "Defina un límite mensual para seguir cada categoría de gasto.",
       manage_categories: "Gestionar categorías",
+      manage_categories_hint: "Las categorías fijas no se pueden eliminar. Las categorías que cree aparecen en Movimientos, Presupuesto y Atajos.",
+      new_category_placeholder: "Nombre de la nueva categoría",
+      your_categories: "Sus categorías",
+      no_custom_categories: "Todavía no ha creado ninguna categoría personalizada.",
+      fixed_categories: "Categorías fijas",
       limit_placeholder: "Límite",
       rollover_carried_suffix: "trasladado",
       rollover_leftover_prefix: "Sobraron",
@@ -8699,6 +8765,8 @@ function Modal({
   wide,
   sheet
 }) {
+  const panelRef = useRef(null);
+  const titleId = useMemo(() => `modal-title-${Math.random().toString(36).slice(2)}`, []);
   useEffect(() => {
     const scrollY = window.scrollY;
     const original = {
@@ -8719,6 +8787,19 @@ function Modal({
       window.scrollTo(0, scrollY);
     };
   }, []);
+  // Fecho com Esc e foco inicial no primeiro campo (acessibilidade de teclado/leitor de ecrã).
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (panel) {
+      const focusable = panel.querySelector("input, select, textarea, button");
+      if (focusable) focusable.focus();
+    }
+    function handleKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
   return /*#__PURE__*/React.createElement("div", {
     className: sheet ? "modal-overlay sheet-overlay" : "modal-overlay",
     style: {
@@ -8733,6 +8814,10 @@ function Modal({
     },
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
+    ref: panelRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": titleId,
     className: sheet ? "modal-panel sheet-panel" : "modal-panel",
     onClick: e => e.stopPropagation(),
     style: sheet ? {
@@ -8776,6 +8861,7 @@ function Modal({
       marginBottom: sheet ? 14 : 18
     }
   }, /*#__PURE__*/React.createElement("h3", {
+    id: titleId,
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       fontSize: sheet ? 17 : 20,
@@ -11191,6 +11277,23 @@ function FinanceApp() {
   }
   function removeAccount(id) {
     setAccounts(a => a.filter(x => x.id !== id));
+    // Desassocia (não apaga) despesas fixas, dívidas e atalhos ligados a esta conta,
+    // conforme avisado ao utilizador antes de confirmar a remoção.
+    setRecurringExpenses(rs => rs.map(r => r.accountId === id ? {
+      ...r,
+      accountId: null,
+      subBalanceId: null
+    } : r));
+    setDebts(ds => ds.map(d => d.accountId === id ? {
+      ...d,
+      accountId: null,
+      subBalanceId: null
+    } : d));
+    setExpenseShortcuts(ss => ss.map(s => s.accountId === id ? {
+      ...s,
+      accountId: null,
+      subBalanceId: null
+    } : s));
   }
   function addTx(tx) {
     setTransactions(t => [...t, {
@@ -19955,7 +20058,7 @@ function TxModal({
       margin: 0
     }
   }, translate(lang, "transactions", "balance_recalc_note")), /*#__PURE__*/React.createElement(PrimaryButton, {
-    disabled: !accountId || !subBalanceId || amount === "",
+    disabled: !accountId || !subBalanceId || amount === "" || !(Number(amount) > 0),
     onClick: () => onSave({
       kind,
       accountId,
@@ -27836,7 +27939,7 @@ function DebtCard({
 }) {
   const balance = debtBalance(debt, debtPayments);
   const paid = debtPaid(debt, debtPayments);
-  const interest = debtInterestAccrued(debt);
+  const interest = debtInterestAccrued(debt, debtPayments);
   const total = Number(debt.originalAmount) + interest;
   const pct = total > 0 ? paid / total * 100 : 0;
   const status = debtStatus(debt, debtPayments);
@@ -28165,7 +28268,7 @@ function DebtModal({
     const acc = accounts.find(a => a.id === id);
     setSubBalanceId(acc && acc.subBalances && acc.subBalances[0] ? acc.subBalances[0].id : "");
   }
-  const canSave = creditor.trim() !== "" && originalAmount !== "" && !isNaN(Number(originalAmount));
+  const canSave = creditor.trim() !== "" && originalAmount !== "" && Number(originalAmount) > 0;
   function handleSave() {
     onSave({
       type,
@@ -29150,7 +29253,7 @@ function CategoryManagerModal({
 }) {
   const [newName, setNewName] = useState("");
   return /*#__PURE__*/React.createElement(Modal, {
-    title: "Gerir categorias",
+    title: translate(CURRENT_LANG, "budget", "manage_categories"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -29164,7 +29267,7 @@ function CategoryManagerModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "As categorias fixas não podem ser removidas. As categorias que criar aparecem em Movimentos, Orçamento e Atalhos."), /*#__PURE__*/React.createElement("div", {
+  }, translate(CURRENT_LANG, "budget", "manage_categories_hint")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -29173,7 +29276,7 @@ function CategoryManagerModal({
     style: inputStyle,
     value: newName,
     onChange: e => setNewName(e.target.value),
-    placeholder: "Nome da nova categoria",
+    placeholder: translate(CURRENT_LANG, "budget", "new_category_placeholder"),
     onKeyDown: e => {
       if (e.key === "Enter" && newName.trim()) {
         onAdd(newName);
@@ -29189,7 +29292,7 @@ function CategoryManagerModal({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 14
-  }), " Adicionar")), /*#__PURE__*/React.createElement("div", {
+  }), " ", translate(CURRENT_LANG, "members", "add_member"))), /*#__PURE__*/React.createElement("div", {
     style: {
       borderTop: "1px solid var(--line)",
       paddingTop: 12
@@ -29202,13 +29305,13 @@ function CategoryManagerModal({
       textTransform: "uppercase",
       marginBottom: 8
     }
-  }, "As suas categorias"), custom.length === 0 ? /*#__PURE__*/React.createElement("p", {
+  }, translate(CURRENT_LANG, "budget", "your_categories")), custom.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 13,
       color: "var(--slate)",
       margin: 0
     }
-  }, "Ainda não criou nenhuma categoria personalizada.") : /*#__PURE__*/React.createElement("div", {
+  }, translate(CURRENT_LANG, "budget", "no_custom_categories")) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -29254,7 +29357,7 @@ function CategoryManagerModal({
       textTransform: "uppercase",
       marginBottom: 8
     }
-  }, "Categorias fixas"), /*#__PURE__*/React.createElement("div", {
+  }, translate(CURRENT_LANG, "budget", "fixed_categories")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexWrap: "wrap",
@@ -29461,7 +29564,7 @@ function ShortcutsManagerModal({
   onRemove
 }) {
   return /*#__PURE__*/React.createElement(Modal, {
-    title: "Atalhos de despesa",
+    title: translate(CURRENT_LANG, "transactions", "expense_shortcuts"),
     onClose: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -29475,12 +29578,12 @@ function ShortcutsManagerModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Crie atalhos para despesas que lança com frequência. Cada um aparece como um botão em Movimentos, pronto a lançar com um clique."), shortcuts.length === 0 ? /*#__PURE__*/React.createElement("p", {
+  }, translate(CURRENT_LANG, "transactions", "shortcuts_hint")), shortcuts.length === 0 ? /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 13,
       color: "var(--slate)"
     }
-  }, "Ainda não tem atalhos.") : shortcuts.map(s => /*#__PURE__*/React.createElement("div", {
+  }, translate(CURRENT_LANG, "transactions", "no_shortcuts")) : shortcuts.map(s => /*#__PURE__*/React.createElement("div", {
     key: s.id,
     style: {
       display: "flex",
@@ -29546,7 +29649,7 @@ function ShortcutsManagerModal({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 14
-  }), " Novo atalho")));
+  }), " ", translate(CURRENT_LANG, "ui", "new_shortcut"))));
 }
 function ShortcutFormModal({
   initial,
@@ -29594,7 +29697,7 @@ function ShortcutFormModal({
       gap: 10
     }
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Emoji (opcional)"
+    label: translate(CURRENT_LANG, "transactions", "field_emoji_optional")
   }, /*#__PURE__*/React.createElement("input", {
     style: {
       ...inputStyle,
@@ -29606,14 +29709,14 @@ function ShortcutFormModal({
     placeholder: "⛽",
     maxLength: 2
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Nome"
+    label: translate(CURRENT_LANG, "transactions", "field_name")
   }, /*#__PURE__*/React.createElement("input", {
     style: inputStyle,
     value: name,
     onChange: e => setName(e.target.value),
     placeholder: translate(CURRENT_LANG, "ui", "expense_shortcut_placeholder")
   }))), /*#__PURE__*/React.createElement(Field, {
-    label: "Categoria"
+    label: translate(CURRENT_LANG, "transactions", "field_category")
   }, /*#__PURE__*/React.createElement("select", {
     style: inputStyle,
     value: category,
@@ -29621,7 +29724,7 @@ function ShortcutFormModal({
   }, expenseCategories.map(c => /*#__PURE__*/React.createElement("option", {
     key: c
   }, c)))), /*#__PURE__*/React.createElement(Field, {
-    label: "Valor"
+    label: translate(CURRENT_LANG, "transactions", "field_amount")
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
     inputMode: "decimal",
@@ -29630,7 +29733,7 @@ function ShortcutFormModal({
     onChange: e => setAmount(e.target.value),
     placeholder: "0.00"
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Conta"
+    label: translate(CURRENT_LANG, "transactions", "field_account")
   }, /*#__PURE__*/React.createElement("select", {
     style: inputStyle,
     value: accountId,
@@ -29639,7 +29742,7 @@ function ShortcutFormModal({
     key: a.id,
     value: a.id
   }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname && `— ${a.nickname}`)))), currentAccount && /*#__PURE__*/React.createElement(Field, {
-    label: "Saldo"
+    label: translate(CURRENT_LANG, "debts", "field_balance")
   }, /*#__PURE__*/React.createElement("select", {
     style: inputStyle,
     value: subBalanceId,
@@ -29650,7 +29753,7 @@ function ShortcutFormModal({
   }, sb.label || sb.type)))), /*#__PURE__*/React.createElement(PrimaryButton, {
     disabled: !canSave,
     onClick: handleSave
-  }, isEditing ? "Guardar alterações" : "Guardar atalho")));
+  }, isEditing ? translate(CURRENT_LANG, "accounts", "save_changes") : translate(CURRENT_LANG, "transactions", "save_shortcut"))));
 }
 function GoalModal({
   lang,
@@ -29726,7 +29829,8 @@ function GoalModal({
       margin: 0
     }
   }, translate(lang, "goals", "interest_rate_hint")), /*#__PURE__*/React.createElement(PrimaryButton, {
-    onClick: () => name && target !== "" && onSave({
+    disabled: !name.trim() || target === "" || !(Number(target) > 0),
+    onClick: () => onSave({
       name,
       category,
       target: Number(target),
@@ -29761,7 +29865,8 @@ function ContributeModal({
     onChange: e => setAmount(e.target.value),
     placeholder: "0.00"
   })), /*#__PURE__*/React.createElement(PrimaryButton, {
-    onClick: () => amount !== "" && onSave(Number(amount))
+    disabled: amount === "" || !(Number(amount) > 0),
+    onClick: () => onSave(Number(amount))
   }, translate(lang, "goals", "confirm"))));
 }
 
