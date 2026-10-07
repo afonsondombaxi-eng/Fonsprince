@@ -1576,8 +1576,12 @@ function seal(name) {
   const words = name.replace(/—.*/, "").trim().split(" ");
   return words.slice(0, 2).map(w => w[0]).join("").toUpperCase();
 }
+let MONTH_START_DAY = 1; /* dia em que começa o mês financeiro (1 = mês civil); o período leva o nome do mês em que termina */
 function monthKey(dateStr) {
-  return (dateStr || "").slice(0, 7);
+  const base = (dateStr || "").slice(0, 7);
+  const S = MONTH_START_DAY;
+  if (!S || S <= 1 || !dateStr || dateStr.length < 10) return base;
+  return Number(dateStr.slice(8, 10)) >= S ? addMonthsToKey(base, 1) : base;
 }
 function computeSavingsStreak(transactions) {
   const history = monthlyHistory(transactions, 12);
@@ -1602,7 +1606,7 @@ function nextMonthKey(month) {
   return d.toISOString().slice(0, 7);
 }
 function todayMonth() {
-  return new Date().toISOString().slice(0, 7);
+  return monthKey(new Date().toISOString().slice(0, 10));
 }
 function computeAgeOfMoney(transactions, asOfDateStr) {
   const asOf = new Date((asOfDateStr || todayISO()) + "T00:00:00");
@@ -1900,7 +1904,7 @@ function availableBalance(sub, transactions, asOfDate) {
 }
 function lastDayOfMonth(monthKeyStr) {
   const parts = monthKeyStr.split("-").map(Number);
-  return new Date(parts[0], parts[1], 0).toISOString().slice(0, 10);
+  return `${monthKeyStr}-${String(new Date(parts[0], parts[1], 0).getDate()).padStart(2, "0")}`;
 }
 function accruedInterest(sub, principal) {
   if (!sub.interestRate || !sub.startDate) return 0;
@@ -2421,7 +2425,9 @@ function portfolioIndicators(bonds, equities, funds, taxaLivreRisco, taxaInflaca
 // ══════════════════════════════════════════════════════════════════════
 
 function recurringDueDateForMonth(rec, month) {
-  const day = String(rec.dueDay).padStart(2, "0");
+  const dd = Number(rec.dueDay) || 1;
+  const day = String(dd).padStart(2, "0");
+  if (MONTH_START_DAY > 1 && dd >= MONTH_START_DAY) return `${addMonthsToKey(month, -1)}-${day}`;
   return `${month}-${day}`;
 }
 function recurringPaidTx(rec, month, transactions) {
@@ -3132,6 +3138,123 @@ async function registerPeriodicSync() {
   } catch {}
 }
 
+/* ---------------- Lembrete diário por push (funciona com a app fechada) ----------------
+   Ao contrário dos avisos acima (só disparam com a app aberta), isto usa a Web Push API:
+   o dispositivo subscreve-se junto do servidor de lembretes da Fonsprince One (um único
+   servidor, publicado por quem distribui a app — ver /fonsprince-notify-server), que
+   envia o lembrete à hora escolhida através do serviço de push do sistema operativo.
+   O utilizador final não configura nada: só escolhe a hora e ativa.
+
+   >>> PARA QUEM PUBLICA A APP (configurar UMA vez): depois de pôr o servidor a correr
+   (README em fonsprince-notify-server), preencha as duas constantes abaixo. Enquanto
+   estiverem vazias, o cartão "Lembrete diário" fica escondido nas Definições. */
+const PUSH_SERVER_URL = ""; // ex: "https://fonsprince-notify-server.onrender.com"
+const PUSH_VAPID_PUBLIC_KEY = ""; // chave pública gerada com `npm run generate-vapid`
+function isPushConfigured() {
+  return Boolean(PUSH_SERVER_URL && PUSH_VAPID_PUBLIC_KEY);
+}
+function isPushSupported() {
+  return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
+}
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+async function subscribeToPush(time, lang) {
+  if (!isPushSupported()) return {
+    ok: false,
+    error: "unsupported"
+  };
+  if (!isPushConfigured()) return {
+    ok: false,
+    error: "missing_config"
+  };
+  const serverUrl = PUSH_SERVER_URL;
+  const vapidPublicKey = PUSH_VAPID_PUBLIC_KEY;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+      });
+    }
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    const res = await fetch(serverUrl.replace(/\/$/, "") + "/api/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        subscription: sub.toJSON(),
+        time,
+        tz,
+        lang
+      })
+    });
+    if (!res.ok) return {
+      ok: false,
+      error: "server"
+    };
+    return {
+      ok: true
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: String(err && err.message || err)
+    };
+  }
+}
+async function updatePushTime(time) {
+  if (!isPushSupported() || !isPushConfigured()) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    await fetch(PUSH_SERVER_URL.replace(/\/$/, "") + "/api/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        subscription: sub.toJSON(),
+        time,
+        tz
+      })
+    });
+  } catch {}
+}
+async function unsubscribeFromPush() {
+  if (!isPushSupported()) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      if (isPushConfigured()) {
+        try {
+          await fetch(PUSH_SERVER_URL.replace(/\/$/, "") + "/api/unsubscribe", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              endpoint: sub.endpoint
+            })
+          });
+        } catch {}
+      }
+      await sub.unsubscribe();
+    }
+  } catch {}
+}
+
 /* ---------------- Sincronização na nuvem (Firebase) ---------------- */
 /* Para ativar: crie um projeto gratuito em https://console.firebase.google.com,
    ative "Authentication" (método Email/Password) e "Firestore Database",
@@ -3479,6 +3602,7 @@ function loadKey(key, fallback) {
     return fallback;
   }
 }
+MONTH_START_DAY = Number(loadKey("month-start-day", 1)) || 1;
 function saveKey(key, value) {
   try {
     localStorage.setItem(STORE_PREFIX + key, JSON.stringify(value));
@@ -3500,6 +3624,9 @@ const SUPPORTED_LANGS = ["pt", "pt-BR", "en", "fr", "es"];
 const TRANSLATIONS = {
   pt: {
     nav: {
+      kixikila: "Kixikila",
+      categories: "Categorias",
+      shortcuts: "Atalhos",
       overview: "Visão Geral",
       accounts: "Contas",
       transactions: "Transações",
@@ -3521,6 +3648,7 @@ const TRANSLATIONS = {
       privacy: "Privacidade"
     },
     title: {
+      kixikila: "Kixikila",
       overview: "Visão Geral",
       accounts: "Contas Bancárias",
       transactions: "Transações",
@@ -3543,6 +3671,7 @@ const TRANSLATIONS = {
       privacy: "Política de Privacidade"
     },
     subtitle: {
+      kixikila: "Poupança rotativa em grupo: contribuições, ordem de recebimento e a sua vez.",
       overview: "O saldo disponível reflete as receitas e despesas registadas até hoje.",
       accounts: "Cada conta pode dividir o dinheiro entre à ordem, poupança e investimento.",
       transactions: "Receitas e despesas registadas.",
@@ -3857,6 +3986,13 @@ const TRANSLATIONS = {
       notifications: "Notificações",
       device_reminders: "Lembretes no aparelho",
       device_reminders_desc: "Avisa 3 dias antes de uma despesa fixa, dívida ou fatura de cartão vencer. Só funciona enquanto a app está aberta ou foi aberta recentemente.",
+      push_reminder_title: "Lembrete diário (notificação push)",
+      push_reminder_desc: "Recebe um lembrete à hora que escolheres, mesmo com a app fechada, para registares os teus gastos do dia.",
+      push_time_label: "Hora do lembrete",
+      push_error_prefix: "Não foi possível ativar:",
+      push_activating: "A ativar…",
+      push_activate: "Ativar lembrete diário",
+      push_active_at: "Lembrete diário ativo às",
       blocked_by_browser: "Bloqueado nas definições do navegador.",
       cloud_sync: "Sincronização na nuvem",
       end_session: "Terminar sessão",
@@ -4325,6 +4461,8 @@ const TRANSLATIONS = {
       export_reminder_never: "Ainda não fez nenhuma exportação de dados — considere guardar uma cópia de segurança."
     },
     simulators: {
+      sim_iva_label: "IVA",
+      sim_iva_sub: "Acrescentar ou retirar o IVA a um valor",
       group_tax_salary: "Impostos & Salário",
       group_interest_savings: "Juros & Poupança",
       group_utilities: "Utilitários",
@@ -4386,6 +4524,9 @@ const TRANSLATIONS = {
   },
   "pt-BR": {
     nav: {
+      kixikila: "Kixikila",
+      categories: "Categorias",
+      shortcuts: "Atalhos",
       overview: "Visão Geral",
       accounts: "Contas",
       transactions: "Transações",
@@ -4407,6 +4548,7 @@ const TRANSLATIONS = {
       privacy: "Privacidade"
     },
     title: {
+      kixikila: "Kixikila",
       overview: "Visão Geral",
       accounts: "Contas Bancárias",
       transactions: "Transações",
@@ -4429,6 +4571,7 @@ const TRANSLATIONS = {
       privacy: "Política de Privacidade"
     },
     subtitle: {
+      kixikila: "Poupança rotativa em grupo: contribuições, ordem de recebimento e a sua vez.",
       overview: "O saldo disponível reflete as receitas e despesas registadas até hoje.",
       accounts: "Cada conta pode dividir o dinheiro entre à ordem, poupança e investimento.",
       transactions: "Receitas e despesas registadas.",
@@ -4743,6 +4886,13 @@ const TRANSLATIONS = {
       notifications: "Notificações",
       device_reminders: "Lembretes no aparelho",
       device_reminders_desc: "Avisa 3 dias antes de uma despesa fixa, dívida ou fatura de cartão vencer. Só funciona enquanto a app está aberta ou foi aberta recentemente.",
+      push_reminder_title: "Lembrete diário (notificação push)",
+      push_reminder_desc: "Recebe um lembrete à hora que escolheres, mesmo com a app fechada, para registares os teus gastos do dia.",
+      push_time_label: "Hora do lembrete",
+      push_error_prefix: "Não foi possível ativar:",
+      push_activating: "A ativar…",
+      push_activate: "Ativar lembrete diário",
+      push_active_at: "Lembrete diário ativo às",
       blocked_by_browser: "Bloqueado nas configurações do navegador.",
       cloud_sync: "Sincronização na nuvem",
       end_session: "Sair",
@@ -5211,6 +5361,8 @@ const TRANSLATIONS = {
       export_reminder_never: "Ainda não fez nenhuma exportação de dados — considere salvar uma cópia de segurança."
     },
     simulators: {
+      sim_iva_label: "IVA",
+      sim_iva_sub: "Acrescentar ou retirar o IVA a um valor",
       group_tax_salary: "Impostos & Salário",
       group_interest_savings: "Juros & Poupança",
       group_utilities: "Utilitários",
@@ -5272,6 +5424,9 @@ const TRANSLATIONS = {
   },
   en: {
     nav: {
+      kixikila: "Kixikila",
+      categories: "Categories",
+      shortcuts: "Shortcuts",
       overview: "Overview",
       accounts: "Accounts",
       transactions: "Transactions",
@@ -5293,6 +5448,7 @@ const TRANSLATIONS = {
       privacy: "Privacy"
     },
     title: {
+      kixikila: "Kixikila",
       overview: "Overview",
       accounts: "Bank Accounts",
       transactions: "Transactions",
@@ -5315,6 +5471,7 @@ const TRANSLATIONS = {
       privacy: "Privacy Policy"
     },
     subtitle: {
+      kixikila: "Rotating group savings: contributions, payout order and your turn.",
       overview: "The available balance reflects income and expenses recorded up to today.",
       accounts: "Each account can split money between checking, savings and investment.",
       transactions: "Recorded income and expenses.",
@@ -5629,6 +5786,13 @@ const TRANSLATIONS = {
       notifications: "Notifications",
       device_reminders: "Device reminders",
       device_reminders_desc: "Warns 3 days before a fixed expense, debt or card statement is due. Only works while the app is open or was recently opened.",
+      push_reminder_title: "Daily reminder (push notification)",
+      push_reminder_desc: "Get a reminder at the time you choose, even with the app closed, so you remember to log your daily spending.",
+      push_time_label: "Reminder time",
+      push_error_prefix: "Couldn't activate:",
+      push_activating: "Activating…",
+      push_activate: "Activate daily reminder",
+      push_active_at: "Daily reminder active at",
       blocked_by_browser: "Blocked in the browser settings.",
       cloud_sync: "Cloud sync",
       end_session: "Sign out",
@@ -6097,6 +6261,8 @@ const TRANSLATIONS = {
       export_reminder_never: "You haven't exported any data yet — consider keeping a backup."
     },
     simulators: {
+      sim_iva_label: "VAT",
+      sim_iva_sub: "Add or remove VAT from an amount",
       group_tax_salary: "Taxes & Salary",
       group_interest_savings: "Interest & Savings",
       group_utilities: "Utilities",
@@ -6158,6 +6324,9 @@ const TRANSLATIONS = {
   },
   fr: {
     nav: {
+      kixikila: "Kixikila",
+      categories: "Catégories",
+      shortcuts: "Raccourcis",
       overview: "Vue d'ensemble",
       accounts: "Comptes",
       transactions: "Transactions",
@@ -6179,6 +6348,7 @@ const TRANSLATIONS = {
       privacy: "Confidentialité"
     },
     title: {
+      kixikila: "Kixikila",
       overview: "Vue d'ensemble",
       accounts: "Comptes bancaires",
       transactions: "Transactions",
@@ -6201,6 +6371,7 @@ const TRANSLATIONS = {
       privacy: "Politique de confidentialité"
     },
     subtitle: {
+      kixikila: "Épargne rotative en groupe : cotisations, ordre de versement et votre tour.",
       overview: "Le solde disponible reflète les revenus et dépenses enregistrés à ce jour.",
       accounts: "Chaque compte peut répartir l'argent entre courant, épargne et investissement.",
       transactions: "Revenus et dépenses enregistrés.",
@@ -6515,6 +6686,13 @@ const TRANSLATIONS = {
       notifications: "Notifications",
       device_reminders: "Rappels sur l'appareil",
       device_reminders_desc: "Vous avertit 3 jours avant l'échéance d'une dépense fixe, d'une dette ou d'une facture de carte. Fonctionne uniquement tant que l'application est ouverte ou l'a été récemment.",
+      push_reminder_title: "Rappel quotidien (notification push)",
+      push_reminder_desc: "Recevez un rappel à l'heure de votre choix, même application fermée, pour enregistrer vos dépenses du jour.",
+      push_time_label: "Heure du rappel",
+      push_error_prefix: "Impossible d'activer :",
+      push_activating: "Activation…",
+      push_activate: "Activer le rappel quotidien",
+      push_active_at: "Rappel quotidien actif à",
       blocked_by_browser: "Bloqué dans les paramètres du navigateur.",
       cloud_sync: "Synchronisation cloud",
       end_session: "Se déconnecter",
@@ -6983,6 +7161,8 @@ const TRANSLATIONS = {
       export_reminder_never: "Vous n'avez encore fait aucune exportation de données — pensez à conserver une sauvegarde."
     },
     simulators: {
+      sim_iva_label: "TVA",
+      sim_iva_sub: "Ajouter ou retirer la TVA d'un montant",
       group_tax_salary: "Impôts & Salaire",
       group_interest_savings: "Intérêts & Épargne",
       group_utilities: "Utilitaires",
@@ -7044,6 +7224,9 @@ const TRANSLATIONS = {
   },
   es: {
     nav: {
+      kixikila: "Kixikila",
+      categories: "Categorías",
+      shortcuts: "Atajos",
       overview: "Resumen",
       accounts: "Cuentas",
       transactions: "Transacciones",
@@ -7065,6 +7248,7 @@ const TRANSLATIONS = {
       privacy: "Privacidad"
     },
     title: {
+      kixikila: "Kixikila",
       overview: "Resumen General",
       accounts: "Cuentas Bancarias",
       transactions: "Transacciones",
@@ -7087,6 +7271,7 @@ const TRANSLATIONS = {
       privacy: "Política de Privacidad"
     },
     subtitle: {
+      kixikila: "Ahorro rotativo en grupo: aportaciones, orden de cobro y su turno.",
       overview: "El saldo disponible refleja los ingresos y gastos registrados hasta hoy.",
       accounts: "Cada cuenta puede dividir el dinero entre corriente, ahorro e inversión.",
       transactions: "Ingresos y gastos registrados.",
@@ -7401,6 +7586,13 @@ const TRANSLATIONS = {
       notifications: "Notificaciones",
       device_reminders: "Recordatorios en el dispositivo",
       device_reminders_desc: "Avisa 3 días antes de que venza un gasto fijo, deuda o factura de tarjeta. Solo funciona mientras la app está abierta o se abrió recientemente.",
+      push_reminder_title: "Recordatorio diario (notificación push)",
+      push_reminder_desc: "Recibe un recordatorio a la hora que elijas, incluso con la app cerrada, para registrar tus gastos del día.",
+      push_time_label: "Hora del recordatorio",
+      push_error_prefix: "No se pudo activar:",
+      push_activating: "Activando…",
+      push_activate: "Activar recordatorio diario",
+      push_active_at: "Recordatorio diario activo a las",
       blocked_by_browser: "Bloqueado en la configuración del navegador.",
       cloud_sync: "Sincronización en la nube",
       end_session: "Cerrar sesión",
@@ -7869,6 +8061,8 @@ const TRANSLATIONS = {
       export_reminder_never: "Aún no ha hecho ninguna exportación de datos — considere guardar una copia de seguridad."
     },
     simulators: {
+      sim_iva_label: "IVA",
+      sim_iva_sub: "Añadir o quitar el IVA de un importe",
       group_tax_salary: "Impuestos y Salario",
       group_interest_savings: "Intereses y Ahorro",
       group_utilities: "Utilidades",
@@ -7987,6 +8181,10 @@ const ALL_NAV_TABS = [{
   id: "cards",
   label: "Cartões",
   icon: IconBanknote
+}, {
+  id: "kixikila",
+  label: "Kixikila",
+  icon: IconPig
 }, {
   id: "exchange",
   label: "Câmbio",
@@ -10748,6 +10946,2494 @@ function SplitBar({
 // SECTION 19: MAIN APP COMPONENT (FinanceApp)
 // ══════════════════════════════════════════════════════════════════════
 
+/* ══════════════════════════════════════════════════════════════════════
+   SECTION 29: EXTRAS (posso gastar hoje, desfazer, kixikila, fecho do mês,
+   despesas dedutíveis, backup cifrado, câmbio efetivo, poder de compra…)
+   Textos próprios desta secção (pt / en / fr / es; pt-BR usa pt).
+   ══════════════════════════════════════════════════════════════════════ */
+
+const EXTRAS_I18N = {
+  pt: {
+    spend_title: "Posso gastar hoje",
+    spend_per_day: "por dia",
+    spend_detail: "Restam {rem} para {days} dia(s), até {end}.",
+    spend_over: "Orçamento do mês esgotado",
+    spend_over_detail: "Já gastou {over} acima do orçamento definido.",
+    spend_no_budget: "Defina limites por categoria no Orçamento para ver quanto pode gastar por dia.",
+    close_title: "Fecho do mês",
+    close_open_btn: "Fechar o mês",
+    close_review_btn: "Rever fecho",
+    close_closed_on: "Mês fechado em {date}",
+    close_due_hint: "O período termina em {days} dia(s).",
+    close_ended_hint: "O período já terminou — falta fechá-lo.",
+    close_check_reconciled: "Movimentos conciliados",
+    close_check_recurring: "Despesas recorrentes lançadas",
+    close_check_budget: "Orçamento revisto",
+    close_budget_reviewed: "Já revi o orçamento deste mês",
+    close_note: "Nota do mês",
+    close_note_ph: "O que correu bem? O que ajustar no próximo mês?",
+    close_income: "Receitas",
+    close_expenses: "Despesas",
+    close_saved: "Poupado",
+    close_mark_all: "Marcar todos como conciliados",
+    close_save: "Fechar mês",
+    close_reopen: "Reabrir mês",
+    close_over_limits: "Categorias acima do limite",
+    close_all_ok: "Tudo em ordem.",
+    close_pending_n: "{n} por tratar",
+    close_unreconciled: "Por conciliar",
+    reconcile_toggle: "Conciliado com o extrato",
+    reconciled_label: "Conciliado",
+    undo: "Desfazer",
+    undo_tx: "Movimento removido",
+    undo_goal: "Meta removida",
+    undo_debt: "Dívida removida",
+    undo_account: "Conta removida",
+    undo_kixikila: "Kixikila removida",
+    pp_title: "Poder de compra",
+    pp_text: "Com inflação de {rate}, os {now} que tem hoje valerão o equivalente a {then} de hoje daqui a 12 meses.",
+    pp_gap: "Para manter o poder de compra, o património precisa de render cerca de {gap} por ano.",
+    pp_goal: "Ajustada à inflação ({rate}): {amount}",
+    iva_note: "Taxa geral de IVA em Angola: 14%. Confirme sempre a taxa aplicável ao seu produto ou serviço.",
+    iva_mode_add: "Preço sem IVA → com IVA",
+    iva_mode_remove: "Preço com IVA → sem IVA",
+    iva_amount: "Valor",
+    iva_rate: "Taxa de IVA",
+    iva_base: "Valor sem IVA",
+    iva_tax: "IVA",
+    iva_total: "Valor com IVA",
+    kix_me_tag: "(eu)",
+    kix_title: "Kixikila",
+    kix_subtitle: "Poupança rotativa em grupo: cada mês todos contribuem e um participante recebe o pote.",
+    kix_new: "Nova kixikila",
+    kix_edit: "Editar kixikila",
+    kix_empty: "Ainda não tem nenhuma kixikila. Crie uma para acompanhar contribuições e saber quando é a sua vez.",
+    kix_name: "Nome do grupo",
+    kix_name_ph: "Ex.: Kixikila da família",
+    kix_contribution: "Contribuição por ciclo",
+    kix_currency: "Moeda",
+    kix_start: "Data do 1.º ciclo",
+    kix_participants: "Participantes (um por linha, pela ordem de recebimento)",
+    kix_me: "Quem é você?",
+    kix_me_pick: "Escolha o seu nome",
+    kix_participants_min: "Indique pelo menos 2 participantes.",
+    kix_save: "Guardar",
+    kix_pot: "Pote",
+    kix_cycle_of: "Ciclo {i} de {n}",
+    kix_not_started: "Ainda não começou — 1.º ciclo a {date}",
+    kix_receives: "Recebe neste ciclo",
+    kix_my_turn: "A sua vez",
+    kix_my_turn_done: "Já recebeu o pote",
+    kix_next_contrib: "Próxima contribuição sua",
+    kix_none_pending: "Sem contribuições pendentes",
+    kix_paid_title: "Quem já pagou neste ciclo",
+    kix_register_mine: "Registar a minha contribuição",
+    kix_register_pot: "Recebi o pote",
+    kix_account: "Conta para o registo",
+    kix_no_accounts: "Crie uma conta para poder registar movimentos.",
+    kix_tx_contrib: "Kixikila {name} — ciclo {i}",
+    kix_tx_pot: "Kixikila {name} — pote do ciclo {i}",
+    kix_registered: "Movimento registado",
+    kix_hint_pot: "Todos (incluindo quem recebe) contribuem em cada ciclo; o pote é a soma de todas as contribuições.",
+    kix_in_days: "em {n} dia(s)",
+    kix_today: "hoje",
+    kix_overdue: "em atraso",
+    kix_edit_btn: "Editar",
+    kix_remove_btn: "Remover",
+    kix_remove_confirm: "Remover esta kixikila?",
+    ded_title: "Despesas dedutíveis",
+    ded_subtitle: "Reúna os comprovativos de saúde, educação, habitação e seguros do ano para a sua declaração.",
+    ded_open: "Despesas dedutíveis",
+    ded_field: "Despesa dedutível?",
+    ded_none: "Não",
+    ded_saude: "Saúde",
+    ded_educacao: "Educação",
+    ded_habitacao: "Habitação",
+    ded_seguros: "Seguros",
+    ded_outras: "Outras",
+    ded_year: "Ano",
+    ded_total: "Total",
+    ded_count: "{n} despesa(s)",
+    ded_empty: "Nenhuma despesa marcada como dedutível neste ano.",
+    ded_with_receipt: "Com comprovativo",
+    ded_without_receipt: "Sem comprovativo",
+    ded_csv: "Exportar CSV",
+    ded_print: "Imprimir",
+    ded_disclaimer: "Esta lista serve para organizar os seus comprovativos. As deduções admitidas dependem da lei fiscal em vigor.",
+    ded_date: "Data",
+    ded_desc: "Descrição",
+    ded_category: "Tipo",
+    ded_amount: "Valor (Kz)",
+    receipt_attach: "Anexar comprovativo",
+    receipt_replace: "Substituir comprovativo",
+    receipt_remove: "Remover",
+    receipt_view: "Ver",
+    receipt_hint: "A foto fica guardada só neste aparelho (não vai para a nuvem).",
+    receipt_error: "Não foi possível ler a imagem.",
+    enc_title: "Backup cifrado",
+    enc_desc: "Exporta todos os seus dados num ficheiro protegido por palavra-passe (AES-256). Sem a palavra-passe ninguém o consegue abrir.",
+    enc_export_btn: "Exportar backup cifrado",
+    enc_password: "Palavra-passe",
+    enc_confirm: "Repita a palavra-passe",
+    enc_min: "Use pelo menos 6 caracteres.",
+    enc_mismatch: "As palavras-passe não coincidem.",
+    enc_warning: "Se esquecer a palavra-passe, não existe forma de recuperar este backup.",
+    enc_encrypt_title: "Cifrar backup",
+    enc_decrypt_title: "Backup cifrado",
+    enc_decrypt_desc: "Introduza a palavra-passe usada ao exportar este backup.",
+    enc_wrong: "Palavra-passe incorreta ou ficheiro danificado.",
+    enc_working: "A processar…",
+    enc_submit_encrypt: "Cifrar e descarregar",
+    enc_submit_decrypt: "Abrir backup",
+    enc_cancel: "Cancelar",
+    ms_title: "Início do mês financeiro",
+    ms_desc: "Se recebe o salário a meio do mês, escolha o dia em que o seu mês começa. O período leva o nome do mês em que termina (ex.: de 25 set a 24 out = Outubro).",
+    ms_label: "Dia de início",
+    ms_day1: "Dia 1 (mês civil)",
+    ms_day_n: "Dia {n}",
+    fx_title: "Câmbio efetivo vs. taxa oficial",
+    fx_desc: "Compara a taxa que realmente obteve nas transferências entre moedas com a taxa oficial registada na data.",
+    fx_effective: "Taxa efetiva",
+    fx_official: "Taxa oficial",
+    fx_diff: "Diferença",
+    fx_bought: "Compra de {cur}",
+    fx_sold: "Venda de {cur}",
+    fx_total_loss: "Custo total face à taxa oficial",
+    fx_total_gain: "Ganho total face à taxa oficial",
+    fx_note_none: "Sem taxa oficial registada para comparar.",
+    fx_modal_note: "Taxa efetiva: 1 {cur} = {eff} · oficial {off} ({diff})",
+    wa_button: "Cobrar no WhatsApp",
+    wa_phone: "WhatsApp (opcional)",
+    wa_phone_ph: "+244 9xx xxx xxx",
+    wa_msg: "Olá {name}, tudo bem? Passo só para lembrar o valor de {amount} que ficou pendente{due}. Obrigado!",
+    wa_due: " (vencimento a {date})",
+    qa_new_expense: "Nova despesa",
+    qa_new_income: "Nova receita"
+  },
+  en: {
+    spend_title: "Can I spend today",
+    spend_per_day: "per day",
+    spend_detail: "{rem} left for {days} day(s), until {end}.",
+    spend_over: "Monthly budget used up",
+    spend_over_detail: "You have spent {over} above the budget you set.",
+    spend_no_budget: "Set category limits in Budget to see how much you can spend per day.",
+    close_title: "Month-end close",
+    close_open_btn: "Close the month",
+    close_review_btn: "Review close",
+    close_closed_on: "Month closed on {date}",
+    close_due_hint: "The period ends in {days} day(s).",
+    close_ended_hint: "The period has ended — it still needs closing.",
+    close_check_reconciled: "Reconciled transactions",
+    close_check_recurring: "Recurring expenses posted",
+    close_check_budget: "Budget reviewed",
+    close_budget_reviewed: "I have reviewed this month's budget",
+    close_note: "Month note",
+    close_note_ph: "What went well? What to adjust next month?",
+    close_income: "Income",
+    close_expenses: "Expenses",
+    close_saved: "Saved",
+    close_mark_all: "Mark all as reconciled",
+    close_save: "Close month",
+    close_reopen: "Reopen month",
+    close_over_limits: "Categories over limit",
+    close_all_ok: "All good.",
+    close_pending_n: "{n} pending",
+    close_unreconciled: "To reconcile",
+    reconcile_toggle: "Reconciled with statement",
+    reconciled_label: "Reconciled",
+    undo: "Undo",
+    undo_tx: "Transaction removed",
+    undo_goal: "Goal removed",
+    undo_debt: "Debt removed",
+    undo_account: "Account removed",
+    undo_kixikila: "Kixikila removed",
+    pp_title: "Purchasing power",
+    pp_text: "With {rate} inflation, the {now} you hold today will be worth the equivalent of {then} in today's money a year from now.",
+    pp_gap: "To keep your purchasing power, your wealth needs to earn about {gap} per year.",
+    pp_goal: "Inflation-adjusted ({rate}): {amount}",
+    iva_note: "General VAT rate in Angola: 14%. Always confirm the rate that applies to your product or service.",
+    iva_mode_add: "Price without VAT → with VAT",
+    iva_mode_remove: "Price with VAT → without VAT",
+    iva_amount: "Amount",
+    iva_rate: "VAT rate",
+    iva_base: "Amount without VAT",
+    iva_tax: "VAT",
+    iva_total: "Amount with VAT",
+    kix_me_tag: "(me)",
+    kix_title: "Kixikila",
+    kix_subtitle: "Rotating group savings: every month everyone contributes and one participant receives the pot.",
+    kix_new: "New kixikila",
+    kix_edit: "Edit kixikila",
+    kix_empty: "You have no kixikila yet. Create one to track contributions and know when it is your turn.",
+    kix_name: "Group name",
+    kix_name_ph: "E.g. Family kixikila",
+    kix_contribution: "Contribution per cycle",
+    kix_currency: "Currency",
+    kix_start: "Date of the 1st cycle",
+    kix_participants: "Participants (one per line, in payout order)",
+    kix_me: "Which one is you?",
+    kix_me_pick: "Pick your name",
+    kix_participants_min: "Enter at least 2 participants.",
+    kix_save: "Save",
+    kix_pot: "Pot",
+    kix_cycle_of: "Cycle {i} of {n}",
+    kix_not_started: "Not started yet — 1st cycle on {date}",
+    kix_receives: "Receives this cycle",
+    kix_my_turn: "Your turn",
+    kix_my_turn_done: "You already received the pot",
+    kix_next_contrib: "Your next contribution",
+    kix_none_pending: "No pending contributions",
+    kix_paid_title: "Who has paid this cycle",
+    kix_register_mine: "Record my contribution",
+    kix_register_pot: "I received the pot",
+    kix_account: "Account for the record",
+    kix_no_accounts: "Create an account to record transactions.",
+    kix_tx_contrib: "Kixikila {name} — cycle {i}",
+    kix_tx_pot: "Kixikila {name} — pot of cycle {i}",
+    kix_registered: "Transaction recorded",
+    kix_hint_pot: "Everyone (including the recipient) contributes each cycle; the pot is the sum of all contributions.",
+    kix_in_days: "in {n} day(s)",
+    kix_today: "today",
+    kix_overdue: "overdue",
+    kix_edit_btn: "Edit",
+    kix_remove_btn: "Remove",
+    kix_remove_confirm: "Remove this kixikila?",
+    ded_title: "Deductible expenses",
+    ded_subtitle: "Gather this year's health, education, housing and insurance receipts for your tax return.",
+    ded_open: "Deductible expenses",
+    ded_field: "Deductible expense?",
+    ded_none: "No",
+    ded_saude: "Health",
+    ded_educacao: "Education",
+    ded_habitacao: "Housing",
+    ded_seguros: "Insurance",
+    ded_outras: "Other",
+    ded_year: "Year",
+    ded_total: "Total",
+    ded_count: "{n} expense(s)",
+    ded_empty: "No expenses marked as deductible this year.",
+    ded_with_receipt: "With receipt",
+    ded_without_receipt: "No receipt",
+    ded_csv: "Export CSV",
+    ded_print: "Print",
+    ded_disclaimer: "This list helps you organise your receipts. Allowed deductions depend on the tax law in force.",
+    ded_date: "Date",
+    ded_desc: "Description",
+    ded_category: "Type",
+    ded_amount: "Amount (Kz)",
+    receipt_attach: "Attach receipt",
+    receipt_replace: "Replace receipt",
+    receipt_remove: "Remove",
+    receipt_view: "View",
+    receipt_hint: "The photo is stored only on this device (it does not go to the cloud).",
+    receipt_error: "Could not read the image.",
+    enc_title: "Encrypted backup",
+    enc_desc: "Exports all your data to a password-protected file (AES-256). Nobody can open it without the password.",
+    enc_export_btn: "Export encrypted backup",
+    enc_password: "Password",
+    enc_confirm: "Repeat the password",
+    enc_min: "Use at least 6 characters.",
+    enc_mismatch: "The passwords do not match.",
+    enc_warning: "If you forget the password, there is no way to recover this backup.",
+    enc_encrypt_title: "Encrypt backup",
+    enc_decrypt_title: "Encrypted backup",
+    enc_decrypt_desc: "Enter the password used when this backup was exported.",
+    enc_wrong: "Wrong password or damaged file.",
+    enc_working: "Working…",
+    enc_submit_encrypt: "Encrypt and download",
+    enc_submit_decrypt: "Open backup",
+    enc_cancel: "Cancel",
+    ms_title: "Start of the financial month",
+    ms_desc: "If you are paid mid-month, choose the day your month starts. The period is named after the month it ends in (e.g. 25 Sep – 24 Oct = October).",
+    ms_label: "Start day",
+    ms_day1: "Day 1 (calendar month)",
+    ms_day_n: "Day {n}",
+    fx_title: "Effective exchange vs. official rate",
+    fx_desc: "Compares the rate you actually got on cross-currency transfers with the official rate recorded on that date.",
+    fx_effective: "Effective rate",
+    fx_official: "Official rate",
+    fx_diff: "Difference",
+    fx_bought: "Bought {cur}",
+    fx_sold: "Sold {cur}",
+    fx_total_loss: "Total cost vs. official rate",
+    fx_total_gain: "Total gain vs. official rate",
+    fx_note_none: "No official rate on record to compare.",
+    fx_modal_note: "Effective rate: 1 {cur} = {eff} · official {off} ({diff})",
+    wa_button: "Chase on WhatsApp",
+    wa_phone: "WhatsApp (optional)",
+    wa_phone_ph: "+244 9xx xxx xxx",
+    wa_msg: "Hi {name}, hope you are well. Just a reminder about the {amount} still pending{due}. Thank you!",
+    wa_due: " (due {date})",
+    qa_new_expense: "New expense",
+    qa_new_income: "New income"
+  },
+  fr: {
+    spend_title: "Puis-je dépenser aujourd'hui",
+    spend_per_day: "par jour",
+    spend_detail: "Il reste {rem} pour {days} jour(s), jusqu'au {end}.",
+    spend_over: "Budget du mois épuisé",
+    spend_over_detail: "Vous avez dépensé {over} de plus que le budget défini.",
+    spend_no_budget: "Définissez des plafonds par catégorie dans Budget pour voir combien vous pouvez dépenser par jour.",
+    close_title: "Clôture du mois",
+    close_open_btn: "Clôturer le mois",
+    close_review_btn: "Revoir la clôture",
+    close_closed_on: "Mois clôturé le {date}",
+    close_due_hint: "La période se termine dans {days} jour(s).",
+    close_ended_hint: "La période est terminée — il reste à la clôturer.",
+    close_check_reconciled: "Mouvements rapprochés",
+    close_check_recurring: "Dépenses récurrentes saisies",
+    close_check_budget: "Budget revu",
+    close_budget_reviewed: "J'ai revu le budget de ce mois",
+    close_note: "Note du mois",
+    close_note_ph: "Qu'est-ce qui a bien marché ? Que corriger le mois prochain ?",
+    close_income: "Revenus",
+    close_expenses: "Dépenses",
+    close_saved: "Épargné",
+    close_mark_all: "Tout marquer comme rapproché",
+    close_save: "Clôturer le mois",
+    close_reopen: "Rouvrir le mois",
+    close_over_limits: "Catégories au-dessus du plafond",
+    close_all_ok: "Tout est en ordre.",
+    close_pending_n: "{n} en attente",
+    close_unreconciled: "À rapprocher",
+    reconcile_toggle: "Rapproché du relevé",
+    reconciled_label: "Rapproché",
+    undo: "Annuler",
+    undo_tx: "Mouvement supprimé",
+    undo_goal: "Objectif supprimé",
+    undo_debt: "Dette supprimée",
+    undo_account: "Compte supprimé",
+    undo_kixikila: "Kixikila supprimée",
+    pp_title: "Pouvoir d'achat",
+    pp_text: "Avec une inflation de {rate}, les {now} que vous avez aujourd'hui vaudront l'équivalent de {then} d'aujourd'hui dans 12 mois.",
+    pp_gap: "Pour garder votre pouvoir d'achat, votre patrimoine doit rapporter environ {gap} par an.",
+    pp_goal: "Ajusté à l'inflation ({rate}) : {amount}",
+    iva_note: "Taux général de TVA en Angola : 14 %. Vérifiez toujours le taux applicable à votre produit ou service.",
+    iva_mode_add: "Prix HT → TTC",
+    iva_mode_remove: "Prix TTC → HT",
+    iva_amount: "Montant",
+    iva_rate: "Taux de TVA",
+    iva_base: "Montant HT",
+    iva_tax: "TVA",
+    iva_total: "Montant TTC",
+    kix_me_tag: "(moi)",
+    kix_title: "Kixikila",
+    kix_subtitle: "Épargne rotative en groupe : chaque mois tous cotisent et un participant reçoit la cagnotte.",
+    kix_new: "Nouvelle kixikila",
+    kix_edit: "Modifier la kixikila",
+    kix_empty: "Vous n'avez pas encore de kixikila. Créez-en une pour suivre les cotisations et savoir quand c'est votre tour.",
+    kix_name: "Nom du groupe",
+    kix_name_ph: "Ex. : Kixikila de la famille",
+    kix_contribution: "Cotisation par cycle",
+    kix_currency: "Devise",
+    kix_start: "Date du 1er cycle",
+    kix_participants: "Participants (un par ligne, dans l'ordre de versement)",
+    kix_me: "Lequel êtes-vous ?",
+    kix_me_pick: "Choisissez votre nom",
+    kix_participants_min: "Indiquez au moins 2 participants.",
+    kix_save: "Enregistrer",
+    kix_pot: "Cagnotte",
+    kix_cycle_of: "Cycle {i} sur {n}",
+    kix_not_started: "Pas encore commencé — 1er cycle le {date}",
+    kix_receives: "Reçoit ce cycle",
+    kix_my_turn: "Votre tour",
+    kix_my_turn_done: "Vous avez déjà reçu la cagnotte",
+    kix_next_contrib: "Votre prochaine cotisation",
+    kix_none_pending: "Aucune cotisation en attente",
+    kix_paid_title: "Qui a payé ce cycle",
+    kix_register_mine: "Enregistrer ma cotisation",
+    kix_register_pot: "J'ai reçu la cagnotte",
+    kix_account: "Compte pour l'enregistrement",
+    kix_no_accounts: "Créez un compte pour pouvoir enregistrer des mouvements.",
+    kix_tx_contrib: "Kixikila {name} — cycle {i}",
+    kix_tx_pot: "Kixikila {name} — cagnotte du cycle {i}",
+    kix_registered: "Mouvement enregistré",
+    kix_hint_pot: "Tous (y compris le bénéficiaire) cotisent à chaque cycle ; la cagnotte est la somme des cotisations.",
+    kix_in_days: "dans {n} jour(s)",
+    kix_today: "aujourd'hui",
+    kix_overdue: "en retard",
+    kix_edit_btn: "Modifier",
+    kix_remove_btn: "Supprimer",
+    kix_remove_confirm: "Supprimer cette kixikila ?",
+    ded_title: "Dépenses déductibles",
+    ded_subtitle: "Rassemblez les justificatifs de santé, d'éducation, de logement et d'assurance de l'année pour votre déclaration.",
+    ded_open: "Dépenses déductibles",
+    ded_field: "Dépense déductible ?",
+    ded_none: "Non",
+    ded_saude: "Santé",
+    ded_educacao: "Éducation",
+    ded_habitacao: "Logement",
+    ded_seguros: "Assurances",
+    ded_outras: "Autres",
+    ded_year: "Année",
+    ded_total: "Total",
+    ded_count: "{n} dépense(s)",
+    ded_empty: "Aucune dépense marquée comme déductible cette année.",
+    ded_with_receipt: "Avec justificatif",
+    ded_without_receipt: "Sans justificatif",
+    ded_csv: "Exporter en CSV",
+    ded_print: "Imprimer",
+    ded_disclaimer: "Cette liste sert à organiser vos justificatifs. Les déductions admises dépendent de la loi fiscale en vigueur.",
+    ded_date: "Date",
+    ded_desc: "Description",
+    ded_category: "Type",
+    ded_amount: "Montant (Kz)",
+    receipt_attach: "Joindre un justificatif",
+    receipt_replace: "Remplacer le justificatif",
+    receipt_remove: "Retirer",
+    receipt_view: "Voir",
+    receipt_hint: "La photo est conservée uniquement sur cet appareil (elle ne va pas dans le cloud).",
+    receipt_error: "Impossible de lire l'image.",
+    enc_title: "Sauvegarde chiffrée",
+    enc_desc: "Exporte toutes vos données dans un fichier protégé par mot de passe (AES-256). Personne ne peut l'ouvrir sans le mot de passe.",
+    enc_export_btn: "Exporter une sauvegarde chiffrée",
+    enc_password: "Mot de passe",
+    enc_confirm: "Répétez le mot de passe",
+    enc_min: "Utilisez au moins 6 caractères.",
+    enc_mismatch: "Les mots de passe ne correspondent pas.",
+    enc_warning: "Si vous oubliez le mot de passe, il est impossible de récupérer cette sauvegarde.",
+    enc_encrypt_title: "Chiffrer la sauvegarde",
+    enc_decrypt_title: "Sauvegarde chiffrée",
+    enc_decrypt_desc: "Saisissez le mot de passe utilisé lors de l'export.",
+    enc_wrong: "Mot de passe incorrect ou fichier endommagé.",
+    enc_working: "Traitement…",
+    enc_submit_encrypt: "Chiffrer et télécharger",
+    enc_submit_decrypt: "Ouvrir la sauvegarde",
+    enc_cancel: "Annuler",
+    ms_title: "Début du mois financier",
+    ms_desc: "Si vous êtes payé en milieu de mois, choisissez le jour où votre mois commence. La période porte le nom du mois où elle se termine (ex. : du 25 sept. au 24 oct. = octobre).",
+    ms_label: "Jour de début",
+    ms_day1: "Jour 1 (mois civil)",
+    ms_day_n: "Jour {n}",
+    fx_title: "Change effectif vs taux officiel",
+    fx_desc: "Compare le taux réellement obtenu lors des transferts entre devises au taux officiel enregistré à cette date.",
+    fx_effective: "Taux effectif",
+    fx_official: "Taux officiel",
+    fx_diff: "Écart",
+    fx_bought: "Achat de {cur}",
+    fx_sold: "Vente de {cur}",
+    fx_total_loss: "Coût total par rapport au taux officiel",
+    fx_total_gain: "Gain total par rapport au taux officiel",
+    fx_note_none: "Aucun taux officiel enregistré pour comparer.",
+    fx_modal_note: "Taux effectif : 1 {cur} = {eff} · officiel {off} ({diff})",
+    wa_button: "Relancer sur WhatsApp",
+    wa_phone: "WhatsApp (facultatif)",
+    wa_phone_ph: "+244 9xx xxx xxx",
+    wa_msg: "Bonjour {name}, j'espère que tu vas bien. Juste un rappel pour les {amount} encore en attente{due}. Merci !",
+    wa_due: " (échéance le {date})",
+    qa_new_expense: "Nouvelle dépense",
+    qa_new_income: "Nouveau revenu"
+  },
+  es: {
+    spend_title: "¿Puedo gastar hoy?",
+    spend_per_day: "al día",
+    spend_detail: "Quedan {rem} para {days} día(s), hasta el {end}.",
+    spend_over: "Presupuesto del mes agotado",
+    spend_over_detail: "Ya gastó {over} por encima del presupuesto definido.",
+    spend_no_budget: "Defina límites por categoría en Presupuesto para ver cuánto puede gastar al día.",
+    close_title: "Cierre del mes",
+    close_open_btn: "Cerrar el mes",
+    close_review_btn: "Revisar cierre",
+    close_closed_on: "Mes cerrado el {date}",
+    close_due_hint: "El período termina en {days} día(s).",
+    close_ended_hint: "El período ya terminó — falta cerrarlo.",
+    close_check_reconciled: "Movimientos conciliados",
+    close_check_recurring: "Gastos recurrentes registrados",
+    close_check_budget: "Presupuesto revisado",
+    close_budget_reviewed: "Ya revisé el presupuesto de este mes",
+    close_note: "Nota del mes",
+    close_note_ph: "¿Qué salió bien? ¿Qué ajustar el próximo mes?",
+    close_income: "Ingresos",
+    close_expenses: "Gastos",
+    close_saved: "Ahorrado",
+    close_mark_all: "Marcar todos como conciliados",
+    close_save: "Cerrar mes",
+    close_reopen: "Reabrir mes",
+    close_over_limits: "Categorías por encima del límite",
+    close_all_ok: "Todo en orden.",
+    close_pending_n: "{n} pendientes",
+    close_unreconciled: "Por conciliar",
+    reconcile_toggle: "Conciliado con el extracto",
+    reconciled_label: "Conciliado",
+    undo: "Deshacer",
+    undo_tx: "Movimiento eliminado",
+    undo_goal: "Meta eliminada",
+    undo_debt: "Deuda eliminada",
+    undo_account: "Cuenta eliminada",
+    undo_kixikila: "Kixikila eliminada",
+    pp_title: "Poder adquisitivo",
+    pp_text: "Con una inflación de {rate}, los {now} que tiene hoy valdrán el equivalente a {then} de hoy dentro de 12 meses.",
+    pp_gap: "Para mantener el poder adquisitivo, el patrimonio necesita rendir cerca de {gap} al año.",
+    pp_goal: "Ajustada a la inflación ({rate}): {amount}",
+    iva_note: "Tasa general de IVA en Angola: 14 %. Confirme siempre la tasa aplicable a su producto o servicio.",
+    iva_mode_add: "Precio sin IVA → con IVA",
+    iva_mode_remove: "Precio con IVA → sin IVA",
+    iva_amount: "Importe",
+    iva_rate: "Tasa de IVA",
+    iva_base: "Importe sin IVA",
+    iva_tax: "IVA",
+    iva_total: "Importe con IVA",
+    kix_me_tag: "(yo)",
+    kix_title: "Kixikila",
+    kix_subtitle: "Ahorro rotativo en grupo: cada mes todos aportan y un participante recibe el bote.",
+    kix_new: "Nueva kixikila",
+    kix_edit: "Editar kixikila",
+    kix_empty: "Aún no tiene ninguna kixikila. Cree una para seguir las aportaciones y saber cuándo le toca.",
+    kix_name: "Nombre del grupo",
+    kix_name_ph: "Ej.: Kixikila de la familia",
+    kix_contribution: "Aportación por ciclo",
+    kix_currency: "Moneda",
+    kix_start: "Fecha del 1.er ciclo",
+    kix_participants: "Participantes (uno por línea, en orden de cobro)",
+    kix_me: "¿Cuál es usted?",
+    kix_me_pick: "Elija su nombre",
+    kix_participants_min: "Indique al menos 2 participantes.",
+    kix_save: "Guardar",
+    kix_pot: "Bote",
+    kix_cycle_of: "Ciclo {i} de {n}",
+    kix_not_started: "Aún no ha empezado — 1.er ciclo el {date}",
+    kix_receives: "Recibe en este ciclo",
+    kix_my_turn: "Su turno",
+    kix_my_turn_done: "Ya recibió el bote",
+    kix_next_contrib: "Su próxima aportación",
+    kix_none_pending: "Sin aportaciones pendientes",
+    kix_paid_title: "Quién ha pagado en este ciclo",
+    kix_register_mine: "Registrar mi aportación",
+    kix_register_pot: "Recibí el bote",
+    kix_account: "Cuenta para el registro",
+    kix_no_accounts: "Cree una cuenta para poder registrar movimientos.",
+    kix_tx_contrib: "Kixikila {name} — ciclo {i}",
+    kix_tx_pot: "Kixikila {name} — bote del ciclo {i}",
+    kix_registered: "Movimiento registrado",
+    kix_hint_pot: "Todos (incluido quien recibe) aportan en cada ciclo; el bote es la suma de las aportaciones.",
+    kix_in_days: "en {n} día(s)",
+    kix_today: "hoy",
+    kix_overdue: "atrasada",
+    kix_edit_btn: "Editar",
+    kix_remove_btn: "Eliminar",
+    kix_remove_confirm: "¿Eliminar esta kixikila?",
+    ded_title: "Gastos deducibles",
+    ded_subtitle: "Reúna los comprobantes de salud, educación, vivienda y seguros del año para su declaración.",
+    ded_open: "Gastos deducibles",
+    ded_field: "¿Gasto deducible?",
+    ded_none: "No",
+    ded_saude: "Salud",
+    ded_educacao: "Educación",
+    ded_habitacao: "Vivienda",
+    ded_seguros: "Seguros",
+    ded_outras: "Otros",
+    ded_year: "Año",
+    ded_total: "Total",
+    ded_count: "{n} gasto(s)",
+    ded_empty: "Ningún gasto marcado como deducible este año.",
+    ded_with_receipt: "Con comprobante",
+    ded_without_receipt: "Sin comprobante",
+    ded_csv: "Exportar CSV",
+    ded_print: "Imprimir",
+    ded_disclaimer: "Esta lista sirve para organizar sus comprobantes. Las deducciones admitidas dependen de la ley fiscal vigente.",
+    ded_date: "Fecha",
+    ded_desc: "Descripción",
+    ded_category: "Tipo",
+    ded_amount: "Importe (Kz)",
+    receipt_attach: "Adjuntar comprobante",
+    receipt_replace: "Reemplazar comprobante",
+    receipt_remove: "Quitar",
+    receipt_view: "Ver",
+    receipt_hint: "La foto se guarda solo en este dispositivo (no va a la nube).",
+    receipt_error: "No se pudo leer la imagen.",
+    enc_title: "Copia de seguridad cifrada",
+    enc_desc: "Exporta todos sus datos a un archivo protegido con contraseña (AES-256). Nadie puede abrirlo sin la contraseña.",
+    enc_export_btn: "Exportar copia cifrada",
+    enc_password: "Contraseña",
+    enc_confirm: "Repita la contraseña",
+    enc_min: "Use al menos 6 caracteres.",
+    enc_mismatch: "Las contraseñas no coinciden.",
+    enc_warning: "Si olvida la contraseña, no hay forma de recuperar esta copia.",
+    enc_encrypt_title: "Cifrar copia",
+    enc_decrypt_title: "Copia cifrada",
+    enc_decrypt_desc: "Introduzca la contraseña usada al exportar esta copia.",
+    enc_wrong: "Contraseña incorrecta o archivo dañado.",
+    enc_working: "Procesando…",
+    enc_submit_encrypt: "Cifrar y descargar",
+    enc_submit_decrypt: "Abrir copia",
+    enc_cancel: "Cancelar",
+    ms_title: "Inicio del mes financiero",
+    ms_desc: "Si cobra a mitad de mes, elija el día en que empieza su mes. El período toma el nombre del mes en que termina (p. ej.: del 25 sep al 24 oct = octubre).",
+    ms_label: "Día de inicio",
+    ms_day1: "Día 1 (mes natural)",
+    ms_day_n: "Día {n}",
+    fx_title: "Cambio efectivo vs. tasa oficial",
+    fx_desc: "Compara la tasa que realmente obtuvo en las transferencias entre monedas con la tasa oficial registrada en esa fecha.",
+    fx_effective: "Tasa efectiva",
+    fx_official: "Tasa oficial",
+    fx_diff: "Diferencia",
+    fx_bought: "Compra de {cur}",
+    fx_sold: "Venta de {cur}",
+    fx_total_loss: "Coste total frente a la tasa oficial",
+    fx_total_gain: "Ganancia total frente a la tasa oficial",
+    fx_note_none: "No hay tasa oficial registrada para comparar.",
+    fx_modal_note: "Tasa efectiva: 1 {cur} = {eff} · oficial {off} ({diff})",
+    wa_button: "Cobrar por WhatsApp",
+    wa_phone: "WhatsApp (opcional)",
+    wa_phone_ph: "+244 9xx xxx xxx",
+    wa_msg: "Hola {name}, ¿qué tal? Solo te recuerdo los {amount} que siguen pendientes{due}. ¡Gracias!",
+    wa_due: " (vence el {date})",
+    qa_new_expense: "Nuevo gasto",
+    qa_new_income: "Nuevo ingreso"
+  }
+};
+function xt(lang, key, vars) {
+  const table = EXTRAS_I18N[lang] || EXTRAS_I18N.pt;
+  let s = table && table[key] || EXTRAS_I18N.pt[key] || key;
+  if (vars) for (const k in vars) s = s.split("{" + k + "}").join(String(vars[k]));
+  return s;
+}
+
+/* ---------- helpers gerais ---------- */
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+function ddmm(iso) {
+  return iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : "";
+}
+function ddmmyyyy(iso) {
+  return iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : "";
+}
+function daysBetweenISO(a, b) {
+  const [ya, ma, da] = a.split("-").map(Number);
+  const [yb, mb, db] = b.split("-").map(Number);
+  return Math.round((Date.UTC(yb, mb - 1, db) - Date.UTC(ya, ma - 1, da)) / 86400000);
+}
+/* intervalo [início, fim] (ISO) do "mês financeiro" `month`, que leva o nome do mês em que termina */
+function periodBounds(month) {
+  const S = Math.min(28, Math.max(1, Number(MONTH_START_DAY) || 1));
+  if (S === 1) return {
+    start: `${month}-01`,
+    end: lastDayOfMonth(month)
+  };
+  return {
+    start: `${addMonthsToKey(month, -1)}-${pad2(S)}`,
+    end: `${month}-${pad2(S - 1)}`
+  };
+}
+function pctLabel(rate) {
+  return `${Math.round(Number(rate) * 1000) / 10}%`;
+}
+function extrasCurrency() {
+  return typeof CURRENT_CURRENCY_CODE !== "undefined" ? CURRENT_CURRENCY_CODE : "Kz";
+}
+
+/* ---------- câmbio: taxa oficial na data ---------- */
+
+function officialRateAt(cur, date, rateHistory, current) {
+  const key = String(cur).toLowerCase() + "Rate";
+  let best = null;
+  for (const h of rateHistory || []) if (h.date <= date && h[key]) best = h;
+  const v = best ? best[key] : current && current[key];
+  return Number(v) || null;
+}
+/* devolve { foreign, cur, kz, eff, bought } para uma transferência Kz↔moeda estrangeira (ou null) */
+function transferFxLeg(t, accounts) {
+  if (t.kind !== "transferencia" || t.toAmount == null) return null;
+  const from = accounts.find(a => a.id === t.fromAccountId);
+  const to = accounts.find(a => a.id === t.toAccountId);
+  if (!from || !to || from.currency === to.currency) return null;
+  if (from.currency === "Kz" && to.currency !== "Kz") {
+    const foreign = Number(t.toAmount),
+      kz = Number(t.amount);
+    if (!(foreign > 0)) return null;
+    return {
+      foreign,
+      cur: to.currency,
+      kz,
+      eff: kz / foreign,
+      bought: true
+    };
+  }
+  if (to.currency === "Kz" && from.currency !== "Kz") {
+    const foreign = Number(t.amount),
+      kz = Number(t.toAmount);
+    if (!(foreign > 0)) return null;
+    return {
+      foreign,
+      cur: from.currency,
+      kz,
+      eff: kz / foreign,
+      bought: false
+    };
+  }
+  return null;
+}
+function FxEffectiveCard({
+  lang,
+  transactions,
+  accounts,
+  exchangeRates,
+  rateHistory
+}) {
+  const rows = useMemo(() => {
+    const out = [];
+    for (const t of transactions) {
+      const leg = transferFxLeg(t, accounts);
+      if (!leg) continue;
+      const off = officialRateAt(leg.cur, t.date, rateHistory, exchangeRates);
+      const delta = off ? leg.kz - leg.foreign * off : null;
+      out.push({
+        id: t.id,
+        date: t.date,
+        ...leg,
+        off,
+        impact: delta === null ? null : leg.bought ? -delta : delta
+      });
+    }
+    return out.sort((a, b) => a.date < b.date ? 1 : -1);
+  }, [transactions, accounts, exchangeRates, rateHistory]);
+  if (rows.length === 0) return null;
+  const total = rows.reduce((s, r) => s + (r.impact || 0), 0);
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginTop: 16
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, xt(lang, "fx_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "0 0 12px"
+    }
+  }, xt(lang, "fx_desc")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, rows.slice(0, 12).map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10,
+      padding: "8px 0",
+      borderBottom: "1px solid var(--line)",
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 600
+    }
+  }, xt(lang, r.bought ? "fx_bought" : "fx_sold", {
+    cur: r.cur
+  }), " · ", ddmmyyyy(r.date)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 12
+    }
+  }, xt(lang, "fx_effective"), " ", fmt(r.eff), " · ", r.off ? `${xt(lang, "fx_official")} ${fmt(r.off)}` : xt(lang, "fx_note_none"))), r.impact !== null && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600,
+      color: r.impact >= 0 ? "var(--emerald)" : "var(--rust)",
+      whiteSpace: "nowrap"
+    }
+  }, r.impact >= 0 ? "+" : "−", " ", fmt(Math.abs(r.impact)))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: 12,
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, /*#__PURE__*/React.createElement("span", null, xt(lang, total >= 0 ? "fx_total_gain" : "fx_total_loss")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      color: total >= 0 ? "var(--emerald)" : "var(--rust)"
+    }
+  }, fmt(Math.abs(total)))));
+}
+
+/* nota na janela de transferência: taxa efetiva vs oficial */
+function ImpliedRateNote({
+  lang,
+  fromAccount,
+  toAccount,
+  amount,
+  toAmount,
+  exchangeRates
+}) {
+  if (!fromAccount || !toAccount || fromAccount.currency === toAccount.currency) return null;
+  const a = Number(amount),
+    b = Number(toAmount);
+  if (!(a > 0) || !(b > 0)) return null;
+  let foreignCur, eff;
+  if (fromAccount.currency === "Kz") {
+    foreignCur = toAccount.currency;
+    eff = a / b;
+  } else if (toAccount.currency === "Kz") {
+    foreignCur = fromAccount.currency;
+    eff = b / a;
+  } else return null;
+  const off = officialRateAt(foreignCur, todayISO(), [], exchangeRates);
+  if (!off) return null;
+  const diff = (eff - off) / off * 100;
+  return /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: Math.abs(diff) < 0.5 ? "var(--slate)" : "var(--gold)",
+      margin: 0,
+      fontWeight: 600
+    }
+  }, xt(lang, "fx_modal_note", {
+    cur: foreignCur,
+    eff: fmt(eff),
+    off: fmt(off),
+    diff: `${diff >= 0 ? "+" : ""}${lang === "en" ? diff.toFixed(1) : diff.toFixed(1).replace(".", ",")}%`
+  }));
+}
+
+/* ---------- Visão Geral: posso gastar hoje · fecho do mês · poder de compra ---------- */
+
+function SpendTodayCard({
+  lang,
+  month,
+  categories,
+  expectedIncome,
+  totalDespesas
+}) {
+  const limits = Object.values(categories || {}).reduce((s, v) => s + (Number(v) || 0), 0);
+  const budget = limits > 0 ? limits : Number(expectedIncome) || 0;
+  const {
+    start,
+    end
+  } = periodBounds(month);
+  const today = todayISO();
+  if (today < start || today > end) return null;
+  const cur = extrasCurrency();
+  const cardStyle = {
+    flex: "1 1 260px",
+    minWidth: 0
+  };
+  if (budget <= 0) {
+    return /*#__PURE__*/React.createElement(Card, {
+      style: cardStyle
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        fontWeight: 700,
+        color: "var(--slate)",
+        textTransform: "uppercase",
+        letterSpacing: 0.4
+      }
+    }, xt(lang, "spend_title")), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 13,
+        color: "var(--slate)",
+        margin: "8px 0 0"
+      }
+    }, xt(lang, "spend_no_budget")));
+  }
+  const daysLeft = daysBetweenISO(today, end) + 1;
+  const spent = Number(totalDespesas) || 0;
+  const remaining = budget - spent;
+  const over = remaining <= 0;
+  return /*#__PURE__*/React.createElement(Card, {
+    style: cardStyle
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, xt(lang, "spend_title")), over ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: "var(--rust)",
+      margin: "8px 0 2px"
+    }
+  }, xt(lang, "spend_over")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "spend_over_detail", {
+    over: fmt(Math.abs(remaining), cur)
+  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "baseline",
+      gap: 6,
+      margin: "8px 0 2px"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 26,
+      fontWeight: 700,
+      color: "var(--emerald)"
+    }
+  }, fmt(remaining / daysLeft, cur)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "spend_per_day"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "spend_detail", {
+    rem: fmt(remaining, cur),
+    days: daysLeft,
+    end: ddmm(end)
+  }))));
+}
+function MonthCloseCard({
+  lang,
+  month,
+  closing,
+  onOpen
+}) {
+  const {
+    end
+  } = periodBounds(month);
+  const today = todayISO();
+  const daysLeft = daysBetweenISO(today, end);
+  const hint = closing ? xt(lang, "close_closed_on", {
+    date: ddmmyyyy((closing.closedAt || "").slice(0, 10))
+  }) : daysLeft < 0 ? xt(lang, "close_ended_hint") : daysLeft <= 5 ? xt(lang, "close_due_hint", {
+    days: daysLeft + 1
+  }) : null;
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      flex: "1 1 260px",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, xt(lang, "close_title")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: closing ? "var(--emerald)" : daysLeft < 0 ? "var(--rust)" : "var(--slate)",
+      margin: "8px 0 10px",
+      minHeight: 18,
+      fontWeight: closing ? 600 : 400
+    }
+  }, closing ? "✓ " : "", hint || xt(lang, "close_check_reconciled") + " · " + xt(lang, "close_check_recurring") + " · " + xt(lang, "close_check_budget")), /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: onOpen
+  }, closing ? xt(lang, "close_review_btn") : xt(lang, "close_open_btn")));
+}
+function PurchasingPowerCard({
+  lang,
+  accounts,
+  transactions,
+  exchangeRates,
+  taxaInflacao
+}) {
+  const rate = Number(taxaInflacao) || 0;
+  const net = useMemo(() => {
+    let s = 0;
+    for (const a of accounts) {
+      const kz = toKz(accountTotal(a, transactions), a.currency, exchangeRates);
+      if (kz !== null) s += kz;
+    }
+    return s;
+  }, [accounts, transactions, exchangeRates]);
+  if (rate <= 0 || net <= 0) return null;
+  const cur = extrasCurrency();
+  const then = net / (1 + rate);
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      flex: "1 1 260px",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.4
+    }
+  }, xt(lang, "pp_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      margin: "8px 0 6px",
+      lineHeight: 1.45
+    }
+  }, xt(lang, "pp_text", {
+    rate: pctLabel(rate),
+    now: fmt(net, cur),
+    then: fmt(then, cur)
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, xt(lang, "pp_gap", {
+    gap: fmt(net * rate, cur)
+  })));
+}
+function OverviewExtras({
+  lang,
+  month,
+  categories,
+  expectedIncome,
+  totalDespesas,
+  accounts,
+  transactions,
+  exchangeRates,
+  taxaInflacao,
+  closing,
+  onOpenClose
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement(SpendTodayCard, {
+    lang: lang,
+    month: month,
+    categories: categories,
+    expectedIncome: expectedIncome,
+    totalDespesas: totalDespesas
+  }), /*#__PURE__*/React.createElement(MonthCloseCard, {
+    lang: lang,
+    month: month,
+    closing: closing,
+    onOpen: onOpenClose
+  }), /*#__PURE__*/React.createElement(PurchasingPowerCard, {
+    lang: lang,
+    accounts: accounts,
+    transactions: transactions,
+    exchangeRates: exchangeRates,
+    taxaInflacao: taxaInflacao
+  }));
+}
+function GoalInflationNote({
+  lang,
+  goal,
+  taxaInflacao
+}) {
+  const rate = Number(taxaInflacao) || 0;
+  if (!goal || !goal.deadline || rate <= 0) return null;
+  const days = daysBetweenISO(todayISO(), goal.deadline);
+  if (days <= 180) return null;
+  const adj = Number(goal.target) * Math.pow(1 + rate, days / 365);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--gold)",
+      marginTop: 6,
+      fontWeight: 600
+    }
+  }, xt(lang, "pp_goal", {
+    rate: pctLabel(rate),
+    amount: fmt(adj, goal.currency || extrasCurrency())
+  }));
+}
+
+/* ---------- Desfazer ---------- */
+
+function UndoBar({
+  lang,
+  undo,
+  onUndo,
+  onDismiss
+}) {
+  useEffect(() => {
+    if (!undo) return;
+    const t = setTimeout(onDismiss, 7000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [undo && undo.id]);
+  if (!undo) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    style: {
+      position: "fixed",
+      left: "50%",
+      transform: "translateX(-50%)",
+      bottom: 88,
+      zIndex: 400,
+      background: "var(--ink)",
+      color: "#fff",
+      borderRadius: 12,
+      padding: "10px 14px",
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+      maxWidth: "92vw",
+      fontSize: 14
+    }
+  }, /*#__PURE__*/React.createElement("span", null, undo.label), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      undo.restore();
+      onDismiss();
+    },
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontWeight: 700,
+      fontSize: 14,
+      cursor: "pointer",
+      padding: 0
+    }
+  }, xt(lang, "undo")));
+}
+
+/* ---------- comprovativos e despesas dedutíveis ---------- */
+
+const DEDUCTIBLE_TAGS = ["saude", "educacao", "habitacao", "seguros", "outras"];
+function compressImageToDataUrl(file, maxDim = 900, quality = 0.6) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("img"));
+    };
+    img.src = url;
+  });
+}
+function openReceiptViewer(dataUrl) {
+  const w = window.open("", "_blank");
+  if (!w) return;
+  w.document.write(`<html><head><title>Comprovativo</title></head><body style="margin:0;background:#111;display:flex;justify-content:center"><img src="${dataUrl}" style="max-width:100%;height:auto"/></body></html>`);
+  w.document.close();
+}
+function ReceiptAttach({
+  lang,
+  value,
+  onChange
+}) {
+  const inputRef = useRef(null);
+  const [error, setError] = useState(null);
+  async function handle(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    setError(null);
+    try {
+      onChange(await compressImageToDataUrl(file));
+    } catch (err) {
+      setError(xt(lang, "receipt_error"));
+    }
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    ref: inputRef,
+    type: "file",
+    accept: "image/*",
+    style: {
+      display: "none"
+    },
+    onChange: handle
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      flexWrap: "wrap"
+    }
+  }, value && /*#__PURE__*/React.createElement("img", {
+    src: value,
+    alt: "",
+    onClick: () => openReceiptViewer(value),
+    style: {
+      width: 46,
+      height: 46,
+      objectFit: "cover",
+      borderRadius: 6,
+      border: "1px solid var(--line)",
+      cursor: "pointer"
+    }
+  }), /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: () => inputRef.current && inputRef.current.click()
+  }, value ? xt(lang, "receipt_replace") : "📎 " + xt(lang, "receipt_attach")), value && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onChange(null),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--rust)",
+      fontWeight: 600,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, xt(lang, "receipt_remove"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, error || xt(lang, "receipt_hint")));
+}
+function DeductibleModal({
+  lang,
+  transactions,
+  receipts,
+  accounts,
+  exchangeRates,
+  onClose
+}) {
+  const years = useMemo(() => {
+    const set = new Set([todayISO().slice(0, 4)]);
+    transactions.forEach(t => t.deductible && t.date && set.add(t.date.slice(0, 4)));
+    return Array.from(set).sort().reverse();
+  }, [transactions]);
+  const [year, setYear] = useState(years[0]);
+  const rows = useMemo(() => {
+    return transactions.filter(t => t.kind === "despesa" && t.deductible && (t.date || "").startsWith(year)).map(t => {
+      const acc = accounts.find(a => a.id === t.accountId);
+      const kz = toKz(t.amount, acc && acc.currency || "Kz", exchangeRates);
+      return {
+        ...t,
+        kz: kz === null ? Number(t.amount) : kz
+      };
+    }).sort((a, b) => a.date < b.date ? -1 : 1);
+  }, [transactions, accounts, exchangeRates, year]);
+  const byTag = useMemo(() => {
+    const m = {};
+    rows.forEach(r => m[r.deductible] = (m[r.deductible] || 0) + r.kz);
+    return m;
+  }, [rows]);
+  const total = rows.reduce((s, r) => s + r.kz, 0);
+  const withReceipt = rows.filter(r => receipts[r.id]).length;
+  function exportCSV() {
+    const esc = v => {
+      const s = String(v == null ? "" : v);
+      return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const header = [xt(lang, "ded_date"), xt(lang, "ded_category"), xt(lang, "ded_desc"), xt(lang, "ded_amount"), xt(lang, "ded_with_receipt")];
+    const lines = rows.map(r => [r.date, xt(lang, "ded_" + r.deductible), r.description || r.category || "", Number(r.kz).toFixed(2), receipts[r.id] ? "Sim" : "Não"]);
+    const csv = [header, ...lines].map(l => l.map(esc).join(";")).join("\n");
+    const blob = new Blob(["﻿" + csv], {
+      type: "text/csv;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `despesas-dedutiveis-${year}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function printIt() {
+    const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    const tr = rows.map(r => `<tr><td>${ddmmyyyy(r.date)}</td><td>${esc(xt(lang, "ded_" + r.deductible))}</td><td>${esc(r.description || r.category || "")}</td><td style="text-align:right">${fmt(r.kz)}</td><td>${receipts[r.id] ? "✓" : ""}</td></tr>`).join("");
+    const tags = Object.entries(byTag).map(([k, v]) => `<tr><td>${esc(xt(lang, "ded_" + k))}</td><td style="text-align:right">${fmt(v)}</td></tr>`).join("");
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`<html><head><title>${esc(xt(lang, "ded_title"))} ${year}</title><style>body{font-family:Arial,sans-serif;padding:28px;color:#1B1F27}h1{font-size:20px}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:7px 9px;border-bottom:1px solid #ddd;font-size:12px;text-align:left}p{color:#68707C;font-size:11px}</style></head><body><h1>${esc(xt(lang, "ded_title"))} — ${year}</h1><table>${tags}</table><table><thead><tr><th>${esc(xt(lang, "ded_date"))}</th><th>${esc(xt(lang, "ded_category"))}</th><th>${esc(xt(lang, "ded_desc"))}</th><th style="text-align:right">${esc(xt(lang, "ded_amount"))}</th><th></th></tr></thead><tbody>${tr}</tbody></table><p>${esc(xt(lang, "ded_disclaimer"))}</p></body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
+  }
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: xt(lang, "ded_title"),
+    onClose: onClose,
+    wide: true
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, xt(lang, "ded_subtitle")), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "ded_year")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: year,
+    onChange: e => setYear(e.target.value)
+  }, years.map(y => /*#__PURE__*/React.createElement("option", {
+    key: y
+  }, y)))), rows.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, xt(lang, "ded_empty")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, Object.entries(byTag).map(([k, v]) => /*#__PURE__*/React.createElement("div", {
+    key: k,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      padding: "7px 0",
+      borderBottom: "1px solid var(--line)",
+      fontSize: 14
+    }
+  }, /*#__PURE__*/React.createElement("span", null, xt(lang, "ded_" + k)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 600
+    }
+  }, fmt(v)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      padding: "9px 0",
+      fontWeight: 700
+    }
+  }, /*#__PURE__*/React.createElement("span", null, xt(lang, "ded_total"), " · ", xt(lang, "ded_count", {
+    n: rows.length
+  })), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(total))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "ded_with_receipt"), ": ", withReceipt, " · ", xt(lang, "ded_without_receipt"), ": ", rows.length - withReceipt)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxHeight: 260,
+      overflowY: "auto",
+      border: "1px solid var(--line)",
+      borderRadius: 8
+    }
+  }, rows.map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8,
+      padding: "8px 10px",
+      borderBottom: "1px solid var(--line)",
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 600,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, r.description || r.category), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, ddmmyyyy(r.date), " · ", xt(lang, "ded_" + r.deductible))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      whiteSpace: "nowrap"
+    }
+  }, receipts[r.id] && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => openReceiptViewer(receipts[r.id]),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: 15
+    },
+    title: xt(lang, "receipt_view")
+  }, "📎"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(r.kz)))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: exportCSV
+  }, xt(lang, "ded_csv")), /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: printIt
+  }, xt(lang, "ded_print")))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, xt(lang, "ded_disclaimer"))));
+}
+
+/* ---------- backup cifrado (AES-GCM + PBKDF2) ---------- */
+
+function b64encode(buf) {
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function b64decode(str) {
+  const s = atob(str);
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+async function deriveBackupKey(password, salt, iterations) {
+  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({
+    name: "PBKDF2",
+    salt,
+    iterations,
+    hash: "SHA-256"
+  }, material, {
+    name: "AES-GCM",
+    length: 256
+  }, false, ["encrypt", "decrypt"]);
+}
+async function encryptBackup(obj, password) {
+  const iterations = 250000;
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveBackupKey(password, salt, iterations);
+  const cipher = await crypto.subtle.encrypt({
+    name: "AES-GCM",
+    iv
+  }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return {
+    fonsprince: "enc-v1",
+    kdf: "PBKDF2-SHA256",
+    iterations,
+    salt: b64encode(salt),
+    iv: b64encode(iv),
+    data: b64encode(cipher)
+  };
+}
+async function decryptBackup(env, password) {
+  const key = await deriveBackupKey(password, b64decode(env.salt), env.iterations || 250000);
+  const plain = await crypto.subtle.decrypt({
+    name: "AES-GCM",
+    iv: b64decode(env.iv)
+  }, key, b64decode(env.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+function isEncryptedBackup(d) {
+  return !!d && d.fonsprince === "enc-v1" && !!d.data && !!d.iv && !!d.salt;
+}
+function PasswordPromptModal({
+  lang,
+  mode,
+  onSubmit,
+  onClose
+}) {
+  const encrypting = mode === "encrypt";
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  async function submit() {
+    setError(null);
+    if (encrypting) {
+      if (pw.length < 6) return setError(xt(lang, "enc_min"));
+      if (pw !== pw2) return setError(xt(lang, "enc_mismatch"));
+    } else if (!pw) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSubmit(pw);
+    } catch (e) {
+      setError(xt(lang, "enc_wrong"));
+      setBusy(false);
+    }
+  }
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: xt(lang, encrypting ? "enc_encrypt_title" : "enc_decrypt_title"),
+    onClose: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, !encrypting && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, xt(lang, "enc_decrypt_desc")), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "enc_password")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    autoComplete: "off",
+    style: inputStyle,
+    value: pw,
+    onChange: e => setPw(e.target.value),
+    onKeyDown: e => e.key === "Enter" && !encrypting && submit()
+  })), encrypting && /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "enc_confirm")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    autoComplete: "off",
+    style: inputStyle,
+    value: pw2,
+    onChange: e => setPw2(e.target.value)
+  })), encrypting && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)",
+      margin: 0
+    }
+  }, xt(lang, "enc_warning")), error && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)",
+      margin: 0,
+      fontWeight: 600
+    }
+  }, error), /*#__PURE__*/React.createElement(PrimaryButton, {
+    disabled: busy || !pw,
+    onClick: submit
+  }, busy ? xt(lang, "enc_working") : xt(lang, encrypting ? "enc_submit_encrypt" : "enc_submit_decrypt"))));
+}
+
+/* cartão com as ações extra de exportação (backup cifrado + despesas dedutíveis) */
+function ExtrasExportCard({
+  lang,
+  onEncryptedExport,
+  onOpenDeductible
+}) {
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginTop: 16
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, xt(lang, "enc_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: "0 0 12px"
+    }
+  }, xt(lang, "enc_desc")), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: onEncryptedExport
+  }, "🔒 ", xt(lang, "enc_export_btn")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 1,
+      background: "var(--line)",
+      margin: "16px 0"
+    }
+  }), /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, xt(lang, "ded_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: "0 0 12px"
+    }
+  }, xt(lang, "ded_subtitle")), /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: onOpenDeductible
+  }, xt(lang, "ded_open")));
+}
+
+/* ---------- definições: início do mês financeiro ---------- */
+
+function MonthStartCard({
+  lang,
+  value,
+  onChange
+}) {
+  const days = Array.from({
+    length: 28
+  }, (_, i) => i + 1);
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginTop: 16
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, sans-serif",
+      fontSize: 16,
+      margin: "0 0 4px"
+    }
+  }, xt(lang, "ms_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: "0 0 12px"
+    }
+  }, xt(lang, "ms_desc")), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "ms_label")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: value,
+    onChange: e => onChange(Number(e.target.value))
+  }, days.map(d => /*#__PURE__*/React.createElement("option", {
+    key: d,
+    value: d
+  }, d === 1 ? xt(lang, "ms_day1") : xt(lang, "ms_day_n", {
+    n: d
+  }))))));
+}
+
+/* ---------- fecho do mês ---------- */
+
+function MonthCloseModal({
+  lang,
+  month,
+  transactions,
+  recurringExpenses,
+  categories,
+  spentByCategory,
+  totalReceitas,
+  totalDespesas,
+  closing,
+  onToggleReconciled,
+  onMarkAllReconciled,
+  onSave,
+  onReopen,
+  onClose
+}) {
+  const monthTx = useMemo(() => transactions.filter(t => monthKey(t.date) === month), [transactions, month]);
+  const unreconciled = monthTx.filter(t => !t.reconciled);
+  const pendingRec = (recurringExpenses || []).filter(r => recurringStatus(r, month, transactions) !== "Paga");
+  const overLimits = Object.entries(categories || {}).filter(([cat, limit]) => Number(limit) > 0 && (spentByCategory[cat] || 0) > Number(limit));
+  const [budgetReviewed, setBudgetReviewed] = useState(!!(closing && closing.budgetReviewed));
+  const [note, setNote] = useState(closing && closing.note || "");
+  const cur = extrasCurrency();
+  const saved = (Number(totalReceitas) || 0) - (Number(totalDespesas) || 0);
+  const row = (ok, title, detail) => /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      alignItems: "flex-start",
+      padding: "8px 0",
+      borderBottom: "1px solid var(--line)"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700,
+      color: ok ? "var(--emerald)" : "var(--gold)",
+      width: 18
+    }
+  }, ok ? "✓" : "•"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600
+    }
+  }, title), detail && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, detail)));
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: `${xt(lang, "close_title")} — ${monthLabelFull(month)}`,
+    onClose: onClose,
+    wide: true
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      flexWrap: "wrap"
+    }
+  }, [[xt(lang, "close_income"), fmt(totalReceitas, cur), "var(--emerald)"], [xt(lang, "close_expenses"), fmt(totalDespesas, cur), "var(--rust)"], [xt(lang, "close_saved"), fmt(saved, cur), saved >= 0 ? "var(--emerald)" : "var(--rust)"]].map(([label, value, color]) => /*#__PURE__*/React.createElement("div", {
+    key: label,
+    style: {
+      flex: "1 1 120px",
+      border: "1px solid var(--line)",
+      borderRadius: 10,
+      padding: "8px 10px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      fontWeight: 600,
+      textTransform: "uppercase"
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      color
+    }
+  }, value)))), /*#__PURE__*/React.createElement("div", null, row(unreconciled.length === 0, xt(lang, "close_check_reconciled"), unreconciled.length === 0 ? xt(lang, "close_all_ok") : `${monthTx.length - unreconciled.length}/${monthTx.length}`), row(pendingRec.length === 0, xt(lang, "close_check_recurring"), pendingRec.length === 0 ? xt(lang, "close_all_ok") : xt(lang, "close_pending_n", {
+    n: pendingRec.length
+  }) + ": " + pendingRec.slice(0, 4).map(r => r.name).join(", ")), row(budgetReviewed && overLimits.length === 0, xt(lang, "close_check_budget"), overLimits.length ? `${xt(lang, "close_over_limits")}: ${overLimits.map(([c]) => c).join(", ")}` : null)), unreconciled.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase"
+    }
+  }, xt(lang, "close_unreconciled"), " (", unreconciled.length, ")"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onMarkAllReconciled(unreconciled.map(t => t.id)),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontWeight: 700,
+      fontSize: 12,
+      cursor: "pointer"
+    }
+  }, xt(lang, "close_mark_all"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxHeight: 200,
+      overflowY: "auto",
+      border: "1px solid var(--line)",
+      borderRadius: 8
+    }
+  }, unreconciled.slice(0, 60).map(t => /*#__PURE__*/React.createElement("label", {
+    key: t.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "8px 10px",
+      borderBottom: "1px solid var(--line)",
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: false,
+    onChange: () => onToggleReconciled(t.id)
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      flex: 1,
+      minWidth: 0,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, ddmm(t.date), " · ", t.description || t.category || t.kind), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(t.amount)))))), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      fontSize: 14,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: budgetReviewed,
+    onChange: e => setBudgetReviewed(e.target.checked)
+  }), xt(lang, "close_budget_reviewed")), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "close_note")
+  }, /*#__PURE__*/React.createElement("textarea", {
+    rows: 3,
+    style: {
+      ...inputStyle,
+      resize: "vertical"
+    },
+    value: note,
+    onChange: e => setNote(e.target.value),
+    placeholder: xt(lang, "close_note_ph")
+  })), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: () => onSave({
+      closedAt: new Date().toISOString(),
+      note: note.trim(),
+      budgetReviewed,
+      income: Number(totalReceitas) || 0,
+      expenses: Number(totalDespesas) || 0,
+      unreconciledAtClose: unreconciled.length
+    })
+  }, xt(lang, "close_save")), closing && /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: onReopen
+  }, xt(lang, "close_reopen"))));
+}
+
+/* ---------- WhatsApp (dívidas a receber) ---------- */
+
+function whatsappLink(phone, text) {
+  let digits = String(phone || "").replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.length === 9 && digits[0] === "9") digits = "244" + digits;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
+
+/* ---------- simulador de IVA ---------- */
+
+function SimIVA() {
+  const lang = CURRENT_LANG;
+  const [mode, setMode] = useState("add");
+  const [amount, setAmount] = useState("100000");
+  const [rate, setRate] = useState("14");
+  const v = Number(amount) || 0;
+  const r = Math.max(0, Number(rate) || 0) / 100;
+  const base = mode === "add" ? v : v / (1 + r);
+  const total = mode === "add" ? v * (1 + r) : v;
+  const iva = total - base;
+  return /*#__PURE__*/React.createElement(SimGrid, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, ["add", "remove"].map(m => /*#__PURE__*/React.createElement("button", {
+    key: m,
+    onClick: () => setMode(m),
+    style: {
+      flex: 1,
+      padding: "9px 6px",
+      borderRadius: 8,
+      border: `1.5px solid ${mode === m ? "var(--gold)" : "var(--line)"}`,
+      background: mode === m ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
+      color: mode === m ? "var(--gold)" : "var(--slate)",
+      fontWeight: 600,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, xt(lang, "iva_mode_" + m)))), /*#__PURE__*/React.createElement(SimNumberField, {
+    label: xt(lang, "iva_amount"),
+    value: amount,
+    onChange: setAmount,
+    suffix: extrasCurrency()
+  }), /*#__PURE__*/React.createElement(SimNumberField, {
+    label: xt(lang, "iva_rate"),
+    value: rate,
+    onChange: setRate,
+    suffix: "%"
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement(SimResultRow, {
+    label: xt(lang, "iva_base"),
+    value: fmt(base, extrasCurrency())
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: `${xt(lang, "iva_tax")} (${rate || 0}%)`,
+    value: fmt(iva, extrasCurrency()),
+    tone: "rust"
+  }), /*#__PURE__*/React.createElement(SimResultRow, {
+    label: xt(lang, "iva_total"),
+    value: fmt(total, extrasCurrency()),
+    big: true,
+    tone: "emerald"
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "6px 0 0"
+    }
+  }, xt(lang, "iva_note")));
+}
+
+/* ---------- Kixikila (poupança rotativa) ---------- */
+
+function kixCycleDate(k, i) {
+  const [y, m, d] = k.startDate.split("-").map(Number);
+  const dt = new Date(y, m - 1 + i, 1);
+  const last = new Date(dt.getFullYear(), dt.getMonth() + 1, 0).getDate();
+  return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(Math.min(d, last))}`;
+}
+function kixCurrentCycle(k) {
+  const today = todayISO();
+  const n = k.participants.length;
+  let idx = 0;
+  for (let i = 0; i < n; i++) if (kixCycleDate(k, i) <= today) idx = i;
+  /* se o último ciclo vencido já está todo pago, o ciclo em curso é o seguinte */
+  const paidCount = (k.paid && k.paid[idx] || []).length;
+  if (kixCycleDate(k, idx) <= today && paidCount >= n && idx < n - 1) idx += 1;
+  return {
+    idx,
+    started: kixCycleDate(k, 0) <= today
+  };
+}
+function kixDueLabel(lang, iso) {
+  const d = daysBetweenISO(todayISO(), iso);
+  if (d === 0) return xt(lang, "kix_today");
+  if (d < 0) return xt(lang, "kix_overdue");
+  return xt(lang, "kix_in_days", {
+    n: d
+  });
+}
+function KixikilaModal({
+  lang,
+  initial,
+  onClose,
+  onSave
+}) {
+  const [name, setName] = useState(initial && initial.name || "");
+  const [contribution, setContribution] = useState(initial ? String(initial.contribution) : "");
+  const [currency, setCurrency] = useState(initial && initial.currency || extrasCurrency());
+  const [startDate, setStartDate] = useState(initial && initial.startDate || todayISO());
+  const [participantsText, setParticipantsText] = useState(initial ? initial.participants.join("\n") : "");
+  const [me, setMe] = useState(initial && initial.me || "");
+  const participants = participantsText.split(/\n|,/).map(s => s.trim()).filter(Boolean).filter((s, i, a) => a.indexOf(s) === i);
+  const valid = name.trim() && Number(contribution) > 0 && participants.length >= 2 && startDate;
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: xt(lang, initial ? "kix_edit" : "kix_new"),
+    onClose: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_name")
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inputStyle,
+    value: name,
+    onChange: e => setName(e.target.value),
+    placeholder: xt(lang, "kix_name_ph")
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_contribution")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    inputMode: "decimal",
+    style: inputStyle,
+    value: contribution,
+    onChange: e => setContribution(e.target.value),
+    placeholder: "0.00"
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_currency")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: currency,
+    onChange: e => setCurrency(e.target.value)
+  }, CURRENCIES.map(c => /*#__PURE__*/React.createElement("option", {
+    key: c
+  }, c))))), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_start")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    style: inputStyle,
+    value: startDate,
+    onChange: e => setStartDate(e.target.value)
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_participants")
+  }, /*#__PURE__*/React.createElement("textarea", {
+    rows: 5,
+    style: {
+      ...inputStyle,
+      resize: "vertical"
+    },
+    value: participantsText,
+    onChange: e => setParticipantsText(e.target.value)
+  })), participants.length < 2 && participantsText.trim() !== "" && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)",
+      margin: 0
+    }
+  }, xt(lang, "kix_participants_min")), /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_me")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: participants.includes(me) ? me : "",
+    onChange: e => setMe(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, xt(lang, "kix_me_pick")), participants.map(p => /*#__PURE__*/React.createElement("option", {
+    key: p,
+    value: p
+  }, p)))), /*#__PURE__*/React.createElement(PrimaryButton, {
+    disabled: !valid,
+    onClick: () => onSave({
+      ...(initial || {}),
+      id: initial && initial.id || uid(),
+      name: name.trim(),
+      contribution: Number(contribution),
+      currency,
+      startDate,
+      participants,
+      me: participants.includes(me) ? me : "",
+      paid: initial && initial.paid || {},
+      receivedCycles: initial && initial.receivedCycles || []
+    })
+  }, xt(lang, "kix_save"))));
+}
+function KixikilaCard({
+  lang,
+  k,
+  accounts,
+  onSave,
+  onEdit,
+  onRemove,
+  onAddTx
+}) {
+  const n = k.participants.length;
+  const {
+    idx: curIdx,
+    started
+  } = kixCurrentCycle(k);
+  const [viewIdx, setViewIdx] = useState(curIdx);
+  const [accountId, setAccountId] = useState(accounts[0] && accounts[0].id || "");
+  const [flash, setFlash] = useState(null);
+  const paidNames = k.paid && k.paid[viewIdx] || [];
+  const recipient = k.participants[viewIdx % n];
+  const myIdx = k.me ? k.participants.indexOf(k.me) : -1;
+  const pot = Number(k.contribution) * n;
+  const myPaidThis = !!k.me && paidNames.includes(k.me);
+  const iAmRecipient = k.me && recipient === k.me;
+  const received = (k.receivedCycles || []).includes(viewIdx);
+  const myReceivedDone = myIdx >= 0 && (k.receivedCycles || []).includes(myIdx);
+  let nextContribIdx = -1;
+  if (k.me) {
+    for (let i = curIdx; i < n; i++) {
+      if (!(k.paid && k.paid[i] || []).includes(k.me)) {
+        nextContribIdx = i;
+        break;
+      }
+    }
+  }
+  function togglePaid(name) {
+    const list = new Set(paidNames);
+    if (list.has(name)) list.delete(name);else list.add(name);
+    onSave({
+      ...k,
+      paid: {
+        ...(k.paid || {}),
+        [viewIdx]: Array.from(list)
+      }
+    });
+  }
+  function accountSub(acc) {
+    return acc && acc.subBalances && acc.subBalances[0] ? acc.subBalances[0].id : "";
+  }
+  function registerMine() {
+    const acc = accounts.find(a => a.id === accountId);
+    if (!acc) return;
+    onAddTx({
+      kind: "despesa",
+      accountId: acc.id,
+      subBalanceId: accountSub(acc),
+      category: EXPENSE_CATEGORIES.includes("Outros") ? "Outros" : EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1],
+      amount: Number(k.contribution),
+      date: todayISO(),
+      description: xt(lang, "kix_tx_contrib", {
+        name: k.name,
+        i: viewIdx + 1
+      }),
+      member: null
+    });
+    if (k.me && !myPaidThis) onSave({
+      ...k,
+      paid: {
+        ...(k.paid || {}),
+        [viewIdx]: [...paidNames, k.me]
+      }
+    });
+    setFlash(xt(lang, "kix_registered"));
+  }
+  function registerPot() {
+    const acc = accounts.find(a => a.id === accountId);
+    if (!acc) return;
+    onAddTx({
+      kind: "receita",
+      accountId: acc.id,
+      subBalanceId: accountSub(acc),
+      category: INCOME_TYPES[INCOME_TYPES.length - 1],
+      amount: pot,
+      date: todayISO(),
+      description: xt(lang, "kix_tx_pot", {
+        name: k.name,
+        i: viewIdx + 1
+      }),
+      member: null
+    });
+    onSave({
+      ...k,
+      receivedCycles: Array.from(new Set([...(k.receivedCycles || []), viewIdx]))
+    });
+    setFlash(xt(lang, "kix_registered"));
+  }
+  const smallBtn = {
+    background: "none",
+    border: "none",
+    color: "var(--slate)",
+    fontWeight: 600,
+    fontSize: 12,
+    cursor: "pointer",
+    padding: 0
+  };
+  return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 16
+    }
+  }, k.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "kix_pot"), ": ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace"
+    }
+  }, fmt(pot, k.currency)), " · ", fmt(k.contribution, k.currency), " × ", n)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    style: smallBtn,
+    onClick: () => onEdit(k)
+  }, xt(lang, "kix_edit_btn")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    style: {
+      ...smallBtn,
+      color: "var(--rust)"
+    },
+    onClick: () => onRemove(k.id)
+  }, xt(lang, "kix_remove_btn")))), !started && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--gold)",
+      margin: "10px 0 0",
+      fontWeight: 600
+    }
+  }, xt(lang, "kix_not_started", {
+    date: ddmmyyyy(kixCycleDate(k, 0))
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      margin: "14px 0 6px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: viewIdx <= 0,
+    onClick: () => setViewIdx(viewIdx - 1),
+    style: {
+      ...smallBtn,
+      fontSize: 18,
+      opacity: viewIdx <= 0 ? 0.3 : 1
+    }
+  }, "‹"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, xt(lang, "kix_cycle_of", {
+    i: viewIdx + 1,
+    n
+  }), " · ", ddmmyyyy(kixCycleDate(k, viewIdx))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13
+    }
+  }, xt(lang, "kix_receives"), ": ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: iAmRecipient ? "var(--emerald)" : "var(--ink)"
+    }
+  }, recipient, iAmRecipient ? " ★" : ""))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: viewIdx >= n - 1,
+    onClick: () => setViewIdx(viewIdx + 1),
+    style: {
+      ...smallBtn,
+      fontSize: 18,
+      opacity: viewIdx >= n - 1 ? 0.3 : 1
+    }
+  }, "›")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 6,
+      borderRadius: 3,
+      background: "var(--line)",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "100%",
+      width: `${paidNames.length / n * 100}%`,
+      background: "var(--emerald)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      margin: "12px 0 6px"
+    }
+  }, xt(lang, "kix_paid_title"), " (", paidNames.length, "/", n, ")"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, k.participants.map(p => {
+    const paid = paidNames.includes(p);
+    return /*#__PURE__*/React.createElement("button", {
+      key: p,
+      type: "button",
+      onClick: () => togglePaid(p),
+      style: {
+        padding: "6px 12px",
+        borderRadius: 20,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        border: `1.5px solid ${paid ? "var(--emerald)" : "var(--line)"}`,
+        background: paid ? "color-mix(in srgb, var(--emerald) 14%, var(--card))" : "var(--card)",
+        color: paid ? "var(--emerald)" : "var(--slate)"
+      }
+    }, paid ? "✓ " : "", p, p === k.me ? " " + xt(lang, "kix_me_tag") : "");
+  })), k.me && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12,
+      fontSize: 13,
+      display: "flex",
+      flexDirection: "column",
+      gap: 3
+    }
+  }, /*#__PURE__*/React.createElement("div", null, xt(lang, "kix_my_turn"), ": ", /*#__PURE__*/React.createElement("b", null, myReceivedDone ? xt(lang, "kix_my_turn_done") : `${ddmmyyyy(kixCycleDate(k, myIdx))} · ${kixDueLabel(lang, kixCycleDate(k, myIdx))}`)), /*#__PURE__*/React.createElement("div", null, xt(lang, "kix_next_contrib"), ": ", /*#__PURE__*/React.createElement("b", null, nextContribIdx >= 0 ? `${ddmmyyyy(kixCycleDate(k, nextContribIdx))} · ${kixDueLabel(lang, kixCycleDate(k, nextContribIdx))}` : xt(lang, "kix_none_pending")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, accounts.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "kix_no_accounts")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "kix_account")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: accountId,
+    onChange: e => setAccountId(e.target.value)
+  }, accounts.map(a => /*#__PURE__*/React.createElement("option", {
+    key: a.id,
+    value: a.id
+  }, a.bank.replace(/—.*/, "").trim(), " ", a.nickname ? `— ${a.nickname}` : "")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: registerMine,
+    disabled: !accountId
+  }, xt(lang, "kix_register_mine")), iAmRecipient && !received && /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: registerPot,
+    disabled: !accountId
+  }, xt(lang, "kix_register_pot")))), flash && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--emerald)",
+      fontWeight: 600
+    }
+  }, "✓ ", flash), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "kix_hint_pot"))));
+}
+function KixikilaTab({
+  lang,
+  kixikilas,
+  accounts,
+  onSave,
+  onRemove,
+  onAddTx
+}) {
+  const [editing, setEditing] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: 0,
+      flex: "1 1 240px"
+    }
+  }, xt(lang, "kix_subtitle")), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: () => {
+      setEditing(null);
+      setShowModal(true);
+    }
+  }, "+ ", xt(lang, "kix_new"))), kixikilas.length === 0 && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 14,
+      color: "var(--slate)",
+      margin: 0
+    }
+  }, xt(lang, "kix_empty"))), kixikilas.map(k => /*#__PURE__*/React.createElement(KixikilaCard, {
+    key: k.id + ":" + k.participants.length,
+    lang: lang,
+    k: k,
+    accounts: accounts,
+    onSave: onSave,
+    onEdit: x => {
+      setEditing(x);
+      setShowModal(true);
+    },
+    onRemove: onRemove,
+    onAddTx: onAddTx
+  })), showModal && /*#__PURE__*/React.createElement(KixikilaModal, {
+    lang: lang,
+    initial: editing,
+    onClose: () => setShowModal(false),
+    onSave: k => {
+      onSave(k);
+      setShowModal(false);
+    }
+  }));
+}
+
+/* ---------- botões auxiliares ---------- */
+
+function DebtWhatsAppButton({
+  lang,
+  debt,
+  balance
+}) {
+  const due = debt.dueDate ? xt(lang, "wa_due", {
+    date: ddmmyyyy(debt.dueDate)
+  }) : "";
+  const text = xt(lang, "wa_msg", {
+    name: debt.creditor,
+    amount: fmt(Math.max(balance, 0), debt.currency),
+    due
+  });
+  return /*#__PURE__*/React.createElement("a", {
+    href: whatsappLink(debt.phone, text),
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      display: "block",
+      marginTop: 10,
+      textAlign: "center",
+      padding: "10px 12px",
+      borderRadius: 8,
+      border: "1.5px solid var(--emerald)",
+      color: "var(--emerald)",
+      fontWeight: 600,
+      fontSize: 14,
+      textDecoration: "none"
+    }
+  }, "💬 ", xt(lang, "wa_button"));
+}
+function ReconcileButton({
+  lang,
+  t,
+  onToggle
+}) {
+  if (!onToggle) return null;
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onToggle(t.id),
+    "aria-pressed": !!t.reconciled,
+    title: xt(lang, "reconcile_toggle"),
+    "aria-label": xt(lang, "reconcile_toggle"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: 15,
+      fontWeight: 800,
+      padding: "0 2px",
+      color: t.reconciled ? "var(--emerald)" : "var(--slate)",
+      opacity: t.reconciled ? 1 : 0.3
+    }
+  }, "✓");
+}
 function FinanceApp() {
   const [tab, setTab] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => loadKey("sidebar-collapsed", true));
@@ -10936,6 +13622,17 @@ function FinanceApp() {
   const [userName, setUserName] = useState(() => loadKey("user-name", ""));
   const [country, setCountry] = useState(() => loadKey("country", "AO"));
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => loadKey("notifications-enabled", false));
+  const [pushEnabled, setPushEnabled] = useState(() => loadKey("push-enabled", false));
+  const [pushTime, setPushTime] = useState(() => loadKey("push-time", "17:00"));
+  const [kixikilas, setKixikilas] = useState(loadKey("kixikilas", []));
+  const [receipts, setReceipts] = useState(loadKey("receipts", {}));
+  const [monthClosings, setMonthClosings] = useState(loadKey("month-closings", {}));
+  const [monthStartDay, setMonthStartDay] = useState(MONTH_START_DAY);
+  const [undo, setUndo] = useState(null);
+  const [showMonthClose, setShowMonthClose] = useState(false);
+  const [showDeductible, setShowDeductible] = useState(false);
+  const [pwPrompt, setPwPrompt] = useState(null);
+  const [pendingEncrypted, setPendingEncrypted] = useState(null);
   const [cloudUser, setCloudUser] = useState(null);
   const [cloudAuthChecked, setCloudAuthChecked] = useState(false);
   const [emailJustVerified, setEmailJustVerified] = useState(false);
@@ -11157,6 +13854,30 @@ function FinanceApp() {
     CURRENT_CURRENCY_CODE = market.currency;
   }, [country]);
   useEffect(() => saveKey("notifications-enabled", notificationsEnabled), [notificationsEnabled]);
+  useEffect(() => saveKey("push-enabled", pushEnabled), [pushEnabled]);
+  useEffect(() => saveKey("push-time", pushTime), [pushTime]);
+  useEffect(() => saveKey("kixikilas", kixikilas), [kixikilas]);
+  useEffect(() => saveKey("receipts", receipts), [receipts]);
+  useEffect(() => saveKey("month-closings", monthClosings), [monthClosings]);
+  useEffect(() => saveKey("month-start-day", monthStartDay), [monthStartDay]);
+  useEffect(() => {
+    try {
+      const a = new URLSearchParams(window.location.search).get("action");
+      if (a === "despesa" || a === "new-transaction") {
+        setTxModalKind("despesa");
+        setEditingTx(null);
+        setShowTxModal(true);
+      } else if (a === "receita") {
+        setTxModalKind("receita");
+        setEditingTx(null);
+        setShowTxModal(true);
+      } else if (a === "new-account") {
+        setEditingAccount(null);
+        setShowAccountModal(true);
+      }
+    } catch (e) {/* sem parâmetros de URL */}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
   useEffect(() => saveKey("onboarding-motivations", onboardingMotivations), [onboardingMotivations]);
   useEffect(() => saveKey("last-health-score-seen", lastHealthScoreSeen), [lastHealthScoreSeen]);
@@ -11276,6 +13997,18 @@ function FinanceApp() {
     } : x));
   }
   function removeAccount(id) {
+    const snap = {
+      accounts,
+      recurringExpenses,
+      debts,
+      expenseShortcuts
+    };
+    offerUndo(xt(lang, "undo_account"), () => {
+      setAccounts(snap.accounts);
+      setRecurringExpenses(snap.recurringExpenses);
+      setDebts(snap.debts);
+      setExpenseShortcuts(snap.expenseShortcuts);
+    });
     setAccounts(a => a.filter(x => x.id !== id));
     // Desassocia (não apaga) despesas fixas, dívidas e atalhos ligados a esta conta,
     // conforme avisado ao utilizador antes de confirmar a remoção.
@@ -11295,11 +14028,13 @@ function FinanceApp() {
       subBalanceId: null
     } : s));
   }
-  function addTx(tx) {
+  function addTx(tx, receiptData) {
+    const newId = uid();
     setTransactions(t => [...t, {
       ...tx,
-      id: uid()
+      id: newId
     }]);
+    if (receiptData) setReceiptFor(newId, receiptData);
     if (tx.kind === "receita") {
       vibrate(30);
       showToast("Receita registada!", "income");
@@ -11324,7 +14059,14 @@ function FinanceApp() {
     } : x));
   }
   function removeTx(id) {
+    const item = transactions.find(x => x.id === id);
+    const receipt = receipts[id];
     setTransactions(t => t.filter(x => x.id !== id));
+    if (receipt) setReceiptFor(id, null);
+    if (item) offerUndo(xt(lang, "undo_tx"), () => {
+      setTransactions(t => t.some(x => x.id === item.id) ? t : [...t, item]);
+      if (receipt) setReceiptFor(item.id, receipt);
+    });
   }
   function setCategoryLimit(cat, limit) {
     setBudgetIncome(b => ({
@@ -11460,7 +14202,9 @@ function FinanceApp() {
     }]);
   }
   function removeGoal(id) {
+    const item = goals.find(g => g.id === id);
     setGoals(gs => gs.filter(g => g.id !== id));
+    if (item) offerUndo(xt(lang, "undo_goal"), () => setGoals(gs => gs.some(g => g.id === item.id) ? gs : [...gs, item]));
   }
   function updateGoal(id, g) {
     setGoals(gs => gs.map(x => x.id === id ? {
@@ -11504,8 +14248,14 @@ function FinanceApp() {
     } : x));
   }
   function removeDebt(id) {
+    const item = debts.find(x => x.id === id);
+    const itemPayments = debtPayments.filter(p => p.debtId === id);
     setDebts(ds => ds.filter(x => x.id !== id));
     setDebtPayments(ps => ps.filter(p => p.debtId !== id));
+    if (item) offerUndo(xt(lang, "undo_debt"), () => {
+      setDebts(ds => ds.some(x => x.id === item.id) ? ds : [...ds, item]);
+      setDebtPayments(ps => [...ps, ...itemPayments.filter(p => !ps.some(q => q.id === p.id))]);
+    });
   }
   function addDebtPayment(payment) {
     setDebtPayments(ps => [...ps, {
@@ -11752,8 +14502,60 @@ function FinanceApp() {
       recurringId: rec.id
     });
   }
-  function exportAllData() {
-    const payload = {
+
+  /* ---- extras: desfazer, kixikila, conciliação, mês financeiro, backup cifrado ---- */
+  function offerUndo(label, restore) {
+    setUndo({
+      id: uid(),
+      label,
+      restore
+    });
+  }
+  function setReceiptFor(id, data) {
+    setReceipts(r => {
+      const n = {
+        ...r
+      };
+      if (data) n[id] = data;else delete n[id];
+      return n;
+    });
+  }
+  function saveKixikila(k) {
+    setKixikilas(ks => ks.some(x => x.id === k.id) ? ks.map(x => x.id === k.id ? k : x) : [...ks, k]);
+  }
+  function removeKixikila(id) {
+    const item = kixikilas.find(x => x.id === id);
+    if (!item) return;
+    setKixikilas(ks => ks.filter(x => x.id !== id));
+    offerUndo(xt(lang, "undo_kixikila"), () => setKixikilas(ks => ks.some(x => x.id === item.id) ? ks : [...ks, item]));
+  }
+  function toggleReconciled(id) {
+    setTransactions(t => t.map(x => x.id === id ? {
+      ...x,
+      reconciled: !x.reconciled
+    } : x));
+  }
+  function markAllReconciled(ids) {
+    const set = new Set(ids);
+    setTransactions(t => t.map(x => set.has(x.id) ? {
+      ...x,
+      reconciled: true
+    } : x));
+  }
+  function changeMonthStartDay(v) {
+    const d = Math.min(28, Math.max(1, Number(v) || 1));
+    MONTH_START_DAY = d;
+    setMonthStartDay(d);
+    setMonth(todayMonth());
+    setTransactions(t => [...t]);
+  }
+  async function exportEncryptedBackup(password) {
+    const env = await encryptBackup(buildBackupPayload(), password);
+    downloadJson(env, `ledger-backup-cifrado-${todayISO()}.json`);
+    setLastExportDate(todayISO());
+  }
+  function buildBackupPayload() {
+    return {
       exportedAt: new Date().toISOString(),
       accounts,
       transactions,
@@ -11776,9 +14578,15 @@ function FinanceApp() {
       rateHistory,
       budgetRollovers,
       rolledOverKeys,
-      categoryGoals
+      categoryGoals,
+      kixikilas,
+      receipts,
+      monthClosings,
+      monthStartDay
     };
-    downloadJson(payload, `ledger-backup-${todayISO()}.json`);
+  }
+  function exportAllData() {
+    downloadJson(buildBackupPayload(), `ledger-backup-${todayISO()}.json`);
     setLastExportDate(todayISO());
   }
   function exportTransactionsCSV() {
@@ -11896,7 +14704,7 @@ function FinanceApp() {
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result);
-        setPendingImport(data);
+        if (isEncryptedBackup(data)) setPendingEncrypted(data);else setPendingImport(data);
       } catch (err) {
         setImportError("Ficheiro inválido. Certifique-se de que é um backup exportado por este app.");
       }
@@ -11939,6 +14747,10 @@ function FinanceApp() {
     setBudgetRollovers(data.budgetRollovers || {});
     setRolledOverKeys(data.rolledOverKeys || []);
     setCategoryGoals(data.categoryGoals || {});
+    setKixikilas(data.kixikilas || []);
+    setMonthClosings(data.monthClosings || {});
+    if (data.receipts) setReceipts(data.receipts);
+    if (data.monthStartDay) changeMonthStartDay(data.monthStartDay);
     setPendingImport(null);
   }
   function applyCloudData(data) {
@@ -11976,6 +14788,8 @@ function FinanceApp() {
     setBudgetRollovers(data.budgetRollovers || {});
     setRolledOverKeys(data.rolledOverKeys || []);
     setCategoryGoals(data.categoryGoals || {});
+    if (data.kixikilas) setKixikilas(data.kixikilas);
+    if (data.monthClosings) setMonthClosings(data.monthClosings);
   }
   async function handleCloudSignUp(email, password) {
     setCloudError(null);
@@ -12070,7 +14884,9 @@ function FinanceApp() {
           rateHistory,
           budgetRollovers,
           rolledOverKeys,
-          categoryGoals
+          categoryGoals,
+          kixikilas,
+          monthClosings
         });
         setCloudSyncStatus("synced");
       } catch (err) {
@@ -12341,6 +15157,14 @@ function FinanceApp() {
     onClick: () => selectTab("cards"),
     isFavorite: favoriteTabs.includes("cards"),
     onToggleFavorite: () => toggleFavorite("cards"),
+    collapsed: sidebarCollapsed
+  }), /*#__PURE__*/React.createElement(NavItem, {
+    icon: IconPig,
+    label: translate(lang, "nav", "kixikila"),
+    active: tab === "kixikila",
+    onClick: () => selectTab("kixikila"),
+    isFavorite: favoriteTabs.includes("kixikila"),
+    onToggleFavorite: () => toggleFavorite("kixikila"),
     collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
     label: translate(lang, "nav", "section_treasury"),
@@ -12836,6 +15660,9 @@ function FinanceApp() {
     className: "tab-page-transition"
   }, tab === "overview" && /*#__PURE__*/React.createElement(Overview, {
     lang: lang,
+    monthClosing: monthClosings[month],
+    onOpenMonthClose: () => setShowMonthClose(true),
+    taxaInflacao: taxaInflacao,
     accounts: accounts,
     transactions: transactions,
     month: month,
@@ -12897,6 +15724,7 @@ function FinanceApp() {
     onExportExcel: exportAccountsCSV,
     onExportPDF: printAccountsSummary
   }), tab === "transactions" && /*#__PURE__*/React.createElement(TransactionsTab, {
+    onToggleReconciled: toggleReconciled,
     lang: lang,
     transactions: monthTx,
     accounts: accounts,
@@ -12982,6 +15810,7 @@ function FinanceApp() {
     isMobile: isMobile
   }), tab === "goals" && /*#__PURE__*/React.createElement(GoalsTab, {
     lang: lang,
+    taxaInflacao: taxaInflacao,
     goals: goals,
     onAdd: () => {
       setEditingGoal(null);
@@ -13179,6 +16008,10 @@ function FinanceApp() {
     onOpenSecurity: () => setShowPinSetup(true),
     notificationsEnabled: notificationsEnabled,
     onToggleNotifications: setNotificationsEnabled,
+    pushEnabled: pushEnabled,
+    onTogglePush: setPushEnabled,
+    pushTime: pushTime,
+    onSetPushTime: setPushTime,
     userName: userName,
     onSetUserName: setUserName,
     country: country,
@@ -13192,6 +16025,29 @@ function FinanceApp() {
     onCloudSignUp: handleCloudSignUp,
     onCloudSignIn: handleCloudSignIn,
     onCloudSignOut: handleCloudSignOut
+  }), tab === "kixikila" && /*#__PURE__*/React.createElement(KixikilaTab, {
+    lang: lang,
+    kixikilas: kixikilas,
+    accounts: accounts,
+    onSave: saveKixikila,
+    onRemove: id => askConfirm(xt(lang, "kix_remove_confirm"), () => removeKixikila(id)),
+    onAddTx: addTx
+  }), tab === "settings" && /*#__PURE__*/React.createElement(MonthStartCard, {
+    lang: lang,
+    value: monthStartDay,
+    onChange: changeMonthStartDay
+  }), tab === "exports" && /*#__PURE__*/React.createElement(ExtrasExportCard, {
+    lang: lang,
+    onEncryptedExport: () => setPwPrompt({
+      mode: "encrypt"
+    }),
+    onOpenDeductible: () => setShowDeductible(true)
+  }), tab === "exchange" && /*#__PURE__*/React.createElement(FxEffectiveCard, {
+    lang: lang,
+    transactions: transactions,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    rateHistory: rateHistory
   }), tab === "privacy" && /*#__PURE__*/React.createElement(PrivacyPolicyPage, {
     lang: lang
   })))), showAccountModal && /*#__PURE__*/React.createElement(AccountModal, {
@@ -13215,12 +16071,20 @@ function FinanceApp() {
     transactions: transactions,
     expenseCategories: expenseCategories,
     members: members,
+    initialReceipt: editingTx ? receipts[editingTx.id] || null : null,
     onClose: () => {
       setShowTxModal(false);
       setEditingTx(null);
     },
     onSave: tx => {
-      if (editingTx) updateTx(editingTx.id, tx);else addTx(tx);
+      const {
+        _receipt,
+        ...txData
+      } = tx;
+      if (editingTx) {
+        updateTx(editingTx.id, txData);
+        setReceiptFor(editingTx.id, _receipt);
+      } else addTx(txData, _receipt);
       setShowTxModal(false);
       setEditingTx(null);
     }
@@ -13456,6 +16320,67 @@ function FinanceApp() {
     onConfirm: () => {
       confirmAction.onConfirm();
       setConfirmAction(null);
+    }
+  }), /*#__PURE__*/React.createElement(UndoBar, {
+    lang: lang,
+    undo: undo,
+    onDismiss: () => setUndo(null)
+  }), showMonthClose && /*#__PURE__*/React.createElement(MonthCloseModal, {
+    lang: lang,
+    month: month,
+    transactions: transactions,
+    recurringExpenses: recurringExpenses,
+    categories: budgetIncome.categories,
+    spentByCategory: spentByCategory,
+    totalReceitas: totalReceitas,
+    totalDespesas: totalDespesas,
+    closing: monthClosings[month],
+    onToggleReconciled: toggleReconciled,
+    onMarkAllReconciled: markAllReconciled,
+    onSave: c => {
+      setMonthClosings(m => ({
+        ...m,
+        [month]: c
+      }));
+      setShowMonthClose(false);
+      showToast(xt(lang, "close_closed_on", {
+        date: ddmmyyyy(todayISO())
+      }), "success");
+    },
+    onReopen: () => {
+      setMonthClosings(m => {
+        const n = {
+          ...m
+        };
+        delete n[month];
+        return n;
+      });
+      setShowMonthClose(false);
+    },
+    onClose: () => setShowMonthClose(false)
+  }), showDeductible && /*#__PURE__*/React.createElement(DeductibleModal, {
+    lang: lang,
+    transactions: transactions,
+    receipts: receipts,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    onClose: () => setShowDeductible(false)
+  }), pwPrompt && /*#__PURE__*/React.createElement(PasswordPromptModal, {
+    lang: lang,
+    mode: "encrypt",
+    onClose: () => setPwPrompt(null),
+    onSubmit: async pw => {
+      await exportEncryptedBackup(pw);
+      setPwPrompt(null);
+    }
+  }), pendingEncrypted && /*#__PURE__*/React.createElement(PasswordPromptModal, {
+    lang: lang,
+    mode: "decrypt",
+    onClose: () => setPendingEncrypted(null),
+    onSubmit: async pw => {
+      const data = await decryptBackup(pendingEncrypted, pw);
+      setPendingEncrypted(null);
+      setPendingImport(data);
     }
   }), /*#__PURE__*/React.createElement(Toast, {
     toast: toast,
@@ -13821,6 +16746,10 @@ function FinanceApp() {
       id: "cards",
       label: translate(lang, "nav", "cards"),
       icon: IconBanknote
+    }, {
+      id: "kixikila",
+      label: translate(lang, "nav", "kixikila"),
+      icon: IconPig
     }, {
       id: "investments",
       label: translate(lang, "nav", "investments"),
@@ -15752,6 +18681,9 @@ function ChartsPage({
 }
 function Overview({
   lang,
+  monthClosing,
+  onOpenMonthClose,
+  taxaInflacao,
   accounts,
   transactions,
   month,
@@ -16044,7 +18976,19 @@ function Overview({
     totalReceitas: totalReceitas,
     totalDespesas: totalDespesas,
     bare: true
-  })))), /*#__PURE__*/React.createElement(QuickActionsRow, {
+  })))), /*#__PURE__*/React.createElement(OverviewExtras, {
+    lang: lang,
+    month: month,
+    categories: categories,
+    expectedIncome: expectedIncome,
+    totalDespesas: totalDespesas,
+    accounts: accounts,
+    transactions: transactions,
+    exchangeRates: exchangeRates,
+    taxaInflacao: taxaInflacao,
+    closing: monthClosing,
+    onOpenClose: onOpenMonthClose
+  }), /*#__PURE__*/React.createElement(QuickActionsRow, {
     lang: lang,
     onReceita: onQuickReceita,
     onDespesa: onQuickDespesa,
@@ -18999,6 +21943,7 @@ function MobileTxList({
 }
 function TransactionsTab({
   lang,
+  onToggleReconciled,
   transactions,
   accounts,
   shortcuts,
@@ -19391,7 +22336,11 @@ function TransactionsTab({
           display: "flex",
           gap: 4
         }
-      }, /*#__PURE__*/React.createElement("button", {
+      }, /*#__PURE__*/React.createElement(ReconcileButton, {
+        lang: lang,
+        t: t,
+        onToggle: onToggleReconciled
+      }), /*#__PURE__*/React.createElement("button", {
         onClick: () => onEdit(t),
         style: {
           background: "none",
@@ -19469,7 +22418,11 @@ function TransactionsTab({
         display: "flex",
         gap: 4
       }
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement(ReconcileButton, {
+      lang: lang,
+      t: t,
+      onToggle: onToggleReconciled
+    }), /*#__PURE__*/React.createElement("button", {
       onClick: () => onEdit(t),
       style: {
         background: "none",
@@ -19823,6 +22776,7 @@ function CsvImportModal({
 }
 function TxModal({
   lang,
+  initialReceipt,
   initial,
   initialKind,
   accounts,
@@ -19849,9 +22803,13 @@ function TxModal({
   const [scanError, setScanError] = useState(null);
   const [scanApplied, setScanApplied] = useState(false);
   const receiptInputRef = useRef(null);
+  const [deductible, setDeductible] = useState(initial && initial.deductible || "");
+  const [reconciled, setReconciled] = useState(!!(initial && initial.reconciled));
+  const [receiptData, setReceiptData] = useState(initialReceipt || null);
   async function handleReceiptSelected(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    compressImageToDataUrl(file).then(setReceiptData).catch(() => {});
     setScanError(null);
     setScanApplied(false);
     setScanning(true);
@@ -20051,7 +23009,34 @@ function TxModal({
   }, member), (members || []).map(m => /*#__PURE__*/React.createElement("option", {
     key: m,
     value: m
-  }, m)))), /*#__PURE__*/React.createElement("p", {
+  }, m)))), kind === "despesa" && /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "ded_field")
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inputStyle,
+    value: deductible,
+    onChange: e => setDeductible(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, xt(lang, "ded_none")), DEDUCTIBLE_TAGS.map(k => /*#__PURE__*/React.createElement("option", {
+    key: k,
+    value: k
+  }, xt(lang, "ded_" + k))))), /*#__PURE__*/React.createElement(ReceiptAttach, {
+    lang: lang,
+    value: receiptData,
+    onChange: setReceiptData
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: reconciled,
+    onChange: e => setReconciled(e.target.checked)
+  }), xt(lang, "reconcile_toggle")), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
       color: "var(--slate)",
@@ -20067,7 +23052,10 @@ function TxModal({
       amount: Number(amount),
       date,
       description,
-      member: member.trim() || null
+      member: member.trim() || null,
+      deductible: kind === "despesa" && deductible ? deductible : null,
+      reconciled,
+      _receipt: receiptData
     })
   }, isEditing ? translate(lang, "transactions", "save_changes") : translate(lang, "transactions", "save_transaction"))));
 }
@@ -20345,7 +23333,14 @@ function TransferModal({
       setToAmountTouched(true);
     },
     placeholder: "0.00"
-  })), /*#__PURE__*/React.createElement(Field, {
+  })), /*#__PURE__*/React.createElement(ImpliedRateNote, {
+    lang: lang,
+    fromAccount: fromAccount,
+    toAccount: toAccount,
+    amount: amount,
+    toAmount: toAmount,
+    exchangeRates: exchangeRates
+  }), /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "transactions", "description_optional")
   }, /*#__PURE__*/React.createElement("input", {
     style: inputStyle,
@@ -24111,6 +27106,11 @@ function getSimGroups(lang, country) {
       label: t("sim_rescisao_label"),
       sub: t("sim_rescisao_sub"),
       icon: IconGavel
+    }, {
+      id: "iva",
+      label: t("sim_iva_label"),
+      sub: t("sim_iva_sub"),
+      icon: IconPercent
     });
   }
   return [{
@@ -25412,6 +28412,7 @@ const SIM_COMPONENTS = {
   subsidiosAnuais: SimSubsidiosAnuais,
   horaExtra: SimHoraExtra,
   rescisao: SimRescisao,
+  iva: SimIVA,
   jurosComposto: SimJurosComposto,
   jurosSimples: SimJurosSimples,
   conversaoTaxa: SimConversaoTaxa,
@@ -25799,6 +28800,10 @@ function SettingsTab({
   onOpenSecurity,
   notificationsEnabled,
   onToggleNotifications,
+  pushEnabled,
+  onTogglePush,
+  pushTime,
+  onSetPushTime,
   userName,
   onSetUserName,
   country,
@@ -25812,6 +28817,7 @@ function SettingsTab({
 }) {
   const [permission, setPermission] = useState(isNotificationSupported() ? Notification.permission : "unsupported");
   const [nameDraft, setNameDraft] = useState(userName || "");
+  const [pushStatus, setPushStatus] = useState(null);
   async function handleToggleNotifications() {
     if (notificationsEnabled) {
       onToggleNotifications(false);
@@ -25823,6 +28829,32 @@ function SettingsTab({
       onToggleNotifications(true);
       registerPeriodicSync();
     }
+  }
+  async function handleTogglePush() {
+    if (pushEnabled) {
+      await unsubscribeFromPush();
+      onTogglePush(false);
+      setPushStatus(null);
+      return;
+    }
+    setPushStatus("working");
+    const permissionResult = await requestNotificationPermission();
+    setPermission(permissionResult);
+    if (permissionResult !== "granted") {
+      setPushStatus(permissionResult);
+      return;
+    }
+    const result = await subscribeToPush(pushTime, lang);
+    if (result.ok) {
+      onTogglePush(true);
+      setPushStatus(null);
+    } else {
+      setPushStatus(result.error || "error");
+    }
+  }
+  async function handlePushTimeChange(newTime) {
+    onSetPushTime(newTime);
+    if (pushEnabled) await updatePushTime(newTime);
   }
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25983,7 +29015,60 @@ function SettingsTab({
   }, translate(lang, "settings", "disable")) : /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: handleToggleNotifications,
     disabled: permission === "denied"
-  }, translate(lang, "settings", "enable")))), /*#__PURE__*/React.createElement(CloudSyncCard, {
+  }, translate(lang, "settings", "enable")))), isPushSupported() && isPushConfigured() && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: 15,
+      margin: "0 0 4px"
+    }
+  }, translate(lang, "settings", "push_reminder_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      margin: "4px 0 12px"
+    }
+  }, translate(lang, "settings", "push_reminder_desc")), !pushEnabled ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: translate(lang, "settings", "push_time_label")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "time",
+    style: inputStyle,
+    value: pushTime,
+    onChange: e => handlePushTimeChange(e.target.value)
+  })), pushStatus && pushStatus !== "working" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--rust)"
+    }
+  }, translate(lang, "settings", "push_error_prefix"), " ", pushStatus), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: handleTogglePush,
+    disabled: pushStatus === "working" || !pushTime
+  }, pushStatus === "working" ? translate(lang, "settings", "push_activating") : translate(lang, "settings", "push_activate"))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--emerald)"
+    }
+  }, translate(lang, "settings", "push_active_at"), " ", pushTime), /*#__PURE__*/React.createElement(Field, {
+    label: translate(lang, "settings", "push_time_label")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "time",
+    style: inputStyle,
+    value: pushTime,
+    onChange: e => handlePushTimeChange(e.target.value)
+  })), /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: handleTogglePush
+  }, translate(lang, "settings", "disable")))), /*#__PURE__*/React.createElement(CloudSyncCard, {
     lang: lang,
     cloudUser: cloudUser,
     cloudSyncStatus: cloudSyncStatus,
@@ -27761,6 +30846,7 @@ function BudgetTab({
 
 function GoalsTab({
   lang,
+  taxaInflacao,
   goals,
   onAdd,
   onEdit,
@@ -27913,7 +30999,11 @@ function GoalsTab({
         marginBottom: 0,
         fontWeight: 600
       }
-    }, translate(lang, "goals", "projected_growth_prefix"), " ", /*#__PURE__*/React.createElement("strong", null, fmt(projectedIn12m)), " ", translate(lang, "goals", "projected_growth_suffix")), /*#__PURE__*/React.createElement(PrimaryButton, {
+    }, translate(lang, "goals", "projected_growth_prefix"), " ", /*#__PURE__*/React.createElement("strong", null, fmt(projectedIn12m)), " ", translate(lang, "goals", "projected_growth_suffix")), /*#__PURE__*/React.createElement(GoalInflationNote, {
+      lang: lang,
+      goal: g,
+      taxaInflacao: taxaInflacao
+    }), /*#__PURE__*/React.createElement(PrimaryButton, {
       style: {
         marginTop: 14,
         width: "100%"
@@ -28060,7 +31150,11 @@ function DebtCard({
       color: "var(--gold)",
       marginTop: 4
     }
-  }, debt.interestRate, "% a.a. · ", translate(lang, "debts", "interest_accrued_suffix"), " ", fmt(interest, debt.currency)) : null, status !== "Quitada" && /*#__PURE__*/React.createElement(PrimaryButton, {
+  }, debt.interestRate, "% a.a. · ", translate(lang, "debts", "interest_accrued_suffix"), " ", fmt(interest, debt.currency)) : null, debt.type === "A receber" && status !== "Quitada" && /*#__PURE__*/React.createElement(DebtWhatsAppButton, {
+    lang: lang,
+    debt: debt,
+    balance: balance
+  }), status !== "Quitada" && /*#__PURE__*/React.createElement(PrimaryButton, {
     style: {
       marginTop: 14,
       width: "100%"
@@ -28261,6 +31355,7 @@ function DebtModal({
   const [dueDate, setDueDate] = useState(initial && initial.dueDate || "");
   const [description, setDescription] = useState(initial && initial.description || "");
   const [accountId, setAccountId] = useState(initial && initial.accountId || "");
+  const [phone, setPhone] = useState(initial && initial.phone || "");
   const currentAccount = accounts.find(a => a.id === accountId);
   const [subBalanceId, setSubBalanceId] = useState(initial && initial.subBalanceId || "");
   function handleAccountChange(id) {
@@ -28280,6 +31375,7 @@ function DebtModal({
       startDate,
       dueDate,
       description,
+      phone: type === "A receber" && phone.trim() ? phone.trim() : null,
       accountId: accountId || null,
       subBalanceId: subBalanceId || null
     });
@@ -28403,7 +31499,16 @@ function DebtModal({
       color: "var(--slate)",
       margin: 0
     }
-  }, type === "A pagar" ? translate(lang, "debts", "note_pay_reduces") : translate(lang, "debts", "note_receive_increases"))), /*#__PURE__*/React.createElement(Field, {
+  }, type === "A pagar" ? translate(lang, "debts", "note_pay_reduces") : translate(lang, "debts", "note_receive_increases"))), type === "A receber" && /*#__PURE__*/React.createElement(Field, {
+    label: xt(lang, "wa_phone")
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "tel",
+    inputMode: "tel",
+    style: inputStyle,
+    value: phone,
+    onChange: e => setPhone(e.target.value),
+    placeholder: xt(lang, "wa_phone_ph")
+  })), /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "debts", "field_description_optional")
   }, /*#__PURE__*/React.createElement("input", {
     style: inputStyle,
