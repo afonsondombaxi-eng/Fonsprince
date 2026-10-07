@@ -3359,8 +3359,10 @@ function firebaseOnAuthChange(callback) {
 }
 async function pushDataToCloud(uid, payload) {
   const firebase = await loadFirebase();
+  // O Firestore recusa campos "undefined" — a cópia via JSON remove-os.
+  const clean = JSON.parse(JSON.stringify(payload));
   await firebase.firestore().collection("users").doc(uid).collection("data").doc("main").set({
-    ...payload,
+    ...clean,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
@@ -14890,14 +14892,15 @@ function FinanceApp() {
         });
         setCloudSyncStatus("synced");
       } catch (err) {
+        console.error("[Fonsprince] Falha ao sincronizar:", err);
         setCloudSyncStatus("error");
-        setCloudError("Não foi possível sincronizar com a nuvem.");
+        setCloudError("Não foi possível sincronizar com a nuvem" + (err && err.code ? " (código: " + err.code + ")" : "") + ".");
       }
     }, 2500);
     return () => {
       if (cloudPushTimer.current) clearTimeout(cloudPushTimer.current);
     };
-  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, members, rateHistory, budgetRollovers, rolledOverKeys, categoryGoals]);
+  }, [cloudUser, initialPullComplete, accounts, transactions, budgetIncome, goals, debts, debtPayments, creditCards, cardPurchases, cardPayments, bonds, equities, funds, investmentEvents, recurringExpenses, exchangeRates, expenseShortcuts, customCategories, members, rateHistory, budgetRollovers, rolledOverKeys, categoryGoals, kixikilas, monthClosings]);
   function addShortcut(s) {
     setExpenseShortcuts(ss => [...ss, {
       ...s,
