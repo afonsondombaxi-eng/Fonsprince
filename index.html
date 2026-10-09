@@ -3292,13 +3292,6 @@ function loadFirebase() {
       if (i >= scripts.length) {
         try {
           if (!window.firebase.apps.length) window.firebase.initializeApp(FIREBASE_CONFIG);
-          // Redes móveis/iOS: deteta e usa "long polling" quando o canal normal do Firestore fica bloqueado.
-          try {
-            window.firebase.firestore().settings({
-              experimentalForceLongPolling: true,
-              merge: true
-            });
-          } catch (e) {}
           resolve(window.firebase);
         } catch (err) {
           reject(err);
@@ -3364,26 +3357,132 @@ async function firebaseSignOutUser() {
 function firebaseOnAuthChange(callback) {
   loadFirebase().then(firebase => firebase.auth().onAuthStateChanged(callback)).catch(() => {});
 }
-async function pushDataToCloud(uid, payload) {
+// ── Sincronização via API REST do Firestore (pedidos HTTP simples) ──
+// Evita a ligação contínua da biblioteca do Firestore, que fica pendurada em alguns iPhones/redes.
+function toFsValue(v) {
+  if (v === null || v === undefined) return {
+    nullValue: null
+  };
+  if (typeof v === "boolean") return {
+    booleanValue: v
+  };
+  if (typeof v === "number") return Number.isInteger(v) && Math.abs(v) < 9e15 ? {
+    integerValue: String(v)
+  } : {
+    doubleValue: v
+  };
+  if (typeof v === "string") return {
+    stringValue: v
+  };
+  if (Array.isArray(v)) return {
+    arrayValue: {
+      values: v.map(toFsValue)
+    }
+  };
+  const fields = {};
+  Object.keys(v).forEach(k => {
+    if (k !== "") fields[k] = toFsValue(v[k]);
+  });
+  return {
+    mapValue: {
+      fields
+    }
+  };
+}
+function fromFsValue(v) {
+  if (!v) return null;
+  if ("nullValue" in v) return null;
+  if ("booleanValue" in v) return v.booleanValue;
+  if ("integerValue" in v) return Number(v.integerValue);
+  if ("doubleValue" in v) return v.doubleValue;
+  if ("stringValue" in v) return v.stringValue;
+  if ("timestampValue" in v) return v.timestampValue;
+  if ("arrayValue" in v) return (v.arrayValue.values || []).map(fromFsValue);
+  if ("mapValue" in v) {
+    const o = {};
+    const f = v.mapValue.fields || {};
+    Object.keys(f).forEach(k => {
+      o[k] = fromFsValue(f[k]);
+    });
+    return o;
+  }
+  return null;
+}
+async function cloudIdToken() {
   const firebase = await loadFirebase();
-  // O Firestore recusa campos "undefined" — a cópia via JSON remove-os.
+  const user = firebase.auth().currentUser;
+  if (!user) throw Object.assign(new Error("sem sessão"), {
+    code: "sem-sessao"
+  });
+  return Promise.race([user.getIdToken(), new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error("token-timeout"), {
+    code: "token-timeout (login não renovou)"
+  })), 15000))]);
+}
+async function cloudFetch(uid, method, body) {
+  const token = await cloudIdToken();
+  const url = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_CONFIG.projectId + "/databases/(default)/documents/users/" + encodeURIComponent(uid) + "/data/main";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: ctrl.signal
+    });
+  } catch (e) {
+    if (e && e.name === "AbortError") throw Object.assign(new Error("http-timeout"), {
+      code: "http-timeout"
+    });
+    throw Object.assign(new Error("rede"), {
+      code: "rede (" + (e && e.message || "falha") + ")"
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+  if (res.status === 404 && method === "GET") return null;
+  if (!res.ok) {
+    let st = "";
+    try {
+      const j = await res.json();
+      st = j && j.error && j.error.status ? " " + j.error.status : "";
+    } catch (e) {}
+    throw Object.assign(new Error("http-" + res.status), {
+      code: "http-" + res.status + st
+    });
+  }
+  return res.json();
+}
+async function pushDataToCloud(uid, payload) {
+  // Remove campos "undefined" e valida o tamanho (limite do Firestore: ~1 MB por documento).
   const clean = JSON.parse(JSON.stringify(payload));
   const sizeKB = Math.round(JSON.stringify(clean).length / 1024);
   if (sizeKB > 950) throw Object.assign(new Error("payload-too-large"), {
     code: "dados-demasiado-grandes (" + sizeKB + " KB, limite ~1000 KB)"
   });
-  const writePromise = firebase.firestore().collection("users").doc(uid).collection("data").doc("main").set({
-    ...clean,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  const fields = {};
+  Object.keys(clean).forEach(k => {
+    fields[k] = toFsValue(clean[k]);
   });
-  await Promise.race([writePromise, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error("timeout"), {
-    code: "timeout, " + sizeKB + " KB"
-  })), 25000))]);
+  fields.updatedAt = {
+    timestampValue: new Date().toISOString()
+  };
+  await cloudFetch(uid, "PATCH", {
+    fields
+  });
 }
 async function pullDataFromCloud(uid) {
-  const firebase = await loadFirebase();
-  const doc = await firebase.firestore().collection("users").doc(uid).collection("data").doc("main").get();
-  return doc.exists ? doc.data() : null;
+  const doc = await cloudFetch(uid, "GET");
+  if (!doc || !doc.fields) return null;
+  const out = {};
+  Object.keys(doc.fields).forEach(k => {
+    out[k] = fromFsValue(doc.fields[k]);
+  });
+  return out;
 }
 function cloudErrorMessage(err) {
   const code = err && err.code;
