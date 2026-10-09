@@ -3295,7 +3295,7 @@ function loadFirebase() {
           // Redes móveis/iOS: deteta e usa "long polling" quando o canal normal do Firestore fica bloqueado.
           try {
             window.firebase.firestore().settings({
-              experimentalAutoDetectLongPolling: true,
+              experimentalForceLongPolling: true,
               merge: true
             });
           } catch (e) {}
