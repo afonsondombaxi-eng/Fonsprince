@@ -3292,6 +3292,13 @@ function loadFirebase() {
       if (i >= scripts.length) {
         try {
           if (!window.firebase.apps.length) window.firebase.initializeApp(FIREBASE_CONFIG);
+          // Redes móveis/iOS: deteta e usa "long polling" quando o canal normal do Firestore fica bloqueado.
+          try {
+            window.firebase.firestore().settings({
+              experimentalAutoDetectLongPolling: true,
+              merge: true
+            });
+          } catch (e) {}
           resolve(window.firebase);
         } catch (err) {
           reject(err);
@@ -3361,10 +3368,13 @@ async function pushDataToCloud(uid, payload) {
   const firebase = await loadFirebase();
   // O Firestore recusa campos "undefined" — a cópia via JSON remove-os.
   const clean = JSON.parse(JSON.stringify(payload));
-  await firebase.firestore().collection("users").doc(uid).collection("data").doc("main").set({
+  const writePromise = firebase.firestore().collection("users").doc(uid).collection("data").doc("main").set({
     ...clean,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
+  await Promise.race([writePromise, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error("timeout"), {
+    code: "timeout"
+  })), 25000))]);
 }
 async function pullDataFromCloud(uid) {
   const firebase = await loadFirebase();
