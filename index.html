@@ -3368,12 +3368,16 @@ async function pushDataToCloud(uid, payload) {
   const firebase = await loadFirebase();
   // O Firestore recusa campos "undefined" — a cópia via JSON remove-os.
   const clean = JSON.parse(JSON.stringify(payload));
+  const sizeKB = Math.round(JSON.stringify(clean).length / 1024);
+  if (sizeKB > 950) throw Object.assign(new Error("payload-too-large"), {
+    code: "dados-demasiado-grandes (" + sizeKB + " KB, limite ~1000 KB)"
+  });
   const writePromise = firebase.firestore().collection("users").doc(uid).collection("data").doc("main").set({
     ...clean,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   await Promise.race([writePromise, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error("timeout"), {
-    code: "timeout"
+    code: "timeout, " + sizeKB + " KB"
   })), 25000))]);
 }
 async function pullDataFromCloud(uid) {
