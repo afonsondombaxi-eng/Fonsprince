@@ -14942,7 +14942,8 @@ function FinanceApp() {
             setCloudSyncStatus("synced");
           } catch (err) {
             setCloudSyncStatus("error");
-            setCloudError("Não foi possível obter os dados da nuvem.");
+            console.error("[Fonsprince] Falha ao obter dados:", err);
+            setCloudError("Não foi possível obter os dados da nuvem" + (err && err.code ? " (código: " + err.code + ")" : err && err.message ? " (" + err.message + ")" : "") + ".");
           } finally {
             setInitialPullComplete(true);
           }
