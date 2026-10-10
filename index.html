@@ -14216,9 +14216,11 @@ function FinanceApp() {
   useEffect(() => saveKey("receipts", receipts), [receipts]);
   useEffect(() => saveKey("month-closings", monthClosings), [monthClosings]);
   useEffect(() => saveKey("month-start-day", monthStartDay), [monthStartDay]);
+  // Atalhos rápidos: ?action=... (PWA/Android) e window.__fpHandle(action) (menu nativo do ícone no iOS via Capacitor).
+  const creditCardsRef = useRef(creditCards);
+  creditCardsRef.current = creditCards;
   useEffect(() => {
-    try {
-      const a = new URLSearchParams(window.location.search).get("action");
+    function runQuickAction(a) {
       if (a === "despesa" || a === "new-transaction") {
         setTxModalKind("despesa");
         setEditingTx(null);
@@ -14234,13 +14236,29 @@ function FinanceApp() {
         setEditingTx(null);
         setShowTransferModal(true);
       } else if (a === "despesa-cartao") {
-        if (creditCards.length === 1) {
-          setPurchaseCard(creditCards[0]);
+        const cards = creditCardsRef.current || [];
+        if (cards.length === 1) {
+          setPurchaseCard(cards[0]);
           setShowCardPurchaseModal(true);
         } else setTab("cards");
       }
-      if (a && window.history && window.history.replaceState) window.history.replaceState(null, "", window.location.pathname);
+    }
+    try {
+      const a = new URLSearchParams(window.location.search).get("action");
+      if (a) {
+        runQuickAction(a);
+        if (window.history && window.history.replaceState) window.history.replaceState(null, "", window.location.pathname);
+      }
     } catch (e) {/* sem parâmetros de URL */}
+    window.__fpHandle = runQuickAction;
+    if (window.__fpPending) {
+      const p = window.__fpPending;
+      window.__fpPending = null;
+      runQuickAction(p);
+    }
+    return () => {
+      if (window.__fpHandle === runQuickAction) window.__fpHandle = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => saveKey("onboarding-dismissed", onboardingDismissed), [onboardingDismissed]);
