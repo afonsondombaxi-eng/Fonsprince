@@ -14222,7 +14222,16 @@ function FinanceApp() {
       } else if (a === "new-account") {
         setEditingAccount(null);
         setShowAccountModal(true);
+      } else if (a === "transferencia") {
+        setEditingTx(null);
+        setShowTransferModal(true);
+      } else if (a === "despesa-cartao") {
+        if (creditCards.length === 1) {
+          setPurchaseCard(creditCards[0]);
+          setShowCardPurchaseModal(true);
+        } else setTab("cards");
       }
+      if (a && window.history && window.history.replaceState) window.history.replaceState(null, "", window.location.pathname);
     } catch (e) {/* sem parâmetros de URL */}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

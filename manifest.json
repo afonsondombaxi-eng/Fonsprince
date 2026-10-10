@@ -24,35 +24,54 @@
   ],
   "shortcuts": [
     {
-      "name": "Nova despesa",
+      "name": "Criar Despesa",
       "short_name": "Despesa",
+      "description": "Criar Despesa",
       "url": "./index.html?action=despesa",
       "icons": [
         {
           "src": "./icon-192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Nova receita",
+      "name": "Criar Despesa Cartão",
+      "short_name": "Cartão",
+      "description": "Criar Despesa Cartão",
+      "url": "./index.html?action=despesa-cartao",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Criar Receita",
       "short_name": "Receita",
+      "description": "Criar Receita",
       "url": "./index.html?action=receita",
       "icons": [
         {
           "src": "./icon-192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Nova conta",
-      "short_name": "Conta",
-      "url": "./index.html?action=new-account",
+      "name": "Criar Transferência",
+      "short_name": "Transferir",
+      "description": "Criar Transferência",
+      "url": "./index.html?action=transferencia",
       "icons": [
         {
           "src": "./icon-192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     }
