@@ -169,6 +169,9 @@
 /* ── Refresh visual ── */
 [style*="IBM Plex Mono"] { font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif !important; font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.015em; }
 text[font-family*="IBM Plex Mono"], tspan[font-family*="IBM Plex Mono"] { font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif !important; font-variant-numeric: tabular-nums; }
+.modal-panel input, .modal-panel select, .modal-panel textarea { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.modal-panel div, .modal-panel label { min-width: 0; }
+.modal-panel input[type=date] { -webkit-appearance: none; appearance: none; min-height: 40px; }
 .modal-panel { animation: modalPop 0.22s ease-out; }
 .sheet-panel { animation: sheetUp 0.26s cubic-bezier(.2,.8,.2,1); }
 @keyframes sheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
