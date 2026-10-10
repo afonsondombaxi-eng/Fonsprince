@@ -9308,18 +9308,22 @@ function Modal({
     };
   }, []);
   // Fecho com Esc e foco inicial no primeiro campo (acessibilidade de teclado/leitor de ecrã).
+  // onClose muda a cada render da app; guardado em ref para que o foco inicial corra UMA só vez
+  // (antes, cada re-render roubava o foco ao campo que o utilizador estava a preencher).
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
     const panel = panelRef.current;
-    if (panel) {
-      const focusable = panel.querySelector("input, select, textarea, button");
+    if (panel && !window.matchMedia("(pointer: coarse)").matches) {
+      const focusable = panel.querySelector("input, select, textarea");
       if (focusable) focusable.focus();
     }
     function handleKeyDown(e) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, []);
   return /*#__PURE__*/React.createElement("div", {
     className: sheet ? "modal-overlay sheet-overlay" : "modal-overlay",
     style: {
@@ -13836,6 +13840,10 @@ function FinanceApp() {
     function onScroll(e) {
       if (!window.matchMedia || !window.matchMedia("(max-width: 768px)").matches) return;
       const tgt = e.target;
+      // Nunca reagir ao scroll dentro de janelas/formulários ou com um campo em edição (o teclado do iOS desloca o ecrã).
+      if (document.querySelector('[role="dialog"]')) return;
+      const ae = document.activeElement;
+      if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
       const isDoc = !tgt || tgt === document || tgt === document.documentElement || tgt === document.body;
       const key = isDoc ? window : tgt;
       const y = isDoc ? window.scrollY : tgt.scrollTop;
