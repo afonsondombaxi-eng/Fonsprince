@@ -11504,6 +11504,8 @@ const EXTRAS_I18N = {
     ins_ai_off: "Desativar",
     ins_ai_save: "Guardar",
     ins_ai_url_ph: "https://o-seu-servidor-de-ia…",
+    ins_ai_bad: "Endereço inválido. Tem de começar por https://",
+    ins_ai_key_warn: "Isso parece uma chave de API. Não a cole aqui: apague-a na consola da Anthropic, crie outra e use-a só no servidor.",
     ins_ai_note: "A IA recebe só a pergunta e os nomes das categorias, nunca valores.",
     ins_src_ai: "Interpretado pela IA",
     ins_src_basic: "Interpretado pelo modo básico",
@@ -11714,6 +11716,8 @@ const EXTRAS_I18N = {
     ins_ai_off: "Turn off",
     ins_ai_save: "Save",
     ins_ai_url_ph: "https://your-ai-server…",
+    ins_ai_bad: "Invalid address. It must start with https://",
+    ins_ai_key_warn: "That looks like an API key. Do not paste it here: delete it in the Anthropic console, create a new one and use it only on the server.",
     ins_ai_note: "The AI only receives the question and category names, never amounts.",
     ins_src_ai: "Interpreted by AI",
     ins_src_basic: "Interpreted by basic mode",
@@ -12632,10 +12636,18 @@ function insRunPlan(plan, ctx) {
   return out;
 }
 const AI_PROXY_URL = ""; // ex: "https://fonsprince-ai-proxy.onrender.com" (ver fonsprince-ai-proxy/README.md)
+function insCleanUrl(v) {
+  const u = String(v || "").trim().replace(/\/+$/, "");
+  return /^https:\/\/[a-z0-9.-]+(:\d+)?(\/[^\s]*)?$/i.test(u) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(u) ? u : "";
+}
 function insProxyUrl() {
-  if (AI_PROXY_URL) return AI_PROXY_URL;
+  if (AI_PROXY_URL) return insCleanUrl(AI_PROXY_URL);
   try {
-    return typeof localStorage !== "undefined" && localStorage.getItem("fp_ai_url") || "";
+    if (typeof localStorage === "undefined") return "";
+    const raw = localStorage.getItem("fp_ai_url") || "";
+    const ok = insCleanUrl(raw);
+    if (raw && !ok) localStorage.removeItem("fp_ai_url"); // valor inválido (ex: chave colada por engano) é apagado
+    return ok;
   } catch (e) {
     return "";
   }
@@ -12705,9 +12717,22 @@ function AskMoneyCard({
   const [busy, setBusy] = useState(false);
   const [cfg, setCfg] = useState(false);
   const [urlDraft, setUrlDraft] = useState("");
+  const [urlErr, setUrlErr] = useState("");
   const [, bump] = useState(0);
   const cur = extrasCurrency();
   const aiOn = !!insProxyUrl();
+  useEffect(() => {
+    // acorda o servidor (alojamentos gratuitos adormecem) para a 1.ª pergunta não cair no modo básico
+    const base = insProxyUrl().replace(/\/$/, "");
+    if (base) {
+      try {
+        fetch(base + "/health", {
+          mode: "no-cors",
+          cache: "no-store"
+        }).catch(() => {});
+      } catch (e) {}
+    }
+  }, [aiOn]);
   const topCat = useMemo(() => {
     let best = null;
     for (const [k, v] of Object.entries(spentByCategory || {})) if (!best || Number(v) > best[1]) best = [k, Number(v)];
@@ -12743,9 +12768,16 @@ function AskMoneyCard({
     setRes(insRunPlan(plan, ctx));
   }
   function saveUrl(v) {
+    const t = String(v || "").trim();
+    if (t && !insCleanUrl(t)) {
+      setUrlErr(/^sk-/i.test(t) ? "key" : "bad");
+      setUrlDraft("");
+      return;
+    }
     try {
-      if (v) localStorage.setItem("fp_ai_url", v.trim());else localStorage.removeItem("fp_ai_url");
+      if (t) localStorage.setItem("fp_ai_url", insCleanUrl(t));else localStorage.removeItem("fp_ai_url");
     } catch (e) {}
+    setUrlErr("");
     setCfg(false);
     setUrlDraft("");
     bump(x => x + 1);
@@ -13020,7 +13052,15 @@ function AskMoneyCard({
     onClick: () => saveUrl(urlDraft)
   }, xt(lang, "ins_ai_save")), aiOn && /*#__PURE__*/React.createElement(GhostButton, {
     onClick: () => saveUrl("")
-  }, xt(lang, "ins_ai_off"))));
+  }, xt(lang, "ins_ai_off")), urlErr && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    style: {
+      flex: "1 1 100%",
+      fontSize: 12,
+      fontWeight: 600,
+      color: "var(--rust)"
+    }
+  }, urlErr === "key" ? xt(lang, "ins_ai_key_warn") : xt(lang, "ins_ai_bad"))));
 }
 function SpendingCalendarCard({
   lang,
