@@ -15109,6 +15109,8 @@ function AssistantTab({
   const endRef = useRef(null);
   const taRef = useRef(null);
   const [copied, setCopied] = useState(0);
+  const [focused, setFocused] = useState(false);
+  const kbOpen = isMobile && (focused || vv.kb);
   const SR = typeof window !== "undefined" ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
@@ -15245,7 +15247,7 @@ function AssistantTab({
     background: "var(--paper)",
     display: "flex",
     flexDirection: "column",
-    padding: "env(safe-area-inset-top) 14px " + (vv.kb ? "0" : "env(safe-area-inset-bottom)"),
+    padding: "env(safe-area-inset-top) 14px " + (focused || vv.kb ? "0" : "env(safe-area-inset-bottom)"),
     boxSizing: "border-box",
     overflow: "hidden"
   } : {
@@ -15261,7 +15263,7 @@ function AssistantTab({
       display: "flex",
       alignItems: "center",
       gap: 10,
-      paddingBottom: 4,
+      paddingBottom: 2,
       position: "relative"
     }
   }, /*#__PURE__*/React.createElement("button", {
@@ -15279,7 +15281,7 @@ function AssistantTab({
     }
   }, /*#__PURE__*/React.createElement(IconChevronLeft, {
     size: 22
-  })), avatar(40), /*#__PURE__*/React.createElement("div", {
+  })), avatar(34), /*#__PURE__*/React.createElement("div", {
     style: {
       minWidth: 0,
       flex: 1
@@ -15488,8 +15490,8 @@ function AssistantTab({
       minHeight: 0,
       display: "flex",
       flexDirection: "column",
-      gap: 6,
-      padding: "16px 0 12px",
+      gap: 0,
+      padding: "12px 0 10px",
       overflowY: isMobile ? "auto" : "visible",
       WebkitOverflowScrolling: "touch"
     }
@@ -15557,39 +15559,27 @@ function AssistantTab({
     }
   }), /*#__PURE__*/React.createElement("span", null, c))))), messages.map((m, i) => {
     const mine = m.role === "user";
-    const prev = messages[i - 1];
-    const showDay = m.ts && (!prev || !prev.ts || chatDayLabel(lang, prev.ts) !== chatDayLabel(lang, m.ts));
-    const sameAsPrev = prev && prev.role === m.role;
-    return /*#__PURE__*/React.createElement(React.Fragment, {
-      key: i
-    }, showDay && /*#__PURE__*/React.createElement("div", {
-      style: {
-        alignSelf: "center",
-        fontSize: 11,
-        fontWeight: 600,
-        color: "var(--slate)",
-        background: "var(--paper)",
-        border: "1px solid var(--line)",
-        borderRadius: 999,
-        padding: "3px 12px",
-        margin: "8px 0"
-      }
-    }, chatDayLabel(lang, m.ts)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        alignSelf: mine ? "flex-end" : "flex-start",
-        maxWidth: "86%",
-        marginTop: sameAsPrev ? 0 : 6,
-        fontSize: 15,
-        lineHeight: 1.5,
-        padding: "8px 12px 6px",
-        borderRadius: 18,
-        borderTopRightRadius: mine && !sameAsPrev ? 6 : 18,
-        borderTopLeftRadius: !mine && !sameAsPrev ? 6 : 18,
-        background: mine ? "var(--btn-bg)" : "var(--card)",
-        color: mine ? "var(--btn-fg)" : "var(--ink)",
-        border: mine ? "none" : "1px solid var(--line)",
-        boxShadow: "var(--shadow-sm)",
-        overflowWrap: "anywhere"
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: mine ? {
+        alignSelf: "flex-end",
+        maxWidth: "82%",
+        fontSize: 16,
+        lineHeight: 1.45,
+        padding: "10px 15px",
+        borderRadius: 20,
+        background: "var(--btn-bg)",
+        color: "var(--btn-fg)",
+        overflowWrap: "anywhere",
+        marginTop: i ? 10 : 0
+      } : {
+        alignSelf: "stretch",
+        fontSize: 16,
+        lineHeight: 1.55,
+        color: "var(--ink)",
+        overflowWrap: "anywhere",
+        padding: "0 2px",
+        marginTop: i ? 10 : 0
       }
     }, mine ? /*#__PURE__*/React.createElement("div", {
       style: {
@@ -15604,15 +15594,13 @@ function AssistantTab({
       } : x))
     }) : /*#__PURE__*/React.createElement(ChatText, {
       text: m.content
-    }), /*#__PURE__*/React.createElement("div", {
+    }), !mine && !m.fresh && /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
-        justifyContent: mine || m.fresh ? "flex-end" : "space-between",
-        alignItems: "center",
-        gap: 10,
-        marginTop: 2
+        gap: 14,
+        marginTop: 6
       }
-    }, !mine && !m.fresh && /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => {
         try {
@@ -15627,29 +15615,19 @@ function AssistantTab({
         padding: 0,
         cursor: "pointer",
         color: "var(--slate)",
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         fontFamily: "inherit"
       }
-    }, xt(lang, copied === m.ts ? "chat_copied" : "chat_copy")), m.ts ? /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        opacity: 0.6
-      }
-    }, chatClock(m.ts)) : null)));
+    }, xt(lang, copied === m.ts ? "chat_copied" : "chat_copy"))));
   }), busy && /*#__PURE__*/React.createElement("div", {
     "aria-label": xt(lang, "ins_thinking"),
     style: {
       alignSelf: "flex-start",
       display: "flex",
       gap: 5,
-      padding: "13px 16px",
-      borderRadius: 18,
-      borderTopLeftRadius: 6,
-      background: "var(--card)",
-      border: "1px solid var(--line)",
-      boxShadow: "var(--shadow-sm)",
-      marginTop: 6
+      padding: "8px 2px",
+      marginTop: 10
     }
   }, [0, 1, 2].map(i => /*#__PURE__*/React.createElement("span", {
     key: i,
@@ -15703,7 +15681,7 @@ function AssistantTab({
     style: isMobile ? {
       flexShrink: 0,
       paddingTop: 6,
-      paddingBottom: vv.kb ? 10 : 6
+      paddingBottom: kbOpen ? 8 : 6
     } : {
       position: "sticky",
       bottom: 14,
@@ -15728,6 +15706,8 @@ function AssistantTab({
     }
   }, /*#__PURE__*/React.createElement("textarea", {
     ref: taRef,
+    onFocus: () => setFocused(true),
+    onBlur: () => setFocused(false),
     value: input,
     rows: 1,
     maxLength: 600,
@@ -15760,6 +15740,7 @@ function AssistantTab({
     }
   }), SR && !input.trim() && !busy ? /*#__PURE__*/React.createElement("button", {
     type: "button",
+    onPointerDown: e => e.preventDefault(),
     onClick: toggleMic,
     "aria-label": xt(lang, "chat_mic"),
     "aria-pressed": listening,
@@ -15781,6 +15762,7 @@ function AssistantTab({
     size: 19
   })) : /*#__PURE__*/React.createElement("button", {
     type: "submit",
+    onPointerDown: e => e.preventDefault(),
     disabled: busy || !input.trim(),
     "aria-label": xt(lang, "chat_send"),
     style: {
@@ -15800,7 +15782,7 @@ function AssistantTab({
     }
   }, /*#__PURE__*/React.createElement(IconArrowUp, {
     size: 19
-  }))), !(isMobile && vv.kb) && /*#__PURE__*/React.createElement("div", {
+  }))), !kbOpen && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10.5,
       color: "var(--slate)",
