@@ -11593,6 +11593,8 @@ const EXTRAS_I18N = {
     ins_avg_day: "por dia, em média",
     chat_title: "Assistente financeiro",
     chat_name: "Assistente Fonsprince",
+    chat_copy: "Copiar",
+    chat_copied: "Copiado",
     sum_tab_savings: "Economia",
     chat_data_on: "Os meus números: ativo",
     chat_data_off: "Os meus números: desligado",
@@ -11895,6 +11897,8 @@ const EXTRAS_I18N = {
     ins_avg_day: "per day on average",
     chat_title: "Financial assistant",
     chat_name: "Fonsprince Assistant",
+    chat_copy: "Copy",
+    chat_copied: "Copied",
     sum_tab_savings: "Savings",
     chat_data_on: "My numbers: on",
     chat_data_off: "My numbers: off",
@@ -12193,6 +12197,8 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Afficher {n} panneaux de plus",
     chat_title: "Assistant financier",
     chat_name: "Assistant Fonsprince",
+    chat_copy: "Copier",
+    chat_copied: "Copié",
     sum_tab_savings: "Épargne",
     chat_data_on: "Mes chiffres : activé",
     chat_data_off: "Mes chiffres : désactivé",
@@ -12491,6 +12497,8 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Mostrar {n} paneles más",
     chat_title: "Asistente financiero",
     chat_name: "Asistente Fonsprince",
+    chat_copy: "Copiar",
+    chat_copied: "Copiado",
     sum_tab_savings: "Ahorro",
     chat_data_on: "Mis números: activado",
     chat_data_off: "Mis números: desactivado",
@@ -14748,30 +14756,105 @@ function chatInline(text) {
 function ChatText({
   text
 }) {
-  return String(text).split(/\n{2,}/).map((b, i) => {
-    const lines = b.split("\n");
-    if (lines.every(l => /^\s*[-•*]\s+/.test(l))) {
-      return /*#__PURE__*/React.createElement("ul", {
-        key: i,
+  const out = [];
+  let para = [],
+    list = null;
+  const flushPara = () => {
+    if (para.length) {
+      const ls = para;
+      para = [];
+      out.push(/*#__PURE__*/React.createElement("p", {
+        key: "p" + out.length,
+        style: {
+          margin: "6px 0"
+        }
+      }, ls.map((l, j) => /*#__PURE__*/React.createElement(React.Fragment, {
+        key: j
+      }, j ? /*#__PURE__*/React.createElement("br", null) : null, chatInline(l)))));
+    }
+  };
+  const flushList = () => {
+    if (list) {
+      const L = list;
+      list = null;
+      const Tag = L.ordered ? "ol" : "ul";
+      out.push(/*#__PURE__*/React.createElement(Tag, {
+        key: "l" + out.length,
         style: {
           margin: "6px 0",
-          paddingLeft: 18
+          paddingLeft: 20
         }
-      }, lines.map((l, j) => /*#__PURE__*/React.createElement("li", {
+      }, L.items.map((it, j) => /*#__PURE__*/React.createElement("li", {
         key: j,
         style: {
-          margin: "2px 0"
+          margin: "3px 0"
         }
-      }, chatInline(l.replace(/^\s*[-•*]\s+/, "")))));
+      }, chatInline(it)))));
     }
-    return /*#__PURE__*/React.createElement("p", {
-      key: i,
-      style: {
-        margin: "6px 0"
+  };
+  String(text).split("\n").forEach(raw => {
+    const l = raw.replace(/\s+$/, "");
+    if (!l.trim()) {
+      flushPara();
+      flushList();
+      return;
+    }
+    const b = l.match(/^\s*[-•*]\s+(.*)$/);
+    const n = l.match(/^\s*\d+[.)]\s+(.*)$/);
+    const h = l.match(/^\s*#{1,4}\s+(.*)$/) || l.match(/^\s*\*\*([^*]+?):?\*\*:?\s*$/);
+    if (b || n) {
+      flushPara();
+      const ordered = !!n;
+      if (!list || list.ordered !== ordered) {
+        flushList();
+        list = {
+          ordered,
+          items: []
+        };
       }
-    }, lines.map((l, j) => /*#__PURE__*/React.createElement(React.Fragment, {
-      key: j
-    }, j ? /*#__PURE__*/React.createElement("br", null) : null, chatInline(l))));
+      list.items.push((b || n)[1]);
+    } else if (h) {
+      flushPara();
+      flushList();
+      out.push(/*#__PURE__*/React.createElement("div", {
+        key: "h" + out.length,
+        style: {
+          fontWeight: 700,
+          margin: out.length ? "12px 0 2px" : "2px 0"
+        }
+      }, chatInline(h[1].replace(/\*\*/g, ""))));
+    } else {
+      flushList();
+      para.push(l);
+    }
+  });
+  flushPara();
+  flushList();
+  return /*#__PURE__*/React.createElement(React.Fragment, null, out);
+}
+function TypedChatText({
+  text,
+  onTick,
+  onDone
+}) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const total = String(text).length;
+    const step = Math.max(3, Math.ceil(total / 110));
+    let i = 0;
+    const id = setInterval(() => {
+      i = Math.min(total, i + step);
+      setN(i);
+      if (onTick) onTick();
+      if (i >= total) {
+        clearInterval(id);
+        if (onDone) onDone();
+      }
+    }, 18);
+    return () => clearInterval(id);
+  }, [text]);
+  return /*#__PURE__*/React.createElement(ChatText, {
+    text: String(text).slice(0, n)
   });
 }
 function buildChatContext(p) {
@@ -15005,8 +15088,19 @@ function AssistantTab({
   }, [isMobile]);
   const endRef = useRef(null);
   const taRef = useRef(null);
+  const [copied, setCopied] = useState(0);
+  const followEnd = () => {
+    const el = endRef.current;
+    if (el && el.getBoundingClientRect().bottom < window.innerHeight + 160 && el.scrollIntoView) el.scrollIntoView({
+      block: "end"
+    });
+  };
   const seeded = useRef(false);
-  useEffect(() => saveKey("ai-chat", messages.slice(-60)), [messages]);
+  useEffect(() => saveKey("ai-chat", messages.slice(-60).map(x => ({
+    role: x.role,
+    content: x.content,
+    ts: x.ts
+  }))), [messages]);
   useEffect(() => saveKey("ai-share", share), [share]);
   useEffect(() => {
     const base = insProxyUrl().replace(/\/$/, "");
@@ -15037,7 +15131,8 @@ function AssistantTab({
       setMessages(m => [...m, {
         role: "assistant",
         content: reply,
-        ts: Date.now()
+        ts: Date.now(),
+        fresh: true
       }]);
     } catch (e) {
       const code = e && e.status ? String(e.status) + (e.up ? "/" + e.up : "") : e && e.name === "AbortError" ? "timeout" : "rede";
@@ -15446,16 +15541,48 @@ function AssistantTab({
       style: {
         whiteSpace: "pre-wrap"
       }
-    }, m.content) : /*#__PURE__*/React.createElement(ChatText, {
+    }, m.content) : m.fresh ? /*#__PURE__*/React.createElement(TypedChatText, {
+      text: m.content,
+      onTick: followEnd,
+      onDone: () => setMessages(arr => arr.map(x => x.ts === m.ts ? {
+        ...x,
+        fresh: false
+      } : x))
+    }) : /*#__PURE__*/React.createElement(ChatText, {
       text: m.content
-    }), m.ts ? /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10,
-        opacity: 0.6,
-        textAlign: "right",
+        display: "flex",
+        justifyContent: mine || m.fresh ? "flex-end" : "space-between",
+        alignItems: "center",
+        gap: 10,
         marginTop: 2
       }
-    }, chatClock(m.ts)) : null));
+    }, !mine && !m.fresh && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => {
+        try {
+          navigator.clipboard.writeText(m.content);
+          setCopied(m.ts);
+          setTimeout(() => setCopied(0), 1500);
+        } catch (e) {}
+      },
+      style: {
+        background: "none",
+        border: "none",
+        padding: 0,
+        cursor: "pointer",
+        color: "var(--slate)",
+        fontSize: 11,
+        fontWeight: 600,
+        fontFamily: "inherit"
+      }
+    }, xt(lang, copied === m.ts ? "chat_copied" : "chat_copy")), m.ts ? /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        opacity: 0.6
+      }
+    }, chatClock(m.ts)) : null)));
   }), busy && /*#__PURE__*/React.createElement("div", {
     "aria-label": xt(lang, "ins_thinking"),
     style: {
