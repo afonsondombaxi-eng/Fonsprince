@@ -11510,7 +11510,7 @@ const EXTRAS_I18N = {
     up_in: "Em {n} dias",
     ovl_customize: "Personalizar",
     ovl_done: "Concluído",
-    ovl_help: "Marque o que quer ver e use as setas para mudar a ordem. Fica guardado neste dispositivo.",
+    ovl_help: "Marque o que quer ver e use as setas para mudar a ordem. O modo Essencial mostra só o principal; o Completo mostra tudo. Fica guardado neste dispositivo.",
     ovl_up: "Subir",
     ovl_down: "Descer",
     ovl_reset: "Repor ordem padrão",
@@ -11523,6 +11523,23 @@ const EXTRAS_I18N = {
     ovl_categories: "Categorias e resumo financeiro",
     ovl_autoinsights: "Insights automáticos",
     ovl_dashboard: "Dashboard executivo",
+    sum_title: "Este mês",
+    sum_net: "Resultado do mês (receitas − despesas)",
+    sum_in: "Receitas",
+    sum_out: "Despesas",
+    ovl_summary: "Este mês (resultado, receitas, despesas)",
+    ovl_spend: "Posso gastar hoje",
+    ovl_recent: "Últimos movimentos",
+    ovl_budgets: "Orçamentos",
+    ovl_ask: "Pergunte ao seu dinheiro",
+    ovl_close: "Fecho do mês",
+    ovl_power: "Poder de compra",
+    ovl_more: "Calendário, subscrições, arredondamentos",
+    ovl_mode: "Modo de visualização",
+    ovl_mode_ess: "Essencial",
+    ovl_mode_full: "Completo",
+    ovl_full_only: "só no modo Completo",
+    ovl_more_btn: "Mostrar mais {n} painéis",
     ins_sub_empty: "Sem despesas fixas registadas.",
     ins_ru_title: "Arredondamentos",
     ins_ru_text: "Se arredondasse cada despesa deste mês ao múltiplo de {step} seguinte ({n} despesas), teria guardado",
@@ -11758,7 +11775,7 @@ const EXTRAS_I18N = {
     up_in: "In {n} days",
     ovl_customize: "Customize",
     ovl_done: "Done",
-    ovl_help: "Tick what you want to see and use the arrows to reorder. Saved on this device.",
+    ovl_help: "Tick what you want to see and use the arrows to reorder. Essential shows only the main panels; Full shows everything. Saved on this device.",
     ovl_up: "Move up",
     ovl_down: "Move down",
     ovl_reset: "Reset to default",
@@ -11771,6 +11788,23 @@ const EXTRAS_I18N = {
     ovl_categories: "Categories and financial summary",
     ovl_autoinsights: "Automatic insights",
     ovl_dashboard: "Executive dashboard",
+    sum_title: "This month",
+    sum_net: "Month result (income − spending)",
+    sum_in: "Income",
+    sum_out: "Spending",
+    ovl_summary: "This month (result, income, spending)",
+    ovl_spend: "Safe to spend today",
+    ovl_recent: "Recent activity",
+    ovl_budgets: "Budgets",
+    ovl_ask: "Ask your money",
+    ovl_close: "Month close",
+    ovl_power: "Purchasing power",
+    ovl_more: "Calendar, subscriptions, round-ups",
+    ovl_mode: "View mode",
+    ovl_mode_ess: "Essential",
+    ovl_mode_full: "Full",
+    ovl_full_only: "Full mode only",
+    ovl_more_btn: "Show {n} more panels",
     ins_sub_empty: "No fixed expenses yet.",
     ins_ru_title: "Round-ups",
     ins_ru_text: "If you rounded every expense this month up to the next {step} ({n} expenses), you would have saved",
@@ -13531,6 +13565,7 @@ function RoundUpsCard({
 }
 function OverviewPulse({
   lang,
+  part,
   month,
   transactions,
   accounts,
@@ -13568,8 +13603,8 @@ function OverviewPulse({
   const pace = big ? Math.max(0, exp - big.v) : exp;
   const projected = running && elapsed >= 3 ? exp + pace / elapsed * (total - elapsed) : exp;
   const net = inc - exp;
-  const rate = inc > 0 ? Math.round(net / inc * 100) : null;
   const projNet = inc - projected;
+  const rate = inc > 0 ? Math.round(net / inc * 100) : null;
   const budgets = useMemo(() => {
     return Object.entries(categories || {}).map(([cat, lim]) => ({
       cat,
@@ -13594,30 +13629,6 @@ function OverviewPulse({
     fontFamily: "'IBM Plex Mono', monospace",
     fontWeight: 700
   };
-  const kpi = (label, value, color, sub) => /*#__PURE__*/React.createElement(Card, {
-    style: {
-      padding: 14,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: lab
-  }, label), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...mono,
-      fontSize: 18,
-      marginTop: 6,
-      color: color || "var(--ink)",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
-    }
-  }, value), sub ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "var(--slate)",
-      marginTop: 2
-    }
-  }, sub) : null);
   const linkBtn = (to, text) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => onNavigate && onNavigate(to),
@@ -13632,152 +13643,274 @@ function OverviewPulse({
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     }
   }, text);
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-      gap: 12
-    }
-  }, kpi(xt(lang, "pulse_avg"), fmt(avgDay, cur), null, xt(lang, "pulse_avg_sub")), kpi(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", null, big ? big.t.description || big.t.category : null), kpi(xt(lang, "pulse_rate"), rate === null ? "—" : rate + "%", rate !== null && rate < 0 ? "var(--red, #D13438)" : "var(--ink)", rate === null ? null : xt(lang, "pulse_rate_sub", {
-    amount: fmt(net)
-  })), kpi(xt(lang, "pulse_proj"), fmt(projected), projNet < 0 && inc > 0 ? "var(--red, #D13438)" : "var(--ink)", running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
-    amount: fmt(Math.abs(projNet))
-  }) : null)), budgets.length > 0 && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 8,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: lab
-  }, xt(lang, "pulse_budgets")), linkBtn("budget", xt(lang, "pulse_all"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 12
-    }
-  }, budgets.map(b => {
-    const col = b.pct >= 1 ? "#D13438" : b.pct >= 0.75 ? "#E08E45" : "#12A150";
-    return /*#__PURE__*/React.createElement("div", {
-      key: b.cat
+  if (part === "summary") {
+    const rateCol = rate === null ? "var(--slate)" : rate >= 20 ? "#12A150" : rate >= 0 ? "#B8873A" : "#D13438";
+    const spentPct = inc > 0 ? Math.min(100, exp / inc * 100) : exp > 0 ? 100 : 0;
+    const row = (label, value, sub, col) => /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        gap: 10,
+        padding: "9px 0",
+        borderTop: "1px solid var(--line)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 13,
+        color: "var(--slate)",
+        fontWeight: 600
+      }
+    }, label), sub ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, sub) : null), /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...mono,
+        fontSize: 14,
+        flexShrink: 0,
+        color: col || "var(--ink)"
+      }
+    }, value));
+    return /*#__PURE__*/React.createElement(Card, {
+      style: {
+        padding: 18
+      }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         justifyContent: "space-between",
-        gap: 8,
-        fontSize: 13,
-        marginBottom: 5
+        alignItems: "center",
+        gap: 8
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("div", {
+      style: lab
+    }, xt(lang, "sum_title")), rate !== null && /*#__PURE__*/React.createElement("span", {
       style: {
-        fontWeight: 600,
-        minWidth: 0,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap"
+        fontSize: 12,
+        fontWeight: 700,
+        color: rateCol,
+        border: "1px solid " + rateCol,
+        borderRadius: 999,
+        padding: "3px 10px"
       }
-    }, b.cat), /*#__PURE__*/React.createElement("span", {
+    }, xt(lang, "pulse_rate"), " ", rate, "%")), /*#__PURE__*/React.createElement("div", {
       style: {
+        ...mono,
+        fontSize: 30,
+        marginTop: 10,
+        color: net < 0 ? "#D13438" : "var(--ink)"
+      }
+    }, net > 0 ? "+" : "", fmt(net)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
         color: "var(--slate)",
-        flexShrink: 0
+        marginBottom: 12
       }
-    }, /*#__PURE__*/React.createElement("strong", {
+    }, xt(lang, "sum_net")), /*#__PURE__*/React.createElement("div", {
+      role: "img",
+      "aria-label": xt(lang, "sum_net"),
       style: {
-        color: col
-      }
-    }, Math.round(b.pct * 100), "%"), " · ", fmt(b.spent), " / ", fmt(b.lim))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        height: 8,
+        height: 10,
         borderRadius: 99,
-        background: "var(--line)",
-        overflow: "hidden"
-      },
-      role: "progressbar",
-      "aria-valuenow": Math.round(b.pct * 100),
-      "aria-valuemin": 0,
-      "aria-valuemax": 100,
-      "aria-label": b.cat
+        background: inc > 0 ? "rgba(18,161,80,.28)" : "var(--line)",
+        overflow: "hidden",
+        marginBottom: 12
+      }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        width: Math.min(100, b.pct * 100) + "%",
+        width: spentPct + "%",
         height: "100%",
-        background: col,
+        background: "#D13438",
         borderRadius: 99,
         transition: "width .6s ease"
       }
-    })));
-  }))), recent.length > 0 && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 8,
-      marginBottom: 6
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: lab
-  }, xt(lang, "pulse_recent")), linkBtn("transactions", xt(lang, "pulse_all"))), recent.map((t, i) => {
-    const acc = accounts.find(a => a.id === t.accountId);
-    const isIn = t.kind === "receita";
-    return /*#__PURE__*/React.createElement("div", {
-      key: t.id || i,
+    })), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "10px 0",
-        borderTop: i ? "1px solid var(--line)" : "none"
+        justifyContent: "space-between",
+        gap: 12,
+        marginBottom: 10
       }
-    }, /*#__PURE__*/React.createElement("div", {
-      "aria-hidden": "true",
-      style: {
-        width: 34,
-        height: 34,
-        borderRadius: 10,
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: 700,
-        fontSize: 15,
-        background: isIn ? "rgba(18,161,80,.12)" : "rgba(209,52,56,.10)",
-        color: isIn ? "#12A150" : "#D13438"
-      }
-    }, isIn ? "↓" : "↑"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        minWidth: 0,
-        flex: 1
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-        fontWeight: 600,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap"
-      }
-    }, t.description || t.category), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
-        color: "var(--slate)"
+        color: "var(--slate)",
+        fontWeight: 600
       }
-    }, ddmm(t.date), " · ", t.category)), /*#__PURE__*/React.createElement("div", {
+    }, xt(lang, "sum_in")), /*#__PURE__*/React.createElement("div", {
       style: {
         ...mono,
-        fontSize: 13,
-        flexShrink: 0,
-        color: isIn ? "#12A150" : "var(--ink)"
+        fontSize: 15,
+        color: "#12A150"
       }
-    }, isIn ? "+" : "−", fmt(Number(t.amount), acc ? acc.currency : undefined)));
-  })));
+    }, fmt(inc))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "right"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)",
+        fontWeight: 600
+      }
+    }, xt(lang, "sum_out")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...mono,
+        fontSize: 15,
+        color: "#D13438"
+      }
+    }, fmt(exp)))), row(xt(lang, "pulse_avg"), fmt(avgDay, cur), xt(lang, "pulse_avg_sub")), row(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", big ? big.t.description || big.t.category : null), row(xt(lang, "pulse_proj"), fmt(projected), running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
+      amount: fmt(Math.abs(projNet))
+    }) : null, projNet < 0 && inc > 0 ? "#D13438" : null));
+  }
+  if (part === "budgets") {
+    if (budgets.length === 0) return null;
+    return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: lab
+    }, xt(lang, "pulse_budgets")), linkBtn("budget", xt(lang, "pulse_all"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 12
+      }
+    }, budgets.map(b => {
+      const col = b.pct >= 1 ? "#D13438" : b.pct >= 0.75 ? "#E08E45" : "#12A150";
+      return /*#__PURE__*/React.createElement("div", {
+        key: b.cat
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 8,
+          fontSize: 13,
+          marginBottom: 5
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontWeight: 600,
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }
+      }, b.cat), /*#__PURE__*/React.createElement("span", {
+        style: {
+          color: "var(--slate)",
+          flexShrink: 0
+        }
+      }, /*#__PURE__*/React.createElement("strong", {
+        style: {
+          color: col
+        }
+      }, Math.round(b.pct * 100), "%"), " · ", fmt(b.spent), " / ", fmt(b.lim))), /*#__PURE__*/React.createElement("div", {
+        style: {
+          height: 8,
+          borderRadius: 99,
+          background: "var(--line)",
+          overflow: "hidden"
+        },
+        role: "progressbar",
+        "aria-valuenow": Math.round(b.pct * 100),
+        "aria-valuemin": 0,
+        "aria-valuemax": 100,
+        "aria-label": b.cat
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: Math.min(100, b.pct * 100) + "%",
+          height: "100%",
+          background: col,
+          borderRadius: 99,
+          transition: "width .6s ease"
+        }
+      })));
+    })));
+  }
+  if (part === "recent") {
+    if (recent.length === 0) return null;
+    return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 6
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: lab
+    }, xt(lang, "pulse_recent")), linkBtn("transactions", xt(lang, "pulse_all"))), recent.map((t, i) => {
+      const acc = accounts.find(a => a.id === t.accountId);
+      const isIn = t.kind === "receita";
+      return /*#__PURE__*/React.createElement("div", {
+        key: t.id || i,
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 0",
+          borderTop: i ? "1px solid var(--line)" : "none"
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        "aria-hidden": "true",
+        style: {
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 700,
+          fontSize: 15,
+          background: isIn ? "rgba(18,161,80,.12)" : "rgba(209,52,56,.10)",
+          color: isIn ? "#12A150" : "#D13438"
+        }
+      }, isIn ? "↓" : "↑"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          minWidth: 0,
+          flex: 1
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 14,
+          fontWeight: 600,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }
+      }, t.description || t.category), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 11,
+          color: "var(--slate)"
+        }
+      }, ddmm(t.date), " · ", t.category)), /*#__PURE__*/React.createElement("div", {
+        style: {
+          ...mono,
+          fontSize: 13,
+          flexShrink: 0,
+          color: isIn ? "#12A150" : "var(--ink)"
+        }
+      }, isIn ? "+" : "−", fmt(Number(t.amount), acc ? acc.currency : undefined)));
+    }));
+  }
+  return null;
 }
 function UpcomingPaymentsCard({
   lang,
@@ -13980,7 +14113,8 @@ function UpcomingPaymentsCard({
     }, fmt(it.amount, it.cur)));
   })));
 }
-const OV_BLOCK_IDS = ["pulse", "upcoming", "quick", "balsav", "extras", "ai", "categories", "autoinsights", "dashboard"];
+const OV_BLOCK_IDS = ["quick", "summary", "spend", "upcoming", "recent", "budgets", "ask", "close", "power", "more", "categories", "autoinsights", "dashboard"];
+const OV_ESSENTIAL = ["quick", "summary", "spend", "upcoming", "recent", "budgets", "ask"];
 function OverviewBlocks({
   lang,
   blocks
@@ -13991,7 +14125,8 @@ function OverviewBlocks({
     for (const id of OV_BLOCK_IDS) if (!order.includes(id)) order.push(id);
     return {
       order,
-      hidden: saved && Array.isArray(saved.hidden) ? saved.hidden.filter(id => OV_BLOCK_IDS.includes(id)) : []
+      hidden: saved && Array.isArray(saved.hidden) ? saved.hidden.filter(id => OV_BLOCK_IDS.includes(id)) : [],
+      mode: saved && saved.mode === "full" ? "full" : "essential"
     };
   });
   const [editing, setEditing] = useState(false);
@@ -14015,8 +14150,16 @@ function OverviewBlocks({
   }));
   const reset = () => setLayout({
     order: OV_BLOCK_IDS.slice(),
-    hidden: []
+    hidden: [],
+    mode: "essential"
   });
+  const setMode = mode => setLayout(l => ({
+    ...l,
+    mode
+  }));
+  const essential = layout.mode === "essential";
+  const shown = id => !layout.hidden.includes(id) && !!byId[id] && (!essential || OV_ESSENTIAL.includes(id));
+  const extra = OV_BLOCK_IDS.filter(id => !OV_ESSENTIAL.includes(id) && !layout.hidden.includes(id)).length;
   const arrow = {
     width: 36,
     height: 36,
@@ -14028,12 +14171,44 @@ function OverviewBlocks({
     fontSize: 16,
     fontWeight: 700
   };
+  const seg = (id, text) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    type: "button",
+    onClick: () => setMode(id),
+    "aria-pressed": layout.mode === id,
+    style: {
+      border: "none",
+      cursor: "pointer",
+      padding: "7px 14px",
+      borderRadius: 999,
+      fontSize: 12,
+      fontWeight: 700,
+      background: layout.mode === id ? "var(--card)" : "transparent",
+      color: layout.mode === id ? "var(--ink)" : "var(--slate)",
+      boxShadow: layout.mode === id ? "var(--shadow-sm)" : "none",
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    }
+  }, text);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      justifyContent: "flex-end"
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8,
+      flexWrap: "wrap"
     }
-  }, /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": xt(lang, "ovl_mode"),
+    style: {
+      display: "inline-flex",
+      background: "var(--paper)",
+      border: "1px solid var(--line)",
+      borderRadius: 999,
+      padding: 3,
+      gap: 2
+    }
+  }, seg("essential", xt(lang, "ovl_mode_ess")), seg("full", xt(lang, "ovl_mode_full"))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setEditing(v => !v),
     "aria-pressed": editing,
@@ -14092,7 +14267,13 @@ function OverviewBlocks({
         minWidth: 0,
         lineHeight: 1.25
       }
-    }, xt(lang, "ovl_" + id))), /*#__PURE__*/React.createElement("button", {
+    }, xt(lang, "ovl_" + id), !OV_ESSENTIAL.includes(id) ? /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "var(--slate)",
+        fontWeight: 500,
+        fontSize: 11
+      }
+    }, " · ", xt(lang, "ovl_full_only")) : null)), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": xt(lang, "ovl_up"),
       disabled: i === 0,
@@ -14117,13 +14298,23 @@ function OverviewBlocks({
     }
   }, /*#__PURE__*/React.createElement(GhostButton, {
     onClick: reset
-  }, xt(lang, "ovl_reset")))), layout.order.map(id => layout.hidden.includes(id) || !byId[id] ? null : /*#__PURE__*/React.createElement("div", {
+  }, xt(lang, "ovl_reset")))), layout.order.map(id => shown(id) ? /*#__PURE__*/React.createElement("div", {
     key: id,
     className: "ov-block"
-  }, byId[id])));
+  }, byId[id]) : null), essential && extra > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: () => setMode("full")
+  }, xt(lang, "ovl_more_btn", {
+    n: extra
+  }))));
 }
 function OverviewInsights({
   lang,
+  part,
   transactions,
   accounts,
   exchangeRates,
@@ -14141,7 +14332,7 @@ function OverviewInsights({
       flexWrap: "wrap",
       gap: 12
     }
-  }, /*#__PURE__*/React.createElement(AskMoneyCard, {
+  }, part !== "more" && /*#__PURE__*/React.createElement(AskMoneyCard, {
     lang: lang,
     transactions: transactions,
     accounts: accounts,
@@ -14149,13 +14340,13 @@ function OverviewInsights({
     month: month,
     categories: categories,
     spentByCategory: spentByCategory
-  }), /*#__PURE__*/React.createElement(SpendingCalendarCard, {
+  }), part !== "ask" && /*#__PURE__*/React.createElement(SpendingCalendarCard, {
     lang: lang,
     transactions: transactions,
     accounts: accounts,
     exchangeRates: exchangeRates,
     month: month
-  }), /*#__PURE__*/React.createElement(SubscriptionsCard, {
+  }), part !== "ask" && /*#__PURE__*/React.createElement(SubscriptionsCard, {
     lang: lang,
     recurringExpenses: recurringExpenses,
     accounts: accounts,
@@ -14163,7 +14354,7 @@ function OverviewInsights({
     month: month,
     transactions: transactions,
     onNavigate: onNavigate
-  }), /*#__PURE__*/React.createElement(RoundUpsCard, {
+  }), part !== "ask" && /*#__PURE__*/React.createElement(RoundUpsCard, {
     lang: lang,
     transactions: transactions,
     accounts: accounts,
@@ -19821,10 +20012,12 @@ function SaldoAtualCard({
   }, translate(lang, "overview", "current_balance")), /*#__PURE__*/React.createElement("div", {
     title: hidden ? undefined : fmt(totalBalance),
     style: {
-      fontSize: 32,
+      fontSize: "clamp(34px, 11.5vw, 48px)",
       fontWeight: 700,
+      letterSpacing: -0.5,
+      lineHeight: 1.1,
       fontFamily: "'IBM Plex Mono', monospace",
-      margin: "6px 0 8px",
+      margin: "8px 0 10px",
       color: "var(--ink)",
       cursor: hidden ? "default" : "help"
     }
@@ -20253,7 +20446,7 @@ function CockpitCard({
       flexDirection: "column",
       gap: 8
     }
-  }, decisions.slice(0, 3).map(row => /*#__PURE__*/React.createElement(CockpitDecisionRow, {
+  }, decisions.slice(0, 1).map(row => /*#__PURE__*/React.createElement(CockpitDecisionRow, {
     key: row.id,
     row: row,
     onNavigate: onNavigate
@@ -21027,9 +21220,9 @@ function Overview({
   const [pressedChartTab, setPressedChartTab] = useState(null);
   const [freqRange, setFreqRange] = useState("monthly");
   const [categoryViewMode, setCategoryViewMode] = useState("category");
-  const [dashTab, setDashTab] = useState("interest");
+  const [dashTab, setDashTab] = useState(() => interestSummary && interestSummary.rows && interestSummary.rows.length > 0 ? "interest" : "liquidity");
   const [pressedDashTab, setPressedDashTab] = useState(null);
-  const [summaryTab, setSummaryTab] = useState("interest");
+  const [summaryTab, setSummaryTab] = useState(() => (debts || []).length > 0 ? "debts" : (goals || []).length > 0 ? "goals" : "interest");
   const [pressedSummaryTab, setPressedSummaryTab] = useState(null);
   const [balSavTab, setBalSavTab] = useState("balance");
   const [pressedBalSavTab, setPressedBalSavTab] = useState(null);
@@ -21204,7 +21397,11 @@ function Overview({
       flexDirection: "column",
       gap: 24
     }
-  }, /*#__PURE__*/React.createElement(CockpitCard, {
+  }, /*#__PURE__*/React.createElement(SaldoAtualCard, {
+    lang: lang,
+    totalBalance: consolidatedKzNow,
+    trend: balanceTrend
+  }), /*#__PURE__*/React.createElement(CockpitCard, {
     lang: lang,
     userName: userName,
     score: healthScore.total,
@@ -21212,10 +21409,6 @@ function Overview({
     decisions: cockpitDecisions,
     onNavigate: onNavigate,
     streak: savingsStreak
-  }), /*#__PURE__*/React.createElement(SaldoAtualCard, {
-    lang: lang,
-    totalBalance: consolidatedKzNow,
-    trend: balanceTrend
   }), /*#__PURE__*/React.createElement(FirstStepsCard, {
     lang: lang,
     steps: firstSteps,
@@ -21223,97 +21416,19 @@ function Overview({
   }), /*#__PURE__*/React.createElement(OverviewBlocks, {
     lang: lang,
     blocks: [{
-      id: "balsav",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 13,
-          color: "var(--slate)",
-          fontWeight: 600,
-          marginBottom: 8
-        }
-      }, translate(lang, "overview", "balance_savings_title")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "inline-flex",
-          background: "var(--paper)",
-          borderRadius: 8,
-          padding: 4,
-          gap: 2,
-          marginBottom: 16,
-          flexWrap: "wrap"
-        }
-      }, [{
-        id: "balance",
-        label: translate(lang, "overview", "monthly_balance"),
-        icon: IconWallet
-      }, {
-        id: "savings",
-        label: translate(lang, "overview", "monthly_savings"),
-        icon: IconPiggyBank
-      }].map(t => {
-        const isActive = balSavTab === t.id;
-        const isPressed = pressedBalSavTab === t.id;
-        return /*#__PURE__*/React.createElement("button", {
-          key: t.id,
-          onClick: () => setBalSavTab(t.id),
-          onMouseDown: () => {
-            setPressedBalSavTab(t.id);
-            try {
-              navigator.vibrate && navigator.vibrate(9);
-            } catch (e) {}
-          },
-          onMouseUp: () => setPressedBalSavTab(null),
-          onMouseLeave: () => setPressedBalSavTab(p => p === t.id ? null : p),
-          onTouchStart: () => {
-            setPressedBalSavTab(t.id);
-            try {
-              navigator.vibrate && navigator.vibrate(9);
-            } catch (e) {}
-          },
-          onTouchEnd: () => setPressedBalSavTab(null),
-          onTouchCancel: () => setPressedBalSavTab(null),
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "8px 12px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-            background: isActive ? "var(--card)" : "transparent",
-            color: isActive ? "var(--gold)" : "var(--slate)",
-            boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
-            transform: isPressed ? "scale(0.91)" : "scale(1)",
-            transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
-            whiteSpace: "nowrap"
-          }
-        }, /*#__PURE__*/React.createElement(t.icon, {
-          size: 14
-        }), t.label);
-      })), /*#__PURE__*/React.createElement("div", {
-        key: balSavTab,
-        style: {
-          animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
-        }
-      }, balSavTab === "balance" && /*#__PURE__*/React.createElement(MonthlyBalanceCard, {
+      id: "quick",
+      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(QuickActionsRow, {
         lang: lang,
-        totalReceitas: totalReceitas,
-        totalDespesas: totalDespesas,
-        saldo: saldo,
-        onNavigate: onNavigate,
-        bare: true
-      }), balSavTab === "savings" && /*#__PURE__*/React.createElement(MonthlySavingsCard, {
-        lang: lang,
-        totalReceitas: totalReceitas,
-        totalDespesas: totalDespesas,
-        bare: true
-      })))))
+        onReceita: onQuickReceita,
+        onDespesa: onQuickDespesa,
+        onTransfer: onQuickTransfer,
+        onNovaConta: onQuickNovaConta
+      }))
     }, {
-      id: "pulse",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(OverviewPulse, {
+      id: "summary",
+      node: /*#__PURE__*/React.createElement(OverviewPulse, {
         lang: lang,
+        part: "summary",
         month: month,
         transactions: transactions,
         accounts: accounts,
@@ -21323,26 +21438,66 @@ function Overview({
         totalReceitas: totalReceitas,
         totalDespesas: totalDespesas,
         onNavigate: onNavigate
-      }))
+      })
     }, {
-      id: "extras",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(OverviewExtras, {
+      id: "spend",
+      node: /*#__PURE__*/React.createElement(SpendTodayCard, {
         lang: lang,
         month: month,
         categories: categories,
         expectedIncome: expectedIncome,
-        totalDespesas: totalDespesas,
-        accounts: accounts,
-        transactions: transactions,
-        exchangeRates: exchangeRates,
-        taxaInflacao: taxaInflacao,
-        closing: monthClosing,
-        onOpenClose: onOpenMonthClose
-      }))
+        totalDespesas: totalDespesas
+      })
     }, {
-      id: "ai",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(OverviewInsights, {
+      id: "upcoming",
+      node: /*#__PURE__*/React.createElement(UpcomingPaymentsCard, {
         lang: lang,
+        transactions: transactions,
+        accounts: accounts,
+        exchangeRates: exchangeRates,
+        recurringExpenses: recurringExpenses,
+        debts: debts,
+        debtPayments: debtPayments,
+        creditCards: creditCards,
+        cardPurchases: cardPurchases,
+        cardPayments: cardPayments,
+        onNavigate: onNavigate
+      })
+    }, {
+      id: "recent",
+      node: /*#__PURE__*/React.createElement(OverviewPulse, {
+        lang: lang,
+        part: "recent",
+        month: month,
+        transactions: transactions,
+        accounts: accounts,
+        exchangeRates: exchangeRates,
+        categories: categories,
+        spentByCategory: spentByCategory,
+        totalReceitas: totalReceitas,
+        totalDespesas: totalDespesas,
+        onNavigate: onNavigate
+      })
+    }, {
+      id: "budgets",
+      node: /*#__PURE__*/React.createElement(OverviewPulse, {
+        lang: lang,
+        part: "budgets",
+        month: month,
+        transactions: transactions,
+        accounts: accounts,
+        exchangeRates: exchangeRates,
+        categories: categories,
+        spentByCategory: spentByCategory,
+        totalReceitas: totalReceitas,
+        totalDespesas: totalDespesas,
+        onNavigate: onNavigate
+      })
+    }, {
+      id: "ask",
+      node: /*#__PURE__*/React.createElement(OverviewInsights, {
+        lang: lang,
+        part: "ask",
         transactions: transactions,
         accounts: accounts,
         exchangeRates: exchangeRates,
@@ -21353,165 +21508,40 @@ function Overview({
         goals: goals,
         onRoundUp: onRoundUp,
         onNavigate: onNavigate
-      }))
+      })
     }, {
-      id: "quick",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(QuickActionsRow, {
+      id: "close",
+      node: /*#__PURE__*/React.createElement(MonthCloseCard, {
         lang: lang,
-        onReceita: onQuickReceita,
-        onDespesa: onQuickDespesa,
-        onTransfer: onQuickTransfer,
-        onNovaConta: onQuickNovaConta
-      }))
+        month: month,
+        closing: monthClosing,
+        onOpen: onOpenMonthClose
+      })
     }, {
-      id: "dashboard",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
-        style: {
-          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          fontSize: 16,
-          margin: "0 0 12px"
-        }
-      }, translate(lang, "overview", "dashboard_title")), /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "inline-flex",
-          background: "var(--paper)",
-          borderRadius: 8,
-          padding: 4,
-          gap: 2,
-          marginBottom: 16,
-          flexWrap: "wrap"
-        }
-      }, [{
-        id: "interest",
-        label: translate(lang, "overview", "tab_interest"),
-        icon: IconPig
-      }, {
-        id: "liquidity",
-        label: translate(lang, "overview", "tab_liquidity"),
-        icon: IconWallet
-      }].map(t => {
-        const isActive = dashTab === t.id;
-        const isPressed = pressedDashTab === t.id;
-        return /*#__PURE__*/React.createElement("button", {
-          key: t.id,
-          onClick: () => setDashTab(t.id),
-          onMouseDown: () => {
-            setPressedDashTab(t.id);
-            try {
-              navigator.vibrate && navigator.vibrate(9);
-            } catch (e) {}
-          },
-          onMouseUp: () => setPressedDashTab(null),
-          onMouseLeave: () => setPressedDashTab(p => p === t.id ? null : p),
-          onTouchStart: () => {
-            setPressedDashTab(t.id);
-            try {
-              navigator.vibrate && navigator.vibrate(9);
-            } catch (e) {}
-          },
-          onTouchEnd: () => setPressedDashTab(null),
-          onTouchCancel: () => setPressedDashTab(null),
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "8px 12px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-            background: isActive ? "var(--card)" : "transparent",
-            color: isActive ? "var(--gold)" : "var(--slate)",
-            boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
-            transform: isPressed ? "scale(0.91)" : "scale(1)",
-            transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
-            whiteSpace: "nowrap"
-          }
-        }, /*#__PURE__*/React.createElement(t.icon, {
-          size: 14
-        }), t.label);
-      })), /*#__PURE__*/React.createElement("div", {
-        key: dashTab,
-        style: {
-          animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
-        }
-      }, dashTab === "interest" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-        title: fmt(interestSummary.accruedTotal),
-        style: {
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 32,
-          fontWeight: 700,
-          color: "var(--gold)",
-          fontVariantNumeric: "tabular-nums",
-          cursor: "help"
-        }
-      }, /*#__PURE__*/React.createElement(AnimatedNumber, {
-        value: interestSummary.accruedTotal,
-        format: fmtCompact
-      })), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 13,
-          color: "var(--slate)",
-          marginTop: 6
-        }
-      }, interestSummary.rows.length > 0 ? `${interestSummary.rows.length} saldo(s) a render juro` : translate(lang, "overview", "no_interest_balances"))), dashTab === "liquidity" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-        title: fmt(liquidKzNow),
-        style: {
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: 32,
-          fontWeight: 700,
-          color: "var(--ink)",
-          fontVariantNumeric: "tabular-nums",
-          cursor: "help"
-        }
-      }, /*#__PURE__*/React.createElement(AnimatedNumber, {
-        value: liquidKzNow,
-        format: fmtCompact
-      })), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 13,
-          color: "var(--slate)",
-          marginTop: 6
-        }
-      }, liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : translate(lang, "overview", "liquidity_subtitle"))))))
+      id: "power",
+      node: /*#__PURE__*/React.createElement(PurchasingPowerCard, {
+        lang: lang,
+        accounts: accounts,
+        transactions: transactions,
+        exchangeRates: exchangeRates,
+        taxaInflacao: taxaInflacao
+      })
     }, {
-      id: "autoinsights",
-      node: /*#__PURE__*/React.createElement(React.Fragment, null, insights.length > 0 && /*#__PURE__*/React.createElement(Card, {
-        style: {
-          background: "linear-gradient(135deg, #16274D 0%, #213A6E 100%)",
-          border: "none"
-        }
-      }, /*#__PURE__*/React.createElement("h3", {
-        style: {
-          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          fontSize: 16,
-          margin: "0 0 12px",
-          color: "#fff"
-        }
-      }, translate(lang, "overview", "insights_title")), /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          flexDirection: "column",
-          gap: 10
-        }
-      }, insights.map((ins, i) => /*#__PURE__*/React.createElement("div", {
-        key: i,
-        style: {
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 10,
-          fontSize: 13,
-          color: "rgba(255,255,255,0.9)"
-        }
-      }, /*#__PURE__*/React.createElement(ins.icon, {
-        size: 15,
-        style: {
-          flexShrink: 0,
-          color: "rgba(255,255,255,0.85)"
-        }
-      }), /*#__PURE__*/React.createElement("span", null, ins.text))))))
+      id: "more",
+      node: /*#__PURE__*/React.createElement(OverviewInsights, {
+        lang: lang,
+        part: "more",
+        transactions: transactions,
+        accounts: accounts,
+        exchangeRates: exchangeRates,
+        month: month,
+        categories: categories,
+        spentByCategory: spentByCategory,
+        recurringExpenses: recurringExpenses,
+        goals: goals,
+        onRoundUp: onRoundUp,
+        onNavigate: onNavigate
+      })
     }, {
       id: "categories",
       node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -21778,20 +21808,154 @@ function Overview({
         }));
       })))))))
     }, {
-      id: "upcoming",
-      node: /*#__PURE__*/React.createElement(UpcomingPaymentsCard, {
-        lang: lang,
-        transactions: transactions,
-        accounts: accounts,
-        exchangeRates: exchangeRates,
-        recurringExpenses: recurringExpenses,
-        debts: debts,
-        debtPayments: debtPayments,
-        creditCards: creditCards,
-        cardPurchases: cardPurchases,
-        cardPayments: cardPayments,
-        onNavigate: onNavigate
-      })
+      id: "autoinsights",
+      node: /*#__PURE__*/React.createElement(React.Fragment, null, insights.length > 0 && /*#__PURE__*/React.createElement(Card, {
+        style: {
+          background: "linear-gradient(135deg, #16274D 0%, #213A6E 100%)",
+          border: "none"
+        }
+      }, /*#__PURE__*/React.createElement("h3", {
+        style: {
+          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          fontSize: 16,
+          margin: "0 0 12px",
+          color: "#fff"
+        }
+      }, translate(lang, "overview", "insights_title")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          gap: 10
+        }
+      }, insights.map((ins, i) => /*#__PURE__*/React.createElement("div", {
+        key: i,
+        style: {
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 10,
+          fontSize: 13,
+          color: "rgba(255,255,255,0.9)"
+        }
+      }, /*#__PURE__*/React.createElement(ins.icon, {
+        size: 15,
+        style: {
+          flexShrink: 0,
+          color: "rgba(255,255,255,0.85)"
+        }
+      }), /*#__PURE__*/React.createElement("span", null, ins.text))))))
+    }, {
+      id: "dashboard",
+      node: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+        style: {
+          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          fontSize: 16,
+          margin: "0 0 12px"
+        }
+      }, translate(lang, "overview", "dashboard_title")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "inline-flex",
+          background: "var(--paper)",
+          borderRadius: 8,
+          padding: 4,
+          gap: 2,
+          marginBottom: 16,
+          flexWrap: "wrap"
+        }
+      }, [{
+        id: "interest",
+        label: translate(lang, "overview", "tab_interest"),
+        icon: IconPig
+      }, {
+        id: "liquidity",
+        label: translate(lang, "overview", "tab_liquidity"),
+        icon: IconWallet
+      }].map(t => {
+        const isActive = dashTab === t.id;
+        const isPressed = pressedDashTab === t.id;
+        return /*#__PURE__*/React.createElement("button", {
+          key: t.id,
+          onClick: () => setDashTab(t.id),
+          onMouseDown: () => {
+            setPressedDashTab(t.id);
+            try {
+              navigator.vibrate && navigator.vibrate(9);
+            } catch (e) {}
+          },
+          onMouseUp: () => setPressedDashTab(null),
+          onMouseLeave: () => setPressedDashTab(p => p === t.id ? null : p),
+          onTouchStart: () => {
+            setPressedDashTab(t.id);
+            try {
+              navigator.vibrate && navigator.vibrate(9);
+            } catch (e) {}
+          },
+          onTouchEnd: () => setPressedDashTab(null),
+          onTouchCancel: () => setPressedDashTab(null),
+          style: {
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            background: isActive ? "var(--card)" : "transparent",
+            color: isActive ? "var(--gold)" : "var(--slate)",
+            boxShadow: isActive ? "0 1px 3px rgba(16,24,40,0.08)" : "none",
+            transform: isPressed ? "scale(0.91)" : "scale(1)",
+            transition: isPressed ? "transform 0.08s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease",
+            whiteSpace: "nowrap"
+          }
+        }, /*#__PURE__*/React.createElement(t.icon, {
+          size: 14
+        }), t.label);
+      })), /*#__PURE__*/React.createElement("div", {
+        key: dashTab,
+        style: {
+          animation: "chartFadeIn 0.32s cubic-bezier(0.22, 1, 0.36, 1)"
+        }
+      }, dashTab === "interest" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        title: fmt(interestSummary.accruedTotal),
+        style: {
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 32,
+          fontWeight: 700,
+          color: "var(--gold)",
+          fontVariantNumeric: "tabular-nums",
+          cursor: "help"
+        }
+      }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+        value: interestSummary.accruedTotal,
+        format: fmtCompact
+      })), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 13,
+          color: "var(--slate)",
+          marginTop: 6
+        }
+      }, interestSummary.rows.length > 0 ? `${interestSummary.rows.length} saldo(s) a render juro` : translate(lang, "overview", "no_interest_balances"))), dashTab === "liquidity" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        title: fmt(liquidKzNow),
+        style: {
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 32,
+          fontWeight: 700,
+          color: "var(--ink)",
+          fontVariantNumeric: "tabular-nums",
+          cursor: "help"
+        }
+      }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+        value: liquidKzNow,
+        format: fmtCompact
+      })), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 13,
+          color: "var(--slate)",
+          marginTop: 6
+        }
+      }, liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : translate(lang, "overview", "liquidity_subtitle"))))))
     }]
   }));
 }
