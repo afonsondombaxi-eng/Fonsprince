@@ -11593,6 +11593,9 @@ const EXTRAS_I18N = {
     ins_avg_day: "por dia, em média",
     chat_title: "Assistente financeiro",
     chat_name: "Assistente Fonsprince",
+    chat_data_on: "Os meus números: ativo",
+    chat_data_off: "Os meus números: desligado",
+    chat_data_note: "Só totais. Nunca descrições nem nomes.",
     chat_status: "Online · educativo",
     chat_back: "Voltar",
     chat_menu: "Opções",
@@ -11891,6 +11894,9 @@ const EXTRAS_I18N = {
     ins_avg_day: "per day on average",
     chat_title: "Financial assistant",
     chat_name: "Fonsprince Assistant",
+    chat_data_on: "My numbers: on",
+    chat_data_off: "My numbers: off",
+    chat_data_note: "Totals only. Never descriptions or names.",
     chat_status: "Online · educational",
     chat_back: "Back",
     chat_menu: "Options",
@@ -12185,6 +12191,9 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Afficher {n} panneaux de plus",
     chat_title: "Assistant financier",
     chat_name: "Assistant Fonsprince",
+    chat_data_on: "Mes chiffres : activé",
+    chat_data_off: "Mes chiffres : désactivé",
+    chat_data_note: "Totaux seulement. Jamais de descriptions ni de noms.",
     chat_status: "En ligne · éducatif",
     chat_back: "Retour",
     chat_menu: "Options",
@@ -12479,6 +12488,9 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Mostrar {n} paneles más",
     chat_title: "Asistente financiero",
     chat_name: "Asistente Fonsprince",
+    chat_data_on: "Mis números: activado",
+    chat_data_off: "Mis números: desactivado",
+    chat_data_note: "Solo totales. Nunca descripciones ni nombres.",
     chat_status: "En línea · educativo",
     chat_back: "Volver",
     chat_menu: "Opciones",
@@ -15054,8 +15066,7 @@ function AssistantTab({
       display: "flex",
       alignItems: "center",
       gap: 10,
-      paddingBottom: 12,
-      borderBottom: "1px solid var(--line)",
+      paddingBottom: 4,
       position: "relative"
     }
   }, /*#__PURE__*/React.createElement("button", {
@@ -15178,61 +15189,46 @@ function AssistantTab({
   }, it.label)))));
   const shareBar = /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: "10px 0",
-      borderBottom: "1px solid var(--line)"
+      padding: "10px 0 0",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 6
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 10
+      gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    role: "switch",
-    "aria-checked": share,
-    "aria-label": xt(lang, "chat_share"),
+    "aria-pressed": share,
     onClick: () => setShare(v => !v),
     style: {
-      width: 40,
-      height: 24,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 7,
+      border: "1px solid " + (share ? "color-mix(in srgb, var(--emerald) 45%, var(--line))" : "var(--line)"),
+      background: share ? "color-mix(in srgb, var(--emerald) 12%, var(--card))" : "var(--card)",
+      color: share ? "var(--emerald)" : "var(--slate)",
       borderRadius: 999,
-      border: "none",
+      padding: "5px 12px",
+      fontSize: 12,
+      fontWeight: 700,
       cursor: "pointer",
-      position: "relative",
-      flexShrink: 0,
-      background: share ? "var(--emerald)" : "var(--line)",
-      transition: "background .2s"
+      fontFamily: "inherit"
     }
   }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
     style: {
-      position: "absolute",
-      top: 3,
-      left: share ? 19 : 3,
-      width: 18,
-      height: 18,
+      width: 7,
+      height: 7,
       borderRadius: "50%",
-      background: "#fff",
-      boxShadow: "0 1px 3px rgba(0,0,0,.3)",
-      transition: "left .2s"
+      background: share ? "var(--emerald)" : "var(--slate)",
+      opacity: share ? 1 : 0.5
     }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      minWidth: 0,
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 600
-    }
-  }, xt(lang, "chat_share")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "var(--slate)",
-      lineHeight: 1.35
-    }
-  }, xt(lang, "chat_share_note"))), share && /*#__PURE__*/React.createElement("button", {
+  }), xt(lang, share ? "chat_data_on" : "chat_data_off")), share && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setShowShared(v => !v),
     style: {
@@ -15243,16 +15239,24 @@ function AssistantTab({
       fontWeight: 700,
       cursor: "pointer",
       padding: 0,
-      fontFamily: "inherit",
-      flexShrink: 0
+      fontFamily: "inherit"
     }
-  }, showShared ? xt(lang, "chat_hide") : xt(lang, "chat_share_view"))), share && showShared && shared && /*#__PURE__*/React.createElement("div", {
+  }, showShared ? xt(lang, "chat_hide") : xt(lang, "chat_share_view"))), share && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 8,
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "chat_data_note")), share && showShared && shared && /*#__PURE__*/React.createElement("div", {
+    style: {
+      alignSelf: "stretch",
       lineHeight: 1.6,
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 11,
-      color: "var(--slate)"
+      color: "var(--slate)",
+      background: "var(--card)",
+      border: "1px solid var(--line)",
+      borderRadius: 12,
+      padding: "8px 12px"
     }
   }, Object.entries(shared).filter(([k, v]) => k !== "categories" && v !== "" && v !== undefined).map(([k, v]) => /*#__PURE__*/React.createElement("div", {
     key: k
