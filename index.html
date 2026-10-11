@@ -172,6 +172,10 @@ text[font-family*="IBM Plex Mono"], tspan[font-family*="IBM Plex Mono"] { font-f
 .modal-panel input, .modal-panel select, .modal-panel textarea { min-width: 0; max-width: 100%; box-sizing: border-box; }
 .modal-panel div, .modal-panel label { min-width: 0; }
 .modal-panel input[type=date] { -webkit-appearance: none; appearance: none; min-height: 40px; }
+@media (max-width: 768px) { .appbar-title { opacity: 0; transition: opacity 0.2s ease; } html[data-scrolled] .appbar-title { opacity: 1; } }
+.inc-cards { display: none; }
+@media (max-width: 640px) { .inc-table { display: none; } .inc-cards { display: flex !important; } }
+.tab-page-transition h3 { font-weight: 600; letter-spacing: -0.01em; }
 .modal-panel { animation: modalPop 0.22s ease-out; }
 .sheet-panel { animation: sheetUp 0.26s cubic-bezier(.2,.8,.2,1); }
 @keyframes sheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
@@ -271,17 +275,25 @@ const {
 
 function Icon({
   children,
-  size = 16
+  size = 16,
+  style,
+  className,
+  strokeWidth = 2,
+  ...rest
 }) {
+  // Aceita style/className/aria-* como os ícones lucide do ficheiro .jsx (paridade entre ficheiros).
   return /*#__PURE__*/React.createElement("svg", {
     width: size,
     height: size,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: "2",
+    strokeWidth: strokeWidth,
     strokeLinecap: "round",
-    strokeLinejoin: "round"
+    strokeLinejoin: "round",
+    style: style,
+    className: className,
+    ...rest
   }, children);
 }
 const IconDashboard = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__*/React.createElement("rect", {
@@ -10811,8 +10823,8 @@ function PrimaryButton({
     disabled: disabled,
     ...(disabled ? {} : bind),
     style: {
-      background: disabled ? "#B7BECB" : "var(--ink)",
-      color: "#fff",
+      background: disabled ? "#B7BECB" : "var(--btn-bg)",
+      color: disabled ? "#fff" : "var(--btn-fg)",
       border: "none",
       borderRadius: 8,
       padding: "10px 16px",
@@ -13842,6 +13854,8 @@ function FinanceApp() {
     const last = new WeakMap();
     function onScroll(e) {
       if (!window.matchMedia || !window.matchMedia("(max-width: 768px)").matches) return;
+      const sy = window.scrollY || document.documentElement.scrollTop || 0;
+      document.documentElement.toggleAttribute("data-scrolled", sy > 56);
       const tgt = e.target;
       // Nunca reagir ao scroll dentro de janelas/formulários ou com um campo em edição (o teclado do iOS desloca o ecrã).
       if (document.querySelector('[role="dialog"]')) return;
@@ -15346,6 +15360,8 @@ function FinanceApp() {
     onTouchEnd: handlePtrTouchEnd,
     onTouchCancel: handlePtrTouchEnd,
     style: {
+      "--btn-bg": darkMode ? "#D9A24A" : "#16274D",
+      "--btn-fg": darkMode ? "#1A1405" : "#FFFFFF",
       "--ink": darkMode ? "#EDEEF0" : "#16274D",
       "--slate": darkMode ? "#9AA7BC" : "#5C6B87",
       "--paper": darkMode ? "#0F1524" : "#F4F6FA",
@@ -15770,6 +15786,7 @@ function FinanceApp() {
       color: "var(--line)"
     }
   }, "/"), /*#__PURE__*/React.createElement("span", {
+    className: "appbar-title",
     style: {
       color: "var(--ink)",
       fontWeight: 600
@@ -15857,6 +15874,7 @@ function FinanceApp() {
   })), /*#__PURE__*/React.createElement("div", {
     ref: contentScrollRef,
     style: {
+      backgroundImage: "linear-gradient(180deg, color-mix(in srgb, var(--gold) 9%, transparent) 0, transparent 260px)",
       flex: 1,
       padding: isMobile ? "14px 16px calc(84px + env(safe-area-inset-bottom))" : "26px 32px",
       overflowY: isMobile ? "visible" : "auto",
@@ -16015,7 +16033,7 @@ function FinanceApp() {
         }
       }]
     }[tab];
-    if (!contextualActions) return null;
+    if (!contextualActions || tab !== "transactions") return null;
     return /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
@@ -20664,6 +20682,7 @@ function AccountsTab({
   }, translate(lang, "accounts", "consolidated_subtitle")), (() => {
     const topShare = bankTotal > 0 ? byBank[0][1] / bankTotal * 100 : 0;
     const riskLevel = topShare >= 60 ? "alto" : topShare >= 40 ? "moderado" : null;
+    const chartTotal = byBank.reduce((sum, [, v]) => sum + Math.max(v, 0), 0); // saldos negativos não entram no anel
     const r = 70,
       cx = 88,
       cy = 88,
@@ -20697,6 +20716,7 @@ function AccountsTab({
       style: {
         display: "flex",
         alignItems: "center",
+        justifyContent: "center",
         gap: 24,
         flexWrap: "wrap"
       }
@@ -20710,7 +20730,7 @@ function AccountsTab({
     }, /*#__PURE__*/React.createElement("g", {
       transform: `rotate(-90 ${cx} ${cy})`
     }, byBank.map(([bank, kz], i) => {
-      const frac = bankTotal > 0 ? kz / bankTotal : 0;
+      const frac = chartTotal > 0 ? Math.max(kz, 0) / chartTotal : 0;
       const dash = frac * circumference;
       const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
       const el = /*#__PURE__*/React.createElement("circle", {
@@ -20902,7 +20922,7 @@ function AccountsTab({
       position: "relative",
       overflow: "hidden",
       borderRadius: 14,
-      minHeight: 460,
+      minHeight: Math.min(Math.max(460, sortedAccounts.length * 212 + 24), 880),
       border: "1px solid var(--line)",
       background: "var(--paper)"
     }
@@ -20928,6 +20948,7 @@ function AccountsTab({
       key: a.id,
       account: a,
       transactions: transactions,
+      exchangeRates: exchangeRates,
       hasAlert: accountHasAlert(a),
       pressed: pressedKey === key,
       onPress: () => pressRow(key),
@@ -20986,6 +21007,345 @@ function AccountsTab({
     onBack: goBack
   })))));
 }
+
+// ── Cartão real: gradiente por banco, chip e contactless ───────────────────────────────
+const BANK_PALETTES = [{
+  re: /\bbai\b|angolano de investimentos/i,
+  a: "#0A3B2C",
+  b: "#17936B",
+  glow: "#5BE0AE"
+}, {
+  re: /\bbfa\b|fomento/i,
+  a: "#0D2A5E",
+  b: "#2E63C4",
+  glow: "#8DB4FF"
+}, {
+  re: /millennium|\bbcp\b/i,
+  a: "#650E2C",
+  b: "#C61F5B",
+  glow: "#FF93B8"
+}, {
+  re: /\bbic\b/i,
+  a: "#6E3305",
+  b: "#E58A1F",
+  glow: "#FFD08A"
+}, {
+  re: /standard/i,
+  a: "#0A3A70",
+  b: "#2284D8",
+  glow: "#A5D6FF"
+}, {
+  re: /atl[aâ]ntico/i,
+  a: "#47101F",
+  b: "#A52745",
+  glow: "#FF9DB1"
+}, {
+  re: /\bsol\b/i,
+  a: "#5A4300",
+  b: "#D9A81E",
+  glow: "#FFE08A"
+}, {
+  re: /ita[uú]/i,
+  a: "#8A3E00",
+  b: "#F27A00",
+  glow: "#FFC889"
+}, {
+  re: /bradesco/i,
+  a: "#7C0620",
+  b: "#D3153A",
+  glow: "#FF9AAE"
+}, {
+  re: /santander/i,
+  a: "#7A0000",
+  b: "#E3101B",
+  glow: "#FF9A9A"
+}, {
+  re: /nubank|nu\b/i,
+  a: "#4A0A86",
+  b: "#8F2BE0",
+  glow: "#D3A0FF"
+}, {
+  re: /caixa/i,
+  a: "#003A73",
+  b: "#1678C9",
+  glow: "#9DD0FF"
+}, {
+  re: /barclays/i,
+  a: "#00537A",
+  b: "#00AEEF",
+  glow: "#9BE4FF"
+}, {
+  re: /hsbc/i,
+  a: "#6E0008",
+  b: "#DB0011",
+  glow: "#FF9AA2"
+}, {
+  re: /monzo/i,
+  a: "#10213D",
+  b: "#E8453C",
+  glow: "#FFA79F"
+}];
+const BANK_FALLBACKS = [{
+  a: "#0F1E42",
+  b: "#2B4A9A",
+  glow: "#8CA8F0"
+}, {
+  a: "#0A3B2C",
+  b: "#17936B",
+  glow: "#5BE0AE"
+}, {
+  a: "#2B1B5E",
+  b: "#6B49C9",
+  glow: "#BBA4FF"
+}, {
+  a: "#232A36",
+  b: "#556176",
+  glow: "#B7C3D6"
+}, {
+  a: "#0C4A55",
+  b: "#139AAE",
+  glow: "#8EE5F2"
+}, {
+  a: "#5A3410",
+  b: "#B8823C",
+  glow: "#F4D08F"
+}];
+function bankPalette(name) {
+  const n = String(name || "");
+  for (let i = 0; i < BANK_PALETTES.length; i++) if (BANK_PALETTES[i].re.test(n)) return BANK_PALETTES[i];
+  let h = 0;
+  for (let i = 0; i < n.length; i++) h = h * 31 + n.charCodeAt(i) >>> 0;
+  return BANK_FALLBACKS[h % BANK_FALLBACKS.length];
+}
+function BankCardFace({
+  title,
+  subtitle,
+  label,
+  amount,
+  secondary,
+  badges,
+  alert,
+  actions,
+  progress,
+  footnote,
+  minHeight
+}) {
+  const pal = bankPalette(title);
+  const mono = "'IBM Plex Mono', monospace";
+  const barColor = progress != null && progress > 90 ? "#FF8A6B" : progress != null && progress > 70 ? "#FFD27A" : "#FFFFFF";
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bank-card-face",
+    style: {
+      position: "relative",
+      overflow: "hidden",
+      borderRadius: 18,
+      padding: "18px 20px",
+      color: "#fff",
+      background: "linear-gradient(135deg, " + pal.a + " 0%, " + pal.b + " 100%)",
+      boxShadow: "0 12px 28px rgba(8,16,40,0.24), inset 0 1px 0 rgba(255,255,255,0.20)",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      gap: 12,
+      minHeight: minHeight || 184,
+      width: "100%",
+      boxSizing: "border-box",
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      position: "absolute",
+      right: -70,
+      top: -80,
+      width: 240,
+      height: 240,
+      borderRadius: "50%",
+      background: "radial-gradient(circle, " + pal.glow + "55 0%, transparent 66%)",
+      pointerEvents: "none"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      position: "absolute",
+      left: -50,
+      bottom: -100,
+      width: 210,
+      height: 210,
+      borderRadius: "50%",
+      border: "1px solid rgba(255,255,255,0.10)",
+      boxShadow: "0 0 0 28px rgba(255,255,255,0.035)",
+      pointerEvents: "none"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 16,
+      fontWeight: 700,
+      letterSpacing: 0.2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, title), subtitle && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 500,
+      opacity: 0.8,
+      marginTop: 2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, subtitle)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      flexShrink: 0
+    }
+  }, alert && /*#__PURE__*/React.createElement("span", {
+    title: "Tem alertas pendentes",
+    style: {
+      width: 9,
+      height: 9,
+      borderRadius: "50%",
+      background: "#FF8A6B",
+      boxShadow: "0 0 0 3px rgba(255,138,107,0.3)"
+    }
+  }), actions, /*#__PURE__*/React.createElement("svg", {
+    width: "22",
+    height: "22",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "#fff",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    "aria-hidden": "true",
+    style: {
+      opacity: 0.85
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M8.5 8.5a5 5 0 0 1 0 7"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 6a8.5 8.5 0 0 1 0 12"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M15.5 3.5a12 12 0 0 1 0 17"
+  })))), /*#__PURE__*/React.createElement("svg", {
+    width: "38",
+    height: "28",
+    viewBox: "0 0 38 28",
+    "aria-hidden": "true",
+    style: {
+      position: "relative",
+      display: "block"
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "fpChipG",
+    x1: "0",
+    y1: "0",
+    x2: "1",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#F6DD9B"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: "#C9973F"
+  }))), /*#__PURE__*/React.createElement("rect", {
+    x: "0.5",
+    y: "0.5",
+    width: "37",
+    height: "27",
+    rx: "6",
+    fill: "url(#fpChipG)",
+    stroke: "rgba(0,0,0,0.25)"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M0.5 10h12v8h-12M37.5 10h-12v8h12M13 0.5v10M25 0.5v10M13 27.5v-9.5M25 27.5v-9.5M13 10h12v8H13z",
+    fill: "none",
+    stroke: "rgba(90,60,10,0.55)",
+    strokeWidth: "1"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      letterSpacing: 0.9,
+      textTransform: "uppercase",
+      opacity: 0.75,
+      fontWeight: 600
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: mono,
+      fontSize: 25,
+      fontWeight: 700,
+      marginTop: 3,
+      fontVariantNumeric: "tabular-nums",
+      lineHeight: 1.15,
+      textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+      overflowWrap: "anywhere"
+    }
+  }, amount), secondary && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      opacity: 0.8,
+      marginTop: 3
+    }
+  }, secondary), progress != null && /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 6,
+      borderRadius: 6,
+      background: "rgba(255,255,255,0.22)",
+      overflow: "hidden",
+      marginTop: 9
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "100%",
+      width: Math.min(Math.max(progress, 0), 100) + "%",
+      background: barColor,
+      borderRadius: 6,
+      transition: "width 0.5s ease"
+    }
+  })), footnote && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      opacity: 0.88,
+      marginTop: 7
+    }
+  }, footnote), badges && badges.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      marginTop: 9,
+      flexWrap: "wrap"
+    }
+  }, badges.map(b => /*#__PURE__*/React.createElement("span", {
+    key: b,
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      padding: "3px 9px",
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.16)",
+      border: "1px solid rgba(255,255,255,0.18)"
+    }
+  }, b)))));
+}
 function AccountRow({
   account,
   transactions,
@@ -20993,10 +21353,12 @@ function AccountRow({
   pressed,
   onPress,
   onRelease,
-  onClick
+  onClick,
+  exchangeRates
 }) {
   const total = accountTotal(account, transactions);
   const presentTypes = Array.from(new Set((account.subBalances || []).map(sb => sb.type)));
+  const kz = account.currency !== "Kz" && exchangeRates ? toKz(total, account.currency, exchangeRates) : null;
   return /*#__PURE__*/React.createElement("button", {
     onClick: onClick,
     onMouseDown: onPress,
@@ -21005,101 +21367,28 @@ function AccountRow({
     onTouchStart: onPress,
     onTouchEnd: onRelease,
     onTouchCancel: onRelease,
+    "aria-label": account.bank.replace(/—.*/, "").trim() + (account.nickname ? " — " + account.nickname : ""),
     style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
+      display: "block",
       width: "100%",
       textAlign: "left",
-      padding: "13px 14px",
-      border: "1px solid var(--line)",
-      borderRadius: 8,
-      background: "var(--card)",
+      padding: 0,
+      border: "none",
+      background: "none",
+      borderRadius: 18,
       cursor: "pointer",
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      transform: pressed ? "scale(0.97)" : "scale(1)",
+      transform: pressed ? "scale(0.975)" : "scale(1)",
       transition: pressed ? "transform 0.1s ease" : "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 36,
-      height: 36,
-      borderRadius: "50%",
-      border: "1.5px solid var(--gold)",
-      color: "var(--gold)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 11,
-      fontWeight: 700,
-      flexShrink: 0
-    }
-  }, seal(account.bank)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      fontSize: 14,
-      fontWeight: 600,
-      color: "var(--ink)"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
-    }
-  }, account.bank.replace(/—.*/, "").trim()), hasAlert && /*#__PURE__*/React.createElement("span", {
-    style: {
-      width: 6,
-      height: 6,
-      borderRadius: "50%",
-      background: "var(--rust)",
-      flexShrink: 0
-    },
-    title: "Tem alertas pendentes"
-  })), account.nickname && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)",
-      marginTop: 1
-    }
-  }, account.nickname), presentTypes.length > 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4,
-      marginTop: 5
-    }
-  }, presentTypes.map(t => /*#__PURE__*/React.createElement("span", {
-    key: t,
-    style: {
-      width: 6,
-      height: 6,
-      borderRadius: "50%",
-      background: TYPE_BADGE_COLOR[t],
-      flexShrink: 0
-    },
-    title: t
-  })))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontWeight: 700,
-      fontSize: 14,
-      color: "var(--ink)",
-      flexShrink: 0
-    }
-  }, fmt(total, account.currency)), /*#__PURE__*/React.createElement(IconChevronRight, {
-    size: 16,
-    style: {
-      color: "var(--slate)",
-      flexShrink: 0
-    }
+  }, /*#__PURE__*/React.createElement(BankCardFace, {
+    title: account.bank.replace(/—.*/, "").trim(),
+    subtitle: account.nickname,
+    label: "Saldo disponível",
+    amount: fmt(total, account.currency),
+    secondary: kz !== null ? "≈ " + fmt(kz) : null,
+    badges: presentTypes,
+    alert: hasAlert
   }));
 }
 function CascadeHeader({
@@ -21298,29 +21587,14 @@ function AccountDetailPanel({
     style: {
       padding: 18
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "var(--slate)",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.4
-    }
-  }, "Saldo Disponível"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 26,
-      fontWeight: 700,
-      color: "var(--ink)",
-      marginTop: 4
-    }
-  }, fmt(total, account.currency)), kzEquivalent !== null && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)",
-      marginTop: 3
-    }
-  }, "≈ ", fmt(kzEquivalent)), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(BankCardFace, {
+    title: account.bank.replace(/—.*/, "").trim(),
+    subtitle: account.nickname,
+    label: "Saldo disponível",
+    amount: fmt(total, account.currency),
+    secondary: kzEquivalent !== null ? "≈ " + fmt(kzEquivalent) : null,
+    minHeight: 170
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 20,
       paddingTop: 16,
@@ -22170,7 +22444,7 @@ function TimelineDayGroup({
       fontWeight: 700,
       color: "var(--ink)"
     }
-  }, timelineDayLabel(group.date)), net !== 0 && !dayTotal.mixed && /*#__PURE__*/React.createElement("div", {
+  }, timelineDayLabel(group.date)), net !== 0 && !dayTotal.mixed && group.items.length > 1 && /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 12,
@@ -22632,7 +22906,8 @@ function TransactionsTab({
     onChange: e => setFilterAccount(e.target.value),
     style: {
       ...inputStyle,
-      minWidth: 160
+      flex: "1 1 140px",
+      minWidth: 0
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
@@ -22644,7 +22919,8 @@ function TransactionsTab({
     onChange: e => setFilterCategory(e.target.value),
     style: {
       ...inputStyle,
-      minWidth: 150
+      flex: "1 1 140px",
+      minWidth: 0
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
@@ -27317,7 +27593,55 @@ function IncomeTab({
       color: "var(--slate)",
       margin: 0
     }
-  }, "Sem rendimentos recebidos neste período.") : /*#__PURE__*/React.createElement("div", {
+  }, "Sem rendimentos recebidos neste período.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "inc-cards",
+    style: {
+      flexDirection: "column",
+      gap: 10
+    }
+  }, filtered.map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      padding: "12px 14px",
+      borderRadius: 12,
+      background: "var(--paper)",
+      border: "1px solid var(--line)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "baseline",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 14
+    }
+  }, r.fonte, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 500,
+      color: "var(--slate)",
+      fontSize: 12
+    }
+  }, "· ", r.tipo)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontWeight: 700,
+      color: "var(--emerald)",
+      fontSize: 14
+    }
+  }, fmt(r.bruto - r.imposto))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: 4,
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, new Date(r.data + "T00:00:00").toLocaleDateString("pt-PT")), /*#__PURE__*/React.createElement("span", null, "Bruto ", fmtCompact(r.bruto), " · Imposto ", fmtCompact(r.imposto)))))), /*#__PURE__*/React.createElement("div", {
+    className: "inc-table",
     style: {
       overflowX: "auto"
     }
@@ -27405,7 +27729,7 @@ function IncomeTab({
       fontWeight: 600,
       whiteSpace: "nowrap"
     }
-  }, fmt(r.bruto - r.imposto)))))))));
+  }, fmt(r.bruto - r.imposto))))))))));
 }
 function InvestmentsTab({
   lang,
@@ -31626,6 +31950,78 @@ function BudgetTab({
 // SECTION 4: GOALS TAB
 // ══════════════════════════════════════════════════════════════════════
 
+function GoalProgress({
+  pct,
+  current,
+  target
+}) {
+  const p = Math.min(Math.max(pct || 0, 0), 100);
+  const done = pct >= 100;
+  const C = 2 * Math.PI * 22;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      margin: "14px 0 4px"
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "58",
+    height: "58",
+    viewBox: "0 0 54 54",
+    role: "img",
+    "aria-label": Math.round(pct) + "%",
+    style: {
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "27",
+    cy: "27",
+    r: "22",
+    fill: "none",
+    stroke: "var(--paper)",
+    strokeWidth: "6"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "27",
+    cy: "27",
+    r: "22",
+    fill: "none",
+    stroke: done ? "var(--emerald)" : "var(--gold)",
+    strokeWidth: "6",
+    strokeLinecap: "round",
+    strokeDasharray: p / 100 * C + " " + C,
+    transform: "rotate(-90 27 27)",
+    style: {
+      transition: "stroke-dasharray 0.6s ease"
+    }
+  }), /*#__PURE__*/React.createElement("text", {
+    x: "27",
+    y: "31",
+    textAnchor: "middle",
+    fontSize: "12",
+    fontWeight: "700",
+    fill: "var(--ink)",
+    fontFamily: "'IBM Plex Mono', monospace"
+  }, Math.round(pct), "%")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 18,
+      fontWeight: 700,
+      color: "var(--ink)",
+      fontVariantNumeric: "tabular-nums"
+    }
+  }, fmt(current)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginTop: 2
+    }
+  }, "de ", fmt(target))));
+}
 function GoalsTab({
   lang,
   taxaInflacao,
@@ -31747,22 +32143,11 @@ function GoalsTab({
       "aria-label": translate(lang, "goals", "remove_goal")
     }, /*#__PURE__*/React.createElement(IconTrash, {
       size: 13
-    })))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        margin: "14px 0 6px"
-      }
-    }, /*#__PURE__*/React.createElement(ProgressBar, {
+    })))), /*#__PURE__*/React.createElement(GoalProgress, {
       pct: pct,
-      tone: "gold"
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: 13,
-        fontFamily: "'IBM Plex Mono', monospace",
-        color: "var(--slate)"
-      }
-    }, /*#__PURE__*/React.createElement("span", null, fmt(g.current)), /*#__PURE__*/React.createElement("span", null, fmt(g.target))), monthly !== null && monthly > 0 && /*#__PURE__*/React.createElement("p", {
+      current: g.current,
+      target: g.target
+    }), monthly !== null && monthly > 0 && /*#__PURE__*/React.createElement("p", {
       style: {
         fontSize: 12,
         color: "var(--slate)",
@@ -32673,81 +33058,49 @@ function CreditCardCard({
   const currentStatementBalance = statementBalance(card.id, currentCycle, purchases, payments, card.closingDay);
   const dueDate = creditCardDueDateForCycle(card, currentCycle);
   const cardPurchasesForCard = purchases.filter(p => p.cardId === card.id).sort((a, b) => a.date < b.date ? 1 : -1);
-  return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+  const faceBtn = {
+    background: "rgba(255,255,255,0.16)",
+    border: "none",
+    color: "#fff",
+    width: 30,
+    height: 30,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    padding: 0
+  };
+  return /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start"
+      flexDirection: "column",
+      gap: 12
     }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(BankCardFace, {
+    title: card.bank.replace(/—.*/, "").trim(),
+    subtitle: card.nickname,
+    label: translate(lang, "cards", "limit_used"),
+    amount: fmt(used, card.currency),
+    progress: usedPct,
+    footnote: translate(lang, "cards", "available_prefix") + " " + fmt(Math.max(available, 0), card.currency) + " · " + fmt(card.limit, card.currency),
+    actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      onClick: () => onEdit(card),
+      style: faceBtn,
+      title: translate(lang, "cards", "edit_card"),
+      "aria-label": translate(lang, "cards", "edit_card")
+    }, /*#__PURE__*/React.createElement(IconPencil, {
+      size: 14
+    })), /*#__PURE__*/React.createElement("button", {
+      onClick: () => onRemove(card.id),
+      style: faceBtn,
+      title: translate(lang, "cards", "remove_card"),
+      "aria-label": translate(lang, "cards", "remove_card")
+    }, /*#__PURE__*/React.createElement(IconTrash, {
+      size: 14
+    })))
+  }), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
-      fontWeight: 600
-    }
-  }, card.bank.replace(/—.*/, "").trim()), card.nickname && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)"
-    }
-  }, card.nickname)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => onEdit(card),
-    style: {
-      background: "none",
-      border: "none",
-      color: "var(--slate)",
-      cursor: "pointer",
-      padding: 4
-    },
-    title: translate(lang, "cards", "edit_card"),
-    "aria-label": translate(lang, "cards", "edit_card")
-  }, /*#__PURE__*/React.createElement(IconPencil, {
-    size: 15
-  })), /*#__PURE__*/React.createElement("button", {
-    onClick: () => onRemove(card.id),
-    style: {
-      background: "none",
-      border: "none",
-      color: "var(--slate)",
-      cursor: "pointer",
-      padding: 4
-    },
-    title: translate(lang, "cards", "remove_card"),
-    "aria-label": translate(lang, "cards", "remove_card")
-  }, /*#__PURE__*/React.createElement(IconTrash, {
-    size: 15
-  })))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      fontSize: 12,
-      color: "var(--slate)",
-      marginBottom: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", null, translate(lang, "cards", "limit_used")), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "'IBM Plex Mono', monospace"
-    }
-  }, fmt(used, card.currency), " / ", fmt(card.limit, card.currency))), /*#__PURE__*/React.createElement(ProgressBar, {
-    pct: usedPct,
-    tone: usedPct > 90 ? "rust" : usedPct > 70 ? "gold" : "emerald"
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--slate)",
-      marginTop: 4
-    }
-  }, translate(lang, "cards", "available_prefix"), " ", fmt(Math.max(available, 0), card.currency))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 14,
       padding: "10px 12px",
       borderRadius: 8,
       background: "var(--paper)"
@@ -32833,7 +33186,7 @@ function CreditCardCard({
       fontFamily: "'IBM Plex Mono', monospace",
       color: "var(--slate)"
     }
-  }, fmt(p.totalAmount, card.currency)))))));
+  }, fmt(p.totalAmount, card.currency))))))));
 }
 function CreditCardsTab({
   lang,
@@ -32855,13 +33208,11 @@ function CreditCardsTab({
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
-  }), " ", translate(lang, "cards", "new_card")), creditCards.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--slate)",
-      fontSize: 14,
-      margin: 0
-    }
-  }, translate(lang, "cards", "no_cards"))) : /*#__PURE__*/React.createElement("div", {
+  }), " ", translate(lang, "cards", "new_card")), creditCards.length === 0 ? /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(EmptyState, {
+    icon: IconCreditCard,
+    title: "Ainda sem cartões",
+    description: translate(lang, "cards", "no_cards")
+  })) : /*#__PURE__*/React.createElement("div", {
     className: "resp-grid-2col",
     style: {
       display: "grid",
