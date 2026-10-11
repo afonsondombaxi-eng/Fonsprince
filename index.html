@@ -14969,6 +14969,40 @@ function AssistantTab({
   const [menu, setMenu] = useState(false);
   const [view, setView] = useState("chat");
   const [showShared, setShowShared] = useState(false);
+  const [vv, setVv] = useState(() => ({
+    h: typeof window !== "undefined" ? window.visualViewport ? window.visualViewport.height : window.innerHeight : 700,
+    t: 0,
+    kb: false
+  }));
+  useEffect(() => {
+    if (!isMobile) return undefined;
+    const v = window.visualViewport;
+    const upd = () => {
+      const h = v ? v.height : window.innerHeight;
+      setVv({
+        h,
+        t: v ? v.offsetTop : 0,
+        kb: window.innerHeight - h > 120
+      });
+      if (window.scrollY) window.scrollTo(0, 0);
+    };
+    upd();
+    if (v) {
+      v.addEventListener("resize", upd);
+      v.addEventListener("scroll", upd);
+    }
+    window.addEventListener("resize", upd);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      if (v) {
+        v.removeEventListener("resize", upd);
+        v.removeEventListener("scroll", upd);
+      }
+      window.removeEventListener("resize", upd);
+      document.body.style.overflow = prev;
+    };
+  }, [isMobile]);
   const endRef = useRef(null);
   const taRef = useRef(null);
   const seeded = useRef(false);
@@ -15052,13 +15086,26 @@ function AssistantTab({
   }, /*#__PURE__*/React.createElement(IconSparkles, {
     size: Math.round(size * 0.5)
   }));
-  const wrapStyle = {
+  const wrapStyle = isMobile ? {
+    position: "fixed",
+    left: 0,
+    right: 0,
+    top: vv.t,
+    height: vv.h,
+    zIndex: 80,
+    background: "var(--paper)",
+    display: "flex",
+    flexDirection: "column",
+    padding: "env(safe-area-inset-top) 14px " + (vv.kb ? "0" : "env(safe-area-inset-bottom)"),
+    boxSizing: "border-box",
+    overflow: "hidden"
+  } : {
     maxWidth: 760,
     width: "100%",
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
-    minHeight: isMobile ? "calc(100dvh - 52px - env(safe-area-inset-top) - 8px)" : "calc(100dvh - 52px - 56px)"
+    minHeight: "calc(100dvh - 52px - 56px)"
   };
   const header = /*#__PURE__*/React.createElement("div", {
     style: {
@@ -15267,7 +15314,10 @@ function AssistantTab({
       style: wrapStyle
     }, header, /*#__PURE__*/React.createElement("div", {
       style: {
-        paddingTop: 16
+        paddingTop: 16,
+        flex: 1,
+        minHeight: 0,
+        overflowY: "auto"
       }
     }, /*#__PURE__*/React.createElement(AskMoneyCard, {
       lang: lang,
@@ -15286,10 +15336,13 @@ function AssistantTab({
     "aria-live": "polite",
     style: {
       flex: 1,
+      minHeight: 0,
       display: "flex",
       flexDirection: "column",
       gap: 6,
-      padding: "16px 0 12px"
+      padding: "16px 0 12px",
+      overflowY: isMobile ? "auto" : "visible",
+      WebkitOverflowScrolling: "touch"
     }
   }, messages.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -15466,9 +15519,13 @@ function AssistantTab({
       height: 1
     }
   })), /*#__PURE__*/React.createElement("div", {
-    style: {
+    style: isMobile ? {
+      flexShrink: 0,
+      paddingTop: 6,
+      paddingBottom: 6
+    } : {
       position: "sticky",
-      bottom: isMobile ? "env(safe-area-inset-bottom)" : 14,
+      bottom: 14,
       background: "linear-gradient(180deg, transparent 0, var(--paper) 18px)",
       paddingTop: 14,
       zIndex: 5
@@ -15541,7 +15598,7 @@ function AssistantTab({
     }
   }, /*#__PURE__*/React.createElement(IconArrowUp, {
     size: 19
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), !(isMobile && vv.kb) && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10.5,
       color: "var(--slate)",
