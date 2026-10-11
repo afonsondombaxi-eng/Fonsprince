@@ -39,6 +39,8 @@
   * { -webkit-tap-highlight-color: transparent; }
   .a11y-focusable:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; border-radius: 999px; }
   .a11y-focusable:focus:not(:focus-visible) { outline: none; }
+  @keyframes fpDot { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+  .fp-dot { animation: fpDot 1.1s infinite ease-in-out; }
   @keyframes ptrSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .ptr-indicator { display: flex; align-items: center; justify-content: center; }
   .ptr-indicator.spinning svg { animation: ptrSpin 0.7s linear infinite; }
@@ -799,6 +801,11 @@ const IconSnowflake = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__
 }));
 const IconFlame = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__*/React.createElement("path", {
   d: "M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.5-1.5-2-1.5-4 0-1 1-2 1-2s3 2 3 6a5 5 0 0 1-10 0c0-3 2-4 2-7 0-1.5 1-3 1-3s1 4 1.5 6.5z"
+}));
+const IconArrowUp = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__*/React.createElement("path", {
+  d: "M12 19V5"
+}), /*#__PURE__*/React.createElement("path", {
+  d: "M5 12l7-7 7 7"
 }));
 const IconChevronLeft = p => /*#__PURE__*/React.createElement(Icon, p, /*#__PURE__*/React.createElement("path", {
   d: "M15 18l-6-6 6-6"
@@ -3788,6 +3795,7 @@ const TRANSLATIONS = {
   pt: {
     nav: {
       kixikila: "Kixikila",
+      assistant: "Assistente",
       categories: "Categorias",
       shortcuts: "Atalhos",
       section_favorites: "Favoritos",
@@ -3824,6 +3832,7 @@ const TRANSLATIONS = {
     },
     title: {
       kixikila: "Kixikila",
+      assistant: "Assistente",
       overview: "Visão Geral",
       accounts: "Contas Bancárias",
       transactions: "Transações",
@@ -3847,6 +3856,7 @@ const TRANSLATIONS = {
     },
     subtitle: {
       kixikila: "Poupança rotativa em grupo: contribuições, ordem de recebimento e a sua vez.",
+      assistant: "Pergunte ao seu dinheiro e obtenha conselhos.",
       overview: "O saldo disponível reflete as receitas e despesas registadas até hoje.",
       accounts: "Cada conta pode dividir o dinheiro entre à ordem, poupança e investimento.",
       transactions: "Receitas e despesas registadas.",
@@ -4704,6 +4714,7 @@ const TRANSLATIONS = {
   "pt-BR": {
     nav: {
       kixikila: "Kixikila",
+      assistant: "Assistente",
       categories: "Categorias",
       shortcuts: "Atalhos",
       section_favorites: "Favoritos",
@@ -4740,6 +4751,7 @@ const TRANSLATIONS = {
     },
     title: {
       kixikila: "Kixikila",
+      assistant: "Assistente",
       overview: "Visão Geral",
       accounts: "Contas Bancárias",
       transactions: "Transações",
@@ -4763,6 +4775,7 @@ const TRANSLATIONS = {
     },
     subtitle: {
       kixikila: "Poupança rotativa em grupo: contribuições, ordem de recebimento e a sua vez.",
+      assistant: "Pergunte ao seu dinheiro e obtenha conselhos.",
       overview: "O saldo disponível reflete as receitas e despesas registadas até hoje.",
       accounts: "Cada conta pode dividir o dinheiro entre à ordem, poupança e investimento.",
       transactions: "Receitas e despesas registadas.",
@@ -5620,6 +5633,7 @@ const TRANSLATIONS = {
   en: {
     nav: {
       kixikila: "Kixikila",
+      assistant: "Assistant",
       categories: "Categories",
       shortcuts: "Shortcuts",
       section_favorites: "Favorites",
@@ -5656,6 +5670,7 @@ const TRANSLATIONS = {
     },
     title: {
       kixikila: "Kixikila",
+      assistant: "Assistant",
       overview: "Overview",
       accounts: "Bank Accounts",
       transactions: "Transactions",
@@ -5679,6 +5694,7 @@ const TRANSLATIONS = {
     },
     subtitle: {
       kixikila: "Rotating group savings: contributions, payout order and your turn.",
+      assistant: "Ask your money and get guidance.",
       overview: "The available balance reflects income and expenses recorded up to today.",
       accounts: "Each account can split money between checking, savings and investment.",
       transactions: "Recorded income and expenses.",
@@ -6536,6 +6552,7 @@ const TRANSLATIONS = {
   fr: {
     nav: {
       kixikila: "Kixikila",
+      assistant: "Assistant",
       categories: "Catégories",
       shortcuts: "Raccourcis",
       section_favorites: "Favoris",
@@ -6572,6 +6589,7 @@ const TRANSLATIONS = {
     },
     title: {
       kixikila: "Kixikila",
+      assistant: "Assistant",
       overview: "Vue d'ensemble",
       accounts: "Comptes bancaires",
       transactions: "Transactions",
@@ -6595,6 +6613,7 @@ const TRANSLATIONS = {
     },
     subtitle: {
       kixikila: "Épargne rotative en groupe : cotisations, ordre de versement et votre tour.",
+      assistant: "Interrogez votre argent et obtenez des conseils.",
       overview: "Le solde disponible reflète les revenus et dépenses enregistrés à ce jour.",
       accounts: "Chaque compte peut répartir l'argent entre courant, épargne et investissement.",
       transactions: "Revenus et dépenses enregistrés.",
@@ -7452,6 +7471,7 @@ const TRANSLATIONS = {
   es: {
     nav: {
       kixikila: "Kixikila",
+      assistant: "Asistente",
       categories: "Categorías",
       shortcuts: "Atajos",
       section_favorites: "Favoritos",
@@ -7488,6 +7508,7 @@ const TRANSLATIONS = {
     },
     title: {
       kixikila: "Kixikila",
+      assistant: "Asistente",
       overview: "Resumen General",
       accounts: "Cuentas Bancarias",
       transactions: "Transacciones",
@@ -7511,6 +7532,7 @@ const TRANSLATIONS = {
     },
     subtitle: {
       kixikila: "Ahorro rotativo en grupo: aportaciones, orden de cobro y su turno.",
+      assistant: "Pregunte a su dinero y reciba orientación.",
       overview: "El saldo disponible refleja los ingresos y gastos registrados hasta hoy.",
       accounts: "Cada cuenta puede dividir el dinero entre corriente, ahorro e inversión.",
       transactions: "Ingresos y gastos registrados.",
@@ -8392,6 +8414,10 @@ const ALL_NAV_TABS = [{
   id: "overview",
   label: "Visão Geral",
   icon: IconDashboard
+}, {
+  id: "assistant",
+  label: "Assistente",
+  icon: IconSparkles
 }, {
   id: "accounts",
   label: "Contas",
@@ -11566,6 +11592,20 @@ const EXTRAS_I18N = {
     ins_vs: "vs {label}",
     ins_avg_day: "por dia, em média",
     chat_title: "Assistente financeiro",
+    chat_name: "Assistente Fonsprince",
+    chat_status: "Online · educativo",
+    chat_back: "Voltar",
+    chat_menu: "Opções",
+    chat_back_chat: "Voltar à conversa",
+    chat_hide: "Ocultar",
+    chat_retry: "Tentar de novo",
+    chat_greet: "Olá, {name}",
+    chat_greet_anon: "Olá",
+    chat_greet_sub: "Pergunte sobre poupança, dívidas, orçamento ou investimento.",
+    chat_today: "Hoje",
+    chat_yesterday: "Ontem",
+    chat_entry_ph: "Pergunte ao seu dinheiro…",
+    chat_s6: "Vale a pena investir já ou poupar primeiro?",
     chat_tab_chat: "Conversar",
     chat_tab_quick: "Consulta exata",
     chat_hello: "Olá! Posso ajudar com poupança, orçamento, dívidas e conceitos de investimento. Pergunte o que quiser. Se ativar a partilha do resumo do mês, respondo com base nos seus números.",
@@ -11850,6 +11890,20 @@ const EXTRAS_I18N = {
     ins_vs: "vs {label}",
     ins_avg_day: "per day on average",
     chat_title: "Financial assistant",
+    chat_name: "Fonsprince Assistant",
+    chat_status: "Online · educational",
+    chat_back: "Back",
+    chat_menu: "Options",
+    chat_back_chat: "Back to chat",
+    chat_hide: "Hide",
+    chat_retry: "Try again",
+    chat_greet: "Hi, {name}",
+    chat_greet_anon: "Hi",
+    chat_greet_sub: "Ask about savings, debts, budgeting or investing.",
+    chat_today: "Today",
+    chat_yesterday: "Yesterday",
+    chat_entry_ph: "Ask your money…",
+    chat_s6: "Should I invest now or save first?",
     chat_tab_chat: "Chat",
     chat_tab_quick: "Exact query",
     chat_hello: "Hi! I can help with saving, budgeting, debt and investing concepts. Ask me anything. If you turn on sharing of your month summary, I will answer using your numbers.",
@@ -12130,6 +12184,20 @@ const EXTRAS_I18N = {
     ovl_full_only: "mode Complet uniquement",
     ovl_more_btn: "Afficher {n} panneaux de plus",
     chat_title: "Assistant financier",
+    chat_name: "Assistant Fonsprince",
+    chat_status: "En ligne · éducatif",
+    chat_back: "Retour",
+    chat_menu: "Options",
+    chat_back_chat: "Retour à la discussion",
+    chat_hide: "Masquer",
+    chat_retry: "Réessayer",
+    chat_greet: "Bonjour, {name}",
+    chat_greet_anon: "Bonjour",
+    chat_greet_sub: "Posez vos questions sur l’épargne, les dettes, le budget ou l’investissement.",
+    chat_today: "Aujourd’hui",
+    chat_yesterday: "Hier",
+    chat_entry_ph: "Demandez à votre argent…",
+    chat_s6: "Investir maintenant ou épargner d’abord ?",
     chat_tab_chat: "Discuter",
     chat_tab_quick: "Requête exacte",
     chat_hello: "Bonjour ! Je peux vous aider pour l’épargne, le budget, les dettes et les notions d’investissement. Posez vos questions. Si vous activez le partage du résumé du mois, je réponds à partir de vos chiffres.",
@@ -12410,6 +12478,20 @@ const EXTRAS_I18N = {
     ovl_full_only: "solo en modo Completo",
     ovl_more_btn: "Mostrar {n} paneles más",
     chat_title: "Asistente financiero",
+    chat_name: "Asistente Fonsprince",
+    chat_status: "En línea · educativo",
+    chat_back: "Volver",
+    chat_menu: "Opciones",
+    chat_back_chat: "Volver al chat",
+    chat_hide: "Ocultar",
+    chat_retry: "Reintentar",
+    chat_greet: "Hola, {name}",
+    chat_greet_anon: "Hola",
+    chat_greet_sub: "Pregunte sobre ahorro, deudas, presupuesto o inversión.",
+    chat_today: "Hoy",
+    chat_yesterday: "Ayer",
+    chat_entry_ph: "Pregunte a su dinero…",
+    chat_s6: "¿Invertir ya o ahorrar primero?",
     chat_tab_chat: "Conversar",
     chat_tab_quick: "Consulta exacta",
     chat_hello: "¡Hola! Puedo ayudarte con ahorro, presupuesto, deudas y conceptos de inversión. Pregunta lo que quieras. Si activas compartir el resumen del mes, responderé con tus números.",
@@ -14644,6 +14726,10 @@ async function insChatProxy(messages, context, lang) {
   if (!res.ok) {
     const err = new Error("proxy " + res.status);
     err.status = res.status;
+    try {
+      const ej = await res.json();
+      err.up = ej && ej.up ? ej.up : 0;
+    } catch (e) {}
     throw err;
   }
   const j = await res.json();
@@ -14683,165 +14769,90 @@ function ChatText({
     }, j ? /*#__PURE__*/React.createElement("br", null) : null, chatInline(l))));
   });
 }
-function AssistantCard({
-  lang,
-  transactions,
-  accounts,
-  exchangeRates,
-  month,
-  categories,
-  spentByCategory,
-  getChatContext
-}) {
-  const [tab, setTab] = useState("chat");
-  const [messages, setMessages] = useState(() => {
-    const saved = loadKey("ai-chat", []);
-    return Array.isArray(saved) ? saved.filter(m => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string").slice(-40) : [];
-  });
-  const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [share, setShare] = useState(() => loadKey("ai-share", false) === true);
-  const boxRef = useRef(null);
-  const aiOn = !!insProxyUrl();
-  useEffect(() => saveKey("ai-chat", messages.slice(-40)), [messages]);
-  useEffect(() => saveKey("ai-share", share), [share]);
-  useEffect(() => {
-    const base = insProxyUrl().replace(/\/$/, "");
-    if (base) {
-      try {
-        fetch(base + "/health", {
-          mode: "no-cors",
-          cache: "no-store"
-        }).catch(() => {});
-      } catch (e) {}
-    }
-  }, [aiOn]);
-  useEffect(() => {
-    const el = boxRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, busy, tab]);
-  const ctx = share && typeof getChatContext === "function" ? getChatContext() : null;
-  async function send(text) {
-    const t = String(text != null ? text : input).trim().slice(0, 600);
-    if (!t || busy) return;
-    const next = [...messages, {
-      role: "user",
-      content: t
-    }];
-    setMessages(next);
-    setInput("");
-    setErr("");
-    setBusy(true);
-    try {
-      const reply = await insChatProxy(next, ctx, lang);
-      if (!reply) throw new Error("empty");
-      setMessages(m => [...m, {
-        role: "assistant",
-        content: reply
-      }]);
-    } catch (e) {
-      setErr(e && e.status === 401 ? "chat_err_login" : e && e.status === 429 ? "chat_err_rate" : "chat_err_down");
-    }
-    setBusy(false);
-  }
-  const chips = [xt(lang, "chat_s1"), xt(lang, "chat_s2"), xt(lang, "chat_s3"), xt(lang, "chat_s4"), xt(lang, "chat_s5")];
-  const seg = (id, text) => /*#__PURE__*/React.createElement("button", {
-    key: id,
-    type: "button",
-    onClick: () => setTab(id),
-    "aria-pressed": tab === id,
-    style: {
-      border: "none",
-      cursor: "pointer",
-      padding: "7px 14px",
-      borderRadius: 999,
-      fontSize: 12,
-      fontWeight: 700,
-      background: tab === id ? "var(--card)" : "transparent",
-      color: tab === id ? "var(--ink)" : "var(--slate)",
-      boxShadow: tab === id ? "var(--shadow-sm)" : "none",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-    }
-  }, text);
-  const tabs = /*#__PURE__*/React.createElement("div", {
-    role: "group",
-    "aria-label": xt(lang, "chat_title"),
-    style: {
-      display: "inline-flex",
-      alignSelf: "flex-start",
-      background: "var(--paper)",
-      border: "1px solid var(--line)",
-      borderRadius: 999,
-      padding: 3,
-      gap: 2
-    }
-  }, seg("chat", xt(lang, "chat_tab_chat")), seg("quick", xt(lang, "chat_tab_quick")));
-  const wrap = {
-    flex: "1 1 100%",
-    minWidth: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10
+function buildChatContext(p) {
+  const cur = extrasCurrency();
+  const inc = Number(p.totalReceitas) || 0;
+  const exp = Number(p.totalDespesas) || 0;
+  const conv = (v, from) => {
+    const r = from === cur || !from ? v : convertCurrency(v, from, cur, p.exchangeRates || {});
+    return r === null ? 0 : r;
   };
-  if (tab === "quick") {
-    return /*#__PURE__*/React.createElement("div", {
-      style: wrap
-    }, tabs, /*#__PURE__*/React.createElement(AskMoneyCard, {
-      lang: lang,
-      transactions: transactions,
-      accounts: accounts,
-      exchangeRates: exchangeRates,
-      month: month,
-      categories: categories,
-      spentByCategory: spentByCategory
-    }));
+  const net = Object.entries(p.balancesByCurrency || {}).reduce((s, [c, v]) => {
+    const k = toKz(v, c, p.exchangeRates);
+    return s + (k === null ? 0 : k);
+  }, 0);
+  const liquid = liquidAssetsKz(p.accounts || [], p.transactions || [], p.exchangeRates);
+  const debtsTotal = (p.debts || []).filter(d => d.type === "A pagar" && debtStatus(d, p.debtPayments) !== "Quitada").reduce((a, d) => a + conv(debtBalance(d, p.debtPayments), d.currency), 0);
+  const fixed = (p.recurringExpenses || []).filter(r => !r.isStaff).reduce((a, r) => {
+    const acc = (p.accounts || []).find(x => x.id === r.accountId);
+    return a + conv(Number(r.amount) || 0, acc ? acc.currency : cur);
+  }, 0);
+  const cats = Object.entries(p.spentByCategory || {}).map(([name, spent]) => ({
+    name,
+    spent: Math.round(Number(spent) || 0),
+    limit: Math.round(Number((p.categories || {})[name]) || 0) || undefined
+  })).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent).slice(0, 12);
+  return {
+    currency: cur,
+    month: p.month,
+    income: Math.round(inc),
+    expenses: Math.round(exp),
+    savingsRate: inc > 0 ? Math.round((inc - exp) / inc * 100) : undefined,
+    prevIncome: Math.round(Number(p.prevTotalReceitas) || 0),
+    prevExpenses: Math.round(Number(p.prevTotalDespesas) || 0),
+    netWorth: Math.round(net),
+    liquid: Math.round(liquid),
+    debts: Math.round(debtsTotal),
+    fixedMonthly: Math.round(fixed),
+    goalsTarget: Math.round((p.goals || []).reduce((a, g) => a + (Number(g.target) || 0), 0)),
+    goalsSaved: Math.round((p.goals || []).reduce((a, g) => a + (Number(g.current) || 0), 0)),
+    inflation: Number(p.taxaInflacao) ? Math.round(Number(p.taxaInflacao) * 1000) / 10 : undefined,
+    categories: cats
+  };
+}
+function chatClock(ts) {
+  try {
+    const d = new Date(ts);
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  } catch (e) {
+    return "";
   }
-  const shared = share && ctx ? ctx : null;
-  return /*#__PURE__*/React.createElement("div", {
-    style: wrap
-  }, tabs, /*#__PURE__*/React.createElement(Card, {
+}
+function chatDayLabel(lang, ts) {
+  const d = new Date(ts);
+  const k = x => x.getFullYear() + "-" + x.getMonth() + "-" + x.getDate();
+  const now = new Date();
+  const y = new Date(now.getTime() - 86400000);
+  if (k(d) === k(now)) return xt(lang, "chat_today");
+  if (k(d) === k(y)) return xt(lang, "chat_yesterday");
+  return String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+}
+function AssistantEntry({
+  lang,
+  onOpen,
+  onAsk
+}) {
+  const chips = [xt(lang, "chat_s1"), xt(lang, "chat_s2"), xt(lang, "chat_s3")];
+  return /*#__PURE__*/React.createElement(Card, {
     style: {
-      padding: 16
+      padding: 14
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      gap: 8
+      marginBottom: 10
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: 700,
       color: "var(--slate)",
       textTransform: "uppercase",
       letterSpacing: 0.5
     }
-  }, xt(lang, "chat_title")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8
-    }
-  }, messages.length > 0 && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setMessages([]);
-      setErr("");
-    },
-    style: {
-      background: "none",
-      border: "none",
-      color: "var(--gold)",
-      fontSize: 12,
-      fontWeight: 700,
-      cursor: "pointer",
-      padding: 0,
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-    }
-  }, xt(lang, "chat_new")), /*#__PURE__*/React.createElement("span", {
+  }, xt(lang, "chat_title")), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11,
       fontWeight: 700,
@@ -14850,76 +14861,67 @@ function AssistantCard({
       background: "color-mix(in srgb, var(--emerald) 14%, var(--card))",
       color: "var(--emerald)"
     }
-  }, xt(lang, "ins_ai_badge")))), /*#__PURE__*/React.createElement("div", {
-    ref: boxRef,
-    role: "log",
-    "aria-live": "polite",
+  }, xt(lang, "ins_ai_badge"))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onOpen,
     style: {
-      marginTop: 12,
-      maxHeight: 420,
-      overflowY: "auto",
       display: "flex",
-      flexDirection: "column",
+      alignItems: "center",
       gap: 10,
-      paddingRight: 2
-    }
-  }, messages.length === 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      lineHeight: 1.5,
-      color: "var(--ink)",
+      width: "100%",
       background: "var(--paper)",
       border: "1px solid var(--line)",
-      borderRadius: 14,
-      padding: "12px 14px"
-    }
-  }, xt(lang, "chat_hello")), messages.map((m, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-      maxWidth: "88%",
-      fontSize: 14,
-      lineHeight: 1.5,
-      padding: "8px 14px",
-      borderRadius: 16,
-      borderBottomRightRadius: m.role === "user" ? 4 : 16,
-      borderBottomLeftRadius: m.role === "user" ? 16 : 4,
-      background: m.role === "user" ? "var(--btn-bg)" : "var(--paper)",
-      color: m.role === "user" ? "var(--btn-fg)" : "var(--ink)",
-      border: m.role === "user" ? "none" : "1px solid var(--line)",
-      overflowWrap: "anywhere"
-    }
-  }, m.role === "user" ? m.content : /*#__PURE__*/React.createElement(ChatText, {
-    text: m.content
-  }))), busy && /*#__PURE__*/React.createElement("div", {
-    style: {
-      alignSelf: "flex-start",
-      fontSize: 13,
+      borderRadius: 999,
+      padding: "7px 7px 7px 14px",
+      cursor: "pointer",
       color: "var(--slate)",
-      padding: "6px 4px"
+      fontSize: 14,
+      textAlign: "left",
+      fontFamily: "inherit"
     }
-  }, xt(lang, "ins_thinking")), err && /*#__PURE__*/React.createElement("div", {
-    role: "alert",
+  }, /*#__PURE__*/React.createElement(IconSparkles, {
+    size: 18,
     style: {
-      fontSize: 13,
-      color: "#D13438",
-      padding: "2px 4px"
+      color: "var(--gold)",
+      flexShrink: 0
     }
-  }, xt(lang, err))), messages.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      flex: 1,
+      minWidth: 0,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, xt(lang, "chat_entry_ph")), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      width: 34,
+      height: 34,
+      borderRadius: "50%",
+      background: "var(--btn-bg)",
+      color: "var(--btn-fg)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement(IconArrowUp, {
+    size: 16
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       overflowX: "auto",
       gap: 6,
-      marginTop: 12,
-      paddingBottom: 4,
+      marginTop: 10,
+      paddingBottom: 2,
       scrollbarWidth: "none",
       WebkitOverflowScrolling: "touch"
     }
   }, chips.map(c => /*#__PURE__*/React.createElement("button", {
     key: c,
     type: "button",
-    onClick: () => send(c),
-    disabled: busy,
+    onClick: () => onAsk && onAsk(c),
     style: {
       flexShrink: 0,
       whiteSpace: "nowrap",
@@ -14933,94 +14935,624 @@ function AssistantCard({
       cursor: "pointer",
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     }
-  }, c))), /*#__PURE__*/React.createElement("form", {
+  }, c))));
+}
+function AssistantTab({
+  lang,
+  isMobile,
+  userName,
+  seed,
+  onSeedUsed,
+  onBack,
+  ctxInput
+}) {
+  const [messages, setMessages] = useState(() => {
+    const saved = loadKey("ai-chat", []);
+    return Array.isArray(saved) ? saved.filter(m => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string").slice(-60) : [];
+  });
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [errCode, setErrCode] = useState("");
+  const [share, setShare] = useState(() => loadKey("ai-share", false) === true);
+  const [menu, setMenu] = useState(false);
+  const [view, setView] = useState("chat");
+  const [showShared, setShowShared] = useState(false);
+  const endRef = useRef(null);
+  const taRef = useRef(null);
+  const seeded = useRef(false);
+  useEffect(() => saveKey("ai-chat", messages.slice(-60)), [messages]);
+  useEffect(() => saveKey("ai-share", share), [share]);
+  useEffect(() => {
+    const base = insProxyUrl().replace(/\/$/, "");
+    if (base) {
+      try {
+        fetch(base + "/health", {
+          mode: "no-cors",
+          cache: "no-store"
+        }).catch(() => {});
+      } catch (e) {}
+    }
+  }, []);
+  useEffect(() => {
+    const el = endRef.current;
+    if (el && el.scrollIntoView) el.scrollIntoView({
+      block: "end",
+      behavior: "smooth"
+    });
+  }, [messages, busy, err, view]);
+  const ctx = share ? buildChatContext(ctxInput) : null;
+  async function run(list) {
+    setErr("");
+    setErrCode("");
+    setBusy(true);
+    try {
+      const reply = await insChatProxy(list, ctx, lang);
+      if (!reply) throw new Error("empty");
+      setMessages(m => [...m, {
+        role: "assistant",
+        content: reply,
+        ts: Date.now()
+      }]);
+    } catch (e) {
+      const code = e && e.status ? String(e.status) + (e.up ? "/" + e.up : "") : e && e.name === "AbortError" ? "timeout" : "rede";
+      setErr(e && e.status === 401 ? "chat_err_login" : e && e.status === 429 ? "chat_err_rate" : "chat_err_down");
+      setErrCode(code);
+    }
+    setBusy(false);
+  }
+  function send(text) {
+    const t = String(text != null ? text : input).trim().slice(0, 600);
+    if (!t || busy) return;
+    const next = [...messages, {
+      role: "user",
+      content: t,
+      ts: Date.now()
+    }];
+    setMessages(next);
+    setInput("");
+    if (taRef.current) taRef.current.style.height = "auto";
+    run(next);
+  }
+  useEffect(() => {
+    if (seed && !seeded.current) {
+      seeded.current = true;
+      send(seed);
+      if (onSeedUsed) onSeedUsed();
+    }
+  }, []);
+  const lastIsUser = messages.length > 0 && messages[messages.length - 1].role === "user";
+  const name = String(userName || "").trim().split(/\s+/)[0];
+  const chips = [xt(lang, "chat_s1"), xt(lang, "chat_s2"), xt(lang, "chat_s3"), xt(lang, "chat_s4"), xt(lang, "chat_s5"), xt(lang, "chat_s6")];
+  const shared = share ? ctx : null;
+  const avatar = size => /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      flexShrink: 0,
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #E0A855 0%, #B8873A 100%)",
+      color: "#fff"
+    }
+  }, /*#__PURE__*/React.createElement(IconSparkles, {
+    size: Math.round(size * 0.5)
+  }));
+  const wrapStyle = {
+    maxWidth: 760,
+    width: "100%",
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    minHeight: isMobile ? "calc(100dvh - 52px - env(safe-area-inset-top) - 84px - env(safe-area-inset-bottom) - 28px)" : "calc(100dvh - 52px - 56px)"
+  };
+  const header = /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      paddingBottom: 12,
+      borderBottom: "1px solid var(--line)",
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onBack,
+    "aria-label": xt(lang, "chat_back"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "var(--slate)",
+      padding: 4,
+      margin: "0 -2px 0 -6px",
+      display: "flex"
+    }
+  }, /*#__PURE__*/React.createElement(IconChevronLeft, {
+    size: 22
+  })), avatar(40), /*#__PURE__*/React.createElement("div", {
+    style: {
+      minWidth: 0,
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 16,
+      fontWeight: 700,
+      lineHeight: 1.2,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, xt(lang, "chat_name")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: "var(--emerald)",
+      display: "inline-block"
+    }
+  }), busy ? xt(lang, "ins_thinking") : xt(lang, "chat_status"))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setMenu(v => !v),
+    "aria-haspopup": "true",
+    "aria-expanded": menu,
+    "aria-label": xt(lang, "chat_menu"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "var(--slate)",
+      fontSize: 22,
+      lineHeight: 1,
+      padding: "4px 8px",
+      fontWeight: 700
+    }
+  }, "⋮"), menu && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
+    onClick: () => setMenu(false),
+    style: {
+      position: "fixed",
+      inset: 0,
+      zIndex: 20
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    role: "menu",
+    style: {
+      position: "absolute",
+      right: 0,
+      top: 46,
+      zIndex: 21,
+      background: "var(--card)",
+      border: "1px solid var(--line)",
+      borderRadius: 14,
+      boxShadow: "var(--shadow-md)",
+      minWidth: 210,
+      overflow: "hidden"
+    }
+  }, [{
+    k: "new",
+    label: xt(lang, "chat_new"),
+    on: () => {
+      setMessages([]);
+      setErr("");
+    }
+  }, {
+    k: "quick",
+    label: view === "quick" ? xt(lang, "chat_back_chat") : xt(lang, "chat_tab_quick"),
+    on: () => setView(v => v === "quick" ? "chat" : "quick")
+  }].map((it, i) => /*#__PURE__*/React.createElement("button", {
+    key: it.k,
+    role: "menuitem",
+    type: "button",
+    onClick: () => {
+      it.on();
+      setMenu(false);
+    },
+    style: {
+      display: "block",
+      width: "100%",
+      textAlign: "left",
+      background: "none",
+      border: "none",
+      borderTop: i ? "1px solid var(--line)" : "none",
+      padding: "12px 16px",
+      fontSize: 14,
+      fontWeight: 600,
+      color: "var(--ink)",
+      cursor: "pointer",
+      fontFamily: "inherit"
+    }
+  }, it.label)))));
+  const shareBar = /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 0",
+      borderBottom: "1px solid var(--line)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    role: "switch",
+    "aria-checked": share,
+    "aria-label": xt(lang, "chat_share"),
+    onClick: () => setShare(v => !v),
+    style: {
+      width: 40,
+      height: 24,
+      borderRadius: 999,
+      border: "none",
+      cursor: "pointer",
+      position: "relative",
+      flexShrink: 0,
+      background: share ? "var(--emerald)" : "var(--line)",
+      transition: "background .2s"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: "absolute",
+      top: 3,
+      left: share ? 19 : 3,
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      background: "#fff",
+      boxShadow: "0 1px 3px rgba(0,0,0,.3)",
+      transition: "left .2s"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      minWidth: 0,
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, xt(lang, "chat_share")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      lineHeight: 1.35
+    }
+  }, xt(lang, "chat_share_note"))), share && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setShowShared(v => !v),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      padding: 0,
+      fontFamily: "inherit",
+      flexShrink: 0
+    }
+  }, showShared ? xt(lang, "chat_hide") : xt(lang, "chat_share_view"))), share && showShared && shared && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      lineHeight: 1.6,
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 11,
+      color: "var(--slate)"
+    }
+  }, Object.entries(shared).filter(([k, v]) => k !== "categories" && v !== "" && v !== undefined).map(([k, v]) => /*#__PURE__*/React.createElement("div", {
+    key: k
+  }, k, ": ", String(v))), (shared.categories || []).map(c => /*#__PURE__*/React.createElement("div", {
+    key: c.name
+  }, c.name, ": ", c.spent, c.limit ? " / " + c.limit : ""))));
+  if (view === "quick") {
+    return /*#__PURE__*/React.createElement("div", {
+      style: wrapStyle
+    }, header, /*#__PURE__*/React.createElement("div", {
+      style: {
+        paddingTop: 16
+      }
+    }, /*#__PURE__*/React.createElement(AskMoneyCard, {
+      lang: lang,
+      transactions: ctxInput.transactions,
+      accounts: ctxInput.accounts,
+      exchangeRates: ctxInput.exchangeRates,
+      month: ctxInput.month,
+      categories: ctxInput.categories,
+      spentByCategory: ctxInput.spentByCategory
+    })));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: wrapStyle
+  }, header, shareBar, /*#__PURE__*/React.createElement("div", {
+    role: "log",
+    "aria-live": "polite",
+    style: {
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      gap: 6,
+      padding: "16px 0 12px"
+    }
+  }, messages.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: "auto",
+      width: "100%",
+      textAlign: "center",
+      padding: "12px 0"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: 14
+    }
+  }, avatar(64)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: isMobile ? 22 : 26,
+      fontWeight: 700,
+      lineHeight: 1.2
+    }
+  }, name ? xt(lang, "chat_greet", {
+    name
+  }) : xt(lang, "chat_greet_anon")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: "var(--slate)",
+      margin: "6px auto 18px",
+      maxWidth: 420
+    }
+  }, xt(lang, "chat_greet_sub")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+      gap: 8,
+      textAlign: "left"
+    }
+  }, chips.map(c => /*#__PURE__*/React.createElement("button", {
+    key: c,
+    type: "button",
+    onClick: () => send(c),
+    disabled: busy,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      background: "var(--card)",
+      border: "1px solid var(--line)",
+      borderRadius: 14,
+      padding: "12px 14px",
+      fontSize: 13,
+      fontWeight: 600,
+      color: "var(--ink)",
+      cursor: "pointer",
+      fontFamily: "inherit",
+      textAlign: "left",
+      lineHeight: 1.3
+    }
+  }, /*#__PURE__*/React.createElement(IconSparkles, {
+    size: 15,
+    style: {
+      color: "var(--gold)",
+      flexShrink: 0
+    }
+  }), /*#__PURE__*/React.createElement("span", null, c))))), messages.map((m, i) => {
+    const mine = m.role === "user";
+    const prev = messages[i - 1];
+    const showDay = m.ts && (!prev || !prev.ts || chatDayLabel(lang, prev.ts) !== chatDayLabel(lang, m.ts));
+    const sameAsPrev = prev && prev.role === m.role;
+    return /*#__PURE__*/React.createElement(React.Fragment, {
+      key: i
+    }, showDay && /*#__PURE__*/React.createElement("div", {
+      style: {
+        alignSelf: "center",
+        fontSize: 11,
+        fontWeight: 600,
+        color: "var(--slate)",
+        background: "var(--paper)",
+        border: "1px solid var(--line)",
+        borderRadius: 999,
+        padding: "3px 12px",
+        margin: "8px 0"
+      }
+    }, chatDayLabel(lang, m.ts)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        alignSelf: mine ? "flex-end" : "flex-start",
+        maxWidth: "86%",
+        marginTop: sameAsPrev ? 0 : 6,
+        fontSize: 15,
+        lineHeight: 1.5,
+        padding: "8px 12px 6px",
+        borderRadius: 18,
+        borderTopRightRadius: mine && !sameAsPrev ? 6 : 18,
+        borderTopLeftRadius: !mine && !sameAsPrev ? 6 : 18,
+        background: mine ? "var(--btn-bg)" : "var(--card)",
+        color: mine ? "var(--btn-fg)" : "var(--ink)",
+        border: mine ? "none" : "1px solid var(--line)",
+        boxShadow: "var(--shadow-sm)",
+        overflowWrap: "anywhere"
+      }
+    }, mine ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        whiteSpace: "pre-wrap"
+      }
+    }, m.content) : /*#__PURE__*/React.createElement(ChatText, {
+      text: m.content
+    }), m.ts ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        opacity: 0.6,
+        textAlign: "right",
+        marginTop: 2
+      }
+    }, chatClock(m.ts)) : null));
+  }), busy && /*#__PURE__*/React.createElement("div", {
+    "aria-label": xt(lang, "ins_thinking"),
+    style: {
+      alignSelf: "flex-start",
+      display: "flex",
+      gap: 5,
+      padding: "13px 16px",
+      borderRadius: 18,
+      borderTopLeftRadius: 6,
+      background: "var(--card)",
+      border: "1px solid var(--line)",
+      boxShadow: "var(--shadow-sm)",
+      marginTop: 6
+    }
+  }, [0, 1, 2].map(i => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "fp-dot",
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: "var(--slate)",
+      display: "inline-block",
+      animationDelay: i * 0.18 + "s"
+    }
+  }))), err && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    style: {
+      alignSelf: "flex-start",
+      maxWidth: "92%",
+      fontSize: 13,
+      color: "#D13438",
+      background: "rgba(209,52,56,.08)",
+      border: "1px solid rgba(209,52,56,.25)",
+      borderRadius: 14,
+      padding: "10px 14px",
+      marginTop: 6
+    }
+  }, xt(lang, err), err === "chat_err_down" && errCode ? /*#__PURE__*/React.createElement("span", {
+    style: {
+      opacity: 0.7
+    }
+  }, " (", errCode, ")") : null, lastIsUser && err !== "chat_err_login" && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => run(messages),
+    style: {
+      display: "block",
+      marginTop: 6,
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer",
+      padding: 0,
+      fontFamily: "inherit"
+    }
+  }, xt(lang, "chat_retry"))), /*#__PURE__*/React.createElement("div", {
+    ref: endRef,
+    style: {
+      height: 1
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "sticky",
+      bottom: isMobile ? "calc(64px + env(safe-area-inset-bottom) + 8px)" : 14,
+      background: "linear-gradient(180deg, transparent 0, var(--paper) 18px)",
+      paddingTop: 14,
+      zIndex: 5
+    }
+  }, /*#__PURE__*/React.createElement("form", {
     onSubmit: e => {
       e.preventDefault();
       send();
     },
     style: {
       display: "flex",
+      alignItems: "flex-end",
       gap: 8,
-      marginTop: 12
+      background: "var(--card)",
+      border: "1px solid var(--line)",
+      borderRadius: 26,
+      padding: "6px 6px 6px 16px",
+      boxShadow: "var(--shadow-md)"
     }
-  }, /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("textarea", {
+    ref: taRef,
     value: input,
-    onChange: e => setInput(e.target.value),
+    rows: 1,
     maxLength: 600,
+    onChange: e => {
+      setInput(e.target.value);
+      e.target.style.height = "auto";
+      e.target.style.height = Math.min(120, e.target.scrollHeight) + "px";
+    },
+    onKeyDown: e => {
+      if (e.key === "Enter" && !e.shiftKey && !isMobile) {
+        e.preventDefault();
+        send();
+      }
+    },
     placeholder: xt(lang, "chat_ph"),
     "aria-label": xt(lang, "chat_title"),
     style: {
-      ...inputStyle,
       flex: 1,
-      minWidth: 0
+      minWidth: 0,
+      border: "none",
+      outline: "none",
+      background: "transparent",
+      color: "var(--ink)",
+      fontSize: 16,
+      fontFamily: "inherit",
+      resize: "none",
+      padding: "9px 0",
+      lineHeight: 1.4,
+      maxHeight: 120
     }
-  }), /*#__PURE__*/React.createElement(PrimaryButton, {
-    onClick: () => send(),
-    disabled: busy || !input.trim()
-  }, xt(lang, "chat_send"))), /*#__PURE__*/React.createElement("label", {
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: busy || !input.trim(),
+    "aria-label": xt(lang, "chat_send"),
     style: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: 10,
-      marginTop: 14,
-      cursor: "pointer",
-      fontSize: 13,
-      fontWeight: 600
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: share,
-    onChange: e => setShare(e.target.checked),
-    style: {
-      width: 18,
-      height: 18,
+      width: 40,
+      height: 40,
+      borderRadius: "50%",
+      border: "none",
       flexShrink: 0,
-      marginTop: 1,
-      accentColor: "var(--gold)"
+      cursor: busy || !input.trim() ? "default" : "pointer",
+      background: "var(--btn-bg)",
+      color: "var(--btn-fg)",
+      opacity: busy || !input.trim() ? 0.35 : 1,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "opacity .15s"
     }
-  }), /*#__PURE__*/React.createElement("span", null, xt(lang, "chat_share"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement(IconArrowUp, {
+    size: 19
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
-      display: "block",
-      fontWeight: 500,
-      fontSize: 12,
+      fontSize: 10.5,
       color: "var(--slate)",
-      marginTop: 2
-    }
-  }, xt(lang, "chat_share_note")))), shared && /*#__PURE__*/React.createElement("details", {
-    style: {
-      marginTop: 8,
-      fontSize: 12,
-      color: "var(--slate)"
-    }
-  }, /*#__PURE__*/React.createElement("summary", {
-    style: {
-      cursor: "pointer",
-      fontWeight: 600
-    }
-  }, xt(lang, "chat_share_view")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 6,
-      lineHeight: 1.6,
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 11
-    }
-  }, Object.entries(shared).filter(([k, v]) => k !== "categories" && v !== "" && v !== undefined).map(([k, v]) => /*#__PURE__*/React.createElement("div", {
-    key: k
-  }, k, ": ", String(v))), (shared.categories || []).map(c => /*#__PURE__*/React.createElement("div", {
-    key: c.name
-  }, c.name, ": ", c.spent, c.limit ? " / " + c.limit : "")))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "var(--slate)",
-      marginTop: 12,
-      lineHeight: 1.4
+      textAlign: "center",
+      padding: "6px 8px 0",
+      lineHeight: 1.35
     }
   }, xt(lang, "chat_disclaimer"))));
 }
 function OverviewInsights({
   lang,
   part,
-  getChatContext,
+  onOpenAssistant,
+  onAskAssistant,
   transactions,
   accounts,
   exchangeRates,
@@ -15038,15 +15570,10 @@ function OverviewInsights({
       flexWrap: "wrap",
       gap: 12
     }
-  }, part !== "more" && /*#__PURE__*/React.createElement(AssistantCard, {
+  }, part !== "more" && /*#__PURE__*/React.createElement(AssistantEntry, {
     lang: lang,
-    transactions: transactions,
-    accounts: accounts,
-    exchangeRates: exchangeRates,
-    month: month,
-    categories: categories,
-    spentByCategory: spentByCategory,
-    getChatContext: getChatContext
+    onOpen: onOpenAssistant,
+    onAsk: onAskAssistant
   }), part !== "ask" && /*#__PURE__*/React.createElement(SpendingCalendarCard, {
     lang: lang,
     transactions: transactions,
@@ -16520,6 +17047,7 @@ function ReconcileButton({
 }
 function FinanceApp() {
   const [tab, setTab] = useState("overview");
+  const [assistantSeed, setAssistantSeed] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => loadKey("sidebar-collapsed", true));
   const [favoriteTabs, setFavoriteTabs] = useState(() => loadKey("favorite-tabs", []));
   const [tabUsageCounts, setTabUsageCounts] = useState(() => loadKey("tab-usage-counts", {}));
@@ -18235,6 +18763,14 @@ function FinanceApp() {
     isFavorite: favoriteTabs.includes("overview"),
     onToggleFavorite: () => toggleFavorite("overview"),
     collapsed: sidebarCollapsed
+  }), /*#__PURE__*/React.createElement(NavItem, {
+    icon: IconSparkles,
+    label: translate(lang, "nav", "assistant"),
+    active: tab === "assistant",
+    onClick: () => selectTab("assistant"),
+    isFavorite: favoriteTabs.includes("assistant"),
+    onToggleFavorite: () => toggleFavorite("assistant"),
+    collapsed: sidebarCollapsed
   })), /*#__PURE__*/React.createElement(NavSection, {
     label: translate(lang, "nav", "section_finance"),
     collapsed: sidebarCollapsed
@@ -18544,6 +19080,23 @@ function FinanceApp() {
       gap: 16
     }
   }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => selectTab("assistant"),
+    title: translate(lang, "nav", "assistant"),
+    "aria-label": translate(lang, "nav", "assistant"),
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: tab === "assistant" ? "var(--gold)" : "var(--slate)",
+      padding: 8,
+      margin: -8,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(IconSparkles, {
+    size: 17
+  })), /*#__PURE__*/React.createElement("button", {
     onClick: () => selectTab("alerts"),
     title: translate(lang, "nav", "alerts"),
     style: {
@@ -18628,7 +19181,7 @@ function FinanceApp() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      display: "flex",
+      display: tab === "assistant" ? "none" : "flex",
       justifyContent: "space-between",
       alignItems: "flex-end",
       marginBottom: isMobile ? 14 : 22,
@@ -18810,8 +19363,38 @@ function FinanceApp() {
   })(), /*#__PURE__*/React.createElement("div", {
     key: tab,
     className: "tab-page-transition"
-  }, tab === "overview" && /*#__PURE__*/React.createElement(Overview, {
+  }, tab === "assistant" && /*#__PURE__*/React.createElement(AssistantTab, {
     lang: lang,
+    isMobile: isMobile,
+    userName: userName,
+    seed: assistantSeed,
+    onSeedUsed: () => setAssistantSeed(""),
+    onBack: () => selectTab("overview"),
+    ctxInput: {
+      month,
+      accounts,
+      transactions,
+      exchangeRates,
+      balancesByCurrency,
+      totalReceitas,
+      totalDespesas,
+      prevTotalReceitas,
+      prevTotalDespesas,
+      spentByCategory,
+      categories: budgetIncome.categories,
+      debts,
+      debtPayments,
+      recurringExpenses,
+      goals,
+      taxaInflacao
+    }
+  }), tab === "overview" && /*#__PURE__*/React.createElement(Overview, {
+    lang: lang,
+    onOpenAssistant: () => selectTab("assistant"),
+    onAskAssistant: t => {
+      setAssistantSeed(t);
+      selectTab("assistant");
+    },
     overviewLayout: overviewLayout,
     onOverviewLayout: setOverviewLayout,
     cardPurchases: cardPurchases,
@@ -19761,7 +20344,7 @@ function FinanceApp() {
       lineHeight: 1.3,
       whiteSpace: "nowrap"
     }
-  }, a.label)))), isMobile && /*#__PURE__*/React.createElement("button", {
+  }, a.label)))), isMobile && tab !== "assistant" && /*#__PURE__*/React.createElement("button", {
     ref: fabButtonRef,
     onClick: () => setShowFabMenu(v => !v),
     "aria-haspopup": "true",
@@ -21893,6 +22476,8 @@ function ChartsPage({
 }
 function Overview({
   lang,
+  onOpenAssistant,
+  onAskAssistant,
   overviewLayout,
   onOverviewLayout,
   cardPurchases,
@@ -22093,42 +22678,6 @@ function Overview({
     expectedIncome
   }), [accounts, transactions, balancesByCurrency, exchangeRates, debts, debtPayments, recurringExpenses, expectedIncome]);
   const savingsStreak = useMemo(() => computeSavingsStreak(transactions), [transactions]);
-  const getChatContext = () => {
-    const cur = extrasCurrency();
-    const inc = Number(totalReceitas) || 0;
-    const exp = Number(totalDespesas) || 0;
-    const conv = (v, from) => {
-      const r = from === cur || !from ? v : convertCurrency(v, from, cur, exchangeRates || {});
-      return r === null ? 0 : r;
-    };
-    const debtsTotal = (debts || []).filter(d => d.type === "A pagar" && debtStatus(d, debtPayments) !== "Quitada").reduce((a, d) => a + conv(debtBalance(d, debtPayments), d.currency), 0);
-    const fixed = (recurringExpenses || []).filter(r => !r.isStaff).reduce((a, r) => {
-      const acc = accounts.find(x => x.id === r.accountId);
-      return a + conv(Number(r.amount) || 0, acc ? acc.currency : cur);
-    }, 0);
-    const cats = Object.entries(spentByCategory || {}).map(([name, spent]) => ({
-      name,
-      spent: Math.round(Number(spent) || 0),
-      limit: Math.round(Number((categories || {})[name]) || 0) || undefined
-    })).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent).slice(0, 12);
-    return {
-      currency: cur,
-      month,
-      income: Math.round(inc),
-      expenses: Math.round(exp),
-      savingsRate: inc > 0 ? Math.round((inc - exp) / inc * 100) : undefined,
-      prevIncome: Math.round(Number(prevTotalReceitas) || 0),
-      prevExpenses: Math.round(Number(prevTotalDespesas) || 0),
-      netWorth: Math.round(consolidatedKzNow),
-      liquid: Math.round(liquidKzNow),
-      debts: Math.round(debtsTotal),
-      fixedMonthly: Math.round(fixed),
-      goalsTarget: Math.round((goals || []).reduce((a, g) => a + (Number(g.target) || 0), 0)),
-      goalsSaved: Math.round((goals || []).reduce((a, g) => a + (Number(g.current) || 0), 0)),
-      inflation: Number(taxaInflacao) ? Math.round(Number(taxaInflacao) * 1000) / 10 : undefined,
-      categories: cats
-    };
-  };
   const firstSteps = [{
     label: translate(lang, "overview", "first_step_bank_account"),
     done: accounts.length > 0,
@@ -22251,7 +22800,8 @@ function Overview({
       node: /*#__PURE__*/React.createElement(OverviewInsights, {
         lang: lang,
         part: "ask",
-        getChatContext: getChatContext,
+        onOpenAssistant: onOpenAssistant,
+        onAskAssistant: onAskAssistant,
         transactions: transactions,
         accounts: accounts,
         exchangeRates: exchangeRates,
