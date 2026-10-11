@@ -14499,17 +14499,21 @@ function OverviewBlocks({
     onClick: () => setEditing(v => !v),
     "aria-pressed": editing,
     style: {
-      background: editing ? "var(--btn-bg)" : "none",
-      color: editing ? "var(--btn-fg)" : "var(--gold)",
-      border: editing ? "none" : "1px solid var(--line)",
-      borderRadius: 999,
-      padding: "7px 14px",
+      background: "none",
+      border: "none",
+      color: editing ? "var(--gold)" : "var(--slate)",
+      opacity: editing ? 1 : 0.75,
+      borderRadius: 8,
+      padding: "6px 4px",
       fontSize: 12,
-      fontWeight: 700,
+      fontWeight: 500,
       cursor: "pointer",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      textDecoration: editing ? "none" : "underline",
+      textDecorationColor: "var(--line)",
+      textUnderlineOffset: 3
     }
-  }, editing ? xt(lang, "ovl_done") : "⚙ " + xt(lang, "ovl_customize"))), editing && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+  }, editing ? xt(lang, "ovl_done") : xt(lang, "ovl_customize"))), editing && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: "var(--slate)",
