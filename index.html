@@ -11593,6 +11593,7 @@ const EXTRAS_I18N = {
     ins_avg_day: "por dia, em média",
     chat_title: "Assistente financeiro",
     chat_name: "Assistente Fonsprince",
+    sum_tab_savings: "Economia",
     chat_data_on: "Os meus números: ativo",
     chat_data_off: "Os meus números: desligado",
     chat_data_note: "Só totais. Nunca descrições nem nomes.",
@@ -11894,6 +11895,7 @@ const EXTRAS_I18N = {
     ins_avg_day: "per day on average",
     chat_title: "Financial assistant",
     chat_name: "Fonsprince Assistant",
+    sum_tab_savings: "Savings",
     chat_data_on: "My numbers: on",
     chat_data_off: "My numbers: off",
     chat_data_note: "Totals only. Never descriptions or names.",
@@ -12191,6 +12193,7 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Afficher {n} panneaux de plus",
     chat_title: "Assistant financier",
     chat_name: "Assistant Fonsprince",
+    sum_tab_savings: "Épargne",
     chat_data_on: "Mes chiffres : activé",
     chat_data_off: "Mes chiffres : désactivé",
     chat_data_note: "Totaux seulement. Jamais de descriptions ni de noms.",
@@ -12488,6 +12491,7 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Mostrar {n} paneles más",
     chat_title: "Asistente financiero",
     chat_name: "Asistente Fonsprince",
+    sum_tab_savings: "Ahorro",
     chat_data_on: "Mis números: activado",
     chat_data_off: "Mis números: desactivado",
     chat_data_note: "Solo totales. Nunca descripciones ni nombres.",
@@ -13954,6 +13958,8 @@ function OverviewPulse({
   totalDespesas,
   onNavigate
 }) {
+  const [sumTab, setSumTab] = useState(() => loadKey("sum-tab", "balance") === "savings" ? "savings" : "balance");
+  useEffect(() => saveKey("sum-tab", sumTab), [sumTab]);
   const {
     start,
     end
@@ -14082,72 +14088,57 @@ function OverviewPulse({
         padding: "3px 10px"
       }
     }, xt(lang, "pulse_rate"), " ", rate, "%")), /*#__PURE__*/React.createElement("div", {
+      role: "tablist",
       style: {
-        ...mono,
-        fontSize: 30,
-        marginTop: 10,
-        color: net < 0 ? "#D13438" : "var(--ink)"
+        display: "inline-flex",
+        background: "var(--paper)",
+        border: "1px solid var(--line)",
+        borderRadius: 999,
+        padding: 3,
+        gap: 2,
+        margin: "12px 0 16px"
       }
-    }, net > 0 ? "+" : "", fmt(net)), /*#__PURE__*/React.createElement("div", {
+    }, [{
+      id: "balance",
+      label: translate(lang, "overview", "balance")
+    }, {
+      id: "savings",
+      label: xt(lang, "sum_tab_savings")
+    }].map(t => /*#__PURE__*/React.createElement("button", {
+      key: t.id,
+      type: "button",
+      role: "tab",
+      "aria-selected": sumTab === t.id,
+      onClick: () => setSumTab(t.id),
       style: {
+        border: "none",
+        cursor: "pointer",
+        borderRadius: 999,
+        padding: "5px 14px",
         fontSize: 12,
-        color: "var(--slate)",
-        marginBottom: 12
+        fontWeight: 700,
+        fontFamily: "inherit",
+        background: sumTab === t.id ? "var(--card)" : "transparent",
+        color: sumTab === t.id ? "var(--ink)" : "var(--slate)",
+        boxShadow: sumTab === t.id ? "var(--shadow-sm)" : "none"
       }
-    }, xt(lang, "sum_net")), /*#__PURE__*/React.createElement("div", {
-      role: "img",
-      "aria-label": xt(lang, "sum_net"),
+    }, t.label))), /*#__PURE__*/React.createElement("div", {
       style: {
-        height: 10,
-        borderRadius: 99,
-        background: inc > 0 ? "rgba(18,161,80,.28)" : "var(--line)",
-        overflow: "hidden",
-        marginBottom: 12
+        marginBottom: 6
       }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: spentPct + "%",
-        height: "100%",
-        background: "#D13438",
-        borderRadius: 99,
-        transition: "width .6s ease"
-      }
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 12,
-        marginBottom: 10
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "var(--slate)",
-        fontWeight: 600
-      }
-    }, xt(lang, "sum_in")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...mono,
-        fontSize: 15,
-        color: "#12A150"
-      }
-    }, fmt(inc))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        textAlign: "right"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "var(--slate)",
-        fontWeight: 600
-      }
-    }, xt(lang, "sum_out")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...mono,
-        fontSize: 15,
-        color: "#D13438"
-      }
-    }, fmt(exp)))), row(xt(lang, "pulse_avg"), fmt(avgDay, cur), xt(lang, "pulse_avg_sub")), row(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", big ? big.t.description || big.t.category : null), row(xt(lang, "pulse_proj"), fmt(projected), running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
+    }, sumTab === "balance" ? /*#__PURE__*/React.createElement(MonthlyBalanceCard, {
+      lang: lang,
+      totalReceitas: inc,
+      totalDespesas: exp,
+      saldo: net,
+      onNavigate: onNavigate,
+      bare: true
+    }) : /*#__PURE__*/React.createElement(MonthlySavingsCard, {
+      lang: lang,
+      totalReceitas: inc,
+      totalDespesas: exp,
+      bare: true
+    })), row(xt(lang, "pulse_avg"), fmt(avgDay, cur), xt(lang, "pulse_avg_sub")), row(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", big ? big.t.description || big.t.category : null), row(xt(lang, "pulse_proj"), fmt(projected), running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
       amount: fmt(Math.abs(projNet))
     }) : null, projNet < 0 && inc > 0 ? "#D13438" : null));
   }
@@ -15067,7 +15058,7 @@ function AssistantTab({
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
-    minHeight: isMobile ? "calc(100dvh - 52px - env(safe-area-inset-top) - 84px - env(safe-area-inset-bottom) - 28px)" : "calc(100dvh - 52px - 56px)"
+    minHeight: isMobile ? "calc(100dvh - 52px - env(safe-area-inset-top) - 8px)" : "calc(100dvh - 52px - 56px)"
   };
   const header = /*#__PURE__*/React.createElement("div", {
     style: {
@@ -15477,7 +15468,7 @@ function AssistantTab({
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       position: "sticky",
-      bottom: isMobile ? "calc(64px + env(safe-area-inset-bottom) + 8px)" : 14,
+      bottom: isMobile ? "env(safe-area-inset-bottom)" : 14,
       background: "linear-gradient(180deg, transparent 0, var(--paper) 18px)",
       paddingTop: 14,
       zIndex: 5
@@ -19187,7 +19178,7 @@ function FinanceApp() {
     style: {
       backgroundImage: "linear-gradient(180deg, color-mix(in srgb, var(--gold) 9%, transparent) 0, transparent 260px)",
       flex: 1,
-      padding: isMobile ? "14px 16px calc(84px + env(safe-area-inset-bottom))" : "26px 32px",
+      padding: isMobile ? tab === "assistant" ? "8px 16px 0" : "14px 16px calc(84px + env(safe-area-inset-bottom))" : "26px 32px",
       overflowY: isMobile ? "visible" : "auto",
       WebkitOverflowScrolling: "touch"
     }
@@ -20140,7 +20131,7 @@ function FinanceApp() {
   }), /*#__PURE__*/React.createElement(Toast, {
     toast: toast,
     onDismiss: () => setToast(null)
-  }), isMobile && /*#__PURE__*/React.createElement("nav", {
+  }), isMobile && tab !== "assistant" && /*#__PURE__*/React.createElement("nav", {
     "aria-label": translate(lang, "ui", "main_navigation"),
     style: {
       position: "fixed",
