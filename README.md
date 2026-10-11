@@ -48,3 +48,15 @@ Ou, sem reconstruir nada: na caixa "Pergunte ao seu dinheiro", toque em "Ativar 
 ## Custo
 Cada pergunta usa uns ~400 tokens de entrada e ~150 de saída no Haiku — frações de cêntimo.
 `RATE_PER_HOUR` e `DAILY_CAP` limitam o gasto máximo.
+
+## Guia rápido: Render + GitHub Pages (o seu caso)
+1. Ponha a pasta `fonsprince-ai-proxy` dentro do repositório `Fonsprince` (GitHub → Add file → Upload files). O `.env` nunca vai para o repositório.
+2. https://render.com → New → Web Service → ligue o repositório `Fonsprince`.
+3. Root Directory: `fonsprince-ai-proxy` · Runtime: Node · Build Command: `npm install` · Start Command: `npm start` · Plano: Free · Health Check Path: `/health`.
+4. Environment (Add variable):
+   - `ANTHROPIC_API_KEY` = a sua chave (console.anthropic.com → API Keys)
+   - `FIREBASE_PROJECT_ID` = `fonsprince-one`
+   - `ALLOWED_ORIGINS` = `https://afonsondombaxi-eng.github.io,capacitor://localhost`
+     (só o domínio, **sem** `/Fonsprince` no fim; `capacitor://localhost` é para a versão nativa do iPhone)
+5. Deploy. Abra `https://O-SEU-SERVICO.onrender.com/health` — deve mostrar `{"ok":true,"auth":"firebase"}`.
+6. Na app: Visão Geral → "Ativar IA" → cole o endereço do serviço → Guardar. É preciso ter sessão iniciada (sincronização) para a IA funcionar.
