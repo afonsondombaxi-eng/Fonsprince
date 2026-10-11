@@ -11487,6 +11487,17 @@ const EXTRAS_I18N = {
     ins_sub_year: "{amount} por ano",
     ins_sub_next: "próx. {date}",
     ins_sub_manage: "Gerir",
+    pulse_avg: "Média diária",
+    pulse_avg_sub: "gasto por dia, até hoje",
+    pulse_big: "Maior despesa",
+    pulse_rate: "Taxa de poupança",
+    pulse_rate_sub: "Sobra {amount}",
+    pulse_proj: "Previsão de gastos",
+    pulse_proj_ok: "Fim do mês com folga de {amount}",
+    pulse_proj_bad: "Ao ritmo atual, faltam {amount}",
+    pulse_budgets: "Orçamentos",
+    pulse_all: "Ver tudo",
+    pulse_recent: "Últimos movimentos",
     ins_sub_empty: "Sem despesas fixas registadas.",
     ins_ru_title: "Arredondamentos",
     ins_ru_text: "Se arredondasse cada despesa deste mês ao múltiplo de {step} seguinte ({n} despesas), teria guardado",
@@ -11700,6 +11711,17 @@ const EXTRAS_I18N = {
     ins_sub_year: "{amount} per year",
     ins_sub_next: "next {date}",
     ins_sub_manage: "Manage",
+    pulse_avg: "Daily average",
+    pulse_avg_sub: "spent per day so far",
+    pulse_big: "Biggest expense",
+    pulse_rate: "Savings rate",
+    pulse_rate_sub: "{amount} left over",
+    pulse_proj: "Projected spending",
+    pulse_proj_ok: "On track to end {amount} ahead",
+    pulse_proj_bad: "At this pace you will be {amount} short",
+    pulse_budgets: "Budgets",
+    pulse_all: "See all",
+    pulse_recent: "Recent activity",
     ins_sub_empty: "No fixed expenses yet.",
     ins_ru_title: "Round-ups",
     ins_ru_text: "If you rounded every expense this month up to the next {step} ({n} expenses), you would have saved",
@@ -12853,15 +12875,20 @@ function AskMoneyCard({
   }, busy ? xt(lang, "ins_thinking") : xt(lang, "ins_ask_btn"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      flexWrap: "wrap",
+      overflowX: "auto",
       gap: 6,
-      marginTop: 10
+      marginTop: 10,
+      paddingBottom: 4,
+      scrollbarWidth: "none",
+      WebkitOverflowScrolling: "touch"
     }
   }, chips.map(c => /*#__PURE__*/React.createElement("button", {
     key: c,
     type: "button",
     onClick: () => ask(c),
     style: {
+      flexShrink: 0,
+      whiteSpace: "nowrap",
       border: "1px solid var(--line)",
       background: "var(--paper)",
       color: "var(--slate)",
@@ -13240,6 +13267,7 @@ function SubscriptionsCard({
     }).sort((a, b) => b.v - a.v);
   }, [recurringExpenses, accounts, exchangeRates, month, transactions, cur]);
   const monthly = items.reduce((s, x) => s + x.v, 0);
+  if (items.length === 0) return null;
   return /*#__PURE__*/React.createElement(Card, {
     style: {
       flex: "1 1 320px",
@@ -13451,6 +13479,256 @@ function RoundUpsCard({
       flex: "1 1 160px"
     }
   }, xt(lang, "ins_ru_btn"))));
+}
+function OverviewPulse({
+  lang,
+  month,
+  transactions,
+  accounts,
+  exchangeRates,
+  categories,
+  spentByCategory,
+  totalReceitas,
+  totalDespesas,
+  onNavigate
+}) {
+  const {
+    start,
+    end
+  } = periodBounds(month);
+  const today = todayISO();
+  const inc = Number(totalReceitas) || 0;
+  const exp = Number(totalDespesas) || 0;
+  const total = daysBetweenISO(start, end) + 1;
+  const running = today >= start && today <= end;
+  const elapsed = running ? daysBetweenISO(start, today) + 1 : total;
+  const cur = extrasCurrency();
+  const big = useMemo(() => {
+    let best = null;
+    for (const t of transactions || []) {
+      if (t.kind !== "despesa" || !t.date || t.date < start || t.date > end) continue;
+      const v = insTxValue(t, accounts, exchangeRates, cur);
+      if (v !== null && (!best || v > best.v)) best = {
+        v,
+        t
+      };
+    }
+    return best;
+  }, [transactions, accounts, exchangeRates, cur, start, end]);
+  const avgDay = elapsed > 0 ? exp / elapsed : 0;
+  const pace = big ? Math.max(0, exp - big.v) : exp;
+  const projected = running && elapsed >= 3 ? exp + pace / elapsed * (total - elapsed) : exp;
+  const net = inc - exp;
+  const rate = inc > 0 ? Math.round(net / inc * 100) : null;
+  const projNet = inc - projected;
+  const budgets = useMemo(() => {
+    return Object.entries(categories || {}).map(([cat, lim]) => ({
+      cat,
+      lim: Number(lim) || 0,
+      spent: Number((spentByCategory || {})[cat]) || 0
+    })).filter(b => b.lim > 0 && b.spent > 0).map(b => ({
+      ...b,
+      pct: b.spent / b.lim
+    })).sort((a, b) => b.pct - a.pct).slice(0, 4);
+  }, [categories, spentByCategory]);
+  const recent = useMemo(() => {
+    return (transactions || []).filter(t => (t.kind === "receita" || t.kind === "despesa") && t.date && t.date <= today).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0).slice(0, 5);
+  }, [transactions, today]);
+  const lab = {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "var(--slate)",
+    textTransform: "uppercase",
+    letterSpacing: 0.5
+  };
+  const mono = {
+    fontFamily: "'IBM Plex Mono', monospace",
+    fontWeight: 700
+  };
+  const kpi = (label, value, color, sub) => /*#__PURE__*/React.createElement(Card, {
+    style: {
+      padding: 14,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: lab
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...mono,
+      fontSize: 18,
+      marginTop: 6,
+      color: color || "var(--ink)",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, value), sub ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 2
+    }
+  }, sub) : null);
+  const linkBtn = (to, text) => /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onNavigate && onNavigate(to),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      padding: 0,
+      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    }
+  }, text);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+      gap: 12
+    }
+  }, kpi(xt(lang, "pulse_avg"), fmt(avgDay, cur), null, xt(lang, "pulse_avg_sub")), kpi(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", null, big ? big.t.description || big.t.category : null), kpi(xt(lang, "pulse_rate"), rate === null ? "—" : rate + "%", rate !== null && rate < 0 ? "var(--red, #D13438)" : "var(--ink)", rate === null ? null : xt(lang, "pulse_rate_sub", {
+    amount: fmt(net)
+  })), kpi(xt(lang, "pulse_proj"), fmt(projected), projNet < 0 && inc > 0 ? "var(--red, #D13438)" : "var(--ink)", running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
+    amount: fmt(Math.abs(projNet))
+  }) : null)), budgets.length > 0 && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: lab
+  }, xt(lang, "pulse_budgets")), linkBtn("budget", xt(lang, "pulse_all"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, budgets.map(b => {
+    const col = b.pct >= 1 ? "#D13438" : b.pct >= 0.75 ? "#E08E45" : "#12A150";
+    return /*#__PURE__*/React.createElement("div", {
+      key: b.cat
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 8,
+        fontSize: 13,
+        marginBottom: 5
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 600,
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, b.cat), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "var(--slate)",
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement("strong", {
+      style: {
+        color: col
+      }
+    }, Math.round(b.pct * 100), "%"), " · ", fmt(b.spent), " / ", fmt(b.lim))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: 8,
+        borderRadius: 99,
+        background: "var(--line)",
+        overflow: "hidden"
+      },
+      role: "progressbar",
+      "aria-valuenow": Math.round(b.pct * 100),
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-label": b.cat
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: Math.min(100, b.pct * 100) + "%",
+        height: "100%",
+        background: col,
+        borderRadius: 99,
+        transition: "width .6s ease"
+      }
+    })));
+  }))), recent.length > 0 && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: lab
+  }, xt(lang, "pulse_recent")), linkBtn("transactions", xt(lang, "pulse_all"))), recent.map((t, i) => {
+    const acc = accounts.find(a => a.id === t.accountId);
+    const isIn = t.kind === "receita";
+    return /*#__PURE__*/React.createElement("div", {
+      key: t.id || i,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px 0",
+        borderTop: i ? "1px solid var(--line)" : "none"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      "aria-hidden": "true",
+      style: {
+        width: 34,
+        height: 34,
+        borderRadius: 10,
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 700,
+        fontSize: 15,
+        background: isIn ? "rgba(18,161,80,.12)" : "rgba(209,52,56,.10)",
+        color: isIn ? "#12A150" : "#D13438"
+      }
+    }, isIn ? "↓" : "↑"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        minWidth: 0,
+        flex: 1
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 14,
+        fontWeight: 600,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, t.description || t.category), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "var(--slate)"
+      }
+    }, ddmm(t.date), " · ", t.category)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...mono,
+        fontSize: 13,
+        flexShrink: 0,
+        color: isIn ? "#12A150" : "var(--ink)"
+      }
+    }, isIn ? "+" : "−", fmt(Number(t.amount), acc ? acc.currency : undefined)));
+  })));
 }
 function OverviewInsights({
   lang,
@@ -20631,7 +20909,18 @@ function Overview({
     totalReceitas: totalReceitas,
     totalDespesas: totalDespesas,
     bare: true
-  })))), /*#__PURE__*/React.createElement(OverviewExtras, {
+  })))), /*#__PURE__*/React.createElement(OverviewPulse, {
+    lang: lang,
+    month: month,
+    transactions: transactions,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    categories: categories,
+    spentByCategory: spentByCategory,
+    totalReceitas: totalReceitas,
+    totalDespesas: totalDespesas,
+    onNavigate: onNavigate
+  }), /*#__PURE__*/React.createElement(OverviewExtras, {
     lang: lang,
     month: month,
     categories: categories,
@@ -20773,7 +21062,7 @@ function Overview({
     }
   }, liquidityPct !== null ? `${liquidityPct.toFixed(0)}% do património disponível` : translate(lang, "overview", "liquidity_subtitle"))))), insights.length > 0 && /*#__PURE__*/React.createElement(Card, {
     style: {
-      background: "linear-gradient(135deg, #1B1F27 0%, #262B35 100%)",
+      background: "linear-gradient(135deg, #16274D 0%, #213A6E 100%)",
       border: "none"
     }
   }, /*#__PURE__*/React.createElement("h3", {
