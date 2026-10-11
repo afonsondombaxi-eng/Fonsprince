@@ -1,0 +1,10 @@
+{
+  "name": "fonsprince-ai-proxy",
+  "version": "1.0.0",
+  "description": "Proxy seguro que traduz perguntas em linguagem natural num plano de consulta JSON (Claude Haiku) para a Fonsprince One",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node test.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED",
+  "private": true
+}
