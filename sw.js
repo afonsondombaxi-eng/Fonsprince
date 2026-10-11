@@ -1,4 +1,4 @@
-const CACHE_NAME = "fonsprince-one-20261011131621";
+const CACHE_NAME = "fonsprince-one-20261011132758";
 const CORE_ASSETS = [
   "./index.html",
   "./manifest.json",
