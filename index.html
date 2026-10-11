@@ -176,6 +176,12 @@ text[font-family*="IBM Plex Mono"], tspan[font-family*="IBM Plex Mono"] { font-f
 .inc-cards { display: none; }
 @media (max-width: 640px) { .inc-table { display: none; } .inc-cards { display: flex !important; } }
 .tab-page-transition h3 { font-weight: 600; letter-spacing: -0.01em; }
+/* ── Revisão de consistência: escala tipográfica, foco e numerais ── */
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body { font-variant-numeric: tabular-nums; }
+h1, h2, h3 { line-height: 1.25; }
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible, [role="tab"]:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
 .modal-panel { animation: modalPop 0.22s ease-out; }
 .sheet-panel { animation: sheetUp 0.26s cubic-bezier(.2,.8,.2,1); }
 @keyframes sheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
@@ -8536,7 +8542,7 @@ function NavItem({
       background: "none",
       border: "none",
       cursor: "pointer",
-      padding: 5,
+      padding: 4,
       color: isFavorite ? "var(--gold)" : "rgba(255,255,255,0.28)",
       display: "flex"
     }
@@ -8559,7 +8565,7 @@ function NavSection({
       padding: "0 12px 6px",
       fontSize: 11,
       fontWeight: 700,
-      letterSpacing: 0.7,
+      letterSpacing: 0.5,
       textTransform: "uppercase",
       color: "rgba(255,255,255,0.32)"
     }
@@ -8773,7 +8779,7 @@ function CollapsibleCard({
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: 0
     }
   }, title), /*#__PURE__*/React.createElement("span", {
@@ -8821,9 +8827,9 @@ function Card({
     style: {
       background: "var(--card)",
       border: "1px solid var(--line)",
-      boxShadow: pressed ? "0 1px 3px rgba(16,24,40,0.05)" : "0 1px 2px rgba(16,24,40,0.03)",
+      boxShadow: pressed ? "var(--shadow-sm)" : "0 1px 2px rgba(16,24,40,0.03)",
       borderRadius: 8,
-      padding: 18,
+      padding: 16,
       cursor: onClick ? "pointer" : "default",
       transform: pressed ? "scale(0.97)" : "scale(1)",
       transition: pressed ? "transform 0.1s ease, box-shadow 0.1s ease" : "transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease",
@@ -8881,7 +8887,7 @@ function StatCard({
       fontSize: big ? 26 : 22,
       fontWeight: 700,
       color: colors[tone],
-      marginTop: 9,
+      marginTop: 8,
       fontVariantNumeric: "tabular-nums",
       cursor: fullValue ? "help" : "default"
     }
@@ -8889,7 +8895,7 @@ function StatCard({
     style: {
       fontSize: 12,
       color: "var(--slate)",
-      marginTop: 5
+      marginTop: 4
     }
   }, sub));
 }
@@ -8907,7 +8913,7 @@ function TrendBadge({
       style: {
         fontSize: 12,
         color: "var(--slate)",
-        marginTop: 5
+        marginTop: 4
       }
     }, "novo (sem dados de ", previousLabel, ")");
   }
@@ -8917,10 +8923,10 @@ function TrendBadge({
   const color = Math.abs(pct) < 0.5 ? "var(--slate)" : good ? "var(--emerald)" : "var(--rust)";
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 5,
+      marginTop: 4,
       display: "flex",
       flexDirection: "column",
-      gap: 1
+      gap: 2
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9088,7 +9094,7 @@ function MemberTrendChart({
   }, r.label))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 14,
+      gap: 12,
       flexWrap: "wrap",
       marginTop: 12
     }
@@ -9158,7 +9164,7 @@ function MultiCurrencyCard({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 7,
+      gap: 8,
       marginTop: 10
     }
   }, entries.map(([cur, val]) => /*#__PURE__*/React.createElement("div", {
@@ -9180,7 +9186,7 @@ function MultiCurrencyCard({
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
       fontWeight: 700,
-      fontSize: 15,
+      fontSize: 14,
       color: "var(--ink)",
       cursor: "help"
     }
@@ -9200,7 +9206,7 @@ function Field({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 5,
+      gap: 4,
       fontSize: 13,
       color: "var(--slate)",
       fontWeight: 600
@@ -9208,7 +9214,7 @@ function Field({
   }, label, children);
 }
 const inputStyle = {
-  padding: "9px 10px",
+  padding: "8px 10px",
   borderRadius: 8,
   border: "1px solid var(--line)",
   fontFamily: "Inter, sans-serif",
@@ -9272,7 +9278,7 @@ function Toast({
       color: "#fff",
       padding: "12px 20px",
       borderRadius: 20,
-      boxShadow: "0 10px 30px rgba(16,24,40,0.28)",
+      boxShadow: "var(--shadow-md)",
       display: "flex",
       alignItems: "center",
       gap: 8,
@@ -9369,7 +9375,7 @@ function Modal({
       overflowY: "auto",
       overscrollBehavior: "contain",
       WebkitOverflowScrolling: "touch",
-      boxShadow: "0 -8px 30px rgba(16,32,60,0.22)"
+      boxShadow: "var(--shadow-lg)"
     } : {
       background: "var(--card)",
       borderRadius: 8,
@@ -9380,7 +9386,7 @@ function Modal({
       overflowY: "auto",
       overscrollBehavior: "contain",
       WebkitOverflowScrolling: "touch",
-      boxShadow: "0 20px 60px rgba(16,32,60,0.25)"
+      boxShadow: "var(--shadow-lg)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "modal-handle",
@@ -9485,7 +9491,7 @@ function OnboardingProgress({
       fontWeight: 700,
       color: "var(--slate)",
       textTransform: "uppercase",
-      letterSpacing: 0.3
+      letterSpacing: 0.2
     }
   }, translate(lang, "onboarding", "step_progress").replace("{current}", step + 1).replace("{total}", total)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9818,8 +9824,8 @@ function OnboardingModal({
       display: "flex",
       flexDirection: "column",
       gap: 8,
-      padding: "12px 14px",
-      borderRadius: 10,
+      padding: "12px 12px",
+      borderRadius: 12,
       background: "var(--paper)"
     }
   }, firstName && /*#__PURE__*/React.createElement("div", {
@@ -9896,7 +9902,7 @@ function OnboardingModal({
       border: "1px solid var(--gold)",
       color: "var(--gold)",
       borderRadius: 8,
-      padding: "9px 12px",
+      padding: "8px 12px",
       fontSize: 13,
       fontWeight: 700,
       cursor: "pointer"
@@ -9958,15 +9964,15 @@ function ConfirmDialog({
     style: {
       background: "var(--card)",
       borderRadius: 8,
-      padding: 22,
+      padding: 24,
       width: "100%",
       maxWidth: 380,
-      boxShadow: "0 20px 60px rgba(16,32,60,0.3)"
+      boxShadow: "var(--shadow-lg)"
     }
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 17,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)",
       margin: "0 0 8px"
@@ -10126,11 +10132,11 @@ function PinSetupModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, bioAvailable && /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: "12px 14px",
+      padding: "12px 12px",
       borderRadius: 8,
       border: "1px solid var(--line)",
       background: "var(--paper)",
@@ -10283,7 +10289,7 @@ function SplashScreen({
     size: 46
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 26,
+      fontSize: 24,
       fontWeight: 700,
       letterSpacing: 0.2
     }
@@ -10339,7 +10345,7 @@ function LockScreen({
     className: "brand-gate",
     style: {
       zIndex: 100,
-      gap: 18
+      gap: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "brand-mark"
@@ -10347,7 +10353,7 @@ function LockScreen({
     size: 46
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 26,
+      fontSize: 24,
       fontWeight: 700,
       letterSpacing: 0.2
     }
@@ -10470,7 +10476,7 @@ function CloudAuthGate({
       className: "brand-gate",
       style: {
         zIndex: 150,
-        gap: 22,
+        gap: 24,
         padding: "24px 20px",
         overflowY: "auto"
       }
@@ -10501,7 +10507,7 @@ function CloudAuthGate({
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         color: "#fff",
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: 700
       }
     }, "Confirme o seu email"), /*#__PURE__*/React.createElement("p", {
@@ -10527,7 +10533,7 @@ function CloudAuthGate({
         fontSize: 13,
         cursor: "pointer",
         textDecoration: "underline",
-        marginTop: 14
+        marginTop: 12
       }
     }, "Já confirmei — iniciar sessão")));
   }
@@ -10535,7 +10541,7 @@ function CloudAuthGate({
     className: "brand-gate",
     style: {
       zIndex: 150,
-      gap: 22,
+      gap: 24,
       padding: "24px 20px",
       overflowY: "auto"
     }
@@ -10563,7 +10569,7 @@ function CloudAuthGate({
       maxWidth: 340,
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -10572,7 +10578,7 @@ function CloudAuthGate({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       color: "#fff",
-      fontSize: 17,
+      fontSize: 16,
       fontWeight: 700
     }
   }, mode === "signup" ? "Crie a sua conta para continuar" : "Inicie sessão para continuar"), /*#__PURE__*/React.createElement("p", {
@@ -10587,7 +10593,7 @@ function CloudAuthGate({
       fontSize: 12,
       fontWeight: 600,
       display: "block",
-      marginBottom: 5
+      marginBottom: 4
     }
   }, "Email"), /*#__PURE__*/React.createElement("input", {
     type: "email",
@@ -10603,7 +10609,7 @@ function CloudAuthGate({
       fontSize: 12,
       fontWeight: 600,
       display: "block",
-      marginBottom: 5
+      marginBottom: 4
     }
   }, "Palavra-passe"), /*#__PURE__*/React.createElement("input", {
     type: "password",
@@ -10616,7 +10622,7 @@ function CloudAuthGate({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 3,
+      gap: 4,
       marginTop: 8
     }
   }, [{
@@ -10688,7 +10694,7 @@ function VerifyEmailGate({
       className: "brand-gate",
       style: {
         zIndex: 140,
-        gap: 22,
+        gap: 24,
         padding: "24px 20px"
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -10718,7 +10724,7 @@ function VerifyEmailGate({
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         color: "#fff",
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: 700
       }
     }, "Conta validada com sucesso. Bem-vindo(a)!"), /*#__PURE__*/React.createElement("p", {
@@ -10739,7 +10745,7 @@ function VerifyEmailGate({
     className: "brand-gate",
     style: {
       zIndex: 140,
-      gap: 22,
+      gap: 24,
       padding: "24px 20px"
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -10769,7 +10775,7 @@ function VerifyEmailGate({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       color: "#fff",
-      fontSize: 17,
+      fontSize: 16,
       fontWeight: 700
     }
   }, "Confirme o seu email"), /*#__PURE__*/React.createElement("p", {
@@ -10860,7 +10866,7 @@ function GhostButton({
       border: "1px dashed var(--line)",
       color: disabled ? "#B7BECB" : "var(--slate)",
       borderRadius: 8,
-      padding: "8px 14px",
+      padding: "8px 12px",
       fontFamily: "Inter, sans-serif",
       fontSize: 13,
       fontWeight: 600,
@@ -11090,7 +11096,7 @@ function CategoryDonut({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 22,
+      gap: 24,
       flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement("svg", {
@@ -11450,7 +11456,44 @@ const EXTRAS_I18N = {
     wa_msg: "Olá {name}, tudo bem? Passo só para lembrar o valor de {amount} que ficou pendente{due}. Obrigado!",
     wa_due: " (vencimento a {date})",
     qa_new_expense: "Nova despesa",
-    qa_new_income: "Nova receita"
+    qa_new_income: "Nova receita",
+    ins_ask_title: "Pergunte ao seu dinheiro",
+    ins_ask_ph: "ex: Quanto gastei em Alimentação este mês?",
+    ins_ask_btn: "Perguntar",
+    ins_ask_s1: "Quanto gastei hoje?",
+    ins_ask_s2: "Quanto gastei este mês?",
+    ins_ask_s_cat: "Quanto gastei em {cat}?",
+    ins_ask_s3: "Maiores despesas do mês",
+    ins_ask_s4: "Quanto recebi este mês?",
+    ins_p_today: "hoje",
+    ins_p_yesterday: "ontem",
+    ins_p_week: "últimos 7 dias",
+    ins_p_prev: "mês anterior",
+    ins_p_year: "este ano",
+    ins_p_month: "este mês",
+    ins_spent: "Gastou",
+    ins_received: "Recebeu",
+    ins_count: "{n} movimentos",
+    ins_count_one: "1 movimento",
+    ins_none: "Não encontrei movimentos para essa pergunta.",
+    ins_in_cat: "em {cat}",
+    ins_matching: "com “{q}”",
+    ins_cal_title: "Calendário de gastos",
+    ins_cal_day: "{date} · {amount} · {n} mov.",
+    ins_cal_none: "Sem gastos",
+    ins_cal_peak: "Dia da semana com mais gastos: {day}",
+    ins_sub_title: "Subscrições e contas fixas",
+    ins_sub_month: "por mês",
+    ins_sub_year: "{amount} por ano",
+    ins_sub_next: "próx. {date}",
+    ins_sub_manage: "Gerir",
+    ins_sub_empty: "Sem despesas fixas registadas.",
+    ins_ru_title: "Arredondamentos",
+    ins_ru_text: "Se arredondasse cada despesa deste mês ao múltiplo de {step} seguinte ({n} despesas), teria guardado",
+    ins_ru_btn: "Guardar numa meta",
+    ins_ru_pick: "Meta",
+    ins_ru_nogoal: "Crie uma meta para guardar os arredondamentos.",
+    ins_ru_create: "Criar meta"
   },
   en: {
     spend_title: "Can I spend today",
@@ -11608,7 +11651,44 @@ const EXTRAS_I18N = {
     wa_msg: "Hi {name}, hope you are well. Just a reminder about the {amount} still pending{due}. Thank you!",
     wa_due: " (due {date})",
     qa_new_expense: "New expense",
-    qa_new_income: "New income"
+    qa_new_income: "New income",
+    ins_ask_title: "Ask your money",
+    ins_ask_ph: "e.g. How much did I spend on Food this month?",
+    ins_ask_btn: "Ask",
+    ins_ask_s1: "How much did I spend today?",
+    ins_ask_s2: "How much did I spend this month?",
+    ins_ask_s_cat: "How much did I spend on {cat}?",
+    ins_ask_s3: "Biggest expenses this month",
+    ins_ask_s4: "How much did I receive this month?",
+    ins_p_today: "today",
+    ins_p_yesterday: "yesterday",
+    ins_p_week: "last 7 days",
+    ins_p_prev: "last month",
+    ins_p_year: "this year",
+    ins_p_month: "this month",
+    ins_spent: "Spent",
+    ins_received: "Received",
+    ins_count: "{n} transactions",
+    ins_count_one: "1 transaction",
+    ins_none: "I found no transactions for that question.",
+    ins_in_cat: "on {cat}",
+    ins_matching: "matching “{q}”",
+    ins_cal_title: "Spending calendar",
+    ins_cal_day: "{date} · {amount} · {n} tx",
+    ins_cal_none: "No spending",
+    ins_cal_peak: "Biggest spending weekday: {day}",
+    ins_sub_title: "Subscriptions & fixed bills",
+    ins_sub_month: "per month",
+    ins_sub_year: "{amount} per year",
+    ins_sub_next: "next {date}",
+    ins_sub_manage: "Manage",
+    ins_sub_empty: "No fixed expenses yet.",
+    ins_ru_title: "Round-ups",
+    ins_ru_text: "If you rounded every expense this month up to the next {step} ({n} expenses), you would have saved",
+    ins_ru_btn: "Save to a goal",
+    ins_ru_pick: "Goal",
+    ins_ru_nogoal: "Create a goal to save your round-ups.",
+    ins_ru_create: "Create goal"
   },
   fr: {
     spend_title: "Puis-je dépenser aujourd'hui",
@@ -12171,7 +12251,7 @@ function SpendTodayCard({
         fontWeight: 700,
         color: "var(--slate)",
         textTransform: "uppercase",
-        letterSpacing: 0.4
+        letterSpacing: 0.5
       }
     }, xt(lang, "spend_title")), /*#__PURE__*/React.createElement("p", {
       style: {
@@ -12193,7 +12273,7 @@ function SpendTodayCard({
       fontWeight: 700,
       color: "var(--slate)",
       textTransform: "uppercase",
-      letterSpacing: 0.4
+      letterSpacing: 0.5
     }
   }, xt(lang, "spend_title")), over ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12219,7 +12299,7 @@ function SpendTodayCard({
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 26,
+      fontSize: 24,
       fontWeight: 700,
       color: "var(--emerald)"
     }
@@ -12266,7 +12346,7 @@ function MonthCloseCard({
       fontWeight: 700,
       color: "var(--slate)",
       textTransform: "uppercase",
-      letterSpacing: 0.4
+      letterSpacing: 0.5
     }
   }, xt(lang, "close_title")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -12310,7 +12390,7 @@ function PurchasingPowerCard({
       fontWeight: 700,
       color: "var(--slate)",
       textTransform: "uppercase",
-      letterSpacing: 0.4
+      letterSpacing: 0.5
     }
   }, xt(lang, "pp_title")), /*#__PURE__*/React.createElement("p", {
     style: {
@@ -12331,6 +12411,700 @@ function PurchasingPowerCard({
   }, xt(lang, "pp_gap", {
     gap: fmt(net * rate, cur)
   })));
+}
+
+/* ---------- Insights (inspirados nas melhores apps de finanças) ---------- */
+
+function insNrm(s) {
+  return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+function insTxValue(t, accounts, rates, cur) {
+  const acc = accounts.find(a => a.id === t.accountId);
+  const from = acc ? acc.currency : cur;
+  if (from === cur) return Number(t.amount) || 0;
+  const v = convertCurrency(Number(t.amount) || 0, from, cur, rates || {});
+  return v === null ? null : v;
+}
+function insShiftISO(iso, days) {
+  const d = new Date(iso + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function insAnswer(q, ctx) {
+  const {
+    lang,
+    transactions,
+    accounts,
+    rates,
+    month,
+    categories,
+    cur
+  } = ctx;
+  const n = insNrm(q);
+  const today = todayISO();
+  let from, to, plabel;
+  if (/hoje|today|hoy|aujourd/.test(n)) {
+    from = to = today;
+    plabel = xt(lang, "ins_p_today");
+  } else if (/ontem|yesterday|ayer|hier/.test(n)) {
+    from = to = insShiftISO(today, -1);
+    plabel = xt(lang, "ins_p_yesterday");
+  } else if (/semana|week|semaine/.test(n)) {
+    from = insShiftISO(today, -6);
+    to = today;
+    plabel = xt(lang, "ins_p_week");
+  } else if (/mes passado|mes anterior|last month|previous month/.test(n)) {
+    const b = periodBounds(addMonthsToKey(month, -1));
+    from = b.start;
+    to = b.end;
+    plabel = xt(lang, "ins_p_prev");
+  } else if (/\bano\b|\byear\b|\bano\b/.test(n)) {
+    from = today.slice(0, 4) + "-01-01";
+    to = today;
+    plabel = xt(lang, "ins_p_year");
+  } else {
+    const b = periodBounds(month);
+    from = b.start;
+    to = b.end;
+    plabel = xt(lang, "ins_p_month");
+  }
+  const income = /recebi|receita|ganhei|income|earned|received|ingres|recu/.test(n);
+  const biggest = /maior|maiores|biggest|largest|top|mayor/.test(n);
+  const kind = income ? "receita" : "despesa";
+  let catName = null;
+  for (const c of Object.keys(categories || {})) {
+    if (n.includes(insNrm(c))) {
+      catName = c;
+      break;
+    }
+  }
+  let term = null;
+  if (!catName) {
+    const m = n.match(/\b(?:em|com|no|na|de|in|on|at|en)\s+([a-z0-9][a-z0-9 ]{2,})/);
+    if (m) {
+      term = m[1].replace(/\b(este|esse|mes|passado|anterior|ano|hoje|ontem|semana|this|last|month|year|week|today|yesterday|o|a|os|as|the)\b/g, " ").replace(/\s+/g, " ").trim();
+      if (term.length < 3) term = null;
+    }
+  }
+  const rows = [];
+  let total = 0;
+  for (const t of transactions) {
+    if (t.kind !== kind || t.date < from || t.date > to) continue;
+    if (catName && t.category !== catName) continue;
+    if (term && !insNrm(t.description).includes(term)) continue;
+    const v = insTxValue(t, accounts, rates, cur);
+    if (v === null) continue;
+    total += v;
+    rows.push({
+      t,
+      v
+    });
+  }
+  rows.sort((a, b) => b.v - a.v);
+  return {
+    total,
+    count: rows.length,
+    top: rows.slice(0, 3),
+    plabel,
+    kind,
+    catName,
+    term,
+    biggest
+  };
+}
+function AskMoneyCard({
+  lang,
+  transactions,
+  accounts,
+  exchangeRates,
+  month,
+  categories,
+  spentByCategory
+}) {
+  const [q, setQ] = useState("");
+  const [res, setRes] = useState(null);
+  const cur = extrasCurrency();
+  const topCat = useMemo(() => {
+    let best = null;
+    for (const [k, v] of Object.entries(spentByCategory || {})) if (!best || Number(v) > best[1]) best = [k, Number(v)];
+    return best && best[1] > 0 ? best[0] : null;
+  }, [spentByCategory]);
+  function ask(text) {
+    const s = (text != null ? text : q).trim();
+    if (!s) return;
+    setQ(s);
+    setRes(insAnswer(s, {
+      lang,
+      transactions,
+      accounts,
+      rates: exchangeRates,
+      month,
+      categories,
+      cur
+    }));
+  }
+  const chips = [xt(lang, "ins_ask_s1"), topCat ? xt(lang, "ins_ask_s_cat", {
+    cat: topCat
+  }) : xt(lang, "ins_ask_s2"), xt(lang, "ins_ask_s3"), xt(lang, "ins_ask_s4")];
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      flex: "1 1 100%",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.5
+    }
+  }, xt(lang, "ins_ask_title")), /*#__PURE__*/React.createElement("form", {
+    onSubmit: e => {
+      e.preventDefault();
+      ask();
+    },
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 10,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: q,
+    onChange: e => setQ(e.target.value),
+    placeholder: xt(lang, "ins_ask_ph"),
+    "aria-label": xt(lang, "ins_ask_title"),
+    style: {
+      ...inputStyle,
+      flex: "1 1 220px",
+      minWidth: 0
+    }
+  }), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: () => ask()
+  }, xt(lang, "ins_ask_btn"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6,
+      marginTop: 10
+    }
+  }, chips.map(c => /*#__PURE__*/React.createElement("button", {
+    key: c,
+    type: "button",
+    onClick: () => ask(c),
+    style: {
+      border: "1px solid var(--line)",
+      background: "var(--paper)",
+      color: "var(--slate)",
+      borderRadius: 999,
+      padding: "6px 12px",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "Inter, sans-serif"
+    }
+  }, c))), res && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    style: {
+      marginTop: 14,
+      padding: 14,
+      borderRadius: 12,
+      background: "color-mix(in srgb, var(--gold) 9%, var(--card))",
+      border: "1px solid color-mix(in srgb, var(--gold) 28%, var(--line))"
+    }
+  }, res.count === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "ins_none")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      fontWeight: 600
+    }
+  }, res.kind === "receita" ? xt(lang, "ins_received") : xt(lang, "ins_spent"), " · ", res.plabel, res.catName ? " · " + xt(lang, "ins_in_cat", {
+    cat: res.catName
+  }) : "", res.term ? " · " + xt(lang, "ins_matching", {
+    q: res.term
+  }) : ""), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 24,
+      fontWeight: 700,
+      color: res.kind === "receita" ? "var(--emerald)" : "var(--ink)",
+      margin: "4px 0"
+    }
+  }, fmt(res.total, cur)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, res.count === 1 ? xt(lang, "ins_count_one") : xt(lang, "ins_count", {
+    n: res.count
+  })), res.biggest && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, res.top.map((r, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 8,
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      minWidth: 0,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, r.t.description || r.t.category, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--slate)"
+    }
+  }, "· ", ddmm(r.t.date))), /*#__PURE__*/React.createElement("strong", null, fmt(r.v, cur))))))));
+}
+function SpendingCalendarCard({
+  lang,
+  transactions,
+  accounts,
+  exchangeRates,
+  month
+}) {
+  const cur = extrasCurrency();
+  const [sel, setSel] = useState(null);
+  const {
+    start,
+    end
+  } = periodBounds(month);
+  const data = useMemo(() => {
+    const byDay = {};
+    for (const t of transactions) {
+      if (t.kind !== "despesa" || t.date < start || t.date > end) continue;
+      const v = insTxValue(t, accounts, exchangeRates, cur);
+      if (v === null) continue;
+      const d = byDay[t.date] || (byDay[t.date] = {
+        sum: 0,
+        n: 0
+      });
+      d.sum += v;
+      d.n += 1;
+    }
+    return byDay;
+  }, [transactions, accounts, exchangeRates, start, end, cur]);
+  const peakDay = useMemo(() => {
+    const sums = [0, 0, 0, 0, 0, 0, 0],
+      cnt = [0, 0, 0, 0, 0, 0, 0];
+    for (const t of transactions) {
+      if (t.kind !== "despesa") continue;
+      const v = insTxValue(t, accounts, exchangeRates, cur);
+      if (v === null) continue;
+      const wd = new Date(t.date + "T12:00:00Z").getUTCDay();
+      sums[wd] += v;
+      cnt[wd] += 1;
+    }
+    const total = sums.reduce((a, b) => a + b, 0);
+    if (total <= 0 || cnt.reduce((a, b) => a + b, 0) < 8) return null;
+    let best = 0;
+    for (let i = 1; i < 7; i++) if (sums[i] > sums[best]) best = i;
+    return best;
+  }, [transactions, accounts, exchangeRates, cur]);
+  const days = [];
+  for (let d = start; d <= end; d = insShiftISO(d, 1)) days.push(d);
+  const max = Math.max(1, ...Object.values(data).map(x => x.sum));
+  const firstWd = (new Date(days[0] + "T12:00:00Z").getUTCDay() + 6) % 7;
+  const wdName = i => new Intl.DateTimeFormat(lang, {
+    weekday: "short",
+    timeZone: "UTC"
+  }).format(new Date(Date.UTC(2024, 0, 1 + i)));
+  const peakName = peakDay === null ? null : new Intl.DateTimeFormat(lang, {
+    weekday: "long",
+    timeZone: "UTC"
+  }).format(new Date(Date.UTC(2024, 0, 7 + peakDay)));
+  const today = todayISO();
+  const selData = sel ? data[sel] : null;
+  const total = Object.values(data).reduce((s, x) => s + x.sum, 0);
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      flex: "1 1 320px",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.5
+    }
+  }, xt(lang, "ins_cal_title")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(7, 1fr)",
+      gap: 4,
+      marginTop: 12
+    }
+  }, [0, 1, 2, 3, 4, 5, 6].map(i => /*#__PURE__*/React.createElement("div", {
+    key: "h" + i,
+    style: {
+      fontSize: 10,
+      color: "var(--slate)",
+      textAlign: "center",
+      fontWeight: 600
+    }
+  }, wdName(i).slice(0, 3))), Array.from({
+    length: firstWd
+  }).map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: "e" + i
+  })), days.map(d => {
+    const x = data[d];
+    const lvl = x ? Math.max(0.16, x.sum / max) : 0;
+    return /*#__PURE__*/React.createElement("button", {
+      key: d,
+      type: "button",
+      onClick: () => setSel(sel === d ? null : d),
+      title: x ? xt(lang, "ins_cal_day", {
+        date: ddmm(d),
+        amount: fmt(x.sum, cur),
+        n: x.n
+      }) : ddmm(d),
+      "aria-label": x ? xt(lang, "ins_cal_day", {
+        date: ddmm(d),
+        amount: fmt(x.sum, cur),
+        n: x.n
+      }) : ddmm(d) + " · " + xt(lang, "ins_cal_none"),
+      style: {
+        aspectRatio: "1 / 1",
+        borderRadius: 6,
+        border: d === today ? "2px solid var(--ink)" : sel === d ? "2px solid var(--gold)" : "1px solid var(--line)",
+        background: x ? `color-mix(in srgb, var(--gold) ${Math.round(lvl * 85)}%, var(--card))` : "var(--paper)",
+        color: x && lvl > 0.55 ? "#fff" : "var(--slate)",
+        fontSize: 10,
+        fontWeight: 600,
+        padding: 0,
+        cursor: "pointer",
+        fontFamily: "Inter, sans-serif"
+      }
+    }, Number(d.slice(8, 10)));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      minHeight: 18,
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, selData ? xt(lang, "ins_cal_day", {
+    date: ddmm(sel),
+    amount: fmt(selData.sum, cur),
+    n: selData.n
+  }) : sel ? ddmm(sel) + " · " + xt(lang, "ins_cal_none") : total > 0 ? fmt(total, cur) : xt(lang, "ins_cal_none")), peakName && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6,
+      fontSize: 12,
+      fontWeight: 600,
+      color: "var(--gold)"
+    }
+  }, xt(lang, "ins_cal_peak", {
+    day: peakName
+  })));
+}
+function SubscriptionsCard({
+  lang,
+  recurringExpenses,
+  accounts,
+  exchangeRates,
+  month,
+  transactions,
+  onNavigate
+}) {
+  const cur = extrasCurrency();
+  const items = useMemo(() => {
+    return (recurringExpenses || []).filter(r => !r.isStaff && Number(r.amount) > 0).map(r => {
+      const acc = accounts.find(a => a.id === r.accountId);
+      const from = acc ? acc.currency : cur;
+      const v = from === cur ? Number(r.amount) : convertCurrency(Number(r.amount), from, cur, exchangeRates || {});
+      let due = recurringDueDateForMonth(r, month);
+      const paid = !!recurringPaidTx(r, month, transactions);
+      if (paid || due < todayISO()) due = recurringDueDateForMonth(r, addMonthsToKey(month, paid ? 1 : 0));
+      return {
+        r,
+        v: v === null ? 0 : v,
+        due,
+        paid
+      };
+    }).sort((a, b) => b.v - a.v);
+  }, [recurringExpenses, accounts, exchangeRates, month, transactions, cur]);
+  const monthly = items.reduce((s, x) => s + x.v, 0);
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      flex: "1 1 320px",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.5
+    }
+  }, xt(lang, "ins_sub_title")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onNavigate && onNavigate("budget"),
+    style: {
+      background: "none",
+      border: "none",
+      color: "var(--gold)",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      padding: 0,
+      fontFamily: "Inter, sans-serif"
+    }
+  }, xt(lang, "ins_sub_manage"))), items.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      margin: "10px 0 0"
+    }
+  }, xt(lang, "ins_sub_empty")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "baseline",
+      gap: 6,
+      marginTop: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 24,
+      fontWeight: 700
+    }
+  }, fmt(monthly, cur)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)"
+    }
+  }, xt(lang, "ins_sub_month"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginBottom: 10
+    }
+  }, xt(lang, "ins_sub_year", {
+    amount: fmt(monthly * 12, cur)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, items.slice(0, 4).map(({
+    r,
+    v,
+    due
+  }) => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8,
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      minWidth: 0,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, r.name, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--slate)",
+      fontSize: 11
+    }
+  }, "· ", xt(lang, "ins_sub_next", {
+    date: ddmm(due)
+  }))), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      flexShrink: 0
+    }
+  }, fmt(v, cur)))))));
+}
+function RoundUpsCard({
+  lang,
+  transactions,
+  accounts,
+  month,
+  goals,
+  onRoundUp,
+  onNavigate
+}) {
+  const cur = extrasCurrency();
+  const step = {
+    Kz: 1000,
+    BRL: 5
+  }[cur] || 1;
+  const {
+    start,
+    end
+  } = periodBounds(month);
+  const {
+    total,
+    n
+  } = useMemo(() => {
+    let s = 0,
+      c = 0;
+    for (const t of transactions) {
+      if (t.kind !== "despesa" || t.date < start || t.date > end) continue;
+      const acc = accounts.find(a => a.id === t.accountId);
+      if (acc && acc.currency !== cur) continue;
+      const a = Number(t.amount) || 0;
+      const r = Math.ceil(a / step) * step - a;
+      if (r > 0.004 && a > 0) {
+        s += r;
+        c += 1;
+      }
+    }
+    return {
+      total: Math.round(s),
+      n: c
+    };
+  }, [transactions, accounts, start, end, cur, step]);
+  const activeGoals = (goals || []).filter(g => Number(g.target) > Number(g.current || 0));
+  const [gid, setGid] = useState("");
+  const goal = activeGoals.find(g => g.id === gid) || activeGoals[0];
+  if (total <= 0) return null;
+  return /*#__PURE__*/React.createElement(Card, {
+    style: {
+      flex: "1 1 320px",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "var(--slate)",
+      textTransform: "uppercase",
+      letterSpacing: 0.5
+    }
+  }, xt(lang, "ins_ru_title")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 13,
+      margin: "8px 0 4px",
+      lineHeight: 1.45
+    }
+  }, xt(lang, "ins_ru_text", {
+    step: fmt(step, cur),
+    n
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: 24,
+      fontWeight: 700,
+      color: "var(--emerald)",
+      marginBottom: 10
+    }
+  }, fmt(total, cur)), activeGoals.length === 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--slate)",
+      marginBottom: 8
+    }
+  }, xt(lang, "ins_ru_nogoal")), /*#__PURE__*/React.createElement(GhostButton, {
+    onClick: () => onNavigate && onNavigate("goals")
+  }, xt(lang, "ins_ru_create"))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, activeGoals.length > 1 && /*#__PURE__*/React.createElement("select", {
+    value: goal ? goal.id : "",
+    onChange: e => setGid(e.target.value),
+    "aria-label": xt(lang, "ins_ru_pick"),
+    style: {
+      ...inputStyle,
+      flex: "1 1 140px",
+      minWidth: 0
+    }
+  }, activeGoals.map(g => /*#__PURE__*/React.createElement("option", {
+    key: g.id,
+    value: g.id
+  }, g.name))), /*#__PURE__*/React.createElement(PrimaryButton, {
+    onClick: () => goal && onRoundUp && onRoundUp(goal, total),
+    style: {
+      flex: "1 1 160px"
+    }
+  }, xt(lang, "ins_ru_btn"))));
+}
+function OverviewInsights({
+  lang,
+  transactions,
+  accounts,
+  exchangeRates,
+  month,
+  categories,
+  spentByCategory,
+  recurringExpenses,
+  goals,
+  onRoundUp,
+  onNavigate
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement(AskMoneyCard, {
+    lang: lang,
+    transactions: transactions,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    month: month,
+    categories: categories,
+    spentByCategory: spentByCategory
+  }), /*#__PURE__*/React.createElement(SpendingCalendarCard, {
+    lang: lang,
+    transactions: transactions,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    month: month
+  }), /*#__PURE__*/React.createElement(SubscriptionsCard, {
+    lang: lang,
+    recurringExpenses: recurringExpenses,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    month: month,
+    transactions: transactions,
+    onNavigate: onNavigate
+  }), /*#__PURE__*/React.createElement(RoundUpsCard, {
+    lang: lang,
+    transactions: transactions,
+    accounts: accounts,
+    month: month,
+    goals: goals,
+    onRoundUp: onRoundUp,
+    onNavigate: onNavigate
+  }));
 }
 function OverviewExtras({
   lang,
@@ -12419,11 +13193,11 @@ function UndoBar({
       background: "var(--ink)",
       color: "#fff",
       borderRadius: 12,
-      padding: "10px 14px",
+      padding: "10px 12px",
       display: "flex",
       alignItems: "center",
-      gap: 14,
-      boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+      gap: 12,
+      boxShadow: "var(--shadow-md)",
       maxWidth: "92vw",
       fontSize: 14
     }
@@ -12616,7 +13390,7 @@ function DeductibleModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -12648,7 +13422,7 @@ function DeductibleModal({
     style: {
       display: "flex",
       justifyContent: "space-between",
-      padding: "7px 0",
+      padding: "8px 0",
       borderBottom: "1px solid var(--line)",
       fontSize: 14
     }
@@ -12661,7 +13435,7 @@ function DeductibleModal({
     style: {
       display: "flex",
       justifyContent: "space-between",
-      padding: "9px 0",
+      padding: "8px 0",
       fontWeight: 700
     }
   }, /*#__PURE__*/React.createElement("span", null, xt(lang, "ded_total"), " · ", xt(lang, "ded_count", {
@@ -12723,7 +13497,7 @@ function DeductibleModal({
       background: "none",
       border: "none",
       cursor: "pointer",
-      fontSize: 15
+      fontSize: 14
     },
     title: xt(lang, "receipt_view")
   }, "📎"), /*#__PURE__*/React.createElement("span", {
@@ -12837,7 +13611,7 @@ function PasswordPromptModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, !encrypting && /*#__PURE__*/React.createElement("p", {
     style: {
@@ -13031,7 +13805,7 @@ function MonthCloseModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -13044,7 +13818,7 @@ function MonthCloseModal({
     style: {
       flex: "1 1 120px",
       border: "1px solid var(--line)",
-      borderRadius: 10,
+      borderRadius: 12,
       padding: "8px 10px"
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -13189,7 +13963,7 @@ function SimIVA() {
     onClick: () => setMode(m),
     style: {
       flex: 1,
-      padding: "9px 6px",
+      padding: "8px 6px",
       borderRadius: 8,
       border: `1.5px solid ${mode === m ? "var(--gold)" : "var(--line)"}`,
       background: mode === m ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
@@ -13283,7 +14057,7 @@ function KixikilaModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: xt(lang, "kix_name")
@@ -13609,11 +14383,11 @@ function KixikilaCard({
       fontSize: 13,
       display: "flex",
       flexDirection: "column",
-      gap: 3
+      gap: 4
     }
   }, /*#__PURE__*/React.createElement("div", null, xt(lang, "kix_my_turn"), ": ", /*#__PURE__*/React.createElement("b", null, myReceivedDone ? xt(lang, "kix_my_turn_done") : `${ddmmyyyy(kixCycleDate(k, myIdx))} · ${kixDueLabel(lang, kixCycleDate(k, myIdx))}`)), /*#__PURE__*/React.createElement("div", null, xt(lang, "kix_next_contrib"), ": ", /*#__PURE__*/React.createElement("b", null, nextContribIdx >= 0 ? `${ddmmyyyy(kixCycleDate(k, nextContribIdx))} · ${kixDueLabel(lang, kixCycleDate(k, nextContribIdx))}` : xt(lang, "kix_none_pending")))), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14,
+      marginTop: 12,
       display: "flex",
       flexDirection: "column",
       gap: 8
@@ -13671,7 +14445,7 @@ function KixikilaTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -13771,8 +14545,8 @@ function ReconcileButton({
       background: "none",
       border: "none",
       cursor: "pointer",
-      fontSize: 15,
-      fontWeight: 800,
+      fontSize: 16,
+      fontWeight: 700,
       padding: "0 2px",
       color: t.reconciled ? "var(--emerald)" : "var(--slate)",
       opacity: t.reconciled ? 1 : 0.3
@@ -15360,6 +16134,9 @@ function FinanceApp() {
     onTouchEnd: handlePtrTouchEnd,
     onTouchCancel: handlePtrTouchEnd,
     style: {
+      "--shadow-sm": darkMode ? "0 1px 3px rgba(0,0,0,0.35)" : "0 1px 3px rgba(16,24,40,0.06)",
+      "--shadow-md": darkMode ? "0 8px 24px rgba(0,0,0,0.45)" : "0 8px 24px rgba(16,24,40,0.12)",
+      "--shadow-lg": darkMode ? "0 20px 60px rgba(0,0,0,0.6)" : "0 20px 60px rgba(16,32,60,0.28)",
       "--btn-bg": darkMode ? "#D9A24A" : "#16274D",
       "--btn-fg": darkMode ? "#1A1405" : "#FFFFFF",
       "--ink": darkMode ? "#EDEEF0" : "#16274D",
@@ -15446,7 +16223,7 @@ function FinanceApp() {
       border: "none",
       color: "rgba(255,255,255,0.4)",
       cursor: "pointer",
-      padding: "4px 4px 14px"
+      padding: "4px 4px 12px"
     }
   }, /*#__PURE__*/React.createElement(IconChevronLeft, {
     size: 15,
@@ -15777,7 +16554,7 @@ function FinanceApp() {
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 7,
+      gap: 8,
       fontSize: 13,
       color: "var(--slate)"
     }
@@ -15920,7 +16697,7 @@ function FinanceApp() {
   })), /*#__PURE__*/React.createElement("h1", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: isMobile ? 20 : 26,
+      fontSize: isMobile ? 20 : 24,
       fontWeight: 600,
       margin: 0,
       overflow: "hidden",
@@ -15943,7 +16720,7 @@ function FinanceApp() {
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 3,
+      gap: 4,
       padding: isMobile ? "5px 8px 5px 10px" : "7px 10px 7px 12px",
       borderRadius: 8,
       border: "1px solid var(--line)",
@@ -16038,7 +16815,7 @@ function FinanceApp() {
       style: {
         display: "flex",
         gap: 10,
-        marginBottom: 18,
+        marginBottom: 16,
         flexWrap: "wrap"
       }
     }, contextualActions.map(a => /*#__PURE__*/React.createElement("button", {
@@ -16047,8 +16824,8 @@ function FinanceApp() {
       style: {
         display: "flex",
         alignItems: "center",
-        gap: 7,
-        padding: "9px 14px",
+        gap: 8,
+        padding: "8px 12px",
         borderRadius: 8,
         border: "1px solid var(--gold)",
         background: "var(--gold)",
@@ -16066,6 +16843,10 @@ function FinanceApp() {
     className: "tab-page-transition"
   }, tab === "overview" && /*#__PURE__*/React.createElement(Overview, {
     lang: lang,
+    onRoundUp: (g, amt) => setContribGoal({
+      ...g,
+      __prefill: amt
+    }),
     monthClosing: monthClosings[month],
     onOpenMonthClose: () => setShowMonthClose(true),
     taxaInflacao: taxaInflacao,
@@ -16836,8 +17617,8 @@ function FinanceApp() {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      gap: 3,
-      padding: "9px 0",
+      gap: 4,
+      padding: "8px 0",
       color: tab === t.id ? "var(--gold)" : "rgba(255,255,255,0.6)"
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -16847,7 +17628,7 @@ function FinanceApp() {
       justifyContent: "center",
       width: 54,
       height: 30,
-      borderRadius: 15,
+      borderRadius: 16,
       background: tab === t.id ? "rgba(224,168,85,0.2)" : "transparent",
       transition: "background 0.2s ease"
     }
@@ -16871,8 +17652,8 @@ function FinanceApp() {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      gap: 3,
-      padding: "9px 0",
+      gap: 4,
+      padding: "8px 0",
       color: ["charts", "budget", "goals", "planning", "cards", "exchange", "forecast", "investments", "report", "kpis", "exports", "simulators", "tools", "settings"].includes(tab) ? "var(--gold)" : "rgba(255,255,255,0.6)"
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -16882,7 +17663,7 @@ function FinanceApp() {
       justifyContent: "center",
       width: 54,
       height: 30,
-      borderRadius: 15,
+      borderRadius: 16,
       background: ["charts", "budget", "goals", "planning", "cards", "exchange", "forecast", "investments", "report", "kpis", "exports", "simulators", "tools", "settings"].includes(tab) ? "rgba(224,168,85,0.2)" : "transparent",
       transition: "background 0.2s ease"
     }
@@ -16987,7 +17768,7 @@ function FinanceApp() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "0 6px 18px rgba(16,24,40,0.28)",
+      boxShadow: "var(--shadow-md)",
       flexShrink: 0
     }
   }, /*#__PURE__*/React.createElement(a.icon, {
@@ -17001,7 +17782,7 @@ function FinanceApp() {
       fontWeight: 700,
       color: "#fff",
       background: "rgba(8,13,28,0.82)",
-      padding: "3px 11px",
+      padding: "4px 12px",
       borderRadius: 999,
       textAlign: "center",
       lineHeight: 1.3,
@@ -17053,7 +17834,7 @@ function FinanceApp() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 7,
+          gap: 8,
           padding: "10px 4px 4px",
           border: "none",
           background: "none",
@@ -17090,7 +17871,7 @@ function FinanceApp() {
         color: "var(--slate)",
         fontWeight: 700,
         textTransform: "uppercase",
-        letterSpacing: 0.6,
+        letterSpacing: 0.5,
         margin: "0 2px 10px"
       }
     }, text);
@@ -17103,7 +17884,7 @@ function FinanceApp() {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          padding: "13px 14px",
+          padding: "12px 12px",
           border: "none",
           borderBottom: "1px solid var(--line)",
           background: "none",
@@ -17141,7 +17922,7 @@ function FinanceApp() {
       style: {
         display: "flex",
         flexDirection: "column",
-        gap: 22
+        gap: 24
       }
     }, favoriteTabs.length > 0 && /*#__PURE__*/React.createElement("div", null, sheetSectionLabel(translate(lang, "nav", "section_favorites")), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -17249,7 +18030,7 @@ function FinanceApp() {
       style: {
         display: "flex",
         flexDirection: "column",
-        borderRadius: 14,
+        borderRadius: 16,
         overflow: "hidden",
         border: "1px solid var(--line)"
       }
@@ -17272,7 +18053,7 @@ function FinanceApp() {
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "13px 14px",
+        padding: "12px 12px",
         border: "none",
         background: "none",
         color: "var(--ink)",
@@ -17568,7 +18349,7 @@ function CockpitDecisionRow({
       textAlign: "left",
       background: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.07)",
       border: "1px solid rgba(255,255,255,0.10)",
-      borderRadius: 14,
+      borderRadius: 16,
       padding: "10px 12px",
       cursor: "pointer",
       fontFamily: "Inter, sans-serif",
@@ -17622,7 +18403,7 @@ function CockpitDecisionRow({
       flexShrink: 0,
       display: "flex",
       alignItems: "center",
-      gap: 3
+      gap: 4
     }
   }, row.actionLabel, /*#__PURE__*/React.createElement(IconChevronRight, {
     size: 13
@@ -17659,7 +18440,7 @@ function HealthScoreGauge({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 18,
-      fontWeight: 800,
+      fontWeight: 700,
       color: "#fff",
       fontFamily: "'IBM Plex Mono', monospace",
       lineHeight: 1
@@ -17708,8 +18489,8 @@ function FirstStepsCard({
     style: {
       flex: "0 0 150px",
       textAlign: "left",
-      padding: "14px 14px 16px",
-      borderRadius: 14,
+      padding: "12px 12px 16px",
+      borderRadius: 16,
       border: "1px solid var(--line)",
       background: "var(--card)",
       cursor: s.done ? "default" : "pointer"
@@ -17791,8 +18572,8 @@ function QuickActionsRow({
       display: "flex",
       alignItems: "center",
       gap: 10,
-      padding: "13px 14px",
-      borderRadius: 14,
+      padding: "12px 12px",
+      borderRadius: 16,
       border: "1px solid var(--line)",
       background: "var(--card)",
       cursor: "pointer",
@@ -17805,7 +18586,7 @@ function QuickActionsRow({
     },
     onMouseEnter: e => {
       e.currentTarget.style.borderColor = a.color;
-      e.currentTarget.style.boxShadow = "0 2px 10px rgba(16,24,40,0.06)";
+      e.currentTarget.style.boxShadow = "var(--shadow-sm)";
     },
     onMouseLeave: e => {
       e.currentTarget.style.borderColor = "var(--line)";
@@ -17851,7 +18632,7 @@ function MonthlySavingsCard({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 22,
+      gap: 24,
       flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -17888,7 +18669,7 @@ function MonthlySavingsCard({
       right: 0,
       bottom: 2,
       textAlign: "center",
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace"
     }
@@ -18045,7 +18826,7 @@ function MonthlyBalanceCard({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 26
+      gap: 24
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -18087,12 +18868,12 @@ function MonthlyBalanceCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, translate(lang, "overview", "income")), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--emerald)",
       fontFamily: "'IBM Plex Mono', monospace"
@@ -18109,12 +18890,12 @@ function MonthlyBalanceCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, translate(lang, "overview", "expenses")), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--rust)",
       fontFamily: "'IBM Plex Mono', monospace"
@@ -18136,12 +18917,12 @@ function MonthlyBalanceCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, translate(lang, "overview", "balance")), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)",
       fontFamily: "'IBM Plex Mono', monospace"
@@ -18211,10 +18992,10 @@ function CockpitCard({
     style: {
       position: "relative",
       overflow: "hidden",
-      borderRadius: 14,
-      marginBottom: 18,
+      borderRadius: 16,
+      marginBottom: 16,
       background: "linear-gradient(135deg, #101E40 0%, #1B2F5C 55%, #17284D 100%)",
-      boxShadow: "0 12px 30px rgba(10,20,45,0.28)",
+      boxShadow: "var(--shadow-md)",
       opacity: mounted ? 1 : 0,
       transform: mounted ? "translateY(0)" : "translateY(8px)",
       transition: "opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)"
@@ -18222,7 +19003,7 @@ function CockpitCard({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: "relative",
-      padding: "20px 20px 18px"
+      padding: "20px 20px 16px"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -18248,7 +19029,7 @@ function CockpitCard({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "#fff",
       flexShrink: 0,
@@ -18263,7 +19044,7 @@ function CockpitCard({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 17,
+      fontSize: 16,
       fontWeight: 700,
       color: "#fff",
       lineHeight: 1.2,
@@ -18283,7 +19064,7 @@ function CockpitCard({
       alignItems: "center",
       gap: 4,
       marginTop: 6,
-      padding: "3px 9px",
+      padding: "4px 8px",
       borderRadius: 20,
       background: "rgba(240,180,30,0.18)",
       border: "1px solid rgba(240,180,30,0.35)"
@@ -18305,7 +19086,7 @@ function CockpitCard({
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      gap: 3,
+      gap: 4,
       flexShrink: 0,
       background: "none",
       border: "none",
@@ -18323,10 +19104,10 @@ function CockpitCard({
       fontWeight: 700,
       color: scoreColor,
       textTransform: "uppercase",
-      letterSpacing: 0.3,
+      letterSpacing: 0.2,
       display: "flex",
       alignItems: "center",
-      gap: 3
+      gap: 4
     }
   }, scoreLabel, factors && /*#__PURE__*/React.createElement(IconChevronDown, {
     size: 11,
@@ -18336,7 +19117,7 @@ function CockpitCard({
     }
   })))), showFactors && factors && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14,
+      marginTop: 12,
       paddingTop: 14,
       borderTop: "1px solid rgba(255,255,255,0.18)",
       display: "flex",
@@ -18357,7 +19138,7 @@ function CockpitCard({
       style: {
         display: "flex",
         justifyContent: "space-between",
-        fontSize: 12.5,
+        fontSize: 13,
         color: "rgba(255,255,255,0.92)",
         marginBottom: 4,
         fontWeight: 600
@@ -18425,7 +19206,7 @@ function CockpitCard({
     size: 13
   }))) : /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14,
+      marginTop: 12,
       fontSize: 13,
       color: "rgba(255,255,255,0.55)",
       display: "flex",
@@ -18588,7 +19369,7 @@ function ChartsPage({
       borderRadius: 8,
       padding: 4,
       gap: 2,
-      marginBottom: 18,
+      marginBottom: 16,
       flexWrap: "wrap"
     }
   }, [{
@@ -18645,7 +19426,7 @@ function ChartsPage({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        padding: "7px 12px",
+        padding: "8px 12px",
         borderRadius: 8,
         border: "none",
         cursor: "pointer",
@@ -18701,7 +19482,7 @@ function ChartsPage({
     label: "Despesas"
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement(MonthlyBarChart, {
     data: monthlyData
@@ -18710,7 +19491,7 @@ function ChartsPage({
       display: "inline-flex",
       background: "var(--paper)",
       borderRadius: 999,
-      padding: 3,
+      padding: 4,
       gap: 2,
       marginBottom: 16
     }
@@ -18724,7 +19505,7 @@ function ChartsPage({
     key: r.id,
     onClick: () => setFreqRange(r.id),
     style: {
-      padding: "7px 14px",
+      padding: "8px 12px",
       borderRadius: 999,
       border: "none",
       cursor: "pointer",
@@ -18744,7 +19525,7 @@ function ChartsPage({
     points: frequencyData.points
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -18769,7 +19550,7 @@ function ChartsPage({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 28
+      gap: 24
     }
   }, Object.entries(splitByCurrency).map(([cur, breakdown]) => {
     const total = SUB_TYPES.reduce((s, t) => s + breakdown[t], 0);
@@ -18797,7 +19578,7 @@ function ChartsPage({
     }), profile && /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 12,
-        padding: "9px 12px",
+        padding: "8px 12px",
         borderRadius: 8,
         background: "var(--paper)",
         fontSize: 13,
@@ -18861,9 +19642,9 @@ function ChartsPage({
       display: "inline-flex",
       background: "var(--paper)",
       borderRadius: 999,
-      padding: 3,
+      padding: 4,
       gap: 2,
-      marginBottom: 18
+      marginBottom: 16
     }
   }, [{
     id: "category",
@@ -18875,7 +19656,7 @@ function ChartsPage({
     key: r.id,
     onClick: () => setCategoryViewMode(r.id),
     style: {
-      padding: "7px 14px",
+      padding: "8px 12px",
       borderRadius: 999,
       border: "none",
       cursor: "pointer",
@@ -18893,7 +19674,7 @@ function ChartsPage({
     }
   }, "Ainda sem despesas registadas este mês.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(CategoryDonut, {
     data: categoryChartData,
@@ -18945,7 +19726,7 @@ function ChartsPage({
     }
   }, "Ainda sem despesas registadas este mês.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(CategoryDonut, {
     data: accountChartData
@@ -19137,6 +19918,7 @@ function ChartsPage({
 }
 function Overview({
   lang,
+  onRoundUp,
   monthClosing,
   onOpenMonthClose,
   taxaInflacao,
@@ -19349,7 +20131,7 @@ function Overview({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 22
+      gap: 24
     }
   }, /*#__PURE__*/React.createElement(CockpitCard, {
     lang: lang,
@@ -19418,7 +20200,7 @@ function Overview({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        padding: "7px 12px",
+        padding: "8px 12px",
         borderRadius: 8,
         border: "none",
         cursor: "pointer",
@@ -19464,6 +20246,18 @@ function Overview({
     taxaInflacao: taxaInflacao,
     closing: monthClosing,
     onOpenClose: onOpenMonthClose
+  }), /*#__PURE__*/React.createElement(OverviewInsights, {
+    lang: lang,
+    transactions: transactions,
+    accounts: accounts,
+    exchangeRates: exchangeRates,
+    month: month,
+    categories: categories,
+    spentByCategory: spentByCategory,
+    recurringExpenses: recurringExpenses,
+    goals: goals,
+    onRoundUp: onRoundUp,
+    onNavigate: onNavigate
   }), /*#__PURE__*/React.createElement(QuickActionsRow, {
     lang: lang,
     onReceita: onQuickReceita,
@@ -19483,7 +20277,7 @@ function Overview({
       borderRadius: 8,
       padding: 4,
       gap: 2,
-      marginBottom: 18,
+      marginBottom: 16,
       flexWrap: "wrap"
     }
   }, [{
@@ -19520,7 +20314,7 @@ function Overview({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        padding: "7px 12px",
+        padding: "8px 12px",
         borderRadius: 8,
         border: "none",
         cursor: "pointer",
@@ -19588,7 +20382,7 @@ function Overview({
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 12px",
       color: "#fff"
     }
@@ -19624,7 +20418,7 @@ function Overview({
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 14
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
@@ -19667,7 +20461,7 @@ function Overview({
       borderRadius: 8,
       padding: 4,
       gap: 2,
-      marginBottom: 18,
+      marginBottom: 16,
       flexWrap: "wrap"
     }
   }, [{
@@ -19708,7 +20502,7 @@ function Overview({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        padding: "7px 12px",
+        padding: "8px 12px",
         borderRadius: 8,
         border: "none",
         cursor: "pointer",
@@ -19959,12 +20753,12 @@ function AccountCard({
         color: "var(--slate)",
         fontWeight: 600,
         textTransform: "uppercase",
-        letterSpacing: 0.3
+        letterSpacing: 0.2
       }
     }, "Saldo disponível"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 600,
         marginTop: 2,
         lineHeight: 1.25
@@ -19979,7 +20773,7 @@ function AccountCard({
       style: {
         display: "flex",
         gap: 4,
-        marginTop: 5,
+        marginTop: 4,
         flexWrap: "wrap"
       }
     }, presentTypes.map(t => /*#__PURE__*/React.createElement("span", {
@@ -19988,7 +20782,7 @@ function AccountCard({
         fontSize: 11,
         color: "var(--slate)",
         background: "var(--paper)",
-        padding: "2px 7px",
+        padding: "2px 8px",
         borderRadius: 20,
         display: "inline-flex",
         alignItems: "center",
@@ -20022,7 +20816,7 @@ function AccountCard({
         display: "flex",
         alignItems: "baseline",
         gap: 10,
-        marginTop: 14,
+        marginTop: 12,
         flexWrap: "wrap"
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -20050,7 +20844,7 @@ function AccountCard({
       style: {
         display: "flex",
         flexDirection: "column",
-        gap: 3,
+        gap: 4,
         marginTop: 8
       }
     }, SUB_TYPES.filter(t => breakdown[t] !== 0).map(t => /*#__PURE__*/React.createElement("div", {
@@ -20080,13 +20874,13 @@ function AccountCard({
   return /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
-      borderRadius: 14,
+      borderRadius: 16,
       padding: 20,
       width: "100%",
       maxWidth: 380,
       background: "#FFFFFF",
       position: "relative",
-      boxShadow: "0 1px 3px rgba(16,24,40,0.05)"
+      boxShadow: "var(--shadow-sm)"
     }
   }, (onRemove || onEdit) && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -20126,15 +20920,15 @@ function AccountCard({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 3,
+      gap: 4,
       paddingRight: onRemove || onEdit ? 56 : 0
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 7,
-      fontSize: 15,
+      gap: 8,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)"
     }
@@ -20148,7 +20942,7 @@ function AccountCard({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 7,
+      gap: 8,
       fontSize: 13,
       color: "var(--slate)"
     }
@@ -20167,12 +20961,12 @@ function AccountCard({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4
+      letterSpacing: 0.5
     }
   }, "Saldo Disponível"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 26,
+      fontSize: 24,
       fontWeight: 700,
       color: "var(--ink)",
       marginTop: 4,
@@ -20183,11 +20977,11 @@ function AccountCard({
     style: {
       fontSize: 12,
       color: "var(--slate)",
-      marginTop: 3
+      marginTop: 4
     }
   }, "≈ ", fmt(kzEquivalent)), pct !== null && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 7,
+      marginTop: 8,
       fontSize: 12,
       fontWeight: 700,
       color: pct >= 0 ? "var(--emerald)" : "var(--rust)",
@@ -20202,7 +20996,7 @@ function AccountCard({
     }
   }, "vs ", prevMonthLabelFull))), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 18,
+      marginTop: 16,
       paddingTop: 16,
       borderTop: "1px solid var(--line)"
     }
@@ -20212,7 +21006,7 @@ function AccountCard({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
+      letterSpacing: 0.5,
       marginBottom: 10
     }
   }, "Distribuição"), /*#__PURE__*/React.createElement("div", {
@@ -20230,7 +21024,7 @@ function AccountCard({
       style: {
         display: "flex",
         alignItems: "center",
-        gap: 9
+        gap: 8
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -20265,7 +21059,7 @@ function AccountCard({
     total: total
   })), hasInterest && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 18,
+      marginTop: 16,
       paddingTop: 16,
       borderTop: "1px solid var(--line)"
     }
@@ -20275,7 +21069,7 @@ function AccountCard({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
+      letterSpacing: 0.5,
       marginBottom: 10
     }
   }, "Métricas"), /*#__PURE__*/React.createElement("div", {
@@ -20294,11 +21088,11 @@ function AccountCard({
     }
   }, "Juros"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--gold)",
       fontFamily: "'IBM Plex Mono', monospace",
-      marginTop: 3
+      marginTop: 4
     }
   }, "+", fmt(totalAccrued, account.currency))), weightedRate !== null && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -20311,14 +21105,14 @@ function AccountCard({
     }
   }, "Rentabilidade"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)",
-      marginTop: 3
+      marginTop: 4
     }
   }, weightedRate.toFixed(1), "% a.a.")))), lastMovement && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 18,
+      marginTop: 16,
       paddingTop: 16,
       borderTop: "1px solid var(--line)"
     }
@@ -20328,8 +21122,8 @@ function AccountCard({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
-      marginBottom: 9
+      letterSpacing: 0.5,
+      marginBottom: 8
     }
   }, "Último movimento"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -20373,7 +21167,7 @@ function AccountCard({
     style: {
       fontSize: 11,
       color: "var(--slate)",
-      marginTop: 3
+      marginTop: 4
     }
   }, new Date(lastMovement.date + "T00:00:00").toLocaleDateString(CURRENT_NUMBER_LOCALE))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -20519,7 +21313,7 @@ function AccountsTab({
     style: {
       display: "flex",
       gap: 10,
-      marginBottom: 18,
+      marginBottom: 16,
       flexWrap: "wrap",
       alignItems: "center",
       justifyContent: "space-between"
@@ -20537,7 +21331,7 @@ function AccountsTab({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 5,
+      gap: 4,
       background: "none",
       border: "none",
       color: "var(--slate)",
@@ -20571,7 +21365,7 @@ function AccountsTab({
       background: "var(--card)",
       border: "1px solid var(--line)",
       borderRadius: 8,
-      boxShadow: "0 8px 24px rgba(16,24,40,0.12)",
+      boxShadow: "var(--shadow-md)",
       minWidth: 170,
       overflow: "hidden"
     }
@@ -20650,7 +21444,7 @@ function AccountsTab({
     }
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, translate(lang, "accounts", "no_accounts_title")), /*#__PURE__*/React.createElement("p", {
@@ -20665,12 +21459,12 @@ function AccountsTab({
     size: 15
   }), " ", translate(lang, "accounts", "add_first_account")))) : /*#__PURE__*/React.createElement(React.Fragment, null, byBank.length > 1 && /*#__PURE__*/React.createElement(Card, {
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 4px"
     }
   }, translate(lang, "accounts", "consolidated_by_bank")), /*#__PURE__*/React.createElement("p", {
@@ -20796,7 +21590,7 @@ function AccountsTab({
         style: {
           display: "flex",
           alignItems: "center",
-          gap: 9,
+          gap: 8,
           cursor: "pointer",
           borderRadius: 8,
           padding: "6px 8px",
@@ -20849,7 +21643,7 @@ function AccountsTab({
     style: {
       display: "flex",
       gap: 10,
-      marginBottom: 14,
+      marginBottom: 12,
       flexWrap: "wrap",
       alignItems: "center"
     }
@@ -20901,7 +21695,7 @@ function AccountsTab({
     key: f,
     onClick: () => setQuickFilter(f),
     style: {
-      padding: "5px 12px",
+      padding: "4px 12px",
       borderRadius: 20,
       border: `1px solid ${quickFilter === f ? "var(--gold)" : "var(--line)"}`,
       background: quickFilter === f ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
@@ -20921,7 +21715,7 @@ function AccountsTab({
     style: {
       position: "relative",
       overflow: "hidden",
-      borderRadius: 14,
+      borderRadius: 16,
       minHeight: Math.min(Math.max(460, sortedAccounts.length * 212 + 24), 880),
       border: "1px solid var(--line)",
       background: "var(--paper)"
@@ -20967,7 +21761,7 @@ function AccountsTab({
       inset: 0,
       overflowY: "auto",
       background: "var(--card)",
-      borderRadius: 14,
+      borderRadius: 16,
       transition: "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), filter 0.34s ease",
       ...layerTransform(1)
     }
@@ -20995,7 +21789,7 @@ function AccountsTab({
       inset: 0,
       overflowY: "auto",
       background: "var(--card)",
-      borderRadius: 14,
+      borderRadius: 16,
       transition: "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), filter 0.34s ease",
       ...layerTransform(2)
     }
@@ -21138,8 +21932,8 @@ function BankCardFace({
     style: {
       position: "relative",
       overflow: "hidden",
-      borderRadius: 18,
-      padding: "18px 20px",
+      borderRadius: 20,
+      padding: "16px 20px",
       color: "#fff",
       background: "linear-gradient(135deg, " + pal.a + " 0%, " + pal.b + " 100%)",
       boxShadow: "0 12px 28px rgba(8,16,40,0.24), inset 0 1px 0 rgba(255,255,255,0.20)",
@@ -21282,8 +22076,8 @@ function BankCardFace({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
-      letterSpacing: 0.9,
+      fontSize: 11,
+      letterSpacing: 0.5,
       textTransform: "uppercase",
       opacity: 0.75,
       fontWeight: 600
@@ -21291,9 +22085,9 @@ function BankCardFace({
   }, label), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: mono,
-      fontSize: 25,
+      fontSize: 24,
       fontWeight: 700,
-      marginTop: 3,
+      marginTop: 4,
       fontVariantNumeric: "tabular-nums",
       lineHeight: 1.15,
       textShadow: "0 1px 2px rgba(0,0,0,0.25)",
@@ -21303,7 +22097,7 @@ function BankCardFace({
     style: {
       fontSize: 12,
       opacity: 0.8,
-      marginTop: 3
+      marginTop: 4
     }
   }, secondary), progress != null && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21311,7 +22105,7 @@ function BankCardFace({
       borderRadius: 6,
       background: "rgba(255,255,255,0.22)",
       overflow: "hidden",
-      marginTop: 9
+      marginTop: 8
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21325,13 +22119,13 @@ function BankCardFace({
     style: {
       fontSize: 12,
       opacity: 0.88,
-      marginTop: 7
+      marginTop: 8
     }
   }, footnote), badges && badges.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6,
-      marginTop: 9,
+      marginTop: 8,
       flexWrap: "wrap"
     }
   }, badges.map(b => /*#__PURE__*/React.createElement("span", {
@@ -21339,7 +22133,7 @@ function BankCardFace({
     style: {
       fontSize: 11,
       fontWeight: 600,
-      padding: "3px 9px",
+      padding: "4px 8px",
       borderRadius: 999,
       background: "rgba(255,255,255,0.16)",
       border: "1px solid rgba(255,255,255,0.18)"
@@ -21375,7 +22169,7 @@ function AccountRow({
       padding: 0,
       border: "none",
       background: "none",
-      borderRadius: 18,
+      borderRadius: 20,
       cursor: "pointer",
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       transform: pressed ? "scale(0.975)" : "scale(1)",
@@ -21403,7 +22197,7 @@ function CascadeHeader({
       display: "flex",
       alignItems: "center",
       gap: 10,
-      padding: "14px 16px",
+      padding: "12px 16px",
       borderBottom: "1px solid var(--line)",
       position: "sticky",
       top: 0,
@@ -21454,7 +22248,7 @@ function CascadeHeader({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)",
       overflow: "hidden",
@@ -21532,7 +22326,7 @@ function AccountDetailPanel({
         background: "var(--card)",
         border: "1px solid var(--line)",
         borderRadius: 8,
-        boxShadow: "0 8px 24px rgba(16,24,40,0.12)",
+        boxShadow: "var(--shadow-md)",
         minWidth: 160,
         overflow: "hidden"
       }
@@ -21585,7 +22379,7 @@ function AccountDetailPanel({
     }), " ", translate(lang, "ui", "delete_account")))))
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: 18
+      padding: 16
     }
   }, /*#__PURE__*/React.createElement(BankCardFace, {
     title: account.bank.replace(/—.*/, "").trim(),
@@ -21606,7 +22400,7 @@ function AccountDetailPanel({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
+      letterSpacing: 0.5,
       marginBottom: 10
     }
   }, "Saldos por tipo"), /*#__PURE__*/React.createElement("div", {
@@ -21710,7 +22504,7 @@ function AccountDetailPanel({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
+      letterSpacing: 0.5,
       marginBottom: 10
     }
   }, translate(lang, "ui", "recent_movements")), /*#__PURE__*/React.createElement("div", {
@@ -21796,7 +22590,7 @@ function SubBalanceDetailPanel({
     onBack: onBack
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: 18
+      padding: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21804,7 +22598,7 @@ function SubBalanceDetailPanel({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4
+      letterSpacing: 0.5
     }
   }, "Saldo Disponível"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21818,7 +22612,7 @@ function SubBalanceDetailPanel({
     style: {
       fontSize: 12,
       color: "var(--slate)",
-      marginTop: 3
+      marginTop: 4
     }
   }, "Saldo inicial: ", fmt(Number(sub.openingBalance) || 0, account.currency)), !!sub.interestRate && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21832,7 +22626,7 @@ function SubBalanceDetailPanel({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
+      letterSpacing: 0.5,
       marginBottom: 10
     }
   }, "Juros"), /*#__PURE__*/React.createElement("div", {
@@ -21851,10 +22645,10 @@ function SubBalanceDetailPanel({
     }
   }, "Taxa"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)",
-      marginTop: 3
+      marginTop: 4
     }
   }, sub.interestRate, "% a.a.")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21867,11 +22661,11 @@ function SubBalanceDetailPanel({
     }
   }, "Acumulado"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--gold)",
       fontFamily: "'IBM Plex Mono', monospace",
-      marginTop: 3
+      marginTop: 4
     }
   }, "+", fmt(accrued, account.currency))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21884,11 +22678,11 @@ function SubBalanceDetailPanel({
     }
   }, "Projeção anual"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       color: "var(--ink)",
       fontFamily: "'IBM Plex Mono', monospace",
-      marginTop: 3
+      marginTop: 4
     }
   }, fmt(projected, account.currency))))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21902,7 +22696,7 @@ function SubBalanceDetailPanel({
       color: "var(--slate)",
       fontWeight: 600,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
+      letterSpacing: 0.5,
       marginBottom: 10
     }
   }, translate(lang, "ui", "movements")), subTx.length === 0 ? /*#__PURE__*/React.createElement("p", {
@@ -22041,7 +22835,7 @@ function AccountModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "accounts", "field_bank")
@@ -22135,7 +22929,7 @@ function AccountModal({
   }, /*#__PURE__*/React.createElement("select", {
     style: {
       ...inputStyle,
-      padding: "7px 8px",
+      padding: "8px 8px",
       fontSize: 13
     },
     value: sb.type,
@@ -22151,7 +22945,7 @@ function AccountModal({
     inputMode: "decimal",
     style: {
       ...inputStyle,
-      padding: "7px 8px",
+      padding: "8px 8px",
       fontSize: 13
     },
     value: sb.openingBalance,
@@ -22164,7 +22958,7 @@ function AccountModal({
   }, /*#__PURE__*/React.createElement("input", {
     style: {
       ...inputStyle,
-      padding: "7px 8px",
+      padding: "8px 8px",
       fontSize: 13,
       marginBottom: 8
     },
@@ -22185,7 +22979,7 @@ function AccountModal({
     inputMode: "decimal",
     style: {
       ...inputStyle,
-      padding: "7px 8px",
+      padding: "8px 8px",
       fontSize: 13
     },
     value: sb.interestRate,
@@ -22199,7 +22993,7 @@ function AccountModal({
     type: "date",
     style: {
       ...inputStyle,
-      padding: "7px 8px",
+      padding: "8px 8px",
       fontSize: 13
     },
     value: sb.startDate,
@@ -22212,7 +23006,7 @@ function AccountModal({
     type: "date",
     style: {
       ...inputStyle,
-      padding: "7px 8px",
+      padding: "8px 8px",
       fontSize: 13
     },
     value: sb.maturityDate,
@@ -22338,7 +23132,7 @@ function TimelineNode({
     style: {
       position: "relative",
       display: "flex",
-      gap: 14,
+      gap: 12,
       padding: "2px 4px",
       paddingBottom: isLast ? 4 : 22,
       background: "var(--card)",
@@ -22367,7 +23161,7 @@ function TimelineNode({
       justifyContent: "center",
       flexShrink: 0,
       zIndex: 1,
-      boxShadow: "0 2px 6px rgba(16,24,40,0.12)"
+      boxShadow: "var(--shadow-sm)"
     }
   }, /*#__PURE__*/React.createElement(Icon, {
     size: 18,
@@ -22435,7 +23229,7 @@ function TimelineDayGroup({
       display: "flex",
       justifyContent: "space-between",
       alignItems: "baseline",
-      marginBottom: 14,
+      marginBottom: 12,
       paddingLeft: 2
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -22481,7 +23275,7 @@ function TimelineView({
   let runningIndex = 0;
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: "18px 16px 8px"
+      padding: "16px 16px 8px"
     }
   }, groups.map(g => {
     const startIndex = runningIndex;
@@ -22656,7 +23450,7 @@ function MobileTxCard({
     }
   }, t.description)), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 700,
       fontFamily: "'IBM Plex Mono', monospace",
       color: amountColor,
@@ -22719,7 +23513,7 @@ function TransactionsTab({
     style: {
       display: "flex",
       gap: 10,
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
@@ -22743,7 +23537,7 @@ function TransactionsTab({
     size: 14
   }), " ", translate(lang, "transactions", "import_statement"))), accounts.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -22792,7 +23586,7 @@ function TransactionsTab({
       display: "flex",
       alignItems: "center",
       gap: 6,
-      padding: "8px 14px",
+      padding: "8px 12px",
       borderRadius: 20,
       border: "1px solid var(--line)",
       background: "var(--card)",
@@ -22802,7 +23596,7 @@ function TransactionsTab({
     title: `Lançar despesa: ${s.name} — ${fmt(s.amount)}`
   }, s.emoji && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 15
+      fontSize: 16
     }
   }, s.emoji), /*#__PURE__*/React.createElement("span", {
     style: {
@@ -22821,7 +23615,7 @@ function TransactionsTab({
       color: "var(--slate)",
       fontSize: 14,
       marginTop: -10,
-      marginBottom: 14
+      marginBottom: 12
     }
   }, translate(lang, "transactions", "add_account_first")), transactions.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -22834,7 +23628,7 @@ function TransactionsTab({
       display: "inline-flex",
       background: "var(--paper)",
       borderRadius: 8,
-      padding: 3,
+      padding: 4,
       gap: 2
     }
   }, [{
@@ -22854,7 +23648,7 @@ function TransactionsTab({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        padding: "7px 13px",
+        padding: "8px 12px",
         borderRadius: 8,
         border: "none",
         cursor: "pointer",
@@ -22873,7 +23667,7 @@ function TransactionsTab({
     style: {
       display: "flex",
       gap: 10,
-      marginBottom: 14,
+      marginBottom: 12,
       flexWrap: "wrap",
       alignItems: "center"
     }
@@ -23298,7 +24092,7 @@ function CsvImportModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -23337,7 +24131,7 @@ function CsvImportModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -23597,7 +24391,7 @@ function TxModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, !isEditing && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
     ref: receiptInputRef,
@@ -23618,7 +24412,7 @@ function TxModal({
       justifyContent: "center",
       gap: 8,
       width: "100%",
-      padding: "11px 14px",
+      padding: "12px 12px",
       borderRadius: 8,
       border: "1px dashed var(--gold)",
       background: "color-mix(in srgb, var(--gold) 16%, var(--card))",
@@ -23657,7 +24451,7 @@ function TxModal({
     onClick: () => setKind(k),
     style: {
       flex: 1,
-      padding: "9px 0",
+      padding: "8px 0",
       borderRadius: 8,
       border: `1.5px solid ${kind === k ? k === "receita" ? "var(--emerald)" : "var(--rust)" : "var(--line)"}`,
       background: kind === k ? k === "receita" ? "color-mix(in srgb, var(--emerald) 16%, var(--card))" : "color-mix(in srgb, var(--rust) 16%, var(--card))" : "var(--card)",
@@ -23890,7 +24684,7 @@ function TransferModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, recentPairs.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -23923,8 +24717,8 @@ function TransferModal({
       style: {
         display: "flex",
         alignItems: "center",
-        gap: 5,
-        padding: "7px 12px",
+        gap: 4,
+        padding: "8px 12px",
         borderRadius: 20,
         border: `1px solid ${active ? "var(--gold)" : "var(--line)"}`,
         background: active ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--paper)",
@@ -24153,7 +24947,7 @@ function ExchangeTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18
+      gap: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -24192,7 +24986,7 @@ function ExchangeTab({
   }, error), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 14,
+      gap: 12,
       flexWrap: "wrap",
       marginTop: 16
     }
@@ -24234,12 +25028,12 @@ function ExchangeTab({
     placeholder: "ex: 1180.00"
   }))), /*#__PURE__*/React.createElement(PrimaryButton, {
     style: {
-      marginTop: 14
+      marginTop: 12
     },
     onClick: handleSaveManual
   }, translate(lang, "exchange", "save_rates")), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 18,
+      marginTop: 16,
       paddingTop: 14,
       borderTop: "1px solid var(--line)",
       fontSize: 13,
@@ -24400,7 +25194,7 @@ function RecurringRow({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 3,
+        gap: 4,
         cursor: "pointer",
         fontSize: 11,
         fontWeight: 700,
@@ -24422,7 +25216,7 @@ function RecurringRow({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 3,
+        gap: 4,
         cursor: "pointer",
         fontSize: 11,
         fontWeight: 700,
@@ -24453,7 +25247,7 @@ function RecurringRow({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 3,
+        gap: 4,
         cursor: "pointer",
         fontSize: 11,
         fontWeight: 700,
@@ -24476,7 +25270,7 @@ function RecurringRow({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 3,
+        gap: 4,
         cursor: "pointer",
         fontSize: 11,
         fontWeight: 700,
@@ -24495,7 +25289,7 @@ function RecurringRow({
         alignItems: "center",
         border: "1px solid var(--line)",
         borderRadius: 8,
-        padding: "10px 14px",
+        padding: "10px 12px",
         gap: 10,
         background: "var(--card)",
         transform: `translateX(${dragX}px)`,
@@ -24542,7 +25336,7 @@ function RecurringRow({
       style: {
         display: "flex",
         flexDirection: "column",
-        gap: 14
+        gap: 12
       }
     }, /*#__PURE__*/React.createElement(Field, {
       label: "Categoria"
@@ -24566,7 +25360,7 @@ function RecurringRow({
       alignItems: "center",
       border: "1px solid var(--line)",
       borderRadius: 8,
-      padding: "10px 14px",
+      padding: "10px 12px",
       gap: 10,
       flexWrap: "wrap"
     }
@@ -24778,12 +25572,12 @@ function PlanningTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18
+      gap: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 17,
+      fontSize: 16,
       margin: "0 0 14px"
     }
   }, translate(lang, "planning", "health_score_title")), /*#__PURE__*/React.createElement("div", {
@@ -24816,7 +25610,7 @@ function PlanningTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 7
+      gap: 8
     }
   }, healthScore.factors.map(f => /*#__PURE__*/React.createElement("div", {
     key: f.name
@@ -24861,7 +25655,7 @@ function PlanningTab({
       gap: 2,
       background: "var(--paper)",
       borderRadius: 8,
-      padding: 3,
+      padding: 4,
       marginBottom: 16,
       maxWidth: 360
     }
@@ -24870,7 +25664,7 @@ function PlanningTab({
     onClick: () => setAllocationProfile(p),
     style: {
       flex: 1,
-      padding: "7px 10px",
+      padding: "8px 10px",
       borderRadius: 6,
       border: "none",
       cursor: "pointer",
@@ -24884,7 +25678,7 @@ function PlanningTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, ["Conservador", "Moderado", "Arrojado"].map(bucket => {
     const actualPct = allocation[bucket] / allocation.total * 100;
@@ -24959,7 +25753,7 @@ function PlanningTab({
   }, translate(lang, "planning", "fee_analyzer_empty")) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 14,
+      gap: 12,
       flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement(StatCard, {
@@ -24995,7 +25789,7 @@ function PlanningTab({
   }, translate(lang, "planning", "networth_desc_prefix"), fmt(netPerMonth), translate(lang, "planning", "networth_desc_suffix")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 14,
+      gap: 12,
       flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement(StatCard, {
@@ -25036,13 +25830,13 @@ function PlanningTab({
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       border: "1px solid var(--line)",
       borderRadius: 8,
-      padding: 14
+      padding: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25053,7 +25847,7 @@ function PlanningTab({
   }, translate(lang, "planning", "savings_rate")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: 700,
       marginTop: 4
     }
@@ -25074,7 +25868,7 @@ function PlanningTab({
     style: {
       border: "1px solid var(--line)",
       borderRadius: 8,
-      padding: 14
+      padding: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25085,7 +25879,7 @@ function PlanningTab({
   }, translate(lang, "planning", "emergency_fund")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: 700,
       marginTop: 4
     }
@@ -25106,7 +25900,7 @@ function PlanningTab({
     style: {
       border: "1px solid var(--line)",
       borderRadius: 8,
-      padding: 14
+      padding: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25117,7 +25911,7 @@ function PlanningTab({
   }, translate(lang, "planning", "debt_level")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: 700,
       marginTop: 4
     }
@@ -25166,7 +25960,7 @@ function PlanningTab({
       style: {
         border: "1px solid var(--line)",
         borderRadius: 8,
-        padding: "10px 14px"
+        padding: "10px 12px"
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -25258,7 +26052,7 @@ function AlertsTab({
       border: `1px solid var(--${a.severity === "slate" ? "line" : a.severity})`,
       background: a.severity === "rust" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : a.severity === "gold" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
       borderRadius: 8,
-      padding: "12px 14px"
+      padding: "12px 12px"
     }
   }, /*#__PURE__*/React.createElement(IconBell, {
     size: 15,
@@ -25320,7 +26114,7 @@ function BondModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Tipo"
@@ -25501,7 +26295,7 @@ function BondCard({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, bond.codigo), /*#__PURE__*/React.createElement("div", {
@@ -25546,7 +26340,7 @@ function BondCard({
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gap: 10,
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25705,7 +26499,7 @@ function BondsTab({
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr",
       gap: 12,
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -25744,7 +26538,7 @@ function BondsTab({
   }, fmt(totals.cupoes)))), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
@@ -25755,7 +26549,7 @@ function BondsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, bonds.map(b => /*#__PURE__*/React.createElement(BondCard, {
     key: b.id,
@@ -25800,7 +26594,7 @@ function EquityModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Ticker"
@@ -25918,7 +26712,7 @@ function EquityCard({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, equity.ticker, " ", equity.nome && /*#__PURE__*/React.createElement("span", {
@@ -25969,7 +26763,7 @@ function EquityCard({
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gap: 10,
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -26091,7 +26885,7 @@ function EquityCard({
     type: "date",
     style: {
       ...inputStyle,
-      padding: "5px 7px",
+      padding: "4px 8px",
       fontSize: 12
     },
     value: newDivDate,
@@ -26111,7 +26905,7 @@ function EquityCard({
     inputMode: "decimal",
     style: {
       ...inputStyle,
-      padding: "5px 7px",
+      padding: "4px 8px",
       fontSize: 12
     },
     value: newDivValue,
@@ -26126,7 +26920,7 @@ function EquityCard({
       setNewDivValue("");
     },
     style: {
-      padding: "7px 12px",
+      padding: "8px 12px",
       borderRadius: 6,
       border: "none",
       background: "var(--gold)",
@@ -26276,7 +27070,7 @@ function EquitiesTab({
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr",
       gap: 12,
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -26316,7 +27110,7 @@ function EquitiesTab({
   }, fmt(totals.dividendos)))), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
@@ -26327,7 +27121,7 @@ function EquitiesTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, equities.map(e => /*#__PURE__*/React.createElement(EquityCard, {
     key: e.id,
@@ -26380,7 +27174,7 @@ function FundModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Tipo"
@@ -26542,7 +27336,7 @@ function FundCard({
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: 600
     }
   }, fund.nome), /*#__PURE__*/React.createElement("div", {
@@ -26559,18 +27353,18 @@ function FundCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: 700,
       padding: "2px 8px",
       borderRadius: 20,
       textTransform: "uppercase",
-      letterSpacing: 0.3,
+      letterSpacing: 0.2,
       color: fund.perfilRisco === "Conservador" ? "var(--emerald)" : fund.perfilRisco === "Arrojado" ? "var(--rust)" : "var(--gold)",
       background: fund.perfilRisco === "Conservador" ? "color-mix(in srgb, var(--emerald) 14%, transparent)" : fund.perfilRisco === "Arrojado" ? "color-mix(in srgb, var(--rust) 14%, transparent)" : "color-mix(in srgb, var(--gold) 14%, transparent)"
     }
   }, fund.perfilRisco || "Moderado"), fund.taxaGestao != null && fund.taxaGestao !== "" && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: 600,
       padding: "2px 8px",
       borderRadius: 20,
@@ -26614,7 +27408,7 @@ function FundCard({
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gap: 10,
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -26735,7 +27529,7 @@ function FundCard({
     type: "date",
     style: {
       ...inputStyle,
-      padding: "5px 7px",
+      padding: "4px 8px",
       fontSize: 12
     },
     value: newRedDate,
@@ -26755,7 +27549,7 @@ function FundCard({
     inputMode: "decimal",
     style: {
       ...inputStyle,
-      padding: "5px 7px",
+      padding: "4px 8px",
       fontSize: 12
     },
     value: newRedValue,
@@ -26770,7 +27564,7 @@ function FundCard({
       setNewRedValue("");
     },
     style: {
-      padding: "7px 12px",
+      padding: "8px 12px",
       borderRadius: 6,
       border: "none",
       background: "var(--gold)",
@@ -26844,7 +27638,7 @@ function FundsTab({
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr",
       gap: 12,
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -26883,7 +27677,7 @@ function FundsTab({
   }, fmt(totals.resgatado)))), /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
@@ -26894,7 +27688,7 @@ function FundsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, funds.map(f => /*#__PURE__*/React.createElement(FundCard, {
     key: f.id,
@@ -26925,7 +27719,7 @@ function EventModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Tipo"
@@ -26997,19 +27791,19 @@ function CalendarTab({
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAddEvent,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
   }), " Evento manual"), next30.length > 0 && /*#__PURE__*/React.createElement(Card, {
     style: {
-      marginBottom: 18,
+      marginBottom: 16,
       borderLeft: "4px solid var(--gold)"
     }
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 12px"
     }
   }, "Alertas — próximos 30 dias"), /*#__PURE__*/React.createElement("div", {
@@ -27051,7 +27845,7 @@ function CalendarTab({
   }, fmt(e.valorEsperado))))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 12px"
     }
   }, "Todos os eventos"), allEvents.length === 0 ? /*#__PURE__*/React.createElement("p", {
@@ -27229,7 +28023,7 @@ function IndicatorsTab({
     style: {
       ...inputStyle,
       width: 80,
-      padding: "5px 7px"
+      padding: "4px 8px"
     },
     value: newRisco,
     onChange: e => setNewRisco(e.target.value)
@@ -27244,7 +28038,7 @@ function IndicatorsTab({
     style: {
       ...inputStyle,
       width: 80,
-      padding: "5px 7px"
+      padding: "4px 8px"
     },
     value: newInflacao,
     onChange: e => setNewInflacao(e.target.value)
@@ -27264,7 +28058,7 @@ function IndicatorsTab({
     style: {
       ...inputStyle,
       width: 80,
-      padding: "5px 7px"
+      padding: "4px 8px"
     },
     value: newImpCupoes,
     onChange: e => setNewImpCupoes(e.target.value)
@@ -27279,7 +28073,7 @@ function IndicatorsTab({
     style: {
       ...inputStyle,
       width: 80,
-      padding: "5px 7px"
+      padding: "4px 8px"
     },
     value: newImpDiv,
     onChange: e => setNewImpDiv(e.target.value)
@@ -27294,7 +28088,7 @@ function IndicatorsTab({
     style: {
       ...inputStyle,
       width: 80,
-      padding: "5px 7px"
+      padding: "4px 8px"
     },
     value: newImpMV,
     onChange: e => setNewImpMV(e.target.value)
@@ -27319,7 +28113,7 @@ function IndicatorsTab({
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
-      gap: 14
+      gap: 12
     }
   }, cards.map(c => /*#__PURE__*/React.createElement(Card, {
     key: c.label
@@ -27426,7 +28220,7 @@ function IncomeTab({
     style: {
       fontSize: 11,
       textTransform: "uppercase",
-      letterSpacing: 0.6,
+      letterSpacing: 0.5,
       color: "var(--slate)",
       fontWeight: 600
     }
@@ -27501,7 +28295,7 @@ function IncomeTab({
   }, kpi("Rendimento bruto", fmt(bruto), "var(--ink)", `Cupões ${fmtCompact(cupoes)} · Dividendos ${fmtCompact(dividendos)}`), kpi("Imposto estimado", fmt(imposto), "var(--red, #c0392b)", "Retenção na fonte pelas taxas definidas"), kpi("Rendimento líquido", fmt(liquido), "var(--green, #2e9e6b)"), kpi("Próximos 12 meses", fmt(next12Liquido), "var(--gold)", `líquido esperado · ${(yieldOnCost * 100).toFixed(1)}% do investido (bruto)`)), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 14px"
     }
   }, "Rendimentos recebidos — últimos 12 meses"), /*#__PURE__*/React.createElement("div", {
@@ -27536,14 +28330,14 @@ function IncomeTab({
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 11,
       color: "var(--slate)",
       marginTop: 4
     }
   }, monthLabel(x.m)))))), next12.length > 0 && /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 12px"
     }
   }, "A receber — próximos 12 meses"), /*#__PURE__*/React.createElement("div", {
@@ -27584,7 +28378,7 @@ function IncomeTab({
   }, "+ ", next12.length - 8, " outros (ver Calendário)"))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 12px"
     }
   }, "Histórico de rendimentos"), filtered.length === 0 ? /*#__PURE__*/React.createElement("p", {
@@ -27602,7 +28396,7 @@ function IncomeTab({
   }, filtered.map(r => /*#__PURE__*/React.createElement("div", {
     key: r.id,
     style: {
-      padding: "12px 14px",
+      padding: "12px 12px",
       borderRadius: 12,
       background: "var(--paper)",
       border: "1px solid var(--line)"
@@ -27790,14 +28584,14 @@ function InvestmentsTab({
     style: {
       display: "flex",
       gap: 8,
-      marginBottom: 18,
+      marginBottom: 16,
       flexWrap: "wrap"
     }
   }, pills.map(p => /*#__PURE__*/React.createElement("button", {
     key: p.id,
     onClick: () => setSubTab(p.id),
     style: {
-      padding: "6px 14px",
+      padding: "6px 12px",
       borderRadius: 20,
       border: `1px solid ${subTab === p.id ? "var(--gold)" : "var(--line)"}`,
       background: subTab === p.id ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
@@ -27911,7 +28705,7 @@ function ExportsTab({
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -28016,12 +28810,12 @@ function KPIsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18
+      gap: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 17,
+      fontSize: 16,
       margin: "0 0 14px"
     }
   }, translate(lang, "kpis", "financial_health")), /*#__PURE__*/React.createElement("div", {
@@ -28048,7 +28842,7 @@ function KPIsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 7,
+      gap: 8,
       marginTop: 10
     }
   }, healthScore.factors.map(f => /*#__PURE__*/React.createElement("div", {
@@ -28078,7 +28872,7 @@ function KPIsTab({
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 12px",
       color: "#fff"
     }
@@ -29569,7 +30363,7 @@ function SimListRow({
       gap: 12,
       width: "100%",
       textAlign: "left",
-      padding: "13px 14px",
+      padding: "12px 12px",
       border: "1px solid var(--line)",
       borderRadius: 8,
       background: "var(--card)",
@@ -29676,7 +30470,7 @@ function SimuladoresTab({
     style: {
       position: "relative",
       overflow: "hidden",
-      borderRadius: 14,
+      borderRadius: 16,
       minHeight: 560,
       border: "1px solid var(--line)",
       background: "var(--paper)"
@@ -29727,7 +30521,7 @@ function SimuladoresTab({
       inset: 0,
       overflowY: "auto",
       background: "var(--card)",
-      borderRadius: 14,
+      borderRadius: 16,
       transition: "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), filter 0.34s ease",
       ...layerTransform(1)
     }
@@ -29737,7 +30531,7 @@ function SimuladoresTab({
     onBack: goBack
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: 18
+      padding: 16
     }
   }, /*#__PURE__*/React.createElement(ActiveComponent, {
     country: country
@@ -29765,7 +30559,7 @@ function CloudSyncCard({
     return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
       style: {
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        fontSize: 15,
+        fontSize: 16,
         margin: "0 0 4px"
       }
     }, translate(lang, "settings", "cloud_sync")), /*#__PURE__*/React.createElement("p", {
@@ -29784,7 +30578,7 @@ function CloudSyncCard({
     }, "console.firebase.google.com"), ", ative ", /*#__PURE__*/React.createElement("b", null, "Authentication"), " (método Email/Password) e o ", /*#__PURE__*/React.createElement("b", null, "Firestore Database"), ", e substitua os valores de", " ", /*#__PURE__*/React.createElement("code", {
       style: {
         background: "var(--paper)",
-        padding: "1px 5px",
+        padding: "1px 4px",
         borderRadius: 6,
         margin: "0 3px"
       }
@@ -29814,7 +30608,7 @@ function CloudSyncCard({
   return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: 15,
+      fontSize: 16,
       margin: "0 0 4px"
     }
   }, translate(lang, "settings", "cloud_sync")), cloudUser ? /*#__PURE__*/React.createElement("div", {
@@ -29838,7 +30632,7 @@ function CloudSyncCard({
       color: statusColor,
       display: "flex",
       alignItems: "center",
-      gap: 5,
+      gap: 4,
       marginTop: 2
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -29984,7 +30778,7 @@ function SettingsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(CollapsibleCard, {
     title: translate(lang, "settings", "profile"),
@@ -30010,7 +30804,7 @@ function SettingsTab({
     onClick: () => onSetUserName(nameDraft.trim())
   }, translate(lang, "settings", "save"))), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: "País / Mercado"
@@ -30209,7 +31003,7 @@ function PrivacyPolicyPage({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18,
+      gap: 16,
       maxWidth: 760
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("p", {
@@ -30423,12 +31217,12 @@ function ReportTab({
     style: {
       display: "flex",
       gap: 8,
-      marginBottom: 14
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setReportMode("mensal"),
     style: {
-      padding: "6px 14px",
+      padding: "6px 12px",
       borderRadius: 20,
       border: `1px solid ${reportMode === "mensal" ? "var(--gold)" : "var(--line)"}`,
       background: reportMode === "mensal" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
@@ -30440,7 +31234,7 @@ function ReportTab({
   }, translate(lang, "report", "tab_monthly")), /*#__PURE__*/React.createElement("button", {
     onClick: () => setReportMode("anual"),
     style: {
-      padding: "6px 14px",
+      padding: "6px 12px",
       borderRadius: 20,
       border: `1px solid ${reportMode === "anual" ? "var(--gold)" : "var(--line)"}`,
       background: reportMode === "anual" ? "color-mix(in srgb, var(--gold) 16%, var(--card))" : "var(--card)",
@@ -30455,7 +31249,7 @@ function ReportTab({
     style: {
       ...inputStyle,
       width: 100,
-      padding: "5px 8px"
+      padding: "4px 8px"
     }
   }, availableYears.map(y => /*#__PURE__*/React.createElement("option", {
     key: y
@@ -30463,7 +31257,7 @@ function ReportTab({
     style: {
       display: "flex",
       gap: 10,
-      marginBottom: 18,
+      marginBottom: 16,
       flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement(PrimaryButton, {
@@ -30527,7 +31321,7 @@ function ForecastTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18
+      gap: 16
     }
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     style: {
@@ -30544,7 +31338,7 @@ function ForecastTab({
   }, translate(lang, "forecast", "summary_desc")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 14,
+      gap: 12,
       flexWrap: "wrap",
       marginTop: 16
     }
@@ -30600,7 +31394,7 @@ function ForecastTab({
       background: "color-mix(in srgb, var(--rust) 14%, var(--card))",
       padding: "10px 12px",
       borderRadius: 8,
-      marginTop: 14
+      marginTop: 12
     }
   }, translate(lang, "forecast", "negative_warning").replace("{month}", firstNegative.label).replace("{balance}", fmt(firstNegative.balance))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -30633,7 +31427,7 @@ function ForecastTab({
     style: {
       fontSize: 12,
       color: "var(--slate)",
-      marginTop: 14
+      marginTop: 12
     }
   }, translate(lang, "forecast", "other_currencies_note").replace("{currencies}", otherCurrencies.join(", ")))));
 }
@@ -30752,7 +31546,7 @@ function BudgetTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18
+      gap: 16
     }
   }, recurringCandidates.length > 0 && /*#__PURE__*/React.createElement(Card, {
     style: {
@@ -30832,7 +31626,7 @@ function BudgetTab({
       color: "#fff",
       border: "none",
       borderRadius: 6,
-      padding: "7px 12px",
+      padding: "8px 12px",
       fontSize: 12,
       fontWeight: 700,
       cursor: "pointer",
@@ -30933,7 +31727,7 @@ function BudgetTab({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 5,
+      gap: 4,
       background: "rgba(224,90,90,0.22)",
       border: "1px solid rgba(224,90,90,0.5)",
       borderRadius: 20,
@@ -30948,14 +31742,14 @@ function BudgetTab({
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr",
-      gap: 14,
+      gap: 12,
       marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       opacity: 0.7,
-      marginBottom: 3
+      marginBottom: 4
     }
   }, translate(lang, "budget", "summary_budgeted")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -30967,7 +31761,7 @@ function BudgetTab({
     style: {
       fontSize: 11,
       opacity: 0.7,
-      marginBottom: 3
+      marginBottom: 4
     }
   }, translate(lang, "budget", "summary_spent")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -30979,7 +31773,7 @@ function BudgetTab({
     style: {
       fontSize: 11,
       opacity: 0.7,
-      marginBottom: 3
+      marginBottom: 4
     }
   }, translate(lang, "budget", "summary_remaining")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -31029,7 +31823,7 @@ function BudgetTab({
       marginTop: 6,
       display: "flex",
       alignItems: "center",
-      gap: 5
+      gap: 4
     }
   }, /*#__PURE__*/React.createElement(IconClock, {
     size: 12
@@ -31039,7 +31833,7 @@ function BudgetTab({
       gap: 2,
       background: "var(--paper)",
       borderRadius: 8,
-      padding: 3,
+      padding: 4,
       overflowX: isMobile ? "auto" : "visible",
       WebkitOverflowScrolling: "touch"
     }
@@ -31054,7 +31848,7 @@ function BudgetTab({
         alignItems: "center",
         justifyContent: "center",
         gap: 6,
-        padding: "9px 14px",
+        padding: "8px 12px",
         borderRadius: 8,
         border: "none",
         cursor: "pointer",
@@ -31189,7 +31983,7 @@ function BudgetTab({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "baseline",
-        marginTop: 3
+        marginTop: 4
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -31221,7 +32015,7 @@ function BudgetTab({
         background: "color-mix(in srgb, var(--emerald) 12%, var(--card))",
         border: "1px dashed var(--emerald)",
         borderRadius: 6,
-        padding: "5px 9px",
+        padding: "4px 8px",
         fontSize: 12,
         color: "var(--emerald)",
         fontWeight: 600,
@@ -31255,7 +32049,7 @@ function BudgetTab({
           style: {
             ...inputStyle,
             fontSize: 12,
-            padding: "5px 7px"
+            padding: "4px 8px"
           }
         }, /*#__PURE__*/React.createElement("option", {
           value: "monthly_funding"
@@ -31272,7 +32066,7 @@ function BudgetTab({
           style: {
             ...inputStyle,
             fontSize: 12,
-            padding: "5px 7px"
+            padding: "4px 8px"
           }
         }), goalType === "target_by_date" && /*#__PURE__*/React.createElement("input", {
           type: "date",
@@ -31281,7 +32075,7 @@ function BudgetTab({
           style: {
             ...inputStyle,
             fontSize: 12,
-            padding: "5px 7px"
+            padding: "4px 8px"
           }
         }), /*#__PURE__*/React.createElement("div", {
           style: {
@@ -31334,13 +32128,13 @@ function BudgetTab({
           style: {
             display: "flex",
             alignItems: "center",
-            gap: 5,
+            gap: 4,
             marginTop: 8,
             marginLeft: 40,
             background: "none",
             border: "1px dashed var(--line)",
             borderRadius: 6,
-            padding: "5px 9px",
+            padding: "4px 8px",
             fontSize: 12,
             color: "var(--slate)",
             fontWeight: 600,
@@ -31440,7 +32234,7 @@ function BudgetTab({
             background: "color-mix(in srgb, var(--rust) 10%, var(--card))",
             border: "1px dashed var(--rust)",
             borderRadius: 6,
-            padding: "5px 9px",
+            padding: "4px 8px",
             fontSize: 12,
             color: "var(--rust)",
             fontWeight: 600,
@@ -31477,7 +32271,7 @@ function BudgetTab({
         style: {
           ...inputStyle,
           fontSize: 12,
-          padding: "5px 7px"
+          padding: "4px 8px"
         }
       }, sources.map(s => /*#__PURE__*/React.createElement("option", {
         key: s.cat,
@@ -31490,7 +32284,7 @@ function BudgetTab({
         style: {
           ...inputStyle,
           fontSize: 12,
-          padding: "5px 7px"
+          padding: "4px 8px"
         }
       }), /*#__PURE__*/React.createElement("div", {
         style: {
@@ -31553,7 +32347,7 @@ function BudgetTab({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 5,
+      gap: 4,
       background: "none",
       border: "1px solid var(--gold)",
       color: "var(--gold)",
@@ -31694,7 +32488,7 @@ function BudgetTab({
     size: 14
   }), " ", translate(lang, "budget", "add_income_source"))), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14,
+      marginTop: 12,
       fontSize: 13,
       color: "var(--slate)"
     }
@@ -31736,14 +32530,14 @@ function BudgetTab({
     style: {
       color: "var(--slate)",
       fontSize: 14,
-      marginTop: 14
+      marginTop: 12
     }
   }, translate(lang, "budget", "no_fixed_expenses")) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: 10,
-      marginTop: 14
+      marginTop: 12
     }
   }, fixedExpenses.map(r => /*#__PURE__*/React.createElement(RecurringRow, {
     key: r.id,
@@ -31786,7 +32580,7 @@ function BudgetTab({
     style: {
       color: "var(--slate)",
       fontSize: 14,
-      marginTop: 14
+      marginTop: 12
     }
   }, translate(lang, "budget", "no_staff")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -31938,7 +32732,7 @@ function BudgetTab({
         style: {
           fontSize: 12,
           color: "var(--slate)",
-          marginTop: 3,
+          marginTop: 4,
           fontFamily: "'IBM Plex Mono', monospace"
         }
       }, fmt(spent), " / ", fmt(Number(limit)), " (", pct.toFixed(0), "%)")));
@@ -31962,7 +32756,7 @@ function GoalProgress({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 14,
+      gap: 12,
       margin: "14px 0 4px"
     }
   }, /*#__PURE__*/React.createElement("svg", {
@@ -32034,7 +32828,7 @@ function GoalsTab({
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
@@ -32105,10 +32899,10 @@ function GoalsTab({
         fontSize: 11,
         fontWeight: 700,
         color: "var(--thrive)",
-        marginTop: 3,
+        marginTop: 4,
         display: "inline-flex",
         alignItems: "center",
-        gap: 3
+        gap: 4
       }
     }, /*#__PURE__*/React.createElement(IconTrendingUp, {
       size: 11
@@ -32172,7 +32966,7 @@ function GoalsTab({
       taxaInflacao: taxaInflacao
     }), /*#__PURE__*/React.createElement(PrimaryButton, {
       style: {
-        marginTop: 14,
+        marginTop: 12,
         width: "100%"
       },
       onClick: () => onContribute(g)
@@ -32221,7 +33015,7 @@ function DebtCard({
       padding: "2px 8px",
       borderRadius: 20,
       textTransform: "uppercase",
-      letterSpacing: 0.3
+      letterSpacing: 0.2
     }
   }, debt.type), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -32270,7 +33064,7 @@ function DebtCard({
       fontFamily: "'IBM Plex Mono', monospace",
       fontSize: 20,
       fontWeight: 600,
-      marginTop: 14,
+      marginTop: 12,
       color: typeTone
     }
   }, fmt(Math.max(balance, 0), debt.currency)), /*#__PURE__*/React.createElement("div", {
@@ -32323,7 +33117,7 @@ function DebtCard({
     balance: balance
   }), status !== "Quitada" && /*#__PURE__*/React.createElement(PrimaryButton, {
     style: {
-      marginTop: 14,
+      marginTop: 12,
       width: "100%"
     },
     onClick: () => onPay(debt)
@@ -32357,7 +33151,7 @@ function DebtPayoffSimulator({
     style: {
       display: "flex",
       gap: 8,
-      marginBottom: 14
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setStrategy("avalanche"),
@@ -32367,7 +33161,7 @@ function DebtPayoffSimulator({
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      padding: "9px 0",
+      padding: "8px 0",
       borderRadius: 8,
       border: `1.5px solid ${strategy === "avalanche" ? "var(--ink)" : "var(--line)"}`,
       background: strategy === "avalanche" ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
@@ -32386,7 +33180,7 @@ function DebtPayoffSimulator({
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      padding: "9px 0",
+      padding: "8px 0",
       borderRadius: 8,
       border: `1.5px solid ${strategy === "snowball" ? "var(--ink)" : "var(--line)"}`,
       background: strategy === "snowball" ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
@@ -32418,9 +33212,9 @@ function DebtPayoffSimulator({
   }, translate(lang, "debts", "infeasible_msg")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 14,
+      gap: 12,
       flexWrap: "wrap",
-      marginBottom: 14
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement(StatCard, {
     label: translate(lang, "debts", "debt_free_in"),
@@ -32471,12 +33265,12 @@ function DebtsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 18
+      gap: 16
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
@@ -32554,7 +33348,7 @@ function DebtModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -32566,7 +33360,7 @@ function DebtModal({
     onClick: () => setType(t),
     style: {
       flex: 1,
-      padding: "9px 0",
+      padding: "8px 0",
       borderRadius: 8,
       border: `1.5px solid ${type === t ? t === "A pagar" ? "var(--rust)" : "var(--emerald)" : "var(--line)"}`,
       background: type === t ? t === "A pagar" ? "color-mix(in srgb, var(--rust) 14%, var(--card))" : "color-mix(in srgb, var(--emerald) 14%, var(--card))" : "var(--card)",
@@ -32709,7 +33503,7 @@ function CreditCardModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "cards", "field_bank")
@@ -32840,7 +33634,7 @@ function CardPurchaseModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "cards", "field_description")
@@ -32972,7 +33766,7 @@ function CardPaymentModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -33130,7 +33924,7 @@ function CreditCardCard({
     }
   }, translate(lang, "cards", "pay_statement"))), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 14
+      marginTop: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -33204,7 +33998,7 @@ function CreditCardsTab({
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PrimaryButton, {
     onClick: onAdd,
     style: {
-      marginBottom: 18
+      marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement(IconPlus, {
     size: 15
@@ -33252,7 +34046,7 @@ function DebtPaymentModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -33365,7 +34159,7 @@ function RecurringModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, !isEditing && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -33383,7 +34177,7 @@ function RecurringModal({
     onClick: () => setIsStaff(opt.key),
     style: {
       flex: 1,
-      padding: "9px 0",
+      padding: "8px 0",
       borderRadius: 8,
       border: `1.5px solid ${isStaff === opt.key ? "var(--ink)" : "var(--line)"}`,
       background: isStaff === opt.key ? "color-mix(in srgb, var(--ink) 8%, var(--card))" : "var(--card)",
@@ -33497,7 +34291,7 @@ function CategoryManagerModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -33561,7 +34355,7 @@ function CategoryManagerModal({
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "7px 10px",
+      padding: "8px 10px",
       border: "1px solid var(--line)",
       borderRadius: 8
     }
@@ -33642,7 +34436,7 @@ function MembersManagerModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
@@ -33706,7 +34500,7 @@ function MembersManagerModal({
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "7px 10px",
+      padding: "8px 10px",
       border: "1px solid var(--line)",
       borderRadius: 8,
       gap: 8
@@ -33714,7 +34508,7 @@ function MembersManagerModal({
   }, editingMember === m ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
     style: {
       ...inputStyle,
-      padding: "5px 8px",
+      padding: "4px 8px",
       fontSize: 13
     },
     value: editingValue,
@@ -33927,7 +34721,7 @@ function ShortcutFormModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -34012,7 +34806,7 @@ function GoalModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "goals", "field_goal_name")
@@ -34083,7 +34877,7 @@ function ContributeModal({
   onClose,
   onSave
 }) {
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(goal.__prefill ? String(Math.round(goal.__prefill)) : "");
   return /*#__PURE__*/React.createElement(Modal, {
     title: `${translate(lang, "goals", "contribute_title_prefix")}${goal.name}${translate(lang, "goals", "contribute_title_suffix")}`,
     onClose: onClose
@@ -34091,7 +34885,7 @@ function ContributeModal({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 14
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement(Field, {
     label: translate(lang, "goals", "field_amount_to_add")
