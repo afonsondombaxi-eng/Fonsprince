@@ -1780,6 +1780,12 @@ function parseReceiptText(text) {
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
+function isCapex(t) {
+  return !!t && t.kind === "despesa" && t.nature === "capex";
+}
+function isOpex(t) {
+  return !!t && t.kind === "despesa" && t.nature !== "capex";
+}
 function timelineDayLabel(dateStr) {
   const d = new Date(dateStr + "T00:00:00");
   const today = new Date();
@@ -1882,7 +1888,7 @@ function monthlyHistory(transactions, count) {
   return months.map(m => {
     const monthTx = transactions.filter(t => monthKey(t.date) === m);
     const receitas = monthTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
-    const despesas = monthTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0);
+    const despesas = monthTx.filter(isOpex).reduce((s, t) => s + Number(t.amount), 0);
     const label = new Date(m + "-02").toLocaleDateString("pt-PT", {
       month: "short"
     }).replace(".", "");
@@ -2620,7 +2626,7 @@ function variableExpenseHistory(transactions, months) {
   for (let i = 1; i <= months; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = d.toISOString().slice(0, 7);
-    const total = transactions.filter(t => t.kind === "despesa" && !t.recurringId && monthKey(t.date) === key).reduce((s, t) => s + Number(t.amount), 0);
+    const total = transactions.filter(t => isOpex(t) && !t.recurringId && monthKey(t.date) === key).reduce((s, t) => s + Number(t.amount), 0);
     results.push(total);
   }
   return results;
@@ -2689,6 +2695,7 @@ function buildReportHtml(data) {
   } = data;
   const t = k => translate(lang, "report", k);
   const saldo = totalReceitas - totalDespesas;
+  const capexM = transactions.filter(t => isCapex(t) && monthKey(t.date) === month).reduce((a, t) => a + Number(t.amount), 0);
   const generatedAt = new Date().toLocaleDateString("pt-PT");
   const balanceRows = Object.entries(balancesByCurrency).map(([cur, val]) => `<tr><td style="padding:6px 0;">${t("bank_accounts")} (${cur})</td><td style="padding:6px 0; text-align:right; font-weight:bold;">${fmt(val, cur)}</td></tr>`).join("");
   const categoryRows = Object.keys(spentByCategory).length ? Object.entries(spentByCategory).map(([cat, val]) => {
@@ -2718,6 +2725,7 @@ function buildReportHtml(data) {
         ${balanceRows}
         <tr><td style="padding:6px 0;">${t("income_month")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
         <tr><td style="padding:6px 0;">${t("expenses_month")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
+        ${capexM > 0 ? `<tr><td style="padding:6px 0;">${xt(lang, "capex_row")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#B8873A;">−${fmt(capexM)}</td></tr>` : ""}
         <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">${t("result_month")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
       </table>
       <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("expenses_by_category")}</h2>
@@ -3700,7 +3708,7 @@ function checkDueSoonAndNotify(opts) {
   if (categories) {
     const spentByCategoryNow = {};
     for (const t of transactions) {
-      if (t.kind === "despesa" && monthKey(t.date) === month) {
+      if (isOpex(t) && monthKey(t.date) === month) {
         spentByCategoryNow[t.category] = (spentByCategoryNow[t.category] || 0) + Number(t.amount);
       }
     }
@@ -11605,6 +11613,12 @@ const EXTRAS_I18N = {
     ins_avg_day: "por dia, em média",
     chat_title: "Assistente financeiro",
     chat_name: "Assistente Fonsprince",
+    nat_label: "Natureza da despesa",
+    nat_opex: "Corrente",
+    nat_capex: "Investimento (CAPEX)",
+    nat_capex_hint: "Equipamento, obras, viatura, ativos duradouros. Não conta como despesa corrente.",
+    capex_row: "Investimento (CAPEX)",
+    capex_sub: "fora das despesas correntes",
     chat_mic: "Ditar pergunta",
     chat_listening: "A ouvir…",
     chat_copy: "Copiar",
@@ -11911,6 +11925,12 @@ const EXTRAS_I18N = {
     ins_avg_day: "per day on average",
     chat_title: "Financial assistant",
     chat_name: "Fonsprince Assistant",
+    nat_label: "Expense type",
+    nat_opex: "Operating",
+    nat_capex: "Investment (CAPEX)",
+    nat_capex_hint: "Equipment, works, vehicle, long-lived assets. Not counted as operating expense.",
+    capex_row: "Investment (CAPEX)",
+    capex_sub: "not in operating expenses",
     chat_mic: "Dictate question",
     chat_listening: "Listening…",
     chat_copy: "Copy",
@@ -12213,6 +12233,12 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Afficher {n} panneaux de plus",
     chat_title: "Assistant financier",
     chat_name: "Assistant Fonsprince",
+    nat_label: "Nature de la dépense",
+    nat_opex: "Courante",
+    nat_capex: "Investissement (CAPEX)",
+    nat_capex_hint: "Équipement, travaux, véhicule, actifs durables. Non comptée comme dépense courante.",
+    capex_row: "Investissement (CAPEX)",
+    capex_sub: "hors dépenses courantes",
     chat_mic: "Dicter la question",
     chat_listening: "J’écoute…",
     chat_copy: "Copier",
@@ -12515,6 +12541,12 @@ const EXTRAS_I18N = {
     ovl_more_btn: "Mostrar {n} paneles más",
     chat_title: "Asistente financiero",
     chat_name: "Asistente Fonsprince",
+    nat_label: "Naturaleza del gasto",
+    nat_opex: "Corriente",
+    nat_capex: "Inversión (CAPEX)",
+    nat_capex_hint: "Equipos, obras, vehículo, activos duraderos. No cuenta como gasto corriente.",
+    capex_row: "Inversión (CAPEX)",
+    capex_sub: "fuera de gastos corrientes",
     chat_mic: "Dictar pregunta",
     chat_listening: "Escuchando…",
     chat_copy: "Copiar",
@@ -13976,6 +14008,7 @@ function RoundUpsCard({
 function OverviewPulse({
   lang,
   part,
+  totalCapex,
   month,
   transactions,
   accounts,
@@ -14166,7 +14199,7 @@ function OverviewPulse({
       totalReceitas: inc,
       totalDespesas: exp,
       bare: true
-    })), row(xt(lang, "pulse_avg"), fmt(avgDay, cur), xt(lang, "pulse_avg_sub")), row(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", big ? big.t.description || big.t.category : null), row(xt(lang, "pulse_proj"), fmt(projected), running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
+    })), row(xt(lang, "pulse_avg"), fmt(avgDay, cur), xt(lang, "pulse_avg_sub")), row(xt(lang, "pulse_big"), big ? fmt(big.v, cur) : "—", big ? big.t.description || big.t.category : null), Number(totalCapex) > 0 && row(xt(lang, "capex_row"), fmt(Number(totalCapex), cur), xt(lang, "capex_sub"), "#B8873A"), row(xt(lang, "pulse_proj"), fmt(projected), running && inc > 0 ? xt(lang, projNet >= 0 ? "pulse_proj_ok" : "pulse_proj_bad", {
       amount: fmt(Math.abs(projNet))
     }) : null, projNet < 0 && inc > 0 ? "#D13438" : null));
   }
@@ -14926,6 +14959,7 @@ function buildChatContext(p) {
   return {
     today: todayStr,
     daily,
+    capex: Math.round(Number(p.totalCapex) || 0),
     currency: cur,
     month: p.month,
     income: Math.round(inc),
@@ -17842,7 +17876,8 @@ function FinanceApp() {
   useEffect(() => saveKey("last-export-date", lastExportDate), [lastExportDate]);
   useEffect(() => saveKey("exchange-rate-history", rateHistory), [rateHistory]);
   const monthTx = useMemo(() => transactions.filter(t => monthKey(t.date) === month), [transactions, month]);
-  const monthExpenses = useMemo(() => monthTx.filter(t => t.kind === "despesa"), [monthTx]);
+  const monthExpenses = useMemo(() => monthTx.filter(isOpex), [monthTx]);
+  const totalCapex = useMemo(() => monthTx.filter(isCapex).reduce((a, t) => a + Number(t.amount), 0), [monthTx]);
   const monthReceitas = useMemo(() => monthTx.filter(t => t.kind === "receita"), [monthTx]);
   const totalDespesas = monthExpenses.reduce((s, t) => s + Number(t.amount), 0);
   const totalReceitas = monthReceitas.reduce((s, t) => s + Number(t.amount), 0);
@@ -17918,10 +17953,10 @@ function FinanceApp() {
   const prevMonth = useMemo(() => previousMonthKey(month), [month]);
   const prevMonthTx = useMemo(() => transactions.filter(t => monthKey(t.date) === prevMonth), [transactions, prevMonth]);
   const prevTotalReceitas = useMemo(() => prevMonthTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0), [prevMonthTx]);
-  const prevTotalDespesas = useMemo(() => prevMonthTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0), [prevMonthTx]);
+  const prevTotalDespesas = useMemo(() => prevMonthTx.filter(isOpex).reduce((s, t) => s + Number(t.amount), 0), [prevMonthTx]);
   const prevSpentByCategory = useMemo(() => {
     const map = {};
-    for (const t of prevMonthTx.filter(t => t.kind === "despesa")) map[t.category] = (map[t.category] || 0) + Number(t.amount);
+    for (const t of prevMonthTx.filter(isOpex)) map[t.category] = (map[t.category] || 0) + Number(t.amount);
     return map;
   }, [prevMonthTx]);
   function addAccount(acc) {
@@ -19642,6 +19677,7 @@ function FinanceApp() {
     onSeedUsed: () => setAssistantSeed(""),
     onBack: () => selectTab("overview"),
     ctxInput: {
+      totalCapex,
       month,
       accounts,
       transactions,
@@ -19661,6 +19697,7 @@ function FinanceApp() {
     }
   }), tab === "overview" && /*#__PURE__*/React.createElement(Overview, {
     lang: lang,
+    totalCapex: totalCapex,
     onOpenAssistant: () => selectTab("assistant"),
     onAskAssistant: t => {
       setAssistantSeed(t);
@@ -22747,6 +22784,7 @@ function ChartsPage({
 }
 function Overview({
   lang,
+  totalCapex,
   onOpenAssistant,
   onAskAssistant,
   overviewLayout,
@@ -23002,6 +23040,7 @@ function Overview({
       node: /*#__PURE__*/React.createElement(OverviewPulse, {
         lang: lang,
         part: "summary",
+        totalCapex: totalCapex,
         month: month,
         transactions: transactions,
         accounts: accounts,
@@ -26209,7 +26248,7 @@ function MobileTxCard({
     currency = fromAcc ? fromAcc.currency : "Kz";
   } else {
     const acc = accounts.find(a => a.id === t.accountId);
-    line2 = `${acc ? acc.bank.replace(/—.*/, "").trim() : "—"} · ${t.category}`;
+    line2 = `${acc ? acc.bank.replace(/—.*/, "").trim() : "—"} · ${t.category}${isCapex(t) ? " · CAPEX" : ""}`;
     amountColor = t.kind === "receita" ? "var(--emerald)" : "var(--rust)";
     amountPrefix = t.kind === "receita" ? "+ " : "− ";
     currency = acc ? acc.currency : "Kz";
@@ -26790,7 +26829,17 @@ function TransactionsTab({
       style: {
         padding: "10px 16px"
       }
-    }, t.category), /*#__PURE__*/React.createElement("td", {
+    }, t.category, isCapex(t) && /*#__PURE__*/React.createElement("span", {
+      style: {
+        marginLeft: 6,
+        fontSize: 10,
+        fontWeight: 700,
+        color: "var(--gold)",
+        border: "1px solid var(--gold)",
+        borderRadius: 999,
+        padding: "1px 6px"
+      }
+    }, "CAPEX")), /*#__PURE__*/React.createElement("td", {
       "data-label": translate(lang, "transactions", "th_description"),
       style: {
         padding: "10px 16px",
@@ -27201,6 +27250,7 @@ function TxModal({
   const [scanApplied, setScanApplied] = useState(false);
   const receiptInputRef = useRef(null);
   const [deductible, setDeductible] = useState(initial && initial.deductible || "");
+  const [nature, setNature] = useState(initial && initial.nature || "");
   const [reconciled, setReconciled] = useState(!!(initial && initial.reconciled));
   const [receiptData, setReceiptData] = useState(initialReceipt || null);
   async function handleReceiptSelected(e) {
@@ -27406,7 +27456,49 @@ function TxModal({
   }, member), (members || []).map(m => /*#__PURE__*/React.createElement("option", {
     key: m,
     value: m
-  }, m)))), kind === "despesa" && /*#__PURE__*/React.createElement(Field, {
+  }, m)))), kind === "despesa" && /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": xt(lang, "nat_label"),
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13,
+      color: "var(--slate)",
+      fontWeight: 600
+    }
+  }, xt(lang, "nat_label")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6
+    }
+  }, [["", "nat_opex"], ["capex", "nat_capex"]].map(([v, k]) => /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    key: k,
+    onClick: () => setNature(v),
+    "aria-pressed": nature === v,
+    style: {
+      flex: 1,
+      padding: "9px 10px",
+      borderRadius: 10,
+      border: "1px solid " + (nature === v ? "var(--gold)" : "var(--line)"),
+      background: nature === v ? "color-mix(in srgb, var(--gold) 12%, var(--card))" : "var(--card)",
+      color: "var(--ink)",
+      fontWeight: 600,
+      fontSize: 13,
+      cursor: "pointer",
+      fontFamily: "inherit"
+    }
+  }, xt(lang, k)))), nature === "capex" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "var(--slate)",
+      marginTop: 6
+    }
+  }, xt(lang, "nat_capex_hint"))), kind === "despesa" && /*#__PURE__*/React.createElement(Field, {
     label: xt(lang, "ded_field")
   }, /*#__PURE__*/React.createElement("select", {
     style: inputStyle,
@@ -27450,6 +27542,7 @@ function TxModal({
       date,
       description,
       member: member.trim() || null,
+      nature: kind === "despesa" && nature === "capex" ? "capex" : undefined,
       deductible: kind === "despesa" && deductible ? deductible : null,
       reconciled,
       _receipt: receiptData
@@ -33929,12 +34022,13 @@ function buildAnnualReportHtml(data) {
   const t = k => translate(lang, "report", k);
   const yearTx = transactions.filter(t => t.date.startsWith(year));
   const totalReceitas = yearTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
-  const totalDespesas = yearTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0);
+  const totalCapex = yearTx.filter(isCapex).reduce((s, t) => s + Number(t.amount), 0);
+  const totalDespesas = yearTx.filter(isOpex).reduce((s, t) => s + Number(t.amount), 0);
   const saldo = totalReceitas - totalDespesas;
   const generatedAt = new Date().toLocaleDateString("pt-PT");
   const byCategory = {};
   for (const t of yearTx) {
-    if (t.kind !== "despesa") continue;
+    if (!isOpex(t)) continue;
     byCategory[t.category] = (byCategory[t.category] || 0) + Number(t.amount);
   }
   const categoryRows = Object.keys(byCategory).length ? Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([cat, val]) => `<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${cat}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right;">${fmt(val)}</td></tr>`).join("") : `<tr><td colspan="2" style="padding:8px; color:#68707C;">${t("no_expenses")}</td></tr>`;
@@ -33949,7 +34043,7 @@ function buildAnnualReportHtml(data) {
     const mKey = `${year}-${String(m).padStart(2, "0")}`;
     const mTx = yearTx.filter(t => t.date.startsWith(mKey));
     const r = mTx.filter(t => t.kind === "receita").reduce((s, t) => s + Number(t.amount), 0);
-    const d = mTx.filter(t => t.kind === "despesa").reduce((s, t) => s + Number(t.amount), 0);
+    const d = mTx.filter(isOpex).reduce((s, t) => s + Number(t.amount), 0);
     monthlyRows.push(`<tr><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9;">${monthShortLabel(mKey)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; color:#12A150;">${fmt(r)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; color:#D13438;">${fmt(d)}</td><td style="padding:6px 8px; border-bottom:1px solid #E3E5E9; text-align:right; font-weight:bold;">${fmt(r - d)}</td></tr>`);
   }
   const yearEndDate = `${year}-12-31`;
@@ -33995,6 +34089,7 @@ function buildAnnualReportHtml(data) {
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px; font-size:13px;">
         <tr><td style="padding:6px 0;">${t("income_total")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#12A150;">+${fmt(totalReceitas)}</td></tr>
         <tr><td style="padding:6px 0;">${t("expenses_total")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#D13438;">−${fmt(totalDespesas)}</td></tr>
+        ${totalCapex > 0 ? `<tr><td style="padding:6px 0;">${xt(lang, "capex_row")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; color:#B8873A;">−${fmt(totalCapex)}</td></tr>` : ""}
         <tr><td style="padding:6px 0; border-top:1px solid #E3E5E9;">${t("result_year")}</td><td style="padding:6px 0; text-align:right; font-weight:bold; border-top:1px solid #E3E5E9;">${fmt(saldo)}</td></tr>
       </table>
       <h2 style="font-size:15px; border-bottom:1px solid #1B1F27; padding-bottom:4px;">${t("monthly_evolution")}</h2>
