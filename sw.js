@@ -1,4 +1,5 @@
-const CACHE_NAME = "fonsprince-one-20261012072216";
+const CACHE_NAME = "fonsprince-one-20261012074452";
+const LIB_CACHE = "fonsprince-libs-v1";
 const CORE_ASSETS = [
   "./index.html",
   "./manifest.json",
@@ -8,7 +9,9 @@ const CORE_ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).catch(() => {})
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(CORE_ASSETS.map((u) => cache.add(u).catch(() => {})))
+    )
   );
   self.skipWaiting();
 });
@@ -16,23 +19,30 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k !== CACHE_NAME && k !== LIB_CACHE).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
+// Cache primeiro, atualiza em segundo plano. Bibliotecas externas (React, Firebase)
+// ficam numa cache própria que não é apagada a cada atualização da app.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  const external = url.origin !== self.location.origin;
+  const isLib = external && /(cdnjs\.cloudflare\.com|gstatic\.com)/.test(url.hostname);
+  if (external && !isLib) return;
+  const cacheName = isLib ? LIB_CACHE : CACHE_NAME;
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+    caches.match(event.request, { ignoreSearch: !isLib }).then((cached) => {
       const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        .then((res) => {
+          if (res && (res.status === 200 || res.type === "opaque")) {
+            const clone = res.clone();
+            caches.open(cacheName).then((c) => c.put(event.request, clone)).catch(() => {});
           }
-          return networkResponse;
+          return res;
         })
         .catch(() => cached);
       return cached || fetchPromise;
