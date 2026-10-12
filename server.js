@@ -180,6 +180,10 @@ function sanitizeContext(c) {
     const v = num(c[k]); if (v !== null) out[k] = v;
   }
   if (Number.isFinite(Number(c.inflation))) out.inflation = Math.round(Number(c.inflation) * 10) / 10;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(c.today || ""))) out.today = c.today;
+  out.daily = Array.isArray(c.daily)
+    ? c.daily.slice(0, 8).filter((x) => x && /^\d{4}-\d{2}-\d{2}$/.test(String(x.d || ""))).map((x) => ({ d: x.d, spent: num(x.spent) || 0, income: num(x.income) || 0 }))
+    : [];
   out.categories = Array.isArray(c.categories)
     ? c.categories.slice(0, 12).map((x) => ({ name: cleanStr(x && x.name, 40), spent: num(x && x.spent), limit: num(x && x.limit) })).filter((x) => x.name && x.spent !== null)
     : [];
@@ -188,7 +192,7 @@ function sanitizeContext(c) {
 const LANG_NAME = { pt: "português europeu", "pt-BR": "português do Brasil", en: "English", fr: "français", es: "español" };
 function chatSystemPrompt(lang, today, ctx) {
   const lines = [
-    "És o assistente financeiro da app de finanças pessoais Fonsprince One. Ajudas pessoas e famílias com orçamento, poupança, dívidas, reserva de emergência, metas e conceitos de investimento. Os utilizadores estão sobretudo em Angola, Brasil, Portugal e Reino Unido.",
+    "És o assistente financeiro DENTRO da app de finanças pessoais Fonsprince One (o utilizador já está na app; nunca lhe digas para abrir a app). Só tens os totais que ele partilha, não as transações individuais. Ajudas pessoas e famílias com orçamento, poupança, dívidas, reserva de emergência, metas e conceitos de investimento. Os utilizadores estão sobretudo em Angola, Brasil, Portugal e Reino Unido.",
     "Data de hoje: " + today + ". Idioma por defeito: " + (LANG_NAME[lang] || LANG_NAME.pt) + "; responde sempre no idioma em que o utilizador escreveu.",
     "Estilo: direto, prático e caloroso. Respostas curtas (até cerca de 180 palavras), com passos concretos e contas simples quando ajudar. Faz no máximo uma pergunta de esclarecimento por vez. Podes usar listas curtas com '-' e **negrito**; sem títulos nem tabelas.",
     "Limites: és uma ferramenta educativa, não um consultor financeiro licenciado. Explica conceitos, compara opções, mostra prós e contras, riscos e custos, e ajuda a montar planos. Não recomendes produtos, empresas, ações ou criptoativos concretos, não prometas nem estimes retornos garantidos, e não faças previsões de mercado. Para decisões grandes (investimentos relevantes, crédito, impostos, reforma, herança) sugere falar com um profissional qualificado do país do utilizador.",
@@ -206,11 +210,13 @@ function chatSystemPrompt(lang, today, ctx) {
       if (ctx[k] === undefined) continue;
       d.push(label + ": " + (k === "savingsRate" ? ctx[k] + "%" : f(ctx[k])));
     }
+    if (ctx.today) d.push("Data local do utilizador: " + ctx.today);
+    if (ctx.daily && ctx.daily.length) d.push("Movimentos dos últimos 7 dias (data: gasto / receita): " + ctx.daily.map((x) => x.d + ": " + f(x.spent) + " / " + f(x.income)).join("; ") + ". O primeiro é hoje.");
     if (ctx.inflation !== undefined) d.push("Inflação anual assumida: " + ctx.inflation + "%");
     if (ctx.categories.length) d.push("Gastos por categoria: " + ctx.categories.map((c) => c.name + " " + f(c.spent) + (c.limit ? " (limite " + f(c.limit) + ")" : "")).join("; "));
     lines.push("Dados do utilizador (partilhados por ele; números arredondados; usa-os exatamente, não inventes outros):\n" + d.join("\n"));
   } else {
-    lines.push("O utilizador não partilhou os seus números. Se perguntar sobre as suas contas, explica que pode ativar 'Partilhar resumo do mês' no chat para respostas personalizadas; entretanto responde em geral.");
+    lines.push("O utilizador não partilhou os seus números. Se perguntar sobre as suas contas, explica que pode ativar 'Os meus números' no topo do chat para respostas personalizadas; entretanto responde em geral.");
   }
   return lines.join("\n");
 }
@@ -222,7 +228,12 @@ async function callChat(messages, ctx, lang, today) {
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(30000),
   });
-  if (!r.ok) throw new Error("upstream " + r.status);
+  if (!r.ok) {
+    let detail = "";
+    try { detail = (await r.text()).slice(0, 300); } catch {}
+    console.error("[chat] Anthropic respondeu " + r.status + ": " + detail);
+    throw new Error("upstream " + r.status);
+  }
   const j = await r.json();
   const text = (j.content || []).filter((c) => c.type === "text").map((c) => c.text).join("\n").trim();
   return text ? text.slice(0, 4000) : null;
@@ -280,7 +291,9 @@ async function handle(req, res) {
       if (!reply) return send(res, 502, { error: "empty_reply" }, corsOrigin);
       return send(res, 200, { reply }, corsOrigin);
     } catch (e) {
-      return send(res, 502, { error: "upstream" }, corsOrigin);
+      const up = Number((/upstream (\d+)/.exec(String(e && e.message)) || [])[1]) || 0;
+      if (!up) console.error("[chat] falha:", e && e.message);
+      return send(res, 502, { error: "upstream", up }, corsOrigin);
     }
   }
   const question = cleanStr(b.question, 300);
