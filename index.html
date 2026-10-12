@@ -14900,7 +14900,32 @@ function buildChatContext(p) {
     spent: Math.round(Number(spent) || 0),
     limit: Math.round(Number((p.categories || {})[name]) || 0) || undefined
   })).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent).slice(0, 12);
+  const todayStr = todayISO();
+  const daily = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(todayStr + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() - i);
+    daily.push({
+      d: d.toISOString().slice(0, 10),
+      spent: 0,
+      income: 0
+    });
+  }
+  for (const t of p.transactions || []) {
+    if (!t.date || t.kind !== "despesa" && t.kind !== "receita") continue;
+    const row = daily.find(x => x.d === t.date);
+    if (!row) continue;
+    const v = insTxValue(t, p.accounts, p.exchangeRates, cur);
+    if (v === null) continue;
+    if (t.kind === "despesa") row.spent += v;else row.income += v;
+  }
+  daily.forEach(x => {
+    x.spent = Math.round(x.spent);
+    x.income = Math.round(x.income);
+  });
   return {
+    today: todayStr,
+    daily,
     currency: cur,
     month: p.month,
     income: Math.round(inc),
@@ -15455,9 +15480,11 @@ function AssistantTab({
       borderRadius: 12,
       padding: "8px 12px"
     }
-  }, Object.entries(shared).filter(([k, v]) => k !== "categories" && v !== "" && v !== undefined).map(([k, v]) => /*#__PURE__*/React.createElement("div", {
+  }, Object.entries(shared).filter(([k, v]) => k !== "categories" && k !== "daily" && v !== "" && v !== undefined).map(([k, v]) => /*#__PURE__*/React.createElement("div", {
     key: k
-  }, k, ": ", String(v))), (shared.categories || []).map(c => /*#__PURE__*/React.createElement("div", {
+  }, k, ": ", String(v))), (shared.daily || []).map(x => /*#__PURE__*/React.createElement("div", {
+    key: x.d
+  }, x.d, ": ", x.spent, " / ", x.income)), (shared.categories || []).map(c => /*#__PURE__*/React.createElement("div", {
     key: c.name
   }, c.name, ": ", c.spent, c.limit ? " / " + c.limit : ""))));
   if (view === "quick") {
