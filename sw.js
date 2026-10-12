@@ -1,4 +1,4 @@
-const CACHE_NAME = "fonsprince-one-20261012074452";
+const CACHE_NAME = "fonsprince-one-20261012080918";
 const LIB_CACHE = "fonsprince-libs-v1";
 const CORE_ASSETS = [
   "./index.html",
