@@ -176,7 +176,7 @@ function num(x) { const n = Number(x); return Number.isFinite(n) ? Math.round(Ma
 function sanitizeContext(c) {
   if (!c || typeof c !== "object") return null;
   const out = { currency: cleanStr(c.currency, 5), month: /^\d{4}-\d{2}$/.test(String(c.month || "")) ? c.month : "" };
-  for (const k of ["income", "expenses", "prevIncome", "prevExpenses", "netWorth", "liquid", "debts", "goalsTarget", "goalsSaved", "fixedMonthly", "savingsRate"]) {
+  for (const k of ["income", "expenses", "prevIncome", "prevExpenses", "netWorth", "liquid", "debts", "goalsTarget", "goalsSaved", "fixedMonthly", "savingsRate", "capex"]) {
     const v = num(c[k]); if (v !== null) out[k] = v;
   }
   if (Number.isFinite(Number(c.inflation))) out.inflation = Math.round(Number(c.inflation) * 10) / 10;
@@ -206,7 +206,7 @@ function chatSystemPrompt(lang, today, ctx) {
     const f = (v) => (v === undefined ? null : v.toLocaleString("pt-PT") + (cur ? " " + cur : ""));
     const d = [];
     if (ctx.month) d.push("Mês: " + ctx.month);
-    for (const [k, label] of [["income", "Receitas do mês"], ["expenses", "Despesas do mês"], ["savingsRate", "Taxa de poupança do mês (%)"], ["prevIncome", "Receitas do mês anterior"], ["prevExpenses", "Despesas do mês anterior"], ["fixedMonthly", "Despesas fixas mensais"], ["netWorth", "Saldo total em contas"], ["liquid", "Dinheiro líquido"], ["debts", "Dívidas por pagar"], ["goalsTarget", "Total das metas"], ["goalsSaved", "Já guardado nas metas"]]) {
+    for (const [k, label] of [["income", "Receitas do mês"], ["expenses", "Despesas correntes do mês (sem CAPEX)"], ["capex", "Investimento (CAPEX) do mês, não conta como despesa corrente"], ["savingsRate", "Taxa de poupança do mês (%)"], ["prevIncome", "Receitas do mês anterior"], ["prevExpenses", "Despesas do mês anterior"], ["fixedMonthly", "Despesas fixas mensais"], ["netWorth", "Saldo total em contas"], ["liquid", "Dinheiro líquido"], ["debts", "Dívidas por pagar"], ["goalsTarget", "Total das metas"], ["goalsSaved", "Já guardado nas metas"]]) {
       if (ctx[k] === undefined) continue;
       d.push(label + ": " + (k === "savingsRate" ? ctx[k] + "%" : f(ctx[k])));
     }
