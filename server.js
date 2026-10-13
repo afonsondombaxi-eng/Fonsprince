@@ -184,6 +184,10 @@ function sanitizeContext(c) {
   out.daily = Array.isArray(c.daily)
     ? c.daily.slice(0, 8).filter((x) => x && /^\d{4}-\d{2}-\d{2}$/.test(String(x.d || ""))).map((x) => ({ d: x.d, spent: num(x.spent) || 0, income: num(x.income) || 0 }))
     : [];
+  const SRC_OK = { salary: "Salário", freelance: "Trabalho extra / freelance", rent: "Rendas", invest: "Investimentos (dividendos, cupões, juros)", business: "Negócio próprio", other: "Outras" };
+  out.incomeSources = Array.isArray(c.incomeSources)
+    ? c.incomeSources.slice(0, 6).filter((x) => x && SRC_OK[x.src] && num(x.total) !== null && num(x.total) > 0).map((x) => ({ src: x.src, name: SRC_OK[x.src], total: num(x.total) }))
+    : [];
   out.categories = Array.isArray(c.categories)
     ? c.categories.slice(0, 12).map((x) => ({ name: cleanStr(x && x.name, 40), spent: num(x && x.spent), limit: num(x && x.limit) })).filter((x) => x.name && x.spent !== null)
     : [];
@@ -210,6 +214,7 @@ function chatSystemPrompt(lang, today, ctx) {
       if (ctx[k] === undefined) continue;
       d.push(label + ": " + (k === "savingsRate" ? ctx[k] + "%" : f(ctx[k])));
     }
+    if (ctx.incomeSources && ctx.incomeSources.length) d.push("Receitas do mês por origem (proveniência): " + ctx.incomeSources.map((x) => x.name + " " + f(x.total)).join("; "));
     if (ctx.today) d.push("Data local do utilizador: " + ctx.today);
     if (ctx.daily && ctx.daily.length) d.push("Movimentos dos últimos 7 dias (data: gasto / receita): " + ctx.daily.map((x) => x.d + ": " + f(x.spent) + " / " + f(x.income)).join("; ") + ". O primeiro é hoje.");
     if (ctx.inflation !== undefined) d.push("Inflação anual assumida: " + ctx.inflation + "%");
